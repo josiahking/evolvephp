@@ -1,0 +1,32 @@
+{
+    "name": "evolvephp/framework",
+    "description": "Evolve is short for evolution which is a php framework for smart developers.",
+    "type": "project",
+    "homepage": "https://github.com/josiahking/evolvephp",
+    "license": "GNU Affero General Public License (AGPL) v3.0 or later",
+    "keywords": [
+        "framework",
+        "php framework",
+        "evolvephp",
+        "elvovephp framework",
+        "evolve php",
+        "evolution php"
+    ],
+    "authors": [
+        {
+            "name": "Josiah King",
+            "email": "josiahaccounts@gmail.com",
+            "homepage": "https://github.com/josiahking"
+        },
+        {
+            "name": "Evolvephp Community"
+        }
+    ],
+    "version": "0.1",
+    "require": {
+        "php": ">=7.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "9"
+    }
+}
