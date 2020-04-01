@@ -4,7 +4,14 @@
  * Before modifying this file, ensure you know what you are doing
  */
 //debelopment mode ini
-ini_set('error_reporting',E_ALL);//E_ERROR || E_STRICT
+if(DEBUG === TRUE){
+    ini_set('error_reporting',E_ALL);
+    ini_set('display_errors', 1);
+}
+else{
+    ini_set('display_error', 0);
+    ini_set('error_reporting',E_ERROR || E_USER_ERROR || E_COMPILE_ERROR);
+}
 ini_set("log_errors", 1);
 ini_set("error_log", __DIR__."/logs/php-error.log");
 //application ini

@@ -4,6 +4,7 @@
  * User custom config
  * Define all your global variable/const here
  */
+define('DEBUG', TRUE);
 define('BASE_ERROR_PAGE_404',BASE_URL."error/404");
 define('DEFAULT_ROUTE',['EvolvePhpComponent\error\controllers\ErrorController','pageNotFound']);
 define('SITE_NAME', '');
