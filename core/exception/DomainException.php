@@ -11,13 +11,13 @@
  */
 namespace EvolvePhpCore\exception;
 /**
- * Exception Interface
+ * DomainException Class
  *
- * This interface extends the Throwable interface that Error and Exception implements
+ * This class extends the \DomainException and implements ExceptionInterface
  * 
- * @extends \Throwable
+ * @extends \DomainException
  */
 
-interface ExceptionInterface extends \Throwable
+class DomainException extends \DomainException implements ExceptionInterface
 {
 }

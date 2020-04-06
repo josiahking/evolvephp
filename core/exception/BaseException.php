@@ -11,13 +11,13 @@
  */
 namespace EvolvePhpCore\exception;
 /**
- * Exception Interface
+ * EvolvephpException Class
  *
- * This interface extends the Throwable interface that Error and Exception implements
- * 
- * @extends \Throwable
+ * This class extends the \Exception and implements ExceptionInterface
+ * It provides access to the base exception class
+ * @extends Exception
  */
 
-interface ExceptionInterface extends \Throwable
+class BaseException extends \Exception implements ExceptionInterface
 {
 }

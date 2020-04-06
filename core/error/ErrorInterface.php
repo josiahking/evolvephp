@@ -9,15 +9,15 @@
  * @since Version 1.0
  * @filesource
  */
-namespace EvolvePhpCore\exception;
+namespace EvolvePhpCore\error;
 /**
- * Exception Interface
+ * Error Interface
  *
  * This interface extends the Throwable interface that Error and Exception implements
  * 
  * @extends \Throwable
  */
 
-interface ExceptionInterface extends \Throwable
+interface ErrorInterface extends \Throwable
 {
 }

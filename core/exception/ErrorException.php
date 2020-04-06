@@ -11,13 +11,13 @@
  */
 namespace EvolvePhpCore\exception;
 /**
- * Exception Interface
+ * RuntimeException Class
  *
- * This interface extends the Throwable interface that Error and Exception implements
+ * This class extends the \RuntimeException and implements ExceptionInterface
  * 
- * @extends \Throwable
+ * @extends \ErrorException
  */
 
-interface ExceptionInterface extends \Throwable
+class ErrorException extends \ErrorException implements ExceptionInterface
 {
 }

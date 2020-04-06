@@ -9,15 +9,11 @@
  * @since Version 1.0
  * @filesource
  */
-namespace EvolvePhpCore\exception;
-/**
- * Exception Interface
- *
- * This interface extends the Throwable interface that Error and Exception implements
- * 
- * @extends \Throwable
- */
 
-interface ExceptionInterface extends \Throwable
-{
-}
+/**
+ * Load framework core files
+ */
+use EvolvePhpCore\ExceptionFactory;
+use EvolvePhpCore\ApplicationAbstract;
+use EvolvePhpCore\Model;
+use EvolvePhpCore\View;
