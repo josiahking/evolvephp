@@ -6,7 +6,7 @@
  */
 define('DEBUG', TRUE);
 define('BASE_ERROR_PAGE_404',BASE_URL."error/404");
-define('DEFAULT_ROUTE',['EvolvePhpComponent\error\controllers\ErrorController','pageNotFound']);
+define('DEFAULT_ROUTE',['EvolvePhpComponent\site\controllers\SiteController','home']);
 define('SITE_NAME', '');
 define('SITE_SHORT_NAME', '');
 define('SITE_EMAIL', '');

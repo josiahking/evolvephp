@@ -8,6 +8,9 @@ require __DIR__.'/vendor/autoload.php';
 require __DIR__.'/configs/application.config.php';
 require __DIR__.'/configs/user.config.php';
 require __DIR__.'/configs/ini.config.php';
+require __DIR__.'/core/CoreFileLoader.php';
+
+$ex = new EvolvePhpCore\ExceptionFactory();
 
 if(DEBUG === TRUE){
     $_SERVER['APPLICATION_ENV'] = "development";
