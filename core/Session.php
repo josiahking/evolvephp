@@ -12,20 +12,14 @@
  */
 
 namespace EvolvePhpCore;
-use EvolvePhpCore\ExceptionFactory;
-/**
- * ApplicationAbstract
- *
- * This is the base abstract class for the entire evolvephp  framework package
- * Most core class and all components class controllers should use as parent by extending it
- */
 
-class ApplicationAbstract 
+/**
+ * Session
+ *
+ * This interface extends the Throwable interface that Error and Exception implements
+ * 
+ */
+class Session
 {
-    
-//    public static function sessionHandler(){
-//        $session = new AppSession();
-//        return $session;
-//    }
     
 }

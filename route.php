@@ -27,7 +27,7 @@ use EvolvePhpComponent\error\controllers\ErrorController;
  * Check if route matches defined pattern and assign them to the right component
  */
 
-$route = preg_replace('/[^a-zA-Z0-9\/&=-]/', '', $_SERVER['PATH_INFO'] ?? isset($_GET['route']) ? $_GET['route'] : "" );
+$route = preg_replace('/[^a-zA-Z0-9\/&=-]/', '', $_SERVER['PATH_INFO'] ?? (isset($_GET['route']) ? $_GET['route'] : "" ));
 $route = rtrim(ltrim($route,'/'), '/');
 $explodeRoute = explode('/', $route);
 foreach ($explodeRoute as $erKey => $erVal){
@@ -39,14 +39,19 @@ foreach ($explodeRoute as $erKey => $erVal){
         return;
     }
     else{
-        if (preg_match('/[^a-zA-Z0-9-]/', $erVal)) {
-            if (is_readable(COMPONENTS.$erVal.DS.'route.php')) {
-                include_once COMPONENTS.$erVal.DS.'route.php';
+        $defaultPageClass = DEFAULT_ROUTE[0];
+        $defaultPageClassObj = new $defaultPageClass;
+        if (preg_match('/[a-zA-Z0-9-]/', $erVal)) {
+            if (is_readable(COMPONENTS_DIR.$erVal.DS.'route.php')) {
+                include_once COMPONENTS_DIR.$erVal.DS.'route.php';
+            } elseif(method_exists($defaultPageClassObj, $erVal)) {
+                $defaultPageClassObj->$erVal();
             } else {
                 ErrorController::pageNotFound();
             }
             return;
         }
     }
+    break;
 }
 ErrorController::pageNotFound();
