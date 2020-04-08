@@ -21,6 +21,19 @@ namespace EvolvePhpHelper;
 class Url {
     
     /**
+     * invoke url object
+     * @param string $url
+     * @param bool $absolute
+     * @return string
+     */
+    public function __invoke(string $url,bool $absolute = false) {
+        if($absolute){
+            $this->goto($url);
+        }
+        return $this->returnFromBase($url);
+    }
+
+    /**
      * baseUrl
      * get the base url set from the application config
      * @return string
