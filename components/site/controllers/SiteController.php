@@ -6,21 +6,18 @@
 namespace EvolvePhpComponent\site\controllers;
 
 use EvolvePhpCore\View;
+use EvolvePhpCore\ApplicationAbstract;
 
 if (!defined('ACCESS_ALLOWED')) {
     die('No direct access allowed.');
 }
 
-class SiteController
+class SiteController extends ApplicationAbstract
 {
-
-    public function __construct()
-    {
-        
-    }
 
     public function home()
     {
-        View::loadView('default','home.php');
+        $this->getInstance()->sessionHandler()->setSession('page_title', SITE_NAME.' - Page not found');
+        View::loadView('default','home.php',[]);
     }
 }
