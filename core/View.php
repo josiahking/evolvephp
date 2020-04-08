@@ -93,4 +93,5 @@ class View extends ApplicationAbstract
             }
         }
     }
+    
 }

@@ -13,6 +13,7 @@
 
 namespace EvolvePhpCore;
 use EvolvePhpCore\ExceptionFactory;
+use EvolvePhpCore\Session;
 /**
  * ApplicationAbstract
  *
@@ -22,10 +23,18 @@ use EvolvePhpCore\ExceptionFactory;
 
 class ApplicationAbstract 
 {
+    public $session = null;
     
-//    public static function sessionHandler(){
-//        $session = new AppSession();
-//        return $session;
-//    }
+    public static function sessionHandler() : \EvolvePhpCore\Session
+    {
+        $session = new Session();
+        self::getInstance()->session = $session;
+        return $session;
+    }
+    
+    public static function getInstance()
+    {
+        return new static();
+    }
     
 }
