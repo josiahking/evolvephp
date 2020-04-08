@@ -2,12 +2,13 @@
 if(ACCESS_ALLOWED != 1){
     exit('Requested document not found on this server.');
 }
+use EvolvePhpCore\View;
 ?>
 <!doctype html>
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>404 - This page can not be found</title>
+        <title><?php echo View::sessionHandler()->getSession('page_title'); ?></title>
         <meta name="author" content="Josiah Gerald">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
