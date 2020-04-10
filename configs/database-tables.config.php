@@ -12,17 +12,10 @@
  */
 
 /**
- * database config
- * define your database config
+ * table config
+ * define your database tables
+ * This config is not compulsory but provides ease of use with the application model
  */
 
-return [
-    'host' => '',
-    'port' => '',
-    'user' => '',
-    'password' => '',
-    'database' => '',
-    'type' => '',
-    'sqlite_option' => ''
-];
+return [];
 

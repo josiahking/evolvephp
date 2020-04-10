@@ -22,6 +22,13 @@ use WhichBrowser\Parser;
 class Session
 {
     /**
+     * const used with flash message
+     */
+    const SUCCESS = 1;
+    const INFO = 2;
+    const WARNING = 3;
+    const DANGER = 0;
+    /**
      * if session is valid
      * @var bool
      */
@@ -381,5 +388,52 @@ class Session
     public function destroy()
     {
         session_destroy();
+    }
+    
+    /**
+     * flashMessage
+     * Displays the flash message
+     * @return string flash message
+     */
+    public function flashMessage() :string
+    {
+        return $this->getSession('flash_message');
+    }
+    
+    /**
+     * setFlashMessage
+     * Set the flash message and type to be displayed
+     * @param string $message
+     * @param int $type
+     */
+    public function setFlashMessage(string $message,int $type) 
+    {
+        if($type == Session::SUCCESS){
+            $flashMessage = '<div class="alert alert-success" role="alert">'.$message.'</div>';
+        }
+        elseif($type == Session::INFO){
+            $flashMessage = '<div class="alert alert-info" role="alert">'.$message.'</div>';
+        }
+        elseif($type == Session::WARNING){
+            $flashMessage = '<div class="alert alert-warning" role="alert">'.$message.'</div>';
+        }
+        elseif($type == Session::DANGER){
+            $flashMessage = '<div class="alert alert-danger" role="alert">'.$message.'</div>';
+        }
+        else{
+            ExceptionFactory::getInstance()->triggerError("Flash message type is not supported",E_USER_WARNING);
+        }
+        $this->setSession('flash_message', $flashMessage);
+    }
+    
+    /**
+     * unsetFlashMessage
+     * Unset session variable that stores flash message
+     */
+    public function unsetFlashMessage() 
+    {
+        if($this->issetSession('flash_message')){
+            $this->unsetSession('flash_message');
+        }
     }
 }

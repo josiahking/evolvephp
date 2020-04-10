@@ -92,6 +92,6 @@ class View extends ApplicationAbstract
                 }
             }
         }
+        self::sessionHandler()->unsetFlashMessage();
     }
-    
 }

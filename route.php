@@ -1,5 +1,16 @@
 <?php
 /**
+ * @see       https://github.com/josiahking/evolvephp for read me and documentation
+ * @copyright https://github.com/josiahking/evolvephp/blob/master/COPYRIGHT.md
+ * @license   https://github.com/josiahking/evolvephp/blob/master/LICENSE.md
+ * @package EvolvePHP
+ * @author 
+ * @link Documentation on this file
+ * @since Version 1.0
+ * @filesource
+ */
+
+/**
  * Routing starts
  * require core config files the application needs to run
  */
@@ -8,7 +19,6 @@ require __DIR__.'/vendor/autoload.php';
 require __DIR__.'/configs/application.config.php';
 require __DIR__.'/configs/user.config.php';
 require __DIR__.'/configs/ini.config.php';
-require __DIR__.'/core/CoreFileLoader.php';
 
 $ex = new EvolvePhpCore\ExceptionFactory();
 

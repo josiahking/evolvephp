@@ -12,6 +12,7 @@ define('BASE_DIR',__DIR__.DS.'..'.DS);
 define('VENDOR_DIR', BASE_DIR.'vendor'.DS);
 define('COMPONENTS_DIR',BASE_DIR.'components'.DS);
 define('HELPERS_DIR',BASE_DIR.'helpers'.DS);
+define('CONFIGS_DIR', __DIR__.DS);
 define('PUBLIC_DIR',BASE_DIR.'public'.DS);
 define('CAPTCHA_IMG_DIR',PUBLIC_DIR.'captcha'.DS);
 define('ASSETS_DIR',PUBLIC_DIR.'assets'.DS);
