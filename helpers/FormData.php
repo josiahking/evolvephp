@@ -69,7 +69,7 @@ class FormData {
         return $_SERVER['REQUEST_METHOD'];
     }
     
-    public function getField(string $name) :string
+    public function getField(string $name)
     {
         foreach ($this->getFormData() as $field => $value){
             if($field == $name){
