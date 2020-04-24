@@ -41,7 +41,7 @@ class Loader {
             $file_name .= str_replace(' ', DIRECTORY_SEPARATOR, $class_name) . ".php";
 
             if($return){
-                return require_once $file_name;
+                return require $file_name;
             }
             require_once $file_name;
         }

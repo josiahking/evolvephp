@@ -373,10 +373,10 @@ class Session
     }
     
     /**
-     * unSetAll
+     * unsetAll
      * unset all session variables
      */
-    public function unSetAll() 
+    public function unsetAll() 
     {
         session_unset();
     }
@@ -397,7 +397,10 @@ class Session
      */
     public function flashMessage() :string
     {
-        return $this->getSession('flash_message');
+        if($this->issetSession('flash_message')){
+            return $this->getSession('flash_message');
+        }
+        return "";
     }
     
     /**
