@@ -18,7 +18,8 @@ namespace EvolvePhpHelper;
  *
  * This class helps perform simple routing url for the framework
  */
-class Url {
+class Url 
+{
     
     /**
      * invoke url object
@@ -88,6 +89,10 @@ class Url {
         }
     }
     
+    /**
+     * Get current url of this request
+     * @return string
+     */
     public function getCurrentUrl(): string
     {
         $uri = $_SERVER['REQUEST_URI'];

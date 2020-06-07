@@ -66,7 +66,12 @@ class Session
     protected function init() {
         $ip = $_SERVER['REMOTE_ADDR'];
         $parserResult = new Parser(getallheaders());
-        $userAgent = md5($parserResult->browser->name.$parserResult->browser->version->value);
+        if(is_null($parserResult->browser->using) === false){
+            $userAgent = md5($parserResult->browser->using->name.' '.$parserResult->browser->using->version->value);
+        }
+        else{
+            $userAgent = md5($parserResult->browser->name.' '.$parserResult->browser->version->value);
+        }
         $sessionHashed = md5($ip.$userAgent);
         if(!empty(gethostbyaddr($ip)) && !empty($userAgent)) {
             $ip = md5($ip);
@@ -149,24 +154,6 @@ class Session
     }
     
     /**
-     * getSessionAsArray
-     * get the whole array of data from a session variable array
-     * @param string $var use .
-     * @return array|null
-     */
-    public function getSessionAsArray(string $var)
-    {
-        if(preg_match('/[.]/', $var)){
-            $varArray = explode('.', $var);
-            if($this->issetSessionArr($var)){
-                return $_SESSION[$varArray[0]];
-            }
-        }
-        $this->setError(5, "Session variable is not set or not an array");
-        return null;
-    }
-    
-    /**
      * setSession
      * set session variable|array
      * @param string $var variable name can be formatted with . which will be converted into an array
@@ -176,7 +163,9 @@ class Session
     {
         if(preg_match('/[.]/', $var)){
             $varArray = explode('.', $var);
-            $_SESSION[$varArray[0]] = array();
+            if(!isset($_SESSION[$varArray[0]])){
+                $_SESSION[$varArray[0]] = array();
+            }
             $_SESSION[$varArray[0]][$varArray[1]] = $val;
         }
         else{

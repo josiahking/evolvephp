@@ -302,7 +302,7 @@ class Model extends ApplicationAbstract
      * select/fetch single data from table
      * @param string $query
      * @param array $data
-     * @param type $mode
+     * @param array|string|bool $mode
      * @return array
      */
     protected function pdoPrepareSelectSingleSql(string $query, array $data, $mode = false) :array
@@ -312,7 +312,12 @@ class Model extends ApplicationAbstract
             $stmt = $this->pdoConn->prepare($query);
             $result = $stmt->execute($data);
             if ($mode) {
-                $stmt->setFetchMode($mode);
+                if(is_array($mode)){
+                    $stmt->setFetchMode(implode(',',$mode));
+                }
+                else{
+                    $stmt->setFetchMode($mode);
+                }
             } else {
                 $stmt->setFetchMode(\PDO::FETCH_ASSOC);
             }
@@ -338,7 +343,7 @@ class Model extends ApplicationAbstract
      * select/fetch all data from table
      * @param string $query
      * @param array $data
-     * @param type $mode
+     * @param array|string|bool $mode
      * @return array
      */
     protected function pdoPrepareSelectAllSql(string $query, array $data, $mode = false) :array
@@ -348,7 +353,12 @@ class Model extends ApplicationAbstract
             $stmt = $this->pdoConn->prepare($query);
             $result = $stmt->execute($data);
             if ($mode) {
-                $stmt->setFetchMode($mode);
+                if(is_array($mode)){
+                    $stmt->setFetchMode(implode(',',$mode));
+                }
+                else{
+                    $stmt->setFetchMode($mode);
+                }
             } else {
                 $stmt->setFetchMode(\PDO::FETCH_ASSOC);
             }
@@ -425,4 +435,132 @@ class Model extends ApplicationAbstract
     {
         $this->pdoConn = null;
     }
+    
+    protected function queryBuilderGet(string $table, array $column, array $where = null, array $join = null, array $extras = null) :array
+    {
+        $query = "SELECT ";
+        $tableColumn = implode(',',array_values($column));
+        $query .= $tableColumn ." FROM ". $table;
+        if(!is_null($join)){
+            for($ji = 0; $ji < count($join); $ji++){
+                if($join[$ji] == "right"){
+                    if(!in_array($join[$ji][0], $this->tables)){
+                        ExceptionFactory::getInstance()->triggerError('Table name('.$join[$ji][0].') should be added to the database table config.');
+                    }
+                    $query .= " RIGHT JOIN ".$join[$ji][0]." ON ".$join[$ji][1];
+                }
+                if($join[$ji] == "left"){
+                    if(!in_array($join[$ji][0], $this->tables)){
+                        ExceptionFactory::getInstance()->triggerError('Table name('.$join[$ji][0].') should be added to the database table config.');
+                    }
+                    $query .= " LEFT JOIN ".$join[$ji][0]." ON ".$join[$ji][1];
+                }
+                if($join[$ji] == "join"){
+                    if(!in_array($join[$ji][0], $this->tables)){
+                        ExceptionFactory::getInstance()->triggerError('Table name('.$join[$ji][0].') should be added to the database table config.');
+                    }
+                    $query .= " JOIN ".$join[$ji][0]." ON ".$join[$ji][1];
+                }
+                if($join[$ji] == "inner"){
+                    if(!in_array($join[$ji][0], $this->tables)){
+                        ExceptionFactory::getInstance()->triggerError('Table name('.$join[$ji][0].') should be added to the database table config.');
+                    }
+                    $query .= " INNER JOIN ".$join[$ji][0]." ON ".$join[$ji][1];
+                }
+                if($join[$ji] == "cross"){
+                    if(!in_array($join[$ji][0], $this->tables)){
+                        ExceptionFactory::getInstance()->triggerError('Table name('.$join[$ji][0].') should be added to the database table config.');
+                    }
+                    $query .= " CROSS JOIN ".$join[$ji][0]." ON ".$join[$ji][1];
+                }
+            }
+        }
+        $data = [];
+        if(!is_null($where)){
+            $query .= " WHERE";
+            $whereSql = implode(',',array_keys($where));
+            $whereValue = array_values($where);
+            $query .= " ".$whereSql;
+            $data = $whereValue;
+        }
+        if(!is_null($extras)){
+            $extraSql = implode(' ',array_keys($extras));
+            $extraValue = array_values($extras);
+            $query .= " ".$extraSql;
+            $data = array_merge($data,$extraValue);
+        }
+        return ['query' => $query, 'data' => $data];
+    }
+    
+    protected function get(string $table, array $column, string $fetchMode = "one", array $where = null, array $join = null, array $extras = null) 
+    {
+        if(!in_array($table, $this->tables)){
+            ExceptionFactory::getInstance()->triggerError('Table name('.$table.') should be added to the database table config.');
+        }
+        $queryBuilt = $this->queryBuilderGet($table,$column,$where,$join,$extras);
+        if(!is_array($queryBuilt)){
+            ExceptionFactory::getInstance()->triggerError('Query built has an issue:'. var_export($queryBuilt));
+        }
+        if($fetchMode == 'one'){
+            $get = $this->pdoPrepareSelectSingleSql($queryBuilt['query'],$queryBuilt['data']);
+        }
+        else{
+            $get = $this->pdoPrepareSelectAllSql($queryBuilt['query'],$queryBuilt['data']);
+        }
+        return $get;
+    }
+    
+    protected function getOne(string $table, array $column, array $where = null, array $join = null, array $extras = null) :array
+    {
+        if(!in_array($table, $this->tables)){
+            ExceptionFactory::getInstance()->triggerError('Table name('.$table.') should be added to the database table config.');
+        }
+        $queryBuilt = $this->queryBuilderGet($table,$column,$where,$join,$extras);
+        if(!is_array($queryBuilt)){
+            ExceptionFactory::getInstance()->triggerError('Query built has an issue:'. var_export($queryBuilt));
+        }
+        $getOne = $this->pdoPrepareSelectSingleSql($queryBuilt['query'],$queryBuilt['data']);
+        return $getOne;
+    }
+    
+    protected function getAll(string $table, array $column, array $where = null, array $join = null, array $extras = null) :array
+    {
+        if(!in_array($table, $this->tables)){
+            ExceptionFactory::getInstance()->triggerError('Table name('.$table.') should be added to the database table config.');
+        }
+        $queryBuilt = $this->queryBuilderGet($table,$column,$where,$join,$extras);
+        if(!is_array($queryBuilt)){
+            ExceptionFactory::getInstance()->triggerError('Query built has an issue:'. var_export($queryBuilt));
+        }
+        $getAll = $this->pdoPrepareSelectAllSql($queryBuilt['query'],$queryBuilt['data']);
+        return $getAll;
+    }
+    
+    protected function queryBuilderPost(string $table, array $column, array $data) :array
+    {
+        $query = "INSERT INTO ".$table;
+        $tableColumn = implode(',',array_values($column));
+        $query .= "(".$tableColumn .") VALUES ";
+        $param = implode(',', array_fill(0, count($column), '?')); //create question marks foruse with prepare statement
+        if(count($column) != count($data)){
+            ExceptionFactory::getInstance()->triggerError('Table column and data length does not match.');
+        }
+        $data = array_values($data);
+        $query .= "(".$param.")";
+        return ['query' => $query, 'data' => $data];
+    }
+    
+    protected function post(string $table, array $column, array $data) :bool
+    {
+        if(!in_array($table, $this->tables)){
+            ExceptionFactory::getInstance()->triggerError('Table name('.$table.') should be added to the database table config.');
+        }
+        $queryBuilt = $this->queryBuilderPost($table,$column,$data);
+        if(!is_array($queryBuilt)){
+            ExceptionFactory::getInstance()->triggerError('Query built has an issue:'. var_export($queryBuilt));
+        }
+        $result = $this->pdoPrepareInsertSql($queryBuilt['query'],$queryBuilt['data']);
+        return $result;
+    }
+
 }

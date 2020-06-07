@@ -5,7 +5,15 @@
  * Do not modify this file, use the user.config.php for all your user custom config
  * Before modifying this file, ensure you know what you are doing
  */
-define('BASE_URL',preg_match('/https|HTTPS/',$_SERVER['SERVER_PROTOCOL']) == 1 ? "https://".$_SERVER['HTTP_HOST'].'/' : "http://".$_SERVER['HTTP_HOST'].'/');
+if(isset($_SERVER['REQUEST_SCHEME'])){
+    define('BASE_URL',preg_match('/https|HTTPS/',$_SERVER['REQUEST_SCHEME']) == 1 ? "https://".$_SERVER['HTTP_HOST'].'/' : "http://".$_SERVER['HTTP_HOST'].'/');
+}
+elseif(isset($_SERVER['HTTPS'])){
+    define('BASE_URL',$_SERVER['HTTPS'] == "on" ? "https://".$_SERVER['HTTP_HOST'].'/' : "http://".$_SERVER['HTTP_HOST'].'/');
+}
+else{
+    define('BASE_URL',"http://".$_SERVER['HTTP_HOST'].'/');
+}
 define('ACCESS_ALLOWED', TRUE);
 define('DS', DIRECTORY_SEPARATOR);
 define('BASE_DIR',__DIR__.DS.'..'.DS);
