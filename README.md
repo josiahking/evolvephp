@@ -166,6 +166,8 @@ EvolvePHP is an independently maintained framework and portfolio project.
 
 It represents an earlier framework-design effort and may require modernisation before being adopted for a new production application. For new commercial projects, review the PHP version, dependencies, security requirements, and test coverage before use.
 
+The current `master` line represents EvolvePHP 1 and is preserved for historical and maintenance purposes. EvolvePHP 2 is a separate redesign, not an in-place refactor of the legacy runtime. New production applications should not begin with EvolvePHP 1 without a detailed security and compatibility review. See the [legacy overview](docs/history/evolvephp-1-overview.md), [known risks and limitations](docs/history/known-risks-and-limitations.md), [support policy](SUPPORT.md), and [security policy](SECURITY.md).
+
 ## Roadmap
 
 Potential improvements include:
