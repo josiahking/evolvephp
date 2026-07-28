@@ -17,3 +17,6 @@ Accepted material architecture decisions must not be silently reversed. A later 
 ## Index
 
 - [RFC 0001: EvolvePHP 2 Vision, Scope and Non-Goals](0001-evolvephp-2-vision-and-scope.md) - Accepted
+- [RFC 0002: Terminology, Package Boundaries and Public Contracts](0002-terminology-package-boundaries-and-public-contracts.md) - Accepted
+
+RFC 0001 defines product direction. RFC 0002 defines terminology, package boundaries and public API governance. Later RFCs may depend on both.
