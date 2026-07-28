@@ -170,18 +170,9 @@ The current `master` line represents EvolvePHP 1 and is preserved for historical
 
 ## Roadmap
 
-Potential improvements include:
-
-- PHP 8.2+ support
-- Improved routing syntax
-- Dependency injection
-- Environment-variable configuration
-- Database migrations
-- Request and response abstractions
-- Middleware support
-- Expanded automated tests
-- Continuous integration
-- Improved documentation and examples
+- EvolvePHP 1 remains preserved on `master` with its historical PHP requirements.
+- EvolvePHP 2 requires PHP 8.4 or later and is developed separately on the `2.x` line.
+- See [RFC 0001](docs/rfcs/0001-evolvephp-2-vision-and-scope.md) for the accepted vision, scope and compatibility policy.
 
 ## Composer Metadata
 
