@@ -19,5 +19,6 @@ Accepted material architecture decisions must not be silently reversed. A later 
 - [RFC 0001: EvolvePHP 2 Vision, Scope and Non-Goals](0001-evolvephp-2-vision-and-scope.md) - Accepted
 - [RFC 0002: Terminology, Package Boundaries and Public Contracts](0002-terminology-package-boundaries-and-public-contracts.md) - Accepted
 - [RFC 0003: PHP Versioning, Compatibility and Release Policy](0003-php-versioning-compatibility-and-release-policy.md) - Accepted
+- [RFC 0004: Module and Plugin Lifecycle](0004-module-and-plugin-lifecycle.md) - Accepted
 
-RFC 0001 defines product direction. RFC 0002 defines terminology, package boundaries and public API governance. RFC 0003 defines compatibility, versioning and release policy. Later lifecycle and runtime RFCs may depend on these governance foundations.
+RFC 0001 defines product direction. RFC 0002 defines terminology, package boundaries and public API governance. RFC 0003 defines compatibility, versioning and release policy. RFC 0004 defines module and plugin lifecycle rules. RFC 0005 will define execution scope and reset safety. Later lifecycle and runtime RFCs may depend on these governance foundations.

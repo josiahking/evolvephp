@@ -9,6 +9,7 @@
 - Added RFC 0001: EvolvePHP 2 Vision, Scope and Non-Goals.
 - Added RFC 0002: Terminology, Package Boundaries and Public Contracts.
 - Added RFC 0003: PHP Versioning, Compatibility and Release Policy.
+- Added RFC 0004: Module and Plugin Lifecycle.
 - Added `SECURITY.md` with private vulnerability-reporting guidance and supported-line status.
 - Added `SUPPORT.md` with usage, bug-report and security-report guidance.
 - Added documentation-policy tests for the Phase 0 preservation baseline.
