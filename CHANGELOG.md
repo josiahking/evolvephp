@@ -1,1 +1,17 @@
 # Changelog
+
+## Unreleased
+
+### Documentation and governance
+
+- Added `AGENTS.md` as the mandatory workflow rule source for coding agents working in this repository.
+- Added EvolvePHP 1 legacy preservation documentation under `docs/history/`.
+- Added `SECURITY.md` with private vulnerability-reporting guidance and supported-line status.
+- Added `SUPPORT.md` with usage, bug-report and security-report guidance.
+- Added documentation-policy tests for the Phase 0 preservation baseline.
+
+### Legacy baseline
+
+- Preserved the audited EvolvePHP 1 baseline at commit `2da5da7866f65d314a0e2bf10b572004b3014d60`.
+- No `1.0.0-legacy` Git tag was found during the Phase 0 audit.
+- No legacy runtime modernization, dependency upgrade, PHP requirement change or namespace rename is included in this baseline documentation work.
