@@ -231,12 +231,14 @@ EvolvePHP adopts this execution lifecycle:
 6. Handle application work
 7. Capture the primary outcome
 8. Run execution termination hooks
-9. Close execution-scoped resources
-10. Reset reusable application-lifetime participants
-11. Clear ambient context
-12. Finalize execution telemetry
-13. Decide whether the process is safe for reuse
-14. Return, acknowledge, reject or report the outcome
+9. Finish active execution telemetry
+10. Detach active trace, span and propagation context
+11. Close execution-scoped resources
+12. Reset reusable application-lifetime participants
+13. Clear any remaining ambient execution context
+14. Perform bounded export or flush using detached immutable telemetry data
+15. Decide whether the process is safe for reuse
+16. Return, acknowledge, reject or report the outcome
 ```
 
 Rules:
@@ -244,6 +246,8 @@ Rules:
 - Runtime adapters may need to adapt ordering around response transmission or queue acknowledgement.
 - Cleanup and reset must always run through a `finally`-equivalent path.
 - The original application outcome remains identifiable after cleanup.
+- Termination hooks may still generate telemetry before active telemetry is finalized.
+- Post-closure telemetry export or flush must operate only on detached data and must not reactivate the closed execution context.
 - A new execution must not start in the same worker until the previous execution reaches a terminal cleanup result, unless explicit concurrency isolation is implemented and proven.
 
 ## 10. Execution State Machine
@@ -311,8 +315,7 @@ Rules:
 ## 13. Tenant Isolation Boundary
 
 - RFC 0005 does not define EvolvePHP multitenancy.
-- When an application supplies tenant context, that context belongs to execution scope.
-- Tenant context belongs to execution scope when provided by the application.
+- Tenant context belongs to execution scope when supplied by an application.
 - A later execution without tenant context must not inherit one.
 - Tenant-aware connection selection, caches, configuration overlays and authorization must reset safely.
 - Application singletons must not retain a current tenant.
@@ -414,9 +417,11 @@ Rules:
 - Filesystem enumeration order must not determine reset order.
 - Arbitrary numeric reset priority is not the foundational mechanism.
 - Cleanup of resources created inside one scope should use reverse creation or acquisition order where practical.
-- Telemetry finalization must occur after the application work outcome is known.
+- Telemetry finalization must occur after the application work outcome and termination hooks are known.
+- Active trace, span and propagation context must detach before execution-scoped resources close.
 - Ambient execution context must be cleared before another execution becomes active.
-- The exact positioning of telemetry export may be refined by RFC 0007 without weakening isolation.
+- Post-closure telemetry export or flush must use detached immutable telemetry data only.
+- The exact positioning of telemetry APIs, spans, metrics, logs and exporters may be refined by RFC 0007 without weakening isolation.
 
 ## 21. Reset Contract Behaviour
 
@@ -546,14 +551,19 @@ advisory locks
 ## 29. Telemetry Context
 
 - Trace and span context belong to execution scope.
+- Active trace, span and propagation context must not survive execution-scope closure.
+- Termination hooks may still generate telemetry before active telemetry is finalized.
 - The active span must not survive execution closure.
 - Baggage and propagation context must clear.
+- Post-closure export or flush must operate only on detached data.
+- Export must not reactivate the closed execution context.
+- Export or flush must be bounded.
 - Telemetry export must not block worker cleanup indefinitely.
-- Exporter failure should not normally corrupt application state.
-- Telemetry reset failure that leaves active context uncertain must prevent worker reuse.
+- An exporter failure does not normally corrupt application state.
+- Failure to detach or clear active telemetry context prevents safe worker reuse.
 - Core remains independent of Observe.
 - Insight diagnostic batches must not merge unrelated executions.
-- Exact traces, metrics and logs belong to RFC 0007.
+- RFC 0007 may refine APIs, spans, metrics, logs and exporter placement without weakening isolation.
 
 ## 30. Output Buffers, Streams And Temporary Resources
 
@@ -616,7 +626,7 @@ A process may accept another execution only when:
 - Temporary resources released.
 - Reset participants completed.
 - Ambient context cleared.
-- Telemetry context finalized or safely detached.
+- Telemetry context finalized, active context detached and post-closure export limited to detached data.
 - No quarantine trigger exists.
 - Runtime adapter confirms safe reuse.
 
@@ -716,7 +726,7 @@ An enabled plugin failure during reset quarantines the worker.
 
 - Observe may create one root span or equivalent telemetry unit per execution.
 - Context propagation must remain execution-scoped.
-- Observe must clear active context.
+- Observe must clear active context before execution-scope closure.
 - Exporter delays must be bounded.
 - Observe must not be required for Core reset correctness.
 - Observe must not depend on Insight.
