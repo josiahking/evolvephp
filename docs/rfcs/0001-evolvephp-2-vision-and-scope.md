@@ -87,7 +87,9 @@ Teams should be able to introduce EvolvePHP without rewriting an existing Larave
 
 ### Modern Runtime Safety
 
-Request-scoped and tenant-scoped state must not leak across requests, workers or persistent runtime executions.
+Execution-scoped state, including request, message, job, user and tenant context, must not leak across executions or persistent-worker reuse.
+
+RFC 0005 defines application, execution and transient lifetimes. Tenant context may exist when supplied by an application. Tenant context belongs to execution scope, and RFC 0001 does not establish a separate tenant-scoped container. Multitenancy remains deferred.
 
 ### Standards Interoperability
 
@@ -170,9 +172,14 @@ Examples:
 - Telemetry exporter.
 - Authentication integration.
 - Developer tool.
-- Host framework bridge.
 
 Later RFCs will define exact lifecycle and dependency rules. RFC 0001 establishes vocabulary; it does not finalise implementation-level APIs.
+
+### Bridge Adapter
+
+A Bridge adapter is an integration-adapter category. Bridge and Plugin are not synonyms.
+
+A specific Bridge adapter may participate through approved registration or plugin lifecycle contracts. Participation in lifecycle does not automatically redefine the adapter as a plugin. RFC 0004 remains authoritative for Plugin terminology, and RFC 0006 remains authoritative for Bridge terminology.
 
 ## 8. PHP Support Policy
 
@@ -221,6 +228,17 @@ The host framework owns:
 
 EvolvePHP owns only the selected feature-module lifecycle.
 
+Policy summary:
+
+- The host owns the top-level process and browser-facing application boundary.
+- The host normally owns its existing session and identity-establishment infrastructure.
+- The host owns the outer routing and delegation decision.
+- Evolve validates translated identity assertions.
+- Evolve authorizes Evolve-owned operations.
+- Additional Evolve authentication or step-up validation must be explicit.
+- A delegated route or capability has one authoritative owner.
+- RFC 0006 remains authoritative for detailed authentication, authorization, route and session boundaries.
+
 ### Sidecar Or Separately Deployed Mode
 
 Sidecar or separately deployed mode is for:
@@ -240,7 +258,7 @@ In headless remote-module mode, the host application communicates through:
 - Integration events.
 - Future remote protocols where justified.
 
-Evolve Bridge is planned for the EvolvePHP 2.0 Beta direction, after stable core, HTTP, module and plugin contracts exist.
+Evolve Bridge is planned for the EvolvePHP 2.0 Beta direction, after stable core, HTTP, module and plugin contracts exist. RFC 0006 governs the Bridge architecture targeted toward Beta foundations.
 
 ## 10. EvolvePHP 2.0 Scope
 
@@ -283,6 +301,8 @@ The beta may include:
 - First-party reference modules.
 - Documentation and upgrade guidance.
 
+Beta does not promise every Bridge adapter or full advanced remote-module extraction.
+
 ### 2.0 Stable
 
 Stable requires:
@@ -314,6 +334,8 @@ EvolvePHP 2.1 candidates include mature persistent-runtime adapters, FrankenPHP 
 ### EvolvePHP 2.2 Candidates
 
 EvolvePHP 2.2 candidates include advanced service extraction, remote module adapters, outbox and inbox patterns, distributed command and query buses, cross-service workflow tooling, Kubernetes reference architecture, advanced autoscaling and service topology, and managed platform foundations. Kubernetes and advanced service extraction are not required for initial 2.0.
+
+Advanced service extraction, distributed workflow tooling and mature remote-module orchestration remain deferred unless a later RFC moves them.
 
 ## 12. Explicit Non-Goals
 

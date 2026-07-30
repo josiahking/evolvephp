@@ -264,7 +264,9 @@ Evolve\Bridge\Remote\
 
 - Contains stable generic Bridge contracts.
 - Generic Bridge contracts must not contain Laravel or Symfony types.
-- Depends inward on Evolve public contracts only.
+- Generic Bridge contracts contain no Laravel or Symfony types.
+- `bridge-contracts` depends on `evolvephp/contracts`.
+- `bridge-contracts` must not depend on Core or HTTP implementations.
 - Must remain small.
 - Must not become a duplicate Core package.
 
@@ -300,28 +302,36 @@ Not every conceptual package must ship in the first Bridge release.
 
 ## 12. Dependency Direction
 
-Accepted direction:
+RFC 0006 reaffirms RFC 0002's inward dependency direction and refines low-level Bridge edges without reversing RFC 0002.
 
-```text
-Evolve contracts/core/http
-          ^
-bridge-contracts
-          ^
-bridge-psr
-bridge-laravel
-bridge-symfony
-bridge-remote
-```
+Accepted package dependency policy:
 
-Depending on implementation needs, adapter packages may depend directly on necessary public Evolve packages, but dependencies remain inward.
+- `evolvephp/bridge-contracts` depends on `evolvephp/contracts`.
+- `evolvephp/bridge-psr` depends on `evolvephp/bridge-contracts`, selected public Evolve packages and selected PSR packages.
+- `evolvephp/bridge-laravel` depends on `evolvephp/bridge-contracts`, selected public Evolve packages and supported Laravel packages.
+- `evolvephp/bridge-symfony` depends on `evolvephp/bridge-contracts`, selected public Evolve packages and supported Symfony packages.
+- `evolvephp/bridge-remote` depends on `evolvephp/bridge-contracts`, selected public Evolve packages and selected transport or interoperability packages.
+
+Rules:
+
+- `bridge-contracts` depends on `evolvephp/contracts`, not Core or HTTP implementations.
+- Adapter packages may depend directly on selected public Evolve packages where required.
+- Adapter packages do not automatically depend on every Evolve package shown above.
+- Core and HTTP never depend on host-specific Bridge adapters.
+- Generic Bridge contracts contain no Laravel or Symfony types.
+- RFC 0002's inward dependency direction remains authoritative.
+- RFC 0006 refines low-level Bridge edges without reversing RFC 0002.
 
 Forbidden:
 
 ```text
 core -> bridge-*
+http -> bridge-*
 http -> bridge-laravel
 http -> bridge-symfony
 contracts -> host framework
+bridge-contracts -> core
+bridge-contracts -> http
 bridge-contracts -> Laravel
 bridge-contracts -> Symfony
 bridge-laravel -> application internals
