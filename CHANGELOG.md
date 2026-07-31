@@ -13,6 +13,7 @@
 - Added RFC 0004: Module and Plugin Lifecycle.
 - Added RFC 0005: Request Scope, Runtime Reset and Persistent-Worker Safety.
 - Added RFC 0006: Evolve Bridge and Incremental Modernisation.
+- Added RFC 0007: Insight and OpenTelemetry Architecture.
 - Added `SECURITY.md` with private vulnerability-reporting guidance and supported-line status.
 - Added `SUPPORT.md` with usage, bug-report and security-report guidance.
 - Added documentation-policy tests for the Phase 0 preservation baseline.
