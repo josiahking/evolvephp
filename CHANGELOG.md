@@ -4,6 +4,7 @@
 
 ### Documentation and governance
 
+- Added Phase 2.1 initial EvolvePHP 2 package skeleton boundaries for the accepted alpha package map.
 - Added Cross-RFC terminology harmonization, Bridge dependency-direction clarification, execution-scoped tenant-context clarification, and telemetry finalization and scope-closure ordering clarification for accepted EvolvePHP 2 RFCs 0001-0006.
 - Added `AGENTS.md` as the mandatory workflow rule source for coding agents working in this repository.
 - Added EvolvePHP 1 legacy preservation documentation under `docs/history/`.
