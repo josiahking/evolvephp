@@ -1,0 +1,37 @@
+{
+    "name": "evolvephp/workspace",
+    "description": "Development workspace for the EvolvePHP 2 modular monorepo.",
+    "type": "project",
+    "license": "BSD-3-Clause",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../packages/*",
+            "options": {
+                "versions": {
+                    "evolvephp/contracts": "2.0.x-dev",
+                    "evolvephp/core": "2.0.x-dev",
+                    "evolvephp/http": "2.0.x-dev",
+                    "evolvephp/module": "2.0.x-dev",
+                    "evolvephp/plugin": "2.0.x-dev",
+                    "evolvephp/testing": "2.0.x-dev"
+                },
+                "reference": "config"
+            }
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "evolvephp/contracts": "^2.0@dev",
+        "evolvephp/core": "^2.0@dev",
+        "evolvephp/http": "^2.0@dev",
+        "evolvephp/module": "^2.0@dev",
+        "evolvephp/plugin": "^2.0@dev"
+    },
+    "require-dev": {
+        "evolvephp/testing": "^2.0@dev"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

@@ -4,6 +4,7 @@
 
 ### Documentation and governance
 
+- Added Phase 2.2 dedicated EvolvePHP 2 Composer workspace with local path-repository integration and explicit 2.0.x-dev package version mapping.
 - Added Phase 2.1 initial EvolvePHP 2 package skeleton boundaries for the accepted alpha package map.
 - Added Cross-RFC terminology harmonization, Bridge dependency-direction clarification, execution-scoped tenant-context clarification, and telemetry finalization and scope-closure ordering clarification for accepted EvolvePHP 2 RFCs 0001-0006.
 - Added `AGENTS.md` as the mandatory workflow rule source for coding agents working in this repository.

@@ -48,6 +48,6 @@ The packages have not been installed or runtime-tested in this task.
 
 The current root Composer manifest remains the legacy EvolvePHP 1 harness temporarily. It still exists so current repository documentation and policy tests can run while EvolvePHP 2 repository structure is introduced separately.
 
-Phase 2.2 will establish the dedicated EvolvePHP 2 workspace Composer configuration.
+Phase 2.2 now provides the dedicated Composer workspace; this is the EvolvePHP 2 workspace Composer configuration for development. See `workspace/README.md` for package-resolution, lockfile and local solver-verification policy.
 
 Real PHP 8.4 and PHP 8.5 CI evidence is required before compatibility is claimed. Composer manifest validation under another local PHP version does not establish EvolvePHP 2 runtime compatibility.
