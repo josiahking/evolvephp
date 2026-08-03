@@ -1,5 +1,7 @@
 /nbproject/*
 /vendor/*
 composer.lock
+!workspace/composer.lock
+/workspace/vendor/
 /logs/*
 *.log
