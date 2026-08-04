@@ -36,12 +36,15 @@ Quality tooling is also listed in `require-dev` and is owned only by this worksp
 - `phpstan/phpstan`
 - `phpstan/phpstan-phpunit`
 - `friendsofphp/php-cs-fixer`
+- `deptrac/deptrac`
 
 Production packages remain independent of `evolvephp/testing`.
 
 PHPUnit 13 is owned by the EvolvePHP 2 workspace. It must not be added to the legacy root Composer manifest, any package manifest or production requirements.
 
 PHPStan and PHP-CS-Fixer are also workspace-only development tools. They must not be added to the legacy root Composer manifest, any package manifest or production requirements.
+
+Deptrac is also workspace-owned development tooling. The maintained package identity is `deptrac/deptrac`; the abandoned `qossmic/deptrac` package identity is prohibited.
 
 ## Local Commands
 
@@ -83,6 +86,14 @@ Run static analysis:
 composer --working-dir=workspace analyse
 ```
 
+Run architecture and dependency-boundary validation:
+
+```bash
+composer --working-dir=workspace architecture
+```
+
+`architecture` is non-mutating. It analyzes production source directories only, reports uncovered dependencies, and uncovered dependencies fail. It uses no baseline or skipped violations, and does not generate a graph.
+
 Run coding-standard checks:
 
 ```bash
@@ -103,7 +114,7 @@ Run non-mutating workspace quality validation:
 composer --working-dir=workspace quality
 ```
 
-`quality` calls `analyse`, `style:check` and `test`. It does not call `style:fix`.
+`quality` calls `architecture`, `analyse`, `style:check` and `test`, in that order. Architecture runs first so package-boundary violations stop the pipeline before later quality checks. It does not call `style:fix`.
 
 Workspace Composer scripts use Composer's `@php` so vendor tools run under the PHP binary selected by the Composer execution environment. On the PHP 8.4 workspace, Composer84 uses `D:\php-84\php.exe`.
 
@@ -155,6 +166,51 @@ The workspace manually includes `phpstan/phpstan-phpunit` type-inference integra
 
 No PHPStan baseline is allowed initially, and the configuration must not use `ignoreErrors`. Local PHPStan cache belongs in `workspace/.phpstan-cache/` and is ignored.
 
+## Architecture Boundaries
+
+Deptrac is the Phase 2.5 architecture-boundary engine. The configuration lives at:
+
+```text
+workspace/deptrac.php
+```
+
+Phase 2.5 analyzes the six package production source directories only:
+
+```text
+../packages/contracts/src
+../packages/core/src
+../packages/http/src
+../packages/module/src
+../packages/plugin/src
+../packages/testing/src
+```
+
+Package tests are excluded from Phase 2.5 boundary analysis so test dependencies cannot weaken production rules. Physical package paths define layers, and package namespaces must match the package paths:
+
+```text
+Contracts -> ../packages/contracts/src/.* -> Evolve\Contracts\
+Core      -> ../packages/core/src/.*      -> Evolve\Core\
+Http      -> ../packages/http/src/.*      -> Evolve\Http\
+Module    -> ../packages/module/src/.*    -> Evolve\Module\
+Plugin    -> ../packages/plugin/src/.*    -> Evolve\Plugin\
+Testing   -> ../packages/testing/src/.*   -> Evolve\Testing\
+```
+
+The accepted dependency matrix is:
+
+```text
+Contracts -> none
+Core      -> Contracts
+Http      -> Contracts, Core
+Module    -> Contracts
+Plugin    -> Contracts
+Testing   -> Contracts, Core, Http, Module, Plugin
+```
+
+There is no production dependency on Testing. Testing may depend on all five production packages.
+
+New external dependencies require explicit architecture review instead of being silently accepted. No architecture baseline, skipped violations or generated graph is allowed in Phase 2.5. Local Deptrac cache belongs in `workspace/.deptrac.cache` and is ignored. The temporary forbidden-edge probe used during Phase 2.5 validation is evidence only and is not committed.
+
 ## Coding Standards
 
 PHP-CS-Fixer is the workspace coding-standard engine. The distributable configuration lives at:
@@ -183,7 +239,6 @@ Future changes to workspace dependencies must update the lockfile through Compos
 
 The following remain deferred:
 
-- Dependency-boundary tooling
 - GitHub Actions
 - PHP 8.5 CI verification to Phase 2.6
 - Security and licence scanning

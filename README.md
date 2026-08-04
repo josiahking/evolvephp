@@ -184,18 +184,6 @@ Recommended `composer.json` description:
 }
 ```
 
-Also correct any misspelled keyword such as:
-
-```text
-elvovephp framework
-```
-
-to:
-
-```text
-evolvephp framework
-```
-
 ## Author
 
 **Josiah Gerald**

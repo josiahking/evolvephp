@@ -4,6 +4,7 @@
 
 ### Documentation and governance
 
+- Added Phase 2.5 workspace-owned Deptrac architecture and dependency-boundary enforcement for the initial EvolvePHP 2 package graph.
 - Added Phase 2.4 workspace-owned PHPStan level 6 static analysis, PHPUnit type-inference integration, PHP-CS-Fixer PER Coding Style 3.0 checks, and architecture-policy tests for cache, baseline and tooling ownership.
 - Added Phase 2.3 PHPUnit 13 workspace foundation, six package test suites, and the initial workspace lockfile generated under PHP 8.4.
 - Added Phase 2.2 dedicated EvolvePHP 2 Composer workspace with local path-repository integration and explicit 2.0.x-dev package version mapping.

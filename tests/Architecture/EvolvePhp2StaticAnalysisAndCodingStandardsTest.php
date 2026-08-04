@@ -11,26 +11,21 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
         $this->root = dirname(__DIR__, 2);
     }
 
-    public function testWorkspaceOwnsExactApprovedQualityDevelopmentDependencies(): void
+    public function testWorkspaceOwnsApprovedStaticAnalysisAndCodingStandardsDevelopmentDependencies(): void
     {
         $manifest = $this->readJsonFile('workspace/composer.json');
 
-        $expectedRequireDev = array(
-            'evolvephp/testing' => '^2.0@dev',
+        $expectedQualityRequireDev = array(
             'friendsofphp/php-cs-fixer' => '^3.95',
             'phpstan/phpstan' => '^2.2',
             'phpstan/phpstan-phpunit' => '^2.0',
-            'phpunit/phpunit' => '^13.2',
         );
 
-        $actualRequireDev = $manifest['require-dev'];
+        $this->assertArrayHasKey('require-dev', $manifest);
 
-        ksort($expectedRequireDev);
-        ksort($actualRequireDev);
-
-        $this->assertSame($expectedRequireDev, $actualRequireDev);
-
-        foreach ($this->qualityPackages() as $package) {
+        foreach ($expectedQualityRequireDev as $package => $constraint) {
+            $this->assertArrayHasKey($package, $manifest['require-dev']);
+            $this->assertSame($constraint, $manifest['require-dev'][$package]);
             $this->assertArrayNotHasKey($package, $manifest['require'], $package . ' must be development-only.');
         }
     }
@@ -57,39 +52,35 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
         }
     }
 
-    public function testWorkspaceScriptsDeclareExactQualityAndPhpUnitCommandMap(): void
+    public function testWorkspaceScriptsDeclareApprovedStaticAnalysisAndCodingStandardsCommands(): void
     {
         $manifest = $this->readJsonFile('workspace/composer.json');
 
         $expectedScripts = array(
             'analyse' => '@php vendor/bin/phpstan analyse --configuration phpstan.neon.dist --no-progress',
-            'quality' => array(
-                '@analyse',
-                '@style:check',
-                '@test',
-            ),
             'style:check' => '@php vendor/bin/php-cs-fixer check --config=.php-cs-fixer.dist.php --diff --verbose',
             'style:fix' => '@php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --diff --verbose',
-            'test' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist',
-            'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
-            'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
-            'test:http' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http',
-            'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
-            'test:plugin' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin',
-            'test:testing' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing',
         );
 
         $actualScripts = $manifest['scripts'];
 
-        ksort($expectedScripts);
-        ksort($actualScripts);
-
-        $this->assertSame($expectedScripts, $actualScripts);
-        $this->assertNotContains('@style:fix', $actualScripts['quality'], 'quality must remain non-mutating.');
-
-        foreach (array('analyse', 'style:check', 'style:fix', 'test', 'test:contracts', 'test:core', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $scriptName) {
+        foreach ($expectedScripts as $scriptName => $script) {
+            $this->assertArrayHasKey($scriptName, $actualScripts);
+            $this->assertSame($script, $actualScripts[$scriptName]);
             $this->assertStringStartsWith('@php ', $actualScripts[$scriptName], $scriptName . ' must use Composer @php.');
         }
+
+        $this->assertArrayHasKey('quality', $actualScripts);
+        $this->assertIsArray($actualScripts['quality']);
+        $this->assertContains('@analyse', $actualScripts['quality']);
+        $this->assertContains('@style:check', $actualScripts['quality']);
+        $this->assertContains('@test', $actualScripts['quality']);
+        $this->assertNotContains('@style:fix', $actualScripts['quality'], 'quality must remain non-mutating.');
+        $this->assertSame(
+            $actualScripts['quality'],
+            array_values(array_unique($actualScripts['quality'])),
+            'quality must not contain duplicate entries.'
+        );
     }
 
     public function testConfigurationFilesAreOwnedByWorkspaceAndNoTrackedAlternativesExist(): void

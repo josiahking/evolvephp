@@ -29,6 +29,7 @@
         "evolvephp/plugin": "^2.0@dev"
     },
     "require-dev": {
+        "deptrac/deptrac": "^4.7",
         "evolvephp/testing": "^2.0@dev",
         "friendsofphp/php-cs-fixer": "^3.95",
         "phpstan/phpstan": "^2.2",
@@ -36,8 +37,10 @@
         "phpunit/phpunit": "^13.2"
     },
     "scripts": {
+        "architecture": "@php vendor/bin/deptrac analyse --config-file=deptrac.php --no-progress --report-uncovered --fail-on-uncovered",
         "analyse": "@php vendor/bin/phpstan analyse --configuration phpstan.neon.dist --no-progress",
         "quality": [
+            "@architecture",
             "@analyse",
             "@style:check",
             "@test"
