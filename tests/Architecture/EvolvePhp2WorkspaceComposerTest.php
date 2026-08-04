@@ -45,7 +45,7 @@ final class EvolvePhp2WorkspaceComposerTest extends TestCase
         }
     }
 
-    public function testWorkspaceRequiresProductionPackagesAndKeepsTestingInRequireDev(): void
+    public function testWorkspaceRequiresProductionPackagesAndApprovedDevelopmentTools(): void
     {
         $manifest = $this->readJsonFile('workspace/composer.json');
 
@@ -60,6 +60,7 @@ final class EvolvePhp2WorkspaceComposerTest extends TestCase
 
         $expectedRequireDev = array(
             'evolvephp/testing' => '^2.0@dev',
+            'phpunit/phpunit' => '^13.2',
         );
 
         $actualRequire = $manifest['require'];
@@ -73,31 +74,53 @@ final class EvolvePhp2WorkspaceComposerTest extends TestCase
         $this->assertSame($expectedRequire, $actualRequire);
         $this->assertSame($expectedRequireDev, $actualRequireDev);
         $this->assertArrayNotHasKey('evolvephp/testing', $actualRequire);
+        $this->assertArrayNotHasKey('phpunit/phpunit', $actualRequire);
 
         foreach ($this->productionPackages() as $package) {
             $this->assertArrayNotHasKey($package, $actualRequireDev);
         }
     }
 
-    public function testWorkspaceComposerManifestAvoidsDeferredPolicyFieldsAndExternalDependencies(): void
+    public function testWorkspaceComposerManifestAvoidsDeferredPolicyFieldsAndUnapprovedDependencies(): void
     {
         $manifest = $this->readJsonFile('workspace/composer.json');
 
-        foreach (array('version', 'minimum-stability', 'prefer-stable', 'autoload', 'autoload-dev', 'scripts') as $field) {
+        foreach (array('version', 'minimum-stability', 'prefer-stable', 'autoload', 'autoload-dev') as $field) {
             $this->assertArrayNotHasKey($field, $manifest, 'workspace/composer.json must not contain ' . $field . '.');
         }
 
         $this->assertTrue($manifest['config']['sort-packages']);
         $this->assertFalse(isset($manifest['config']['platform']), 'workspace/composer.json must not emulate Composer platform configuration.');
 
-        foreach (array('require', 'require-dev') as $section) {
-            foreach (array_keys($manifest[$section]) as $dependency) {
-                $this->assertTrue(
-                    $dependency === 'php' || in_array($dependency, $this->allPackages(), true),
-                    $dependency . ' must not be added as an external workspace dependency.'
-                );
-            }
-        }
+        $allowedRequire = array(
+            'php',
+            'evolvephp/contracts',
+            'evolvephp/core',
+            'evolvephp/http',
+            'evolvephp/module',
+            'evolvephp/plugin',
+        );
+        $allowedRequireDev = array('evolvephp/testing', 'phpunit/phpunit');
+
+        $this->assertSame($allowedRequire, array_keys($manifest['require']));
+        $this->assertSame($allowedRequireDev, array_keys($manifest['require-dev']));
+    }
+
+    public function testWorkspaceComposerManifestDeclaresOnlyApprovedPhpUnitScripts(): void
+    {
+        $manifest = $this->readJsonFile('workspace/composer.json');
+        $expectedScripts = array(
+            'test' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist',
+            'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
+            'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
+            'test:http' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http',
+            'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
+            'test:plugin' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin',
+            'test:testing' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing',
+        );
+
+        $this->assertArrayHasKey('scripts', $manifest);
+        $this->assertSame($expectedScripts, $manifest['scripts']);
     }
 
     public function testWorkspaceReadmeDocumentsBoundarySolverOnlyVerificationAndLockfilePolicy(): void
@@ -115,16 +138,14 @@ final class EvolvePhp2WorkspaceComposerTest extends TestCase
         $this->assertMatchesPattern('/resolve all six packages as `?2\.0\.x-dev`?/i', $content);
         $this->assertMatchesPattern('/production packages.*`require`/is', $content);
         $this->assertMatchesPattern('/Testing.*`require-dev`/is', $content);
+        $this->assertMatchesPattern('/PHPUnit 13.*workspace/is', $content);
         $this->assertMatchesPattern('/composer --working-dir=workspace validate --strict/i', $content);
-        $this->assertMatchesPattern('/--dry-run\s+\\\\?\s*--no-install\s+\\\\?\s*--no-interaction\s+\\\\?\s*--ignore-platform-req=php/is', $content);
-        $this->assertMatchesPattern('/dependency graph only/i', $content);
-        $this->assertMatchesPattern('/does not install packages/i', $content);
-        $this->assertMatchesPattern('/does not create the lockfile/i', $content);
-        $this->assertMatchesPattern('/does not prove PHP 8\.4 or 8\.5 runtime compatibility/i', $content);
-        $this->assertMatchesPattern('/must not be used for production installation or compatibility claims/i', $content);
-        $this->assertMatchesPattern('/workspace\/composer\.lock.*intended to be committed/is', $content);
-        $this->assertMatchesPattern('/intentionally absent in Phase 2\.2/i', $content);
-        $this->assertMatchesPattern('/generated under real PHP 8\.4 execution/i', $content);
+        $this->assertMatchesPattern('/composer --working-dir=workspace test/i', $content);
+        $this->assertMatchesPattern('/workspace\/phpunit\.xml\.dist/i', $content);
+        $this->assertMatchesPattern('/workspace\/vendor\/autoload\.php/i', $content);
+        $this->assertMatchesPattern('/workspace\/composer\.lock.*committed/is', $content);
+        $this->assertMatchesPattern('/Phase 2\.3.*first workspace lockfile.*real PHP 8\.4/is', $content);
+        $this->assertMatchesPattern('/Platform emulation must not be used/i', $content);
         $this->assertMatchesPattern('/through Composer, never manually/i', $content);
     }
 
@@ -148,7 +169,9 @@ final class EvolvePhp2WorkspaceComposerTest extends TestCase
         $this->assertMatchesPattern('/Phase 2\.2 now provides the dedicated Composer workspace/i', $content);
         $this->assertMatchesPattern('/workspace\/README\.md/i', $content);
         $this->assertMatchesPattern('/skeletons? only|no runtime implementation/i', $content);
-        $this->assertMatchesPattern('/not been installed or runtime-tested/i', $content);
+        $this->assertMatchesPattern('/tests\/Unit\//i', $content);
+        $this->assertMatchesPattern('/workspace\/phpunit\.xml\.dist/i', $content);
+        $this->assertMatchesPattern('/Before Phase 2\.3.*not been installed or runtime-tested/is', $content);
         $this->assertMatchesPattern('/Real PHP 8\.4 and PHP 8\.5 CI evidence is required before compatibility is claimed/i', $content);
     }
 
