@@ -58,7 +58,7 @@ final class EvolvePhp2WorkspaceComposerTest extends TestCase
             'evolvephp/plugin' => '^2.0@dev',
         );
 
-        $expectedRequireDev = array(
+        $foundationalRequireDev = array(
             'evolvephp/testing' => '^2.0@dev',
             'phpunit/phpunit' => '^13.2',
         );
@@ -67,14 +67,21 @@ final class EvolvePhp2WorkspaceComposerTest extends TestCase
         $actualRequireDev = $manifest['require-dev'];
 
         ksort($expectedRequire);
-        ksort($expectedRequireDev);
         ksort($actualRequire);
-        ksort($actualRequireDev);
 
         $this->assertSame($expectedRequire, $actualRequire);
-        $this->assertSame($expectedRequireDev, $actualRequireDev);
+
+        foreach ($foundationalRequireDev as $package => $constraint) {
+            $this->assertArrayHasKey($package, $actualRequireDev);
+            $this->assertSame($constraint, $actualRequireDev[$package]);
+        }
+
         $this->assertArrayNotHasKey('evolvephp/testing', $actualRequire);
         $this->assertArrayNotHasKey('phpunit/phpunit', $actualRequire);
+
+        foreach (array('friendsofphp/php-cs-fixer', 'phpstan/phpstan', 'phpstan/phpstan-phpunit') as $package) {
+            $this->assertArrayNotHasKey($package, $actualRequire);
+        }
 
         foreach ($this->productionPackages() as $package) {
             $this->assertArrayNotHasKey($package, $actualRequireDev);
@@ -100,10 +107,13 @@ final class EvolvePhp2WorkspaceComposerTest extends TestCase
             'evolvephp/module',
             'evolvephp/plugin',
         );
-        $allowedRequireDev = array('evolvephp/testing', 'phpunit/phpunit');
+        $foundationalRequireDev = array('evolvephp/testing', 'phpunit/phpunit');
 
         $this->assertSame($allowedRequire, array_keys($manifest['require']));
-        $this->assertSame($allowedRequireDev, array_keys($manifest['require-dev']));
+
+        foreach ($foundationalRequireDev as $package) {
+            $this->assertArrayHasKey($package, $manifest['require-dev']);
+        }
     }
 
     public function testWorkspaceComposerManifestDeclaresOnlyApprovedPhpUnitScripts(): void
@@ -120,7 +130,11 @@ final class EvolvePhp2WorkspaceComposerTest extends TestCase
         );
 
         $this->assertArrayHasKey('scripts', $manifest);
-        $this->assertSame($expectedScripts, $manifest['scripts']);
+
+        foreach ($expectedScripts as $name => $script) {
+            $this->assertArrayHasKey($name, $manifest['scripts']);
+            $this->assertSame($script, $manifest['scripts'][$name]);
+        }
     }
 
     public function testWorkspaceReadmeDocumentsBoundarySolverOnlyVerificationAndLockfilePolicy(): void

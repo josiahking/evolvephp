@@ -31,9 +31,17 @@ Testing support is listed in `require-dev`:
 - `evolvephp/testing`
 - `phpunit/phpunit`
 
+Quality tooling is also listed in `require-dev` and is owned only by this workspace:
+
+- `phpstan/phpstan`
+- `phpstan/phpstan-phpunit`
+- `friendsofphp/php-cs-fixer`
+
 Production packages remain independent of `evolvephp/testing`.
 
 PHPUnit 13 is owned by the EvolvePHP 2 workspace. It must not be added to the legacy root Composer manifest, any package manifest or production requirements.
+
+PHPStan and PHP-CS-Fixer are also workspace-only development tools. They must not be added to the legacy root Composer manifest, any package manifest or production requirements.
 
 ## Local Commands
 
@@ -69,6 +77,36 @@ composer --working-dir=workspace test:plugin
 composer --working-dir=workspace test:testing
 ```
 
+Run static analysis:
+
+```bash
+composer --working-dir=workspace analyse
+```
+
+Run coding-standard checks:
+
+```bash
+composer --working-dir=workspace style:check
+```
+
+Apply coding-standard fixes:
+
+```bash
+composer --working-dir=workspace style:fix
+```
+
+`style:fix` is mutating and is intentionally separate from validation commands.
+
+Run non-mutating workspace quality validation:
+
+```bash
+composer --working-dir=workspace quality
+```
+
+`quality` calls `analyse`, `style:check` and `test`. It does not call `style:fix`.
+
+Workspace Composer scripts use Composer's `@php` so vendor tools run under the PHP binary selected by the Composer execution environment. On the PHP 8.4 workspace, Composer84 uses `D:\php-84\php.exe`.
+
 The workspace PHPUnit configuration lives at:
 
 ```text
@@ -88,6 +126,49 @@ It bootstraps through `workspace/vendor/autoload.php` and defines one named suit
 
 The legacy root suite and the EvolvePHP 2 workspace suite are separate harnesses. The legacy root suite continues to preserve and validate repository policy while the workspace suite runs package tests under the EvolvePHP 2 PHP baseline.
 
+## Static Analysis
+
+PHPStan is the primary static analyzer for the EvolvePHP 2 workspace. The distributable configuration lives at:
+
+```text
+workspace/phpstan.neon.dist
+```
+
+The initial PHPStan level is `6`. PHPStan analyzes all six package `src` and `tests` directories:
+
+```text
+../packages/contracts/src
+../packages/contracts/tests
+../packages/core/src
+../packages/core/tests
+../packages/http/src
+../packages/http/tests
+../packages/module/src
+../packages/module/tests
+../packages/plugin/src
+../packages/plugin/tests
+../packages/testing/src
+../packages/testing/tests
+```
+
+The workspace manually includes `phpstan/phpstan-phpunit` type-inference integration through `vendor/phpstan/phpstan-phpunit/extension.neon`. The optional strict PHPUnit rules are not enabled in Phase 2.4.
+
+No PHPStan baseline is allowed initially, and the configuration must not use `ignoreErrors`. Local PHPStan cache belongs in `workspace/.phpstan-cache/` and is ignored.
+
+## Coding Standards
+
+PHP-CS-Fixer is the workspace coding-standard engine. The distributable configuration lives at:
+
+```text
+workspace/.php-cs-fixer.dist.php
+```
+
+The project style is based on PHP-FIG PER Coding Style 3.0 through PHP-CS-Fixer's `@PER-CS3x0` rule set. The floating `@PER-CS` alias is not used. The project explicitly enables alphabetical `ordered_imports` and `no_unused_imports`.
+
+PHP-CS-Fixer checks only the six package `src` and `tests` directories. The preserved EvolvePHP 1 root files, root architecture tests, root documentation tests, RFCs, `workspace/vendor/` and generated caches are excluded.
+
+Risky rules are disabled. The `declare_strict_types` fixer is not enabled; strict-types policy for EvolvePHP 2 package PHP files is enforced by architecture tests.
+
 Platform emulation must not be used for runtime compatibility claims. Do not use `config.platform.php`, `--ignore-platform-req=php` or `--ignore-platform-reqs` to generate the workspace lockfile or claim PHP compatibility.
 
 ## Lockfile
@@ -102,8 +183,6 @@ Future changes to workspace dependencies must update the lockfile through Compos
 
 The following remain deferred:
 
-- Static analysis to Phase 2.4
-- Coding standards to Phase 2.4
 - Dependency-boundary tooling
 - GitHub Actions
 - PHP 8.5 CI verification to Phase 2.6

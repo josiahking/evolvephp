@@ -3,5 +3,9 @@
 composer.lock
 !workspace/composer.lock
 /workspace/vendor/
+/workspace/.phpstan-cache/
+/workspace/.php-cs-fixer.cache
+/workspace/phpstan.neon
+/workspace/.php-cs-fixer.php
 /logs/*
 *.log
