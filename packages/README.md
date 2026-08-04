@@ -50,4 +50,12 @@ The current root Composer manifest remains the legacy EvolvePHP 1 harness tempor
 
 Phase 2.2 now provides the dedicated Composer workspace; this is the EvolvePHP 2 workspace Composer configuration for development. See `workspace/README.md` for package-resolution, lockfile and local solver-verification policy.
 
+Phase 2.3 adds `tests/Unit/` to each initial package. Package tests are orchestrated from `workspace/phpunit.xml.dist`, not from package-level PHPUnit installations.
+
+The initial package smoke tests verify package identity and source namespace declarations only. Runtime behaviour tests will be added alongside actual implementation.
+
+Package Composer manifests remain free from workspace PHPUnit dependencies. PHPUnit belongs to `workspace/composer.json` as a development dependency.
+
+Before Phase 2.3, the packages had not been installed or runtime-tested. Phase 2.3 verifies the package test skeletons through the dedicated workspace suite without adding runtime framework behaviour.
+
 Real PHP 8.4 and PHP 8.5 CI evidence is required before compatibility is claimed. Composer manifest validation under another local PHP version does not establish EvolvePHP 2 runtime compatibility.
