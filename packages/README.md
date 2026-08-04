@@ -62,4 +62,32 @@ Phase 2.4 adds workspace-owned static analysis and coding-standard tooling witho
 
 PHP-CS-Fixer checks package `src` and `tests` files using PER Coding Style 3.0 through `@PER-CS3x0`, with alphabetical import ordering and unused-import removal. The mutating `style:fix` command remains separate from the non-mutating `quality` command. Preserved EvolvePHP 1 root files are excluded from Phase 2.4 style checks.
 
+Phase 2.5 adds workspace-owned dependency-boundary enforcement through the maintained `deptrac/deptrac` package. The abandoned `qossmic/deptrac` package identity is prohibited.
+
+Deptrac analyzes production source directories only during Phase 2.5. Package tests are excluded from Phase 2.5 boundary analysis so test dependencies cannot weaken production rules. Physical package paths define the six layers, and package namespaces must match those paths:
+
+```text
+Contracts -> ../packages/contracts/src/.* -> Evolve\Contracts\
+Core      -> ../packages/core/src/.*      -> Evolve\Core\
+Http      -> ../packages/http/src/.*      -> Evolve\Http\
+Module    -> ../packages/module/src/.*    -> Evolve\Module\
+Plugin    -> ../packages/plugin/src/.*    -> Evolve\Plugin\
+Testing   -> ../packages/testing/src/.*   -> Evolve\Testing\
+```
+
+The enforced matrix is:
+
+```text
+Contracts -> none
+Core      -> Contracts
+Http      -> Contracts, Core
+Module    -> Contracts
+Plugin    -> Contracts
+Testing   -> Contracts, Core, Http, Module, Plugin
+```
+
+There is no production dependency on Testing. The `architecture` command is non-mutating, reports uncovered dependencies, and uncovered dependencies fail. It uses no baseline or skipped violations, and generates no graph. The temporary forbidden-edge probe used during Phase 2.5 validation is evidence only and is not committed. New external dependencies require explicit architecture review.
+
 Real PHP 8.4 and PHP 8.5 CI evidence is required before compatibility is claimed. Composer manifest validation under another local PHP version does not establish EvolvePHP 2 runtime compatibility.
+
+PHP 8.5 execution remains deferred to Phase 2.6.
