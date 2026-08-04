@@ -44,7 +44,7 @@ No optional package families are created here. Insight, Observe, Bridge, Runtime
 
 The packages have not been published.
 
-The packages have not been installed or runtime-tested in this task.
+Before Phase 2.3, the packages had not been installed or runtime-tested.
 
 The current root Composer manifest remains the legacy EvolvePHP 1 harness temporarily. It still exists so current repository documentation and policy tests can run while EvolvePHP 2 repository structure is introduced separately.
 
@@ -56,6 +56,10 @@ The initial package smoke tests verify package identity and source namespace dec
 
 Package Composer manifests remain free from workspace PHPUnit dependencies. PHPUnit belongs to `workspace/composer.json` as a development dependency.
 
-Before Phase 2.3, the packages had not been installed or runtime-tested. Phase 2.3 verifies the package test skeletons through the dedicated workspace suite without adding runtime framework behaviour.
+Phase 2.3 verifies the package test skeletons through the dedicated workspace suite without adding runtime framework behaviour.
+
+Phase 2.4 adds workspace-owned static analysis and coding-standard tooling without adding package-level development dependencies. PHPStan analyzes all six package `src` and `tests` directories at level 6 and includes the PHPUnit type-inference extension only. No PHPStan baseline or `ignoreErrors` policy is used.
+
+PHP-CS-Fixer checks package `src` and `tests` files using PER Coding Style 3.0 through `@PER-CS3x0`, with alphabetical import ordering and unused-import removal. The mutating `style:fix` command remains separate from the non-mutating `quality` command. Preserved EvolvePHP 1 root files are excluded from Phase 2.4 style checks.
 
 Real PHP 8.4 and PHP 8.5 CI evidence is required before compatibility is claimed. Composer manifest validation under another local PHP version does not establish EvolvePHP 2 runtime compatibility.

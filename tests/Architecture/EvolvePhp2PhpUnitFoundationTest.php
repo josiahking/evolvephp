@@ -31,13 +31,11 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertArrayHasKey('scripts', $manifest);
 
         $actualScripts = $manifest['scripts'];
-        ksort($expectedScripts);
-        ksort($actualScripts);
 
-        $this->assertSame($expectedScripts, $actualScripts);
-
-        foreach ($actualScripts as $script) {
-            $this->assertStringContainsString('--configuration phpunit.xml.dist', $script);
+        foreach ($expectedScripts as $name => $script) {
+            $this->assertArrayHasKey($name, $actualScripts);
+            $this->assertSame($script, $actualScripts[$name]);
+            $this->assertStringContainsString('--configuration phpunit.xml.dist', $actualScripts[$name]);
         }
     }
 
@@ -119,7 +117,6 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/workspace\/composer\.lock/i', $content);
         $this->assertMatchesPattern('/platform emulation/i', $content);
         $this->assertMatchesPattern('/PHP 8\.5 CI.*Phase 2\.6/i', $content);
-        $this->assertMatchesPattern('/Static analysis.*Phase 2\.4/i', $content);
         $this->assertMatchesPattern('/legacy root suite/i', $content);
         $this->assertMatchesPattern('/EvolvePHP 2 workspace suite/i', $content);
     }
