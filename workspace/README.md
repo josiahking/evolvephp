@@ -12,7 +12,7 @@ The preserved EvolvePHP 1 root Composer harness remains separate so legacy docum
 - Composer
 - Git
 
-EvolvePHP 2 requires PHP 8.4. Workspace tooling and tests have been executed locally under PHP 8.4. PHP 8.5 compatibility remains pending the Phase 2.6 CI matrix.
+EvolvePHP 2 requires PHP 8.4 as its baseline. GitHub Actions exercises the current workspace quality pipeline on PHP 8.4 and PHP 8.5 for the current tooling and package foundation.
 
 Platform emulation must not be used for runtime compatibility claims. Do not use `config.platform.php`, `--ignore-platform-req=php` or `--ignore-platform-reqs` to generate the workspace lockfile or claim PHP compatibility.
 
@@ -239,18 +239,54 @@ Risky rules are disabled. The `declare_strict_types` fixer is not enabled; stric
 
 The lockfile must be generated and updated through Composer under real PHP 8.4 execution. It must never be handwritten or generated with platform emulation.
 
+## Continuous Integration
+
+The canonical GitHub Actions workflow lives at:
+
+```text
+.github/workflows/quality.yml
+```
+
+The workflow name is `EvolvePHP 2 Quality`.
+
+It runs for pull requests targeting `2.x`, pushes to `2.x` and manual dispatch. It uses least-privilege `contents: read` permissions and cancels superseded executions through workflow concurrency.
+
+All jobs run on the explicit Ubuntu 24.04 runner, using the `ubuntu-24.04` label. The workflow has no initial dependency cache.
+
+The policy job runs on PHP 8.4. The `Policy (PHP 8.4)` job validates the workspace Composer manifest and lockfile before installation, installs workspace dependencies from the committed lockfile with `composer install`, and runs the root Architecture and Documentation policy tests through workspace PHPUnit 13:
+
+```bash
+php workspace/vendor/bin/phpunit --configuration phpunit.xml.dist tests/Architecture tests/Documentation
+```
+
+Those root policy tests validate EvolvePHP 2 repository governance and documentation. The preserved EvolvePHP 1 runtime is not part of the EvolvePHP 2 compatibility claim.
+
+The workspace quality matrix runs PHP 8.4 and PHP 8.5. Each matrix entry validates Composer metadata before installation, installs from `workspace/composer.lock`, and runs:
+
+```bash
+composer --working-dir=workspace quality
+```
+
+The initial Phase 2.6 CI matrix has successfully executed. Workspace quality passes on PHP 8.4 and PHP 8.5, and the root policy job passes on PHP 8.4. This evidence applies to the current workspace, quality tooling and package foundation only.
+
+PHP 8.5 evidence for the current workspace quality pipeline is recorded by the Phase 2.6 CI matrix.
+
+The EvolvePHP 2 runtime implementation is incomplete, so this is not a broader runtime-production compatibility claim.
+
+The workflow must not run `composer update`, use a platform-requirement bypass, install root Composer dependencies or replace the approved aggregate quality command with duplicated individual quality commands. There is no platform-requirement bypass in CI.
+
+Action dependencies are pinned by immutable full-SHA references. The reviewed release comments must remain beside those SHAs so future audits can connect each commit pin to its intended release tag.
+
 ## Compatibility Evidence
 
-EvolvePHP 2 requires PHP 8.4. Local workspace validation has been performed under PHP 8.4.
+EvolvePHP 2 requires PHP 8.4 as the baseline. The Phase 2.6 CI matrix has successfully executed in GitHub Actions: the current workspace quality pipeline passes on PHP 8.4 and PHP 8.5, and the root policy job passes on PHP 8.4.
 
-PHP 8.5 compatibility remains pending the Phase 2.6 CI matrix. Do not claim PHP 8.5 support until that evidence exists.
+This verifies the current workspace, quality tooling and package foundation only. The preserved EvolvePHP 1 runtime is excluded, and the EvolvePHP 2 runtime implementation remains incomplete.
 
 ## Deferred Work
 
 The following work remains deferred:
 
-- GitHub Actions
-- PHP 8.5 CI verification
 - Security and license scanning
 - Release automation
 - Runtime framework implementation

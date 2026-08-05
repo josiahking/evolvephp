@@ -36,14 +36,18 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/is', $content);
     }
 
-    public function testRootReadmeDocumentsPhp84WithoutClaimingPhp85Compatibility(): void
+    public function testRootReadmeDocumentsPhp84BaselineAndPhp85CiEvidence(): void
     {
         $content = $this->readProjectFile('README.md');
 
         $this->assertMatchesPattern('/requires PHP 8\.4|PHP 8\.4.*required/i', $content);
-        $this->assertMatchesPattern('/PHP 8\.4.*validation|validation.*PHP 8\.4/is', $content);
-        $this->assertMatchesPattern('/PHP 8\.5.*Phase 2\.6|Phase 2\.6.*PHP 8\.5/i', $content);
-        $this->assertDoesNotMatchPattern('/PHP 8\.5[^.\n]*(?:compatible|compatibility is claimed|passes|supported)/i', $content);
+        $this->assertMatchesPattern('/PHP baseline:\s*PHP 8\.4|PHP 8\.4.*baseline/i', $content);
+        $this->assertMatchesPattern('/GitHub Actions.*(?:PHP 8\.4.*PHP 8\.5|PHP 8\.5.*PHP 8\.4)|(?:PHP 8\.4.*PHP 8\.5|PHP 8\.5.*PHP 8\.4).*GitHub Actions/i', $content);
+        $this->assertMatchesPattern('/workspace quality pipeline|quality pipeline.*workspace/i', $content);
+        $this->assertMatchesPattern('/current.*(?:workspace|tooling|package foundation)|(?:workspace|tooling|package foundation).*current/i', $content);
+        $this->assertMatchesPattern('/runtime framework implementation.*not yet complete|not yet complete.*runtime framework implementation/i', $content);
+        $this->assertDoesNotMatchPattern('/PHP 8\.5.*pending|pending.*PHP 8\.5|Do not claim PHP 8\.5/i', $content);
+        $this->assertDoesNotMatchPattern('/production[- ]ready|runtime framework supports PHP 8\.5|all runtime.*PHP 8\.5/i', $content);
     }
 
     public function testRootReadmeUsesWorkspaceSetupAndAvoidsLegacySetupAsEvolvePhp2Setup(): void

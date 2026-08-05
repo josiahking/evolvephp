@@ -116,8 +116,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/test:testing/i', $content);
         $this->assertMatchesPattern('/workspace\/composer\.lock/i', $content);
         $this->assertMatchesPattern('/platform emulation/i', $content);
-        $this->assertMatchesPattern('/PHP 8\.5 compatibility.*pending.*Phase 2\.6 CI matrix|Phase 2\.6 CI matrix.*pending.*PHP 8\.5 compatibility/i', $content);
-        $this->assertDoesNotMatchPattern('/PHP 8\.5[^.\n]*(?:passes|supported|compatible)/i', $content);
+        $this->assertMatchesPattern('/PHP 8\.4.*baseline|baseline.*PHP 8\.4/i', $content);
+        $this->assertMatchesPattern('/GitHub Actions.*workspace quality.*PHP 8\.4.*PHP 8\.5|workspace quality.*GitHub Actions.*PHP 8\.4.*PHP 8\.5|PHP 8\.4.*PHP 8\.5.*workspace quality.*GitHub Actions/i', $content);
+        $this->assertMatchesPattern('/current.*(?:workspace quality|package foundation|tooling)|(?:workspace quality|package foundation|tooling).*current/i', $content);
+        $this->assertDoesNotMatchPattern('/PHP 8\.5.*pending|pending.*PHP 8\.5|Phase 2\.6.*pending|pending.*Phase 2\.6/i', $content);
         $this->assertMatchesPattern('/legacy root suite/i', $content);
         $this->assertMatchesPattern('/EvolvePHP 2 workspace suite/i', $content);
     }
