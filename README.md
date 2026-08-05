@@ -1,8 +1,12 @@
 # EvolvePHP 2
 
-This branch contains the EvolvePHP 2 redesign on `2.x`.
+`2.x` is the designated EvolvePHP 2 development branch.
 
-EvolvePHP 1 remains preserved on `master` for historical reference and legacy maintenance. EvolvePHP 2 is not an in-place refactor of the EvolvePHP 1 runtime.
+`master` remains the preserved EvolvePHP 1 legacy branch for historical reference and explicitly approved legacy maintenance. EvolvePHP 2 development and proposed changes must not target `master`.
+
+During Phase 2.7A, the current GitHub default branch remains `master` until the Phase 2.7 external transition. The live default-branch and ruleset transition is still pending external GitHub evidence.
+
+EvolvePHP 2 is not an in-place refactor, replacement or rewrite of the EvolvePHP 1 runtime history.
 
 The current EvolvePHP 2 repository contains package boundaries, Composer workspace setup and quality-tooling foundations. Runtime framework implementation is not yet complete, and the packages are not yet published.
 
@@ -16,8 +20,10 @@ The EvolvePHP 2 line redesigns the framework as a modular package architecture w
 
 ## Current Status
 
-- Branch: `2.x`
+- EvolvePHP 2 development branch: `2.x`
+- Current GitHub default during Phase 2.7A: `master`
 - Legacy line: EvolvePHP 1 on `master`
+- Governance transition: live default-branch and ruleset changes pending external verification
 - Runtime implementation: not yet complete
 - Package publication: packages are not yet published
 - PHP baseline: PHP 8.4
@@ -77,7 +83,9 @@ The package architecture uses explicit namespace ownership and inward dependency
 
 EvolvePHP 1 has been used as the foundation of Africa Global Export Market, a live business-to-business export platform serving more than 5,000 users.
 
-That production-use background belongs to the preserved EvolvePHP 1 history. New EvolvePHP 2 work happens separately on `2.x`, and new production applications should not start from EvolvePHP 1 without a detailed security and compatibility review.
+That production-use background belongs to the preserved EvolvePHP 1 history. New EvolvePHP 2 work happens separately on `2.x`, and EvolvePHP 2 changes must not target `master`. New production applications should not start from EvolvePHP 1 without a detailed security and compatibility review.
+
+Phase 2.7A establishes repository-owned branch-governance policy only. `master` has not been renamed or deleted, no `main` branch has been created, and no `1.x` branch has been created. Any stable-release branch rename or promotion is deferred, and Phase 2.7 does not replace the legacy history.
 
 See the [legacy overview](docs/history/evolvephp-1-overview.md), [known risks and limitations](docs/history/known-risks-and-limitations.md), [support policy](SUPPORT.md) and [security policy](SECURITY.md).
 
