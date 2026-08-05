@@ -137,30 +137,32 @@ final class EvolvePhp2WorkspaceComposerTest extends TestCase
         }
     }
 
-    public function testWorkspaceReadmeDocumentsBoundarySolverOnlyVerificationAndLockfilePolicy(): void
+    public function testWorkspaceReadmeDocumentsComposerWorkflowAndLockfilePolicy(): void
     {
         $content = $this->readProjectFile('workspace/README.md');
 
-        $this->assertMatchesPattern('/dedicated EvolvePHP 2 Composer development root/i', $content);
-        $this->assertMatchesPattern('/legacy root Composer harness remains separate/i', $content);
+        $this->assertMatchesPattern('/dedicated (?:EvolvePHP 2 Composer|Composer).*development root.*EvolvePHP 2|dedicated EvolvePHP 2 Composer development root/i', $content);
+        $this->assertMatchesPattern('/(?:legacy|preserved EvolvePHP 1) root Composer harness remains separate/i', $content);
         $this->assertMatchesPattern('/not a publishable framework package/i', $content);
         $this->assertMatchesPattern('/\.\.\/packages\/\*/i', $content);
         $this->assertMatchesPattern('/2\.0\.x-dev/i', $content);
         $this->assertMatchesPattern('/\^2\.0@dev/i', $content);
-        $this->assertMatchesPattern('/task-branch version ambiguity/i', $content);
         $this->assertMatchesPattern('/minimum-stability/i', $content);
-        $this->assertMatchesPattern('/resolve all six packages as `?2\.0\.x-dev`?/i', $content);
         $this->assertMatchesPattern('/production packages.*`require`/is', $content);
-        $this->assertMatchesPattern('/Testing.*`require-dev`/is', $content);
+        $this->assertMatchesPattern('/Testing.*quality tooling.*`require-dev`|quality tooling.*Testing.*`require-dev`/is', $content);
         $this->assertMatchesPattern('/PHPUnit 13.*workspace/is', $content);
         $this->assertMatchesPattern('/composer --working-dir=workspace validate --strict/i', $content);
         $this->assertMatchesPattern('/composer --working-dir=workspace test/i', $content);
         $this->assertMatchesPattern('/workspace\/phpunit\.xml\.dist/i', $content);
         $this->assertMatchesPattern('/workspace\/vendor\/autoload\.php/i', $content);
         $this->assertMatchesPattern('/workspace\/composer\.lock.*committed/is', $content);
-        $this->assertMatchesPattern('/Phase 2\.3.*first workspace lockfile.*real PHP 8\.4/is', $content);
+        $this->assertMatchesPattern('/normal checkout setup.*composer --working-dir=workspace install/is', $content);
+        $this->assertMatchesPattern('/composer --working-dir=workspace update/i', $content);
+        $this->assertMatchesPattern('/update.*(?:intentional|deliberate) dependency changes/i', $content);
+        $this->assertMatchesPattern('/update.*changes dependency resolution.*committed lockfile/is', $content);
+        $this->assertMatchesPattern('/not the normal setup command/i', $content);
         $this->assertMatchesPattern('/Platform emulation must not be used/i', $content);
-        $this->assertMatchesPattern('/through Composer, never manually/i', $content);
+        $this->assertMatchesPattern('/through Composer.*never be handwritten|through Composer.*never manually/is', $content);
     }
 
     public function testGitignoreKeepsWorkspaceLockfileTrackableAndIgnoresWorkspaceVendor(): void
@@ -180,13 +182,16 @@ final class EvolvePhp2WorkspaceComposerTest extends TestCase
     {
         $content = $this->readProjectFile('packages/README.md');
 
-        $this->assertMatchesPattern('/Phase 2\.2 now provides the dedicated Composer workspace/i', $content);
         $this->assertMatchesPattern('/workspace\/README\.md/i', $content);
-        $this->assertMatchesPattern('/skeletons? only|no runtime implementation/i', $content);
-        $this->assertMatchesPattern('/tests\/Unit\//i', $content);
-        $this->assertMatchesPattern('/workspace\/phpunit\.xml\.dist/i', $content);
-        $this->assertMatchesPattern('/Before Phase 2\.3.*not been installed or runtime-tested/is', $content);
-        $this->assertMatchesPattern('/Real PHP 8\.4 and PHP 8\.5 CI evidence is required before compatibility is claimed/i', $content);
+        $this->assertMatchesPattern('/runtime (?:framework )?implementation is not yet present/i', $content);
+        $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/i', $content);
+        $this->assertMatchesPattern('/PHP `?\^8\.4`?/i', $content);
+        $this->assertMatchesPattern('/dependency direction|inward dependency/i', $content);
+        $this->assertDoesNotMatchPattern('/Phase 2\.2 now provides/i', $content);
+        $this->assertDoesNotMatchPattern('/Before Phase 2\.3/i', $content);
+        $this->assertDoesNotMatchPattern('/tests\/Unit\//i', $content);
+        $this->assertDoesNotMatchPattern('/workspace\/phpunit\.xml\.dist/i', $content);
+        $this->assertDoesNotMatchPattern('/Real PHP 8\.4 and PHP 8\.5 CI evidence is required before compatibility is claimed/i', $content);
     }
 
     public function testChangelogRecordsPhase22WorkspaceComposerConfiguration(): void
@@ -250,5 +255,10 @@ final class EvolvePhp2WorkspaceComposerTest extends TestCase
     private function assertMatchesPattern($pattern, $content)
     {
         $this->assertSame(1, preg_match($pattern, $content), 'Failed asserting that content matches ' . $pattern);
+    }
+
+    private function assertDoesNotMatchPattern($pattern, $content)
+    {
+        $this->assertSame(0, preg_match($pattern, $content), 'Failed asserting that content does not match ' . $pattern);
     }
 }

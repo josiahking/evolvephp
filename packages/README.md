@@ -1,93 +1,39 @@
-# EvolvePHP 2 Package Skeletons
+# EvolvePHP 2 Packages
 
-This directory is the initial EvolvePHP 2 modular-monorepo package boundary accepted for Phase 2.1.
+`packages/` contains the initial EvolvePHP 2 modular-monorepo package set.
 
-These packages are skeletons only. They contain package-level Composer manifests and empty `src/` directories, but no runtime implementation, public contracts, interfaces, classes, utilities, lifecycle code or framework behaviour.
+The packages define Composer package identities, namespace ownership and dependency direction for EvolvePHP 2. Runtime implementation is not yet present, and the packages are not yet published.
 
-## Initial Packages
+All package manifests require PHP `^8.4`.
 
-| Package | Namespace | Status |
+## Package Map
+
+| Package | Namespace | Responsibility |
 | --- | --- | --- |
-| `evolvephp/contracts` | `Evolve\Contracts\` | Foundational public-contract boundary, no contracts implemented yet. |
-| `evolvephp/core` | `Evolve\Core\` | Core orchestration boundary, no kernel or container implemented yet. |
-| `evolvephp/http` | `Evolve\Http\` | HTTP boundary, no request, response, routing or middleware code implemented yet. |
-| `evolvephp/module` | `Evolve\Module\` | Module SDK boundary, no descriptors or lifecycle contracts implemented yet. |
-| `evolvephp/plugin` | `Evolve\Plugin\` | Plugin SDK boundary, no descriptors or lifecycle contracts implemented yet. |
-| `evolvephp/testing` | `Evolve\Testing\` | Testing package boundary, no testing utilities implemented yet. |
-
-All package manifests use PHP `^8.4`.
+| `evolvephp/contracts` | `Evolve\Contracts\` | Foundational public-contract boundary. |
+| `evolvephp/core` | `Evolve\Core\` | Core orchestration boundary for later kernel and container work. |
+| `evolvephp/http` | `Evolve\Http\` | HTTP boundary for later request, response, routing and middleware work. |
+| `evolvephp/module` | `Evolve\Module\` | Module SDK boundary for later descriptors and lifecycle contracts. |
+| `evolvephp/plugin` | `Evolve\Plugin\` | Plugin SDK boundary for later descriptors and lifecycle contracts. |
+| `evolvephp/testing` | `Evolve\Testing\` | Testing-support boundary for later developer testing utilities. |
 
 ## Dependency Direction
 
-The arrows represent dependency direction and not lifecycle invocation.
+The arrows in dependency diagrams represent dependency direction, not lifecycle invocation.
 
-```text
-contracts
-    ^
-    |
-core
-    ^
-    |
-http
+The package graph follows an inward dependency principle:
 
-contracts <- module
-contracts <- plugin
+- `contracts` is the innermost package.
+- `core`, `module` and `plugin` depend inward on `contracts`.
+- `http` depends inward on `contracts` and `core`.
+- `testing` may depend on the five production packages for development support.
 
-testing -> contracts, core, http, module, plugin
-```
+There is no production dependency on Testing.
 
-`contracts` is the innermost package. `core`, `http`, `module` and `plugin` depend inward and must not depend on `testing`. The `testing` package may depend on the five initial production packages because application developers will eventually install it for development support.
+No optional package families are present here. Insight, Observe, Bridge, Runtime, Deploy and other optional packages require later approved work.
 
-No optional package families are created here. Insight, Observe, Bridge, Runtime, Deploy and other optional packages will be added only through later approved tasks.
+## Current Limitations
 
-## Current Limits
+These packages are structural foundations only. They do not yet contain public contracts, interfaces, classes, utilities, lifecycle code or framework behavior.
 
-The packages have not been published.
-
-Before Phase 2.3, the packages had not been installed or runtime-tested.
-
-The current root Composer manifest remains the legacy EvolvePHP 1 harness temporarily. It still exists so current repository documentation and policy tests can run while EvolvePHP 2 repository structure is introduced separately.
-
-Phase 2.2 now provides the dedicated Composer workspace; this is the EvolvePHP 2 workspace Composer configuration for development. See `workspace/README.md` for package-resolution, lockfile and local solver-verification policy.
-
-Phase 2.3 adds `tests/Unit/` to each initial package. Package tests are orchestrated from `workspace/phpunit.xml.dist`, not from package-level PHPUnit installations.
-
-The initial package smoke tests verify package identity and source namespace declarations only. Runtime behaviour tests will be added alongside actual implementation.
-
-Package Composer manifests remain free from workspace PHPUnit dependencies. PHPUnit belongs to `workspace/composer.json` as a development dependency.
-
-Phase 2.3 verifies the package test skeletons through the dedicated workspace suite without adding runtime framework behaviour.
-
-Phase 2.4 adds workspace-owned static analysis and coding-standard tooling without adding package-level development dependencies. PHPStan analyzes all six package `src` and `tests` directories at level 6 and includes the PHPUnit type-inference extension only. No PHPStan baseline or `ignoreErrors` policy is used.
-
-PHP-CS-Fixer checks package `src` and `tests` files using PER Coding Style 3.0 through `@PER-CS3x0`, with alphabetical import ordering and unused-import removal. The mutating `style:fix` command remains separate from the non-mutating `quality` command. Preserved EvolvePHP 1 root files are excluded from Phase 2.4 style checks.
-
-Phase 2.5 adds workspace-owned dependency-boundary enforcement through the maintained `deptrac/deptrac` package. The abandoned `qossmic/deptrac` package identity is prohibited.
-
-Deptrac analyzes production source directories only during Phase 2.5. Package tests are excluded from Phase 2.5 boundary analysis so test dependencies cannot weaken production rules. Physical package paths define the six layers, and package namespaces must match those paths:
-
-```text
-Contracts -> ../packages/contracts/src/.* -> Evolve\Contracts\
-Core      -> ../packages/core/src/.*      -> Evolve\Core\
-Http      -> ../packages/http/src/.*      -> Evolve\Http\
-Module    -> ../packages/module/src/.*    -> Evolve\Module\
-Plugin    -> ../packages/plugin/src/.*    -> Evolve\Plugin\
-Testing   -> ../packages/testing/src/.*   -> Evolve\Testing\
-```
-
-The enforced matrix is:
-
-```text
-Contracts -> none
-Core      -> Contracts
-Http      -> Contracts, Core
-Module    -> Contracts
-Plugin    -> Contracts
-Testing   -> Contracts, Core, Http, Module, Plugin
-```
-
-There is no production dependency on Testing. The `architecture` command is non-mutating, reports uncovered dependencies, and uncovered dependencies fail. It uses no baseline or skipped violations, and generates no graph. The temporary forbidden-edge probe used during Phase 2.5 validation is evidence only and is not committed. New external dependencies require explicit architecture review.
-
-Real PHP 8.4 and PHP 8.5 CI evidence is required before compatibility is claimed. Composer manifest validation under another local PHP version does not establish EvolvePHP 2 runtime compatibility.
-
-PHP 8.5 execution remains deferred to Phase 2.6.
+The EvolvePHP 2 Composer workspace resolves and validates these local packages. See [../workspace/README.md](../workspace/README.md) for setup, testing, quality commands, lockfile, static-analysis, coding-standard and architecture-boundary policy.

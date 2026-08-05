@@ -1,10 +1,20 @@
 # EvolvePHP 2 Composer Workspace
 
-`workspace/` is the dedicated EvolvePHP 2 Composer development root for the modular monorepo.
+`workspace/` is the dedicated Composer development root for the EvolvePHP 2 modular monorepo.
 
-The legacy root Composer harness remains separate temporarily so the preserved EvolvePHP 1 repository and current architecture and documentation tests can continue to run from the repository root.
+The workspace resolves local packages, owns development tooling and runs EvolvePHP 2 package quality checks. It is not a publishable framework package, an application skeleton, runtime framework code, a Composer plugin or a production deployment artifact.
 
-This workspace is not a publishable framework package, a replacement for `evolvephp/framework`, an application skeleton, runtime framework code, a Composer plugin or a production deployment artifact.
+The preserved EvolvePHP 1 root Composer harness remains separate so legacy documentation and repository policy tests can continue to run from the repository root.
+
+## Requirements
+
+- PHP 8.4
+- Composer
+- Git
+
+EvolvePHP 2 requires PHP 8.4. Workspace tooling and tests have been executed locally under PHP 8.4. PHP 8.5 compatibility remains pending the Phase 2.6 CI matrix.
+
+Platform emulation must not be used for runtime compatibility claims. Do not use `config.platform.php`, `--ignore-platform-req=php` or `--ignore-platform-reqs` to generate the workspace lockfile or claim PHP compatibility.
 
 ## Package Resolution
 
@@ -14,53 +24,49 @@ Packages are resolved from one Composer path repository:
 ../packages/*
 ```
 
-Every Phase 2.1 package is mapped explicitly to `2.0.x-dev` inside the workspace path repository. The path repository remains the authoritative local package source. This avoids task-branch version ambiguity and lets local package manifests retain their normal `^2.0` dependency constraints without temporary package-level `version` fields.
-
-The workspace consumes those local packages through bounded `^2.0@dev` dependency constraints. The `@dev` stability flag permits the mapped development packages without adding project-wide `minimum-stability` or `prefer-stable` settings. Composer's solver output should still resolve all six packages as `2.0.x-dev`.
-
-Production packages are listed in `require`:
+The workspace maps each initial package explicitly to `2.0.x-dev` inside the path repository:
 
 - `evolvephp/contracts`
 - `evolvephp/core`
 - `evolvephp/http`
 - `evolvephp/module`
 - `evolvephp/plugin`
-
-Testing support is listed in `require-dev`:
-
 - `evolvephp/testing`
-- `phpunit/phpunit`
 
-Quality tooling is also listed in `require-dev` and is owned only by this workspace:
+The path repository is the authoritative local package source. The workspace consumes those packages through bounded `^2.0@dev` constraints without adding project-wide `minimum-stability` or `prefer-stable` settings.
 
-- `phpstan/phpstan`
-- `phpstan/phpstan-phpunit`
-- `friendsofphp/php-cs-fixer`
-- `deptrac/deptrac`
+Production packages are listed in `require`. Testing support and quality tooling are listed in `require-dev`.
 
 Production packages remain independent of `evolvephp/testing`.
 
-PHPUnit 13 is owned by the EvolvePHP 2 workspace. It must not be added to the legacy root Composer manifest, any package manifest or production requirements.
+## First-Time Dependency Installation
 
-PHPStan and PHP-CS-Fixer are also workspace-only development tools. They must not be added to the legacy root Composer manifest, any package manifest or production requirements.
+Normal checkout setup uses the committed lockfile:
 
-Deptrac is also workspace-owned development tooling. The maintained package identity is `deptrac/deptrac`; the abandoned `qossmic/deptrac` package identity is prohibited.
+```bash
+composer --working-dir=workspace install
+```
+
+Use `install` for ordinary local setup and validation. It installs the dependency versions already resolved in `workspace/composer.lock`.
+
+## Intentional Dependency Updates
+
+Use `update` only for deliberate dependency changes:
+
+```bash
+composer --working-dir=workspace update
+```
+
+`update` changes dependency resolution and the committed lockfile. It is not the normal setup command.
+
+Do not run `update` for documentation-only work unless a task explicitly approves dependency changes.
 
 ## Local Commands
 
-Validate the workspace Composer schema:
+Validate the workspace Composer schema and lockfile:
 
 ```bash
-composer --working-dir=workspace validate --strict
-```
-
-Install or update workspace dependencies only through real Composer execution on PHP 8.4:
-
-```bash
-composer --working-dir=workspace update \
-  --no-interaction \
-  --no-progress \
-  --no-audit
+composer --working-dir=workspace validate --strict --check-lock
 ```
 
 Run the complete EvolvePHP 2 workspace PHPUnit suite:
@@ -92,8 +98,6 @@ Run architecture and dependency-boundary validation:
 composer --working-dir=workspace architecture
 ```
 
-`architecture` is non-mutating. It analyzes production source directories only, reports uncovered dependencies, and uncovered dependencies fail. It uses no baseline or skipped violations, and does not generate a graph.
-
 Run coding-standard checks:
 
 ```bash
@@ -106,17 +110,17 @@ Apply coding-standard fixes:
 composer --working-dir=workspace style:fix
 ```
 
-`style:fix` is mutating and is intentionally separate from validation commands.
-
 Run non-mutating workspace quality validation:
 
 ```bash
 composer --working-dir=workspace quality
 ```
 
-`quality` calls `architecture`, `analyse`, `style:check` and `test`, in that order. Architecture runs first so package-boundary violations stop the pipeline before later quality checks. It does not call `style:fix`.
+`quality` runs `architecture`, `analyse`, `style:check` and `test`, in that order. `style:fix` remains separate because it is mutating.
 
-Workspace Composer scripts use Composer's `@php` so vendor tools run under the PHP binary selected by the Composer execution environment. On the PHP 8.4 workspace, Composer84 uses `D:\php-84\php.exe`.
+## PHPUnit Suites
+
+PHPUnit 13 is owned by the EvolvePHP 2 workspace. It must not be added to the legacy root Composer manifest, any package manifest or production requirements.
 
 The workspace PHPUnit configuration lives at:
 
@@ -135,11 +139,13 @@ It bootstraps through `workspace/vendor/autoload.php` and defines one named suit
 | `plugin` | `packages/plugin/tests` |
 | `testing` | `packages/testing/tests` |
 
-The legacy root suite and the EvolvePHP 2 workspace suite are separate harnesses. The legacy root suite continues to preserve and validate repository policy while the workspace suite runs package tests under the EvolvePHP 2 PHP baseline.
+The legacy root suite and the EvolvePHP 2 workspace suite are separate harnesses. The legacy root suite preserves and validates repository policy while the workspace suite runs package tests under the EvolvePHP 2 PHP baseline.
 
 ## Static Analysis
 
-PHPStan is the primary static analyzer for the EvolvePHP 2 workspace. The distributable configuration lives at:
+PHPStan is the primary static analyzer for the EvolvePHP 2 workspace. PHPStan and PHP-CS-Fixer are workspace-only development tools. They must not be added to the legacy root Composer manifest, any package manifest or production requirements.
+
+The distributable PHPStan configuration lives at:
 
 ```text
 workspace/phpstan.neon.dist
@@ -162,19 +168,21 @@ The initial PHPStan level is `6`. PHPStan analyzes all six package `src` and `te
 ../packages/testing/tests
 ```
 
-The workspace manually includes `phpstan/phpstan-phpunit` type-inference integration through `vendor/phpstan/phpstan-phpunit/extension.neon`. The optional strict PHPUnit rules are not enabled in Phase 2.4.
+The workspace manually includes `phpstan/phpstan-phpunit` type-inference integration through `vendor/phpstan/phpstan-phpunit/extension.neon`.
 
-No PHPStan baseline is allowed initially, and the configuration must not use `ignoreErrors`. Local PHPStan cache belongs in `workspace/.phpstan-cache/` and is ignored.
+No PHPStan baseline is allowed, and the configuration must not use `ignoreErrors`. Local PHPStan cache belongs in `workspace/.phpstan-cache/` and is ignored.
 
 ## Architecture Boundaries
 
-Deptrac is the Phase 2.5 architecture-boundary engine. The configuration lives at:
+Deptrac is workspace-owned architecture-boundary tooling. The maintained package identity is `deptrac/deptrac`; the abandoned `qossmic/deptrac` package identity is prohibited.
+
+The configuration lives at:
 
 ```text
 workspace/deptrac.php
 ```
 
-Phase 2.5 analyzes the six package production source directories only:
+Deptrac analyzes production source directories only:
 
 ```text
 ../packages/contracts/src
@@ -185,7 +193,7 @@ Phase 2.5 analyzes the six package production source directories only:
 ../packages/testing/src
 ```
 
-Package tests are excluded from Phase 2.5 boundary analysis so test dependencies cannot weaken production rules. Physical package paths define layers, and package namespaces must match the package paths:
+Package tests are excluded from Deptrac boundary analysis so test dependencies cannot weaken production rules. Physical package paths define layers, and package namespaces must match the package paths:
 
 ```text
 Contracts -> ../packages/contracts/src/.* -> Evolve\Contracts\
@@ -209,7 +217,7 @@ Testing   -> Contracts, Core, Http, Module, Plugin
 
 There is no production dependency on Testing. Testing may depend on all five production packages.
 
-New external dependencies require explicit architecture review instead of being silently accepted. No architecture baseline, skipped violations or generated graph is allowed in Phase 2.5. Local Deptrac cache belongs in `workspace/.deptrac.cache` and is ignored. The temporary forbidden-edge probe used during Phase 2.5 validation is evidence only and is not committed.
+Uncovered dependencies fail. No baseline or skipped violations are allowed. No graph is generated. New external dependency treatment requires deliberate architecture review.
 
 ## Coding Standards
 
@@ -225,22 +233,24 @@ PHP-CS-Fixer checks only the six package `src` and `tests` directories. The pres
 
 Risky rules are disabled. The `declare_strict_types` fixer is not enabled; strict-types policy for EvolvePHP 2 package PHP files is enforced by architecture tests.
 
-Platform emulation must not be used for runtime compatibility claims. Do not use `config.platform.php`, `--ignore-platform-req=php` or `--ignore-platform-reqs` to generate the workspace lockfile or claim PHP compatibility.
-
-## Lockfile
+## Lockfile Policy
 
 `workspace/composer.lock` is committed for reproducible development and CI resolution.
 
-It was intentionally absent in Phase 2.2. Phase 2.3 creates the first workspace lockfile under real PHP 8.4 execution. It must never be handwritten or generated with `config.platform.php`.
+The lockfile must be generated and updated through Composer under real PHP 8.4 execution. It must never be handwritten or generated with platform emulation.
 
-Future changes to workspace dependencies must update the lockfile through Composer, never manually.
+## Compatibility Evidence
+
+EvolvePHP 2 requires PHP 8.4. Local workspace validation has been performed under PHP 8.4.
+
+PHP 8.5 compatibility remains pending the Phase 2.6 CI matrix. Do not claim PHP 8.5 support until that evidence exists.
 
 ## Deferred Work
 
-The following remain deferred:
+The following work remains deferred:
 
 - GitHub Actions
-- PHP 8.5 CI verification to Phase 2.6
-- Security and licence scanning
+- PHP 8.5 CI verification
+- Security and license scanning
 - Release automation
-- Framework implementation
+- Runtime framework implementation

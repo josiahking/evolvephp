@@ -120,9 +120,8 @@ final class EvolvePhp2ModulePluginLifecycleRfcTest extends TestCase
         $this->assertMatchesPattern('/Alternatives Considered/i', $content);
         $this->assertMatchesPattern('/Governance/i', $content);
         $this->assertMatchesPattern('/0004-module-and-plugin-lifecycle\.md/i', $index);
-        $this->assertMatchesPattern('/RFC 0004/i', $index);
-        $this->assertMatchesPattern('/RFC 0004 defines module and plugin lifecycle rules/i', $index);
-        $this->assertMatchesPattern('/RFC 0005 will define execution scope and reset safety/i', $index);
+        $this->assertMatchesPattern('/\[RFC 0004: Module and Plugin Lifecycle\]\(0004-module-and-plugin-lifecycle\.md\) - Accepted/i', $index);
+        $this->assertMatchesPattern('/\[RFC 0005: Request Scope, Runtime Reset and Persistent-Worker Safety\]\(0005-request-scope-runtime-reset-and-persistent-worker-safety\.md\) - Accepted/i', $index);
         $this->assertMatchesPattern('/RFC 0004/i', $changelog);
         $this->assertMatchesPattern('/Module and Plugin Lifecycle/i', $changelog);
     }

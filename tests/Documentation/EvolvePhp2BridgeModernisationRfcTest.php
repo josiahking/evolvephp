@@ -120,9 +120,8 @@ final class EvolvePhp2BridgeModernisationRfcTest extends TestCase
         $this->assertMatchesPattern('/Alternatives considered/i', $content);
         $this->assertMatchesPattern('/Governance/i', $content);
         $this->assertMatchesPattern('/0006-evolve-bridge-and-incremental-modernisation\.md/i', $index);
-        $this->assertMatchesPattern('/RFC 0006/i', $index);
-        $this->assertMatchesPattern('/RFC 0006 defines host integration and incremental modernisation/i', $index);
-        $this->assertMatchesPattern('/RFC 0007 will define Insight and OpenTelemetry architecture/i', $index);
+        $this->assertMatchesPattern('/\[RFC 0006: Evolve Bridge and Incremental Modernisation\]\(0006-evolve-bridge-and-incremental-modernisation\.md\) - Accepted/i', $index);
+        $this->assertMatchesPattern('/\[RFC 0007: Insight and OpenTelemetry Architecture\]\(0007-insight-and-opentelemetry-architecture\.md\) - Accepted/i', $index);
         $this->assertMatchesPattern('/RFC 0006/i', $changelog);
         $this->assertMatchesPattern('/Evolve Bridge and Incremental Modernisation/i', $changelog);
     }

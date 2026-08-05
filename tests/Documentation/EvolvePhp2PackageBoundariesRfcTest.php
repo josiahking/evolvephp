@@ -112,9 +112,8 @@ final class EvolvePhp2PackageBoundariesRfcTest extends TestCase
         $this->assertMatchesPattern('/Alternatives considered/i', $content);
         $this->assertMatchesPattern('/Decision governance/i', $content);
         $this->assertMatchesPattern('/0002-terminology-package-boundaries-and-public-contracts\.md/i', $index);
-        $this->assertMatchesPattern('/RFC 0002/i', $index);
-        $this->assertMatchesPattern('/RFC 0001 defines product direction/i', $index);
-        $this->assertMatchesPattern('/RFC 0002 defines terminology, package boundaries and public API governance/i', $index);
+        $this->assertMatchesPattern('/\[RFC 0001: EvolvePHP 2 Vision, Scope and Non-Goals\]\(0001-evolvephp-2-vision-and-scope\.md\) - Accepted/i', $index);
+        $this->assertMatchesPattern('/\[RFC 0002: Terminology, Package Boundaries and Public Contracts\]\(0002-terminology-package-boundaries-and-public-contracts\.md\) - Accepted/i', $index);
         $this->assertMatchesPattern('/RFC 0002/i', $changelog);
         $this->assertMatchesPattern('/Terminology, Package Boundaries and Public Contracts/i', $changelog);
     }
