@@ -4,7 +4,7 @@
 
 ### Documentation and governance
 
-- Added Phase 2.6 GitHub Actions CI foundation with a PHP 8.4/8.5 workspace quality matrix, separate PHP 8.4 root-policy job, lockfile-based workspace installation and immutable action pinning.
+- Added Phase 2.6 GitHub Actions CI foundation with a PHP 8.4/8.5 workspace quality matrix, separate PHP 8.4 root-policy job, lockfile-based workspace installation, immutable action pinning, and successful initial CI execution for the current workspace, tooling and package foundation.
 - Added Phase 2.5.1 README and metadata consistency cleanup, aligning the EvolvePHP 2 README hierarchy, correcting root Composer metadata, deduplicating stale RFC index narration, removing duplicated phase history, and clarifying workspace installation and compatibility guidance.
 - Added Phase 2.5 workspace-owned Deptrac architecture and dependency-boundary enforcement for the initial EvolvePHP 2 package graph.
 - Added Phase 2.4 workspace-owned PHPStan level 6 static analysis, PHPUnit type-inference integration, PHP-CS-Fixer PER Coding Style 3.0 checks, and architecture-policy tests for cache, baseline and tooling ownership.

@@ -118,7 +118,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         }
     }
 
-    public function testDocumentationRecordsStageAContinuousIntegrationWithoutCompatibilityClaim(): void
+    public function testDocumentationRecordsContinuousIntegrationCompatibilityEvidence(): void
     {
         $workspaceReadme = $this->readProjectFile('workspace/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
@@ -144,18 +144,22 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
             '/no initial dependency cache|dependency cache.*not/i',
             '/immutable.*full-SHA|full-SHA.*immutable/i',
             '/release comments.*SHA|SHA.*release comments/i',
-            '/PHP 8\.5 compatibility remains pending successful execution of the Phase 2\.6 CI matrix/i',
+            '/Phase 2\.6 CI matrix.*successfully executed|successfully executed.*Phase 2\.6 CI matrix/i',
+            '/workspace quality.*passes.*PHP 8\.4.*PHP 8\.5|PHP 8\.4.*PHP 8\.5.*workspace quality.*passes/i',
+            '/current.*(?:workspace|tooling|package foundation)|(?:workspace|tooling|package foundation).*current/i',
+            '/EvolvePHP 1 runtime.*(?:not part|excluded)|(?:not part|excluded).*EvolvePHP 1 runtime/i',
+            '/runtime implementation.*(?:incomplete|not complete)|(?:incomplete|not complete).*runtime implementation/i',
         ) as $pattern) {
             $this->assertMatchesPattern($pattern, $workspaceReadme);
         }
 
         $this->assertMatchesPattern('/Phase 2\.6/i', $changelog);
         $this->assertMatchesPattern('/PHP 8\.4\/8\.5 workspace quality matrix/i', $changelog);
+        $this->assertMatchesPattern('/successful initial CI execution|initial GitHub Actions execution completed successfully|CI execution.*successfully/i', $changelog);
         $this->assertMatchesPattern('/separate PHP 8\.4 root-policy job/i', $changelog);
         $this->assertMatchesPattern('/lockfile-based workspace installation/i', $changelog);
         $this->assertMatchesPattern('/immutable action pinning/i', $changelog);
-        $this->assertDoesNotMatchPattern('/PHP 8\.5[^.\n]*(?:proven|passed|accepted|supported|compatible)/i', $changelog);
-        $this->assertDoesNotMatchPattern('/branch protection.*active|required checks|matrix passed|CI evidence is accepted/i', $changelog);
+        $this->assertDoesNotMatchPattern('/branch protection.*active|required checks|deployment|publishing|runtime implementation.*complete|legacy EvolvePHP 1 runtime.*PHP 8\.5/i', $changelog);
     }
 
     private function extractTopLevelBlock($heading)

@@ -12,7 +12,7 @@ The preserved EvolvePHP 1 root Composer harness remains separate so legacy docum
 - Composer
 - Git
 
-EvolvePHP 2 requires PHP 8.4. Workspace tooling and tests have been executed locally under PHP 8.4. PHP 8.5 compatibility remains pending the Phase 2.6 CI matrix.
+EvolvePHP 2 requires PHP 8.4 as its baseline. GitHub Actions exercises the current workspace quality pipeline on PHP 8.4 and PHP 8.5 for the current tooling and package foundation.
 
 Platform emulation must not be used for runtime compatibility claims. Do not use `config.platform.php`, `--ignore-platform-req=php` or `--ignore-platform-reqs` to generate the workspace lockfile or claim PHP compatibility.
 
@@ -267,21 +267,26 @@ The workspace quality matrix runs PHP 8.4 and PHP 8.5. Each matrix entry validat
 composer --working-dir=workspace quality
 ```
 
+The initial Phase 2.6 CI matrix has successfully executed. Workspace quality passes on PHP 8.4 and PHP 8.5, and the root policy job passes on PHP 8.4. This evidence applies to the current workspace, quality tooling and package foundation only.
+
+PHP 8.5 evidence for the current workspace quality pipeline is recorded by the Phase 2.6 CI matrix.
+
+The EvolvePHP 2 runtime implementation is incomplete, so this is not a broader runtime-production compatibility claim.
+
 The workflow must not run `composer update`, use a platform-requirement bypass, install root Composer dependencies or replace the approved aggregate quality command with duplicated individual quality commands. There is no platform-requirement bypass in CI.
 
 Action dependencies are pinned by immutable full-SHA references. The reviewed release comments must remain beside those SHAs so future audits can connect each commit pin to its intended release tag.
 
 ## Compatibility Evidence
 
-EvolvePHP 2 requires PHP 8.4. Local workspace validation has been performed under PHP 8.4.
+EvolvePHP 2 requires PHP 8.4 as the baseline. The Phase 2.6 CI matrix has successfully executed in GitHub Actions: the current workspace quality pipeline passes on PHP 8.4 and PHP 8.5, and the root policy job passes on PHP 8.4.
 
-PHP 8.5 compatibility remains pending successful execution of the Phase 2.6 CI matrix. Do not claim PHP 8.5 support until that evidence exists.
+This verifies the current workspace, quality tooling and package foundation only. The preserved EvolvePHP 1 runtime is excluded, and the EvolvePHP 2 runtime implementation remains incomplete.
 
 ## Deferred Work
 
 The following work remains deferred:
 
-- Successful PHP 8.5 CI execution evidence
 - Security and license scanning
 - Release automation
 - Runtime framework implementation

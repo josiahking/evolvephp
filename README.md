@@ -6,7 +6,7 @@ EvolvePHP 1 remains preserved on `master` for historical reference and legacy ma
 
 The current EvolvePHP 2 repository contains package boundaries, Composer workspace setup and quality-tooling foundations. Runtime framework implementation is not yet complete, and the packages are not yet published.
 
-EvolvePHP 2 requires PHP 8.4. Local PHP 8.4 validation has been performed. PHP 8.5 remains pending Phase 2.6 CI evidence.
+EvolvePHP 2 requires PHP 8.4. The current workspace quality pipeline is verified by GitHub Actions on PHP 8.4 and PHP 8.5 for the current workspace, quality tooling and package foundation.
 
 ## Project Overview
 
@@ -21,7 +21,7 @@ The EvolvePHP 2 line redesigns the framework as a modular package architecture w
 - Runtime implementation: not yet complete
 - Package publication: packages are not yet published
 - PHP baseline: PHP 8.4
-- PHP 8.5: compatibility remains pending Phase 2.6 CI evidence
+- CI verification: current workspace quality passes in GitHub Actions on PHP 8.4 and PHP 8.5
 
 ## Requirements
 
