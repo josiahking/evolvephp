@@ -177,8 +177,7 @@ final class EvolvePhp2InsightOpenTelemetryRfcTest extends TestCase
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
         $this->assertMatchesPattern('/0007-insight-and-opentelemetry-architecture\.md/i', $index);
-        $this->assertMatchesPattern('/RFC 0007: Insight and OpenTelemetry Architecture.*Accepted/i', $index);
-        $this->assertMatchesPattern('/RFC 0007 defines Insight, generic instrumentation and OpenTelemetry architecture/i', $index);
+        $this->assertMatchesPattern('/\[RFC 0007: Insight and OpenTelemetry Architecture\]\(0007-insight-and-opentelemetry-architecture\.md\) - Accepted/i', $index);
         $this->assertMatchesPattern('/RFC 0007/i', $changelog);
         $this->assertMatchesPattern('/Insight and OpenTelemetry Architecture/i', $changelog);
     }

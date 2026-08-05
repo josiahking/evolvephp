@@ -151,18 +151,37 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array($workspaceReadme, $packagesReadme) as $content) {
-            $this->assertMatchesPattern('/deptrac\/deptrac/i', $content);
-            $this->assertMatchesPattern('/qossmic\/deptrac/i', $content);
-            $this->assertMatchesPattern('/production source directories/i', $content);
-            $this->assertMatchesPattern('/tests? (?:are|is) excluded|excluded from Phase 2\.5/i', $content);
-            $this->assertMatchesPattern('/physical package paths?/i', $content);
-            $this->assertMatchesPattern('/no production dependency on Testing/i', $content);
-            $this->assertMatchesPattern('/uncovered dependencies fail/i', $content);
-            $this->assertMatchesPattern('/no baseline|baseline.*not/i', $content);
-            $this->assertMatchesPattern('/no graph|graph.*not/i', $content);
-            $this->assertMatchesPattern('/PHP 8\.5.*Phase 2\.6/i', $content);
+        foreach (array(
+            '/deptrac\/deptrac/i',
+            '/qossmic\/deptrac/i',
+            '/production source directories/i',
+            '/tests? (?:are|is) excluded|excluded from Phase 2\.5/i',
+            '/physical package paths?/i',
+            '/no production dependency on Testing/i',
+            '/uncovered dependencies fail/i',
+            '/no baseline|baseline.*not/i',
+            '/no graph|graph.*not/i',
+            '/PHP 8\.5.*Phase 2\.6/i',
+        ) as $workspacePattern) {
+            $this->assertMatchesPattern($workspacePattern, $workspaceReadme);
         }
+
+        foreach (array(
+            'Contracts -> none',
+            'Core      -> Contracts',
+            'Http      -> Contracts, Core',
+            'Module    -> Contracts',
+            'Plugin    -> Contracts',
+            'Testing   -> Contracts, Core, Http, Module, Plugin',
+        ) as $matrixLine) {
+            $this->assertStringContainsString($matrixLine, $workspaceReadme);
+        }
+
+        $this->assertMatchesPattern('/depend inward|inward dependency/i', $packagesReadme);
+        $this->assertMatchesPattern('/no production dependency on Testing/i', $packagesReadme);
+        $this->assertMatchesPattern('/workspace\/README\.md/i', $packagesReadme);
+        $this->assertMatchesPattern('/runtime implementation.*not yet present|not yet present.*runtime implementation/i', $packagesReadme);
+        $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/i', $packagesReadme);
 
         $this->assertMatchesPattern('/Phase 2\.5/i', $changelog);
         $this->assertMatchesPattern('/Deptrac/i', $changelog);

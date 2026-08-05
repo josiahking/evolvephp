@@ -140,10 +140,9 @@ final class EvolvePhp2RequestScopeResetSafetyRfcTest extends TestCase
         $this->assertMatchesPattern('/Alternatives considered/i', $content);
         $this->assertMatchesPattern('/Governance/i', $content);
         $this->assertMatchesPattern('/0005-request-scope-runtime-reset-and-persistent-worker-safety\.md/i', $index);
-        $this->assertMatchesPattern('/RFC 0005/i', $index);
-        $this->assertMatchesPattern('/RFC 0005 defines per-execution scope, reset and worker reuse/i', $index);
-        $this->assertMatchesPattern('/RFC 0006 will define Bridge integration/i', $index);
-        $this->assertMatchesPattern('/RFC 0007 will define Insight and telemetry architecture/i', $index);
+        $this->assertMatchesPattern('/\[RFC 0005: Request Scope, Runtime Reset and Persistent-Worker Safety\]\(0005-request-scope-runtime-reset-and-persistent-worker-safety\.md\) - Accepted/i', $index);
+        $this->assertMatchesPattern('/\[RFC 0006: Evolve Bridge and Incremental Modernisation\]\(0006-evolve-bridge-and-incremental-modernisation\.md\) - Accepted/i', $index);
+        $this->assertMatchesPattern('/\[RFC 0007: Insight and OpenTelemetry Architecture\]\(0007-insight-and-opentelemetry-architecture\.md\) - Accepted/i', $index);
         $this->assertMatchesPattern('/RFC 0005/i', $changelog);
         $this->assertMatchesPattern('/Request Scope, Runtime Reset and Persistent-Worker Safety/i', $changelog);
     }

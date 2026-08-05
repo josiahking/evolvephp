@@ -116,20 +116,35 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/test:testing/i', $content);
         $this->assertMatchesPattern('/workspace\/composer\.lock/i', $content);
         $this->assertMatchesPattern('/platform emulation/i', $content);
-        $this->assertMatchesPattern('/PHP 8\.5 CI.*Phase 2\.6/i', $content);
+        $this->assertMatchesPattern('/PHP 8\.5 compatibility.*pending.*Phase 2\.6 CI matrix|Phase 2\.6 CI matrix.*pending.*PHP 8\.5 compatibility/i', $content);
+        $this->assertDoesNotMatchPattern('/PHP 8\.5[^.\n]*(?:passes|supported|compatible)/i', $content);
         $this->assertMatchesPattern('/legacy root suite/i', $content);
         $this->assertMatchesPattern('/EvolvePHP 2 workspace suite/i', $content);
     }
 
-    public function testPackagesReadmeDocumentsPackageTestDirectories(): void
+    public function testWorkspaceReadmeOwnsDetailedPackageTestDocumentation(): void
     {
-        $content = $this->readProjectFile('packages/README.md');
+        $workspaceReadme = $this->readProjectFile('workspace/README.md');
+        $packagesReadme = $this->readProjectFile('packages/README.md');
 
-        $this->assertMatchesPattern('/tests\/Unit\//i', $content);
-        $this->assertMatchesPattern('/workspace\/phpunit\.xml\.dist/i', $content);
-        $this->assertMatchesPattern('/package identity and source namespace/i', $content);
-        $this->assertMatchesPattern('/Runtime behaviour tests will be added/i', $content);
-        $this->assertMatchesPattern('/Composer manifests remain free from workspace PHPUnit dependencies/i', $content);
+        $this->assertMatchesPattern('/workspace\/phpunit\.xml\.dist/i', $workspaceReadme);
+        $this->assertMatchesPattern('/PHPUnit 13.*workspace|workspace.*PHPUnit 13/i', $workspaceReadme);
+
+        foreach (array('test:contracts', 'test:core', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
+            $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $workspaceReadme);
+        }
+
+        foreach ($this->packageSuites() as $suiteName => $suite) {
+            $testDirectory = preg_replace('/^\.\.\//', '', $suite['tests']);
+
+            $this->assertMatchesPattern('/`?' . preg_quote($suiteName, '/') . '`?.*' . preg_quote($testDirectory, '/') . '/i', $workspaceReadme);
+        }
+
+        $this->assertMatchesPattern('/workspace\/README\.md/i', $packagesReadme);
+        $this->assertMatchesPattern('/testing.*quality|quality.*testing/i', $packagesReadme);
+        $this->assertDoesNotMatchPattern('/tests\/Unit\//i', $packagesReadme);
+        $this->assertDoesNotMatchPattern('/test:contracts.*test:core.*test:http.*test:module.*test:plugin.*test:testing/is', $packagesReadme);
+        $this->assertDoesNotMatchPattern('/workspace\/phpunit\.xml\.dist.*PHPUnit|PHPUnit.*workspace\/phpunit\.xml\.dist/is', $packagesReadme);
     }
 
     public function testChangelogRecordsPhase23PhpUnitFoundation(): void
@@ -272,5 +287,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
     private function assertMatchesPattern($pattern, $content)
     {
         $this->assertSame(1, preg_match($pattern, $content), 'Failed asserting that content matches ' . $pattern);
+    }
+
+    private function assertDoesNotMatchPattern($pattern, $content)
+    {
+        $this->assertSame(0, preg_match($pattern, $content), 'Failed asserting that content does not match ' . $pattern);
     }
 }

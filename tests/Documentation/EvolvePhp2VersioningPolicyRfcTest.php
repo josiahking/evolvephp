@@ -124,8 +124,7 @@ final class EvolvePhp2VersioningPolicyRfcTest extends TestCase
         $this->assertMatchesPattern('/Alternatives Considered/i', $content);
         $this->assertMatchesPattern('/Governance/i', $content);
         $this->assertMatchesPattern('/0003-php-versioning-compatibility-and-release-policy\.md/i', $index);
-        $this->assertMatchesPattern('/RFC 0003/i', $index);
-        $this->assertMatchesPattern('/RFC 0003 defines compatibility, versioning and release policy/i', $index);
+        $this->assertMatchesPattern('/\[RFC 0003: PHP Versioning, Compatibility and Release Policy\]\(0003-php-versioning-compatibility-and-release-policy\.md\) - Accepted/i', $index);
         $this->assertMatchesPattern('/RFC 0003/i', $changelog);
         $this->assertMatchesPattern('/PHP Versioning, Compatibility and Release Policy/i', $changelog);
     }

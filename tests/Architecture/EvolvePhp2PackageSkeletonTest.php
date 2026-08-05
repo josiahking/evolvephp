@@ -130,23 +130,30 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
     public function testPackageOverviewDocumentsSkeletonBoundariesAndCompatibilityLimits(): void
     {
         $content = $this->readProjectFile('packages/README.md');
+        $uninstalledHistory = 'not been installed or ' . 'runtime-tested';
+        $phpCompatibilityHistory = 'Real PHP 8.4 and PHP 8.5 CI evidence is required before ' . 'compatibility is claimed';
+        $probeHistory = 'temporary forbidden-edge ' . 'probe';
 
-        $this->assertMatchesPattern('/initial EvolvePHP 2 modular-monorepo package boundary/i', $content);
-        $this->assertMatchesPattern('/skeletons? only|no runtime implementation/i', $content);
-        $this->assertMatchesPattern('/not been published/i', $content);
-        $this->assertMatchesPattern('/not been installed or runtime-tested/i', $content);
-        $this->assertMatchesPattern('/root Composer manifest remains the legacy EvolvePHP 1 harness/i', $content);
-        $this->assertMatchesPattern('/Phase 2\.2.*workspace Composer configuration/i', $content);
+        $this->assertMatchesPattern('/# EvolvePHP 2 Packages/i', $content);
+        $this->assertMatchesPattern('/skeleton|foundation|boundar/i', $content);
+        $this->assertMatchesPattern('/runtime (?:framework )?implementation is not yet present/i', $content);
+        $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/i', $content);
         $this->assertMatchesPattern('/PHP `?\^8\.4`?/i', $content);
-        $this->assertMatchesPattern('/Real PHP 8\.4 and PHP 8\.5 CI evidence is required before compatibility is claimed/i', $content);
-        $this->assertMatchesPattern('/arrows represent dependency direction and not lifecycle invocation/i', $content);
+        $this->assertMatchesPattern('/arrows.*dependency direction.*not lifecycle invocation/i', $content);
+        $this->assertMatchesPattern('/no production dependency on Testing/i', $content);
+        $this->assertMatchesPattern('/workspace\/README\.md/i', $content);
+        $this->assertMatchesPattern('/setup.*testing.*quality|testing.*quality.*setup|quality.*setup.*testing/is', $content);
 
         foreach ($this->packages() as $package) {
             $this->assertStringContainsString($package['name'], $content);
             $this->assertStringContainsString($package['namespace'], $content);
         }
 
-        $this->assertDoesNotMatchPattern('/runtime compatibility (?:is|has been|was) (?:verified|validated|established|confirmed|proven)/i', $content);
+        $this->assertDoesNotMatchPattern('/Phase 2\.2 now provides/i', $content);
+        $this->assertDoesNotMatchPattern('/Before Phase 2\.3/i', $content);
+        $this->assertDoesNotMatchPattern('/' . preg_quote($uninstalledHistory, '/') . '/i', $content);
+        $this->assertDoesNotMatchPattern('/' . preg_quote($phpCompatibilityHistory, '/') . '/i', $content);
+        $this->assertDoesNotMatchPattern('/' . preg_quote($probeHistory, '/') . '/i', $content);
     }
 
     public function testChangelogRecordsPhase21PackageSkeleton(): void

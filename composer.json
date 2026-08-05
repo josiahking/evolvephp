@@ -1,6 +1,6 @@
 {
     "name": "evolvephp/evolvephp",
-    "description": "Evolve is short for evolution which is a php framework for smart developers.",
+    "description": "A lightweight component-based PHP framework for building structured web applications.",
     "type": "project",
     "homepage": "https://github.com/josiahking/evolvephp",
     "license": "BSD-3-Clause",
@@ -8,7 +8,7 @@
         "framework",
         "php framework",
         "evolvephp",
-        "elvovephp framework",
+        "evolvephp framework",
         "evolve php",
         "evolution php",
         "evolvephp skeleton"
@@ -20,7 +20,7 @@
             "homepage": "https://github.com/josiahking"
         },
         {
-            "name": "Evolvephp Community"
+            "name": "EvolvePHP Community"
         }
     ],
     "version": "1.0",
