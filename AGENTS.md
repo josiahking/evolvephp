@@ -42,15 +42,23 @@ Rules:
 ## 4. Legacy preservation
 
 - `master` represents the EvolvePHP 1 legacy line.
+- `master` is reserved for preserved EvolvePHP 1 history and explicitly approved legacy maintenance.
+- EvolvePHP 1 maintenance must be clearly requested.
+- An approved legacy-maintenance task must start from `master`, then continue on its own task-specific branch.
 - Do not modernise EvolvePHP 1 unless a task explicitly targets legacy maintenance.
 - Do not silently fix historical issues during documentation work.
 - Preserve historical evidence and clearly document limitations.
 - EvolvePHP 2 development must occur separately from the preserved legacy baseline.
+- EvolvePHP 2 work is based on the current `2.x` branch.
+- EvolvePHP 2 changes must never be merged into `master`.
+- EvolvePHP 1 changes must not be silently mixed into `2.x`.
 
 ## 5. Branch safety
 
-- Do not work directly on `master`.
+- Do not work directly on `master`; direct work on `master` remains prohibited unless the task explicitly targets approved legacy maintenance, and approved legacy maintenance still requires a task-specific branch.
 - Confirm a clean working tree before editing.
+- Verify the requested base branch and exact base SHA before editing.
+- Agents must not infer the correct base branch from GitHub's current default branch.
 - Use a task-specific branch.
 - Do not push, merge, tag or open a pull request unless explicitly requested.
 - Never rewrite shared history.

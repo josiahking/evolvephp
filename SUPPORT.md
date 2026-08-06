@@ -10,9 +10,9 @@ Use the appropriate channel for the type of request:
 
 ## Version status
 
-EvolvePHP 1 legacy support applies to the preserved `master` line. Maintainers may answer questions, review reports and consider narrowly scoped maintenance fixes, but EvolvePHP 1 is not recommended as the foundation for new production applications without a detailed security and compatibility review.
+EvolvePHP 1 legacy support applies to the preserved `master` line. `master` remains preserved as the EvolvePHP 1 legacy line. EvolvePHP 1 legacy maintenance belongs to `master` only when explicitly approved. Maintainers may answer questions, review reports and consider narrowly scoped maintenance fixes, but EvolvePHP 1 is not recommended as the foundation for new production applications without a detailed security and compatibility review.
 
-EvolvePHP 2 development is separate from EvolvePHP 1. EvolvePHP 2 is under development and should not be described as production-ready until a reviewed release says so.
+EvolvePHP 2 development is separate from EvolvePHP 1. EvolvePHP 2 reports and proposed changes target `2.x`; development changes for EvolvePHP 2 belong to `2.x`. New EvolvePHP 2 feature development does not target `master`. EvolvePHP 2 remains under development and is not production-ready until a reviewed release says so.
 
 ## What maintainers may support
 
@@ -23,7 +23,7 @@ Maintainers may reasonably support:
 - Reviewing security reports through the private process in `SECURITY.md`.
 - Accepting documentation improvements that preserve historical accuracy.
 - Considering narrowly scoped EvolvePHP 1 maintenance fixes when explicitly approved.
-- Planning EvolvePHP 2 design work separately from legacy preservation.
+- Planning EvolvePHP 2 design work and proposed changes on `2.x` separately from legacy preservation.
 
 ## Out of scope
 
