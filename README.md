@@ -1,10 +1,10 @@
 # EvolvePHP 2
 
-`2.x` is the designated EvolvePHP 2 development branch.
+`2.x` is the designated EvolvePHP 2 development branch and the GitHub default branch.
 
 `master` remains the preserved EvolvePHP 1 legacy branch for historical reference and explicitly approved legacy maintenance. EvolvePHP 2 development and proposed changes must not target `master`.
 
-During Phase 2.7A, the current GitHub default branch remains `master` until the Phase 2.7 external transition. The live default-branch and ruleset transition is still pending external GitHub evidence.
+Phase 2.7B completed the external governance transition. Repository rulesets actively protect both branch lines: `master` remains preserved, and `2.x` now receives default-branch development changes.
 
 EvolvePHP 2 is not an in-place refactor, replacement or rewrite of the EvolvePHP 1 runtime history.
 
@@ -21,9 +21,12 @@ The EvolvePHP 2 line redesigns the framework as a modular package architecture w
 ## Current Status
 
 - EvolvePHP 2 development branch: `2.x`
-- Current GitHub default during Phase 2.7A: `master`
+- GitHub default branch: `2.x`
 - Legacy line: EvolvePHP 1 on `master`
-- Governance transition: live default-branch and ruleset changes pending external verification
+- Repository rulesets: active for `master` and `2.x`
+- `master` ruleset: pull request requirement, deletion protection, force-push protection, required approvals remain zero, conversation resolution is required, and there are no bypass actors
+- `2.x` ruleset: pull request requirement, deletion protection, force-push protection, required CI status checks, strict/up-to-date status-check policy, required approvals remain zero, conversation resolution is required, and there are no bypass actors
+- Required `2.x` checks: `Policy (PHP 8.4)`, `Workspace quality (PHP 8.4)`, `Workspace quality (PHP 8.5)`
 - Runtime implementation: not yet complete
 - Package publication: packages are not yet published
 - PHP baseline: PHP 8.4
@@ -56,10 +59,12 @@ The legacy EvolvePHP 1 runtime files remain in the repository for preservation a
 ```bash
 git clone https://github.com/josiahking/evolvephp.git
 cd evolvephp
-git switch 2.x
+git branch --show-current
 composer --working-dir=workspace install
 composer --working-dir=workspace quality
 ```
+
+The normal clone path starts on `2.x` because it is the GitHub default branch. For an older local checkout, verify the branch with `git branch --show-current` and run `git switch 2.x` only when the checkout is not already on `2.x`.
 
 The EvolvePHP 2 workspace owns dependency installation and quality checks. Use [workspace/README.md](workspace/README.md) for detailed Composer, PHPUnit, PHPStan, PHP-CS-Fixer and Deptrac guidance.
 
@@ -85,7 +90,7 @@ EvolvePHP 1 has been used as the foundation of Africa Global Export Market, a li
 
 That production-use background belongs to the preserved EvolvePHP 1 history. New EvolvePHP 2 work happens separately on `2.x`, and EvolvePHP 2 changes must not target `master`. New production applications should not start from EvolvePHP 1 without a detailed security and compatibility review.
 
-Phase 2.7A establishes repository-owned branch-governance policy only. `master` has not been renamed or deleted, no `main` branch has been created, and no `1.x` branch has been created. Any stable-release branch rename or promotion is deferred, and Phase 2.7 does not replace the legacy history.
+Phase 2.7B completed the external governance transition without replacing history. `master` has not been renamed or deleted, no branch was renamed or deleted, no `main` branch has been created, and no `1.x` branch has been created. Any stable-release branch rename or promotion is deferred, and Phase 2.7 does not replace the legacy history.
 
 See the [legacy overview](docs/history/evolvephp-1-overview.md), [known risks and limitations](docs/history/known-risks-and-limitations.md), [support policy](SUPPORT.md) and [security policy](SECURITY.md).
 
