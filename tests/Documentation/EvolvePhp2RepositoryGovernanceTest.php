@@ -11,15 +11,16 @@ final class EvolvePhp2RepositoryGovernanceTest extends TestCase
         $this->root = dirname(__DIR__, 2);
     }
 
-    public function testReadmeDocumentsStageABranchIdentity()
+    public function testReadmeDocumentsFinalBranchIdentity()
     {
         $content = $this->readProjectFile('README.md');
 
         $this->assertMatchesPattern('/2\.x.*designated EvolvePHP 2 development branch|designated EvolvePHP 2 development branch.*2\.x/is', $content);
+        $this->assertMatchesPattern('/2\.x.*GitHub default branch|GitHub default branch.*2\.x/is', $content);
         $this->assertMatchesPattern('/master.*preserved EvolvePHP 1 legacy branch|preserved EvolvePHP 1 legacy branch.*master/is', $content);
         $this->assertMatchesPattern('/EvolvePHP 2 changes.*must not target.*master|must not target.*master.*EvolvePHP 2 changes/is', $content);
-        $this->assertMatchesPattern('/current GitHub default.*master.*Phase 2\.7 external transition|Phase 2\.7 external transition.*current GitHub default.*master/is', $content);
-        $this->assertDoesNotMatchPattern($this->unsupportedDefaultBranchClaimPattern(), $content);
+        $this->assertMatchesPattern('/repository rulesets?.*protect.*branch lines|branch lines.*protect.*repository rulesets?/is', $content);
+        $this->assertDoesNotMatchPattern($this->staleTransitionPattern(), $content);
     }
 
     public function testAgentRulesDocumentVerifiedBaseBranchWorkflow()
@@ -60,35 +61,45 @@ final class EvolvePhp2RepositoryGovernanceTest extends TestCase
         $this->assertMatchesPattern('/Phase 2\.7.*does not replace.*legacy history|legacy history.*not.*replaced.*Phase 2\.7/is', $content);
     }
 
-    public function testStageAEvidenceBoundaryIsDocumented()
+    public function testFinalGovernanceRulesetsAreDocumented()
     {
         $content = $this->readProjectFile('README.md') . "\n" . $this->readProjectFile('CHANGELOG.md');
 
-        $this->assertMatchesPattern('/Phase 2\.7A.*repository-owned branch-governance policy|repository-owned branch-governance policy.*Phase 2\.7A/is', $content);
-        $this->assertMatchesPattern('/live default-branch.*ruleset.*pending external GitHub evidence|pending external GitHub evidence.*live default-branch.*ruleset/is', $content);
-        $this->assertDoesNotMatchPattern($this->unsupportedDefaultBranchClaimPattern(), $content);
-        $this->assertDoesNotMatchPattern('/branch protection is active|rulesets? (?:is|are) active|required checks (?:are|have been) enforced/i', $content);
+        $this->assertMatchesPattern('/Phase 2\.7B.*completed.*external governance transition|external governance transition.*completed.*Phase 2\.7B/is', $content);
+        $this->assertMatchesPattern('/repository rulesets? (?:are )?active|active repository rulesets?/i', $content);
+        $this->assertMatchesPattern('/master.*pull request.*deletion.*force-push|master.*force-push.*deletion.*pull request/is', $content);
+        $this->assertMatchesPattern('/2\.x.*pull request.*deletion.*force-push.*required CI status checks.*strict|2\.x.*strict.*required CI status checks.*force-push.*deletion.*pull request/is', $content);
+        $this->assertMatchesPattern('/required approvals.*zero|zero.*required approvals/i', $content);
+        $this->assertMatchesPattern('/conversation resolution.*required|required.*conversation resolution/i', $content);
+        $this->assertMatchesPattern('/no bypass actors|bypass actors.*none/i', $content);
+        $this->assertMatchesPattern('/Policy \(PHP 8\.4\)/', $content);
+        $this->assertMatchesPattern('/Workspace quality \(PHP 8\.4\)/', $content);
+        $this->assertMatchesPattern('/Workspace quality \(PHP 8\.5\)/', $content);
+        $this->assertDoesNotMatchPattern($this->staleTransitionPattern(), $content);
+        $this->assertDoesNotMatchPattern('/classic branch protection|branch protection is active/i', $content);
         $this->assertDoesNotMatchPattern('/master (?:was|has been) (?:renamed|deleted|replaced)/i', $content);
     }
 
-    public function testChangelogRecordsPolicyFoundationWithoutExternalSettingChange()
+    public function testChangelogRecordsFinalGovernanceEvidence()
     {
         $content = $this->readProjectFile('CHANGELOG.md');
 
         $this->assertMatchesPattern('/Phase 2\.7A/i', $content);
-        $this->assertMatchesPattern('/branch-governance policy/i', $content);
-        $this->assertMatchesPattern('/EvolvePHP 2 development on `2\.x`/i', $content);
-        $this->assertMatchesPattern('/EvolvePHP 1 maintenance on `master`/i', $content);
-        $this->assertMatchesPattern('/later default-branch and ruleset transition/i', $content);
-        $this->assertDoesNotMatchPattern($this->unsupportedDefaultBranchClaimPattern(), $content);
-        $this->assertDoesNotMatchPattern('/branch protection is active|rulesets? (?:is|are) active|required checks (?:are|have been) enforced/i', $content);
+        $this->assertMatchesPattern('/Phase 2\.7B/i', $content);
+        $this->assertMatchesPattern('/GitHub default branch.*`2\.x`|`2\.x`.*GitHub default branch/i', $content);
+        $this->assertMatchesPattern('/repository rulesets?.*`master`.*`2\.x`|`master`.*`2\.x`.*repository rulesets?/is', $content);
+        $this->assertMatchesPattern('/preserved `master`.*EvolvePHP 1 legacy line|EvolvePHP 1 legacy line.*preserved `master`/i', $content);
+        $this->assertMatchesPattern('/PR-based change.*both branches|both branches.*PR-based change/i', $content);
+        $this->assertMatchesPattern('/block(?:s|ed)? deletion.*force pushes|force pushes.*block(?:s|ed)? deletion/i', $content);
+        $this->assertMatchesPattern('/strict.*up-to-date required status checks|up-to-date.*strict.*required status checks/i', $content);
+        $this->assertMatchesPattern('/Policy \(PHP 8\.4\).*Workspace quality \(PHP 8\.4\).*Workspace quality \(PHP 8\.5\)/is', $content);
+        $this->assertMatchesPattern('/no branch rename or deletion|no branch was renamed or deleted/i', $content);
+        $this->assertDoesNotMatchPattern('/classic branch protection|branch protection is active/i', $content);
     }
 
-    private function unsupportedDefaultBranchClaimPattern()
+    private function staleTransitionPattern()
     {
-        $branch = '2' . '\.x';
-
-        return '/' . $branch . ' is (?:now |already )?the (?:GitHub )?default branch|default branch (?:is|changed to) `?' . $branch . '/i';
+        return '/current GitHub default.*master|default branch remains.*master|ruleset.*pending|default-branch.*pending|pending external GitHub evidence|live.*transition.*pending/i';
     }
 
     private function readProjectFile($path)
