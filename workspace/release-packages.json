@@ -1,0 +1,29 @@
+{
+    "version": 1,
+    "packages": [
+        {
+            "name": "evolvephp/contracts",
+            "directory": "packages/contracts"
+        },
+        {
+            "name": "evolvephp/core",
+            "directory": "packages/core"
+        },
+        {
+            "name": "evolvephp/module",
+            "directory": "packages/module"
+        },
+        {
+            "name": "evolvephp/plugin",
+            "directory": "packages/plugin"
+        },
+        {
+            "name": "evolvephp/http",
+            "directory": "packages/http"
+        },
+        {
+            "name": "evolvephp/testing",
+            "directory": "packages/testing"
+        }
+    ]
+}

@@ -118,6 +118,20 @@ composer --working-dir=workspace quality
 
 `quality` runs `architecture`, `analyse`, `style:check` and `test`, in that order. `style:fix` remains separate because it is mutating.
 
+## Release Validation
+
+Run deterministic/offline package release-readiness validation:
+
+```bash
+composer --working-dir=workspace release:validate
+```
+
+Phase 2.10A keeps the six packages mapped explicitly in `workspace/release-packages.json`. The processing order is dependency-compatible: contracts, core, module, plugin, http and testing. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package licences must remain identical to root `LICENSE.md`.
+
+No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
+
+`release:validate` is distinct from `quality`. It is also distinct from network-dependent `supply-chain`. Package splitting is Phase 2.10B, and remote synchronization and Packagist publication remain deferred. Prerelease consumer stability still requires separate 2.10B validation. RFC 0003 remains authoritative for release and version policy.
+
 ## Supply-Chain Security
 
 Run the Composer lockfile security audit:

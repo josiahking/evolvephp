@@ -4,6 +4,7 @@
 
 ### Documentation and governance
 
+- Added Phase 2.10A deterministic package release validation with an explicit release package map/order, package-local README/licence preparation, and no remote publication or splitting yet.
 - Added Phase 2.9A supply-chain security foundation with Composer lockfile security audit enforcement, abandoned-package failure, locked production and development licence-policy checks for MIT, BSD-3-Clause and Apache-2.0, repository-owned Dependabot version-update configuration, Policy job enforcement, and documentation of GitHub setting boundaries.
 - Added Phase 2.8 developer-experience foundation with EditorConfig, VS Code extension recommendations, portable VS Code settings and portable task commands, PHP 8.4 language-analysis targeting, canonical Composer-script reuse, explicit non-mutating quality checks versus the Style Fix mutating task, no local executable paths, and no runtime debugging configuration.
 - Added Phase 2.7B repository governance evidence finalization: changed the GitHub default branch to `2.x`, activated repository rulesets for `master` and `2.x`, preserved `master` as the EvolvePHP 1 legacy line, required PR-based change on both branches, blocked deletion and force pushes, enforced strict/up-to-date required status checks on `2.x` for `Policy (PHP 8.4)`, `Workspace quality (PHP 8.4)` and `Workspace quality (PHP 8.5)`, and made no branch rename or deletion.
