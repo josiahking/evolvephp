@@ -118,6 +118,38 @@ composer --working-dir=workspace quality
 
 `quality` runs `architecture`, `analyse`, `style:check` and `test`, in that order. `style:fix` remains separate because it is mutating.
 
+## VS Code Developer Experience
+
+VS Code is optional developer tooling, not framework runtime configuration. The repository root is the VS Code workspace; no separate `.code-workspace` file is required for this phase.
+
+The committed recommendations are intentionally minimal: EditorConfig for shared editor whitespace policy and Intelephense for PHP 8.4 language-analysis support. The Intelephense setting targets PHP 8.4 syntax and symbols for editor feedback, but it does not replace actual PHP 8.4+ execution.
+
+The VS Code tasks execute `php` and `composer` from the integrated terminal environment. Before relying on them, confirm that:
+
+```bash
+php --version
+composer --version
+```
+
+show PHP 8.4+ and Composer. If a contributor has multiple PHP versions, they should configure their local OS, terminal or VS Code user environment so the integrated terminal resolves PHP 8.4+. Do not commit a machine-specific executable path.
+
+`workspace/composer.json` remains the canonical source for Composer workspace scripts. `.vscode/tasks.json` is only a convenience interface, and CI remains the remote enforcement layer.
+
+The VS Code tasks map to the canonical commands as follows:
+
+| Task | Canonical command | Category |
+| --- | --- | --- |
+| `EvolvePHP 2: Install Workspace Dependencies` | `composer --working-dir=workspace install` | Dependency setup |
+| `EvolvePHP 2: Quality` | `composer --working-dir=workspace quality` | Non-mutating |
+| `EvolvePHP 2: Tests` | `composer --working-dir=workspace test` | Non-mutating |
+| `EvolvePHP 2: Architecture` | `composer --working-dir=workspace architecture` | Non-mutating |
+| `EvolvePHP 2: Static Analysis` | `composer --working-dir=workspace analyse` | Non-mutating |
+| `EvolvePHP 2: Style Check` | `composer --working-dir=workspace style:check` | Non-mutating |
+| `EvolvePHP 2: Style Fix` | `composer --working-dir=workspace style:fix` | Mutating |
+| `EvolvePHP 2: Root Policy` | `php workspace/vendor/bin/phpunit --configuration phpunit.xml.dist tests/Architecture tests/Documentation` | Non-mutating |
+
+Runtime debugging and Xdebug launch configuration are intentionally deferred because EvolvePHP 2 runtime implementation is not complete.
+
 ## PHPUnit Suites
 
 PHPUnit 13 is owned by the EvolvePHP 2 workspace. It must not be added to the legacy root Composer manifest, any package manifest or production requirements.

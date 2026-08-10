@@ -4,6 +4,7 @@
 
 ### Documentation and governance
 
+- Added Phase 2.8 developer-experience foundation with EditorConfig, VS Code extension recommendations, portable VS Code settings and portable task commands, PHP 8.4 language-analysis targeting, canonical Composer-script reuse, explicit non-mutating quality checks versus the Style Fix mutating task, no local executable paths, and no runtime debugging configuration.
 - Added Phase 2.7B repository governance evidence finalization: changed the GitHub default branch to `2.x`, activated repository rulesets for `master` and `2.x`, preserved `master` as the EvolvePHP 1 legacy line, required PR-based change on both branches, blocked deletion and force pushes, enforced strict/up-to-date required status checks on `2.x` for `Policy (PHP 8.4)`, `Workspace quality (PHP 8.4)` and `Workspace quality (PHP 8.5)`, and made no branch rename or deletion.
 - Added Phase 2.7A repository-owned branch-governance policy foundation for EvolvePHP 2 development on `2.x`, preserved EvolvePHP 1 maintenance on `master`, explicit separation of modern development and legacy maintenance, and preparation for a later default-branch and ruleset transition.
 - Added Phase 2.6 GitHub Actions CI foundation with a PHP 8.4/8.5 workspace quality matrix, separate PHP 8.4 root-policy job, lockfile-based workspace installation, immutable action pinning, and successful initial CI execution for the current workspace, tooling and package foundation.
