@@ -1,0 +1,19 @@
+version: 2
+
+updates:
+  - package-ecosystem: "composer"
+    directory: "/workspace"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "evolvephp/contracts"
+      - dependency-name: "evolvephp/core"
+      - dependency-name: "evolvephp/http"
+      - dependency-name: "evolvephp/module"
+      - dependency-name: "evolvephp/plugin"
+      - dependency-name: "evolvephp/testing"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
