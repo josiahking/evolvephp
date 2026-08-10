@@ -1,0 +1,94 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "EvolvePHP 2: Install Workspace Dependencies",
+            "type": "shell",
+            "command": "composer",
+            "args": [
+                "--working-dir=workspace",
+                "install"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "EvolvePHP 2: Quality",
+            "type": "shell",
+            "command": "composer",
+            "args": [
+                "--working-dir=workspace",
+                "quality"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "EvolvePHP 2: Tests",
+            "type": "shell",
+            "command": "composer",
+            "args": [
+                "--working-dir=workspace",
+                "test"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "EvolvePHP 2: Architecture",
+            "type": "shell",
+            "command": "composer",
+            "args": [
+                "--working-dir=workspace",
+                "architecture"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "EvolvePHP 2: Static Analysis",
+            "type": "shell",
+            "command": "composer",
+            "args": [
+                "--working-dir=workspace",
+                "analyse"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "EvolvePHP 2: Style Check",
+            "type": "shell",
+            "command": "composer",
+            "args": [
+                "--working-dir=workspace",
+                "style:check"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "EvolvePHP 2: Style Fix",
+            "type": "shell",
+            "command": "composer",
+            "args": [
+                "--working-dir=workspace",
+                "style:fix"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "EvolvePHP 2: Root Policy",
+            "type": "shell",
+            "command": "php",
+            "args": [
+                "workspace/vendor/bin/phpunit",
+                "--configuration",
+                "phpunit.xml.dist",
+                "tests/Architecture",
+                "tests/Documentation"
+            ],
+            "group": "test",
+            "problemMatcher": []
+        }
+    ]
+}

@@ -68,6 +68,16 @@ The normal clone path starts on `2.x` because it is the GitHub default branch. F
 
 The EvolvePHP 2 workspace owns dependency installation and quality checks. Use [workspace/README.md](workspace/README.md) for detailed Composer, PHPUnit, PHPStan, PHP-CS-Fixer and Deptrac guidance.
 
+## Developer Experience
+
+VS Code support is optional developer tooling for contributors. It is not framework runtime configuration, and it does not replace terminal PHP or Composer execution.
+
+The repository includes a portable `.editorconfig` foundation and committed VS Code recommendations, settings and tasks. No machine-specific executable path is committed. Contributors with multiple PHP versions must make PHP 8.4+ available to their VS Code integrated terminal and local environment before relying on the tasks.
+
+The VS Code tasks are convenience wrappers around the canonical Composer workspace scripts owned by `workspace/composer.json`. `EvolvePHP 2: Quality`, `EvolvePHP 2: Tests`, `EvolvePHP 2: Architecture`, `EvolvePHP 2: Static Analysis`, `EvolvePHP 2: Style Check` and `EvolvePHP 2: Root Policy` are normal non-mutating checks. `EvolvePHP 2: Install Workspace Dependencies` installs local dependency content. `EvolvePHP 2: Style Fix` is explicitly mutating.
+
+Runtime debugging configuration is deferred until the EvolvePHP 2 runtime implementation is complete.
+
 ## Quality Checks
 
 The main EvolvePHP 2 validation command is:
