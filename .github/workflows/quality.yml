@@ -26,6 +26,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
@@ -39,6 +40,9 @@ jobs:
 
       - name: Install workspace dependencies
         run: composer --working-dir=workspace install --no-interaction --no-progress --prefer-dist
+
+      - name: Run release package split validation
+        run: composer --working-dir=workspace release:split:validate
 
       - name: Run workspace supply-chain checks
         run: composer --working-dir=workspace supply-chain

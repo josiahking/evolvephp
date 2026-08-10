@@ -46,6 +46,8 @@
             "@style:check",
             "@test"
         ],
+        "release:consumer:validate": "@php tools/validate-prerelease-consumers.php",
+        "release:split:validate": "@php tools/validate-package-splits.php",
         "release:validate": "@php tools/validate-release-packages.php",
         "security:audit": "@composer audit --locked --abandoned=fail",
         "style:check": "@php vendor/bin/php-cs-fixer check --config=.php-cs-fixer.dist.php --diff --verbose",
