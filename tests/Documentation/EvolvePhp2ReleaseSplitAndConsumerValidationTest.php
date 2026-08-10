@@ -1,0 +1,207 @@
+<?php
+
+use PHPUnit\Framework\TestCase;
+
+final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
+{
+    private $root;
+
+    protected function setUp(): void
+    {
+        $this->root = dirname(__DIR__, 2);
+    }
+
+    public function testReleaseSplitAndConsumerValidationToolsAreRepositoryOwnedPhpEntrypoints(): void
+    {
+        $this->assertFileExists($this->path('workspace/tools/release-validation-common.php'));
+
+        foreach (array(
+            'workspace/tools/validate-package-splits.php',
+            'workspace/tools/validate-prerelease-consumers.php',
+        ) as $path) {
+            $content = $this->readProjectFile($path);
+
+            $this->assertStringStartsWith('<?php declare(strict_types=1);', $content);
+            $this->assertStringContainsString("require_once __DIR__ . '/release-validation-common.php';", $content);
+            $this->assertStringNotContainsString('D:\\tools\\composer84\\composer.phar', $content);
+            $this->assertDoesNotMatchRegularExpression('/\\b(?:curl|gh|git push|remote add)\\b/i', $content);
+        }
+    }
+
+    public function testSharedHelperUsesArgumentVectorProcessesAndDoesNotRunOnInclude(): void
+    {
+        $content = $this->readProjectFile('workspace/tools/release-validation-common.php');
+
+        $this->assertStringContainsString('proc_open(', $content);
+        $this->assertStringContainsString('bypass_shell', $content);
+        $this->assertStringContainsString('loadReleasePackages', $content);
+        $this->assertStringContainsString('createTemporaryDirectory', $content);
+        $this->assertStringContainsString('removeDirectory', $content);
+        $this->assertDoesNotMatchRegularExpression('/\\b(?:shell_exec|exec|passthru|system)\\s*\\(/', $content);
+        $this->assertDoesNotMatchRegularExpression('/\\b(?:git push|gh|curl|remote add|config --global)\\b/i', $content);
+        $this->assertDoesNotMatchRegularExpression('/EvolvePHP .* validation passed/', $content);
+    }
+
+    public function testSplitValidatorDocumentsDeterministicSplitContract(): void
+    {
+        $content = $this->readProjectFile('workspace/tools/validate-package-splits.php');
+
+        foreach (array(
+            '--root=',
+            '--ref=',
+            '--composer=',
+            'git subtree split',
+            'first split',
+            'second split',
+            'deterministic: yes',
+            'tree equality: yes',
+            'inventory equality: yes',
+            'composer validate --strict: pass',
+            'history commits:',
+            'Source repository state preserved.',
+        ) as $needle) {
+            $this->assertStringContainsString($needle, $content);
+        }
+
+        $this->assertStringNotContainsString('2.0.0-alpha.1', $content);
+        $this->assertStringNotContainsString('git tag', $content);
+    }
+
+    public function testConsumerValidatorDocumentsOfflinePrereleaseAndStableMatrix(): void
+    {
+        $content = $this->readProjectFile('workspace/tools/validate-prerelease-consumers.php');
+
+        foreach (array(
+            'COMPOSER_DISABLE_NETWORK',
+            'packagist.org',
+            '2.0.0-alpha.1',
+            '2.0.0',
+            'Alpha case A',
+            'Alpha case B',
+            'Alpha case C',
+            'Alpha case D',
+            'Full-graph case E',
+            'Full-graph case F',
+            'Full-graph case G',
+            'Stable case H',
+            'expected failure',
+            'minimum-stability',
+            'prefer-stable',
+            'Source repository state preserved.',
+        ) as $needle) {
+            $this->assertStringContainsString($needle, $content);
+        }
+
+        $this->assertDoesNotMatchRegularExpression('/\\b(?:curl|gh|git push|remote add|config --global)\\b/i', $content);
+    }
+
+    public function testWorkspaceComposerExposesReleaseValidationScriptsWithoutPrepareScript(): void
+    {
+        $manifest = $this->readJsonFile('workspace/composer.json');
+
+        $this->assertSame(array('@architecture', '@analyse', '@style:check', '@test'), $manifest['scripts']['quality']);
+        $this->assertSame(array('@security:audit', '@licenses:check'), $manifest['scripts']['supply-chain']);
+        $this->assertSame('@php tools/validate-release-packages.php', $manifest['scripts']['release:validate']);
+        $this->assertSame('@php tools/validate-package-splits.php', $manifest['scripts']['release:split:validate']);
+        $this->assertSame('@php tools/validate-prerelease-consumers.php', $manifest['scripts']['release:consumer:validate']);
+        $this->assertArrayNotHasKey('release:prepare', $manifest['scripts']);
+    }
+
+    public function testPackageManifestsRetainStableInternalConstraintsAndNoStabilityPolicy(): void
+    {
+        foreach ($this->releasePackages() as $package) {
+            $manifest = $this->readJsonFile($package['directory'] . '/composer.json');
+
+            $this->assertArrayNotHasKey('version', $manifest, $package['name']);
+            $this->assertArrayNotHasKey('minimum-stability', $manifest, $package['name']);
+            $this->assertArrayNotHasKey('prefer-stable', $manifest, $package['name']);
+            $this->assertSame('^8.4', $manifest['require']['php'], $package['name']);
+
+            foreach ($manifest['require'] as $dependency => $constraint) {
+                if (strpos($dependency, 'evolvephp/') !== 0) {
+                    continue;
+                }
+
+                $this->assertSame('^2.0', $constraint, $package['name'] . ' internal constraint for ' . $dependency);
+                $this->assertStringNotContainsString('@alpha', $constraint, $package['name']);
+            }
+        }
+    }
+
+    public function testCiRunsOnlyPackageSplitValidationInExistingPolicyJob(): void
+    {
+        $workflow = $this->readProjectFile('.github/workflows/quality.yml');
+
+        $this->assertSame(1, substr_count($workflow, 'name: Policy (PHP 8.4)'));
+        $this->assertSame(1, substr_count($workflow, 'name: Workspace quality (PHP ${{ matrix.php }})'));
+        $this->assertSame(1, substr_count($workflow, 'Run release package split validation'));
+        $this->assertStringContainsString('composer --working-dir=workspace release:split:validate', $workflow);
+        $this->assertStringNotContainsString('release:consumer:validate', $workflow);
+        $this->assertStringContainsString('Run workspace supply-chain checks', $workflow);
+        $this->assertStringContainsString('Run root policy tests', $workflow);
+    }
+
+    public function testWorkspaceReadmeDocumentsAlphaConsumerPolicyAndDeferredPublication(): void
+    {
+        $content = $this->readProjectFile('workspace/README.md');
+
+        foreach (array(
+            'composer --working-dir=workspace release:split:validate',
+            'composer --working-dir=workspace release:consumer:validate',
+            'minimum-stability: alpha',
+            'prefer-stable: true',
+            'Explicit root `@alpha` flags',
+            'no package Composer manifest should add `@alpha`, `minimum-stability`, `prefer-stable` or a hard-coded `version` field.',
+            'Remote package repositories, remote synchronization, Packagist registration, tags and releases remain deferred.',
+        ) as $needle) {
+            $this->assertStringContainsString($needle, $content);
+        }
+    }
+
+    public function testChangelogRecordsPhase210BValidationWithoutPublicationClaims(): void
+    {
+        $content = $this->readProjectFile('CHANGELOG.md');
+
+        $this->assertStringContainsString('Phase 2.10B deterministic package split and prerelease consumer validation', $content);
+        $this->assertStringContainsString('alpha consumer policy', $content);
+        $this->assertDoesNotMatchRegularExpression('/Phase 2\\.10B.*(?:published|Packagist|GitHub release)/i', $content);
+    }
+
+    private function readProjectFile($path)
+    {
+        $absolute = $this->path($path);
+
+        $this->assertFileExists($absolute, $path . ' must exist.');
+
+        $content = file_get_contents($absolute);
+
+        $this->assertIsString($content, $path . ' must be readable.');
+
+        return $content;
+    }
+
+    private function readJsonFile($path)
+    {
+        $decoded = json_decode($this->readProjectFile($path), true);
+
+        $this->assertSame(JSON_ERROR_NONE, json_last_error(), $path . ' must contain valid JSON.');
+        $this->assertIsArray($decoded, $path . ' must decode to an array.');
+
+        return $decoded;
+    }
+
+    private function releasePackages()
+    {
+        $map = $this->readJsonFile('workspace/release-packages.json');
+
+        $this->assertSame(1, $map['version']);
+        $this->assertCount(6, $map['packages']);
+
+        return $map['packages'];
+    }
+
+    private function path($path)
+    {
+        return $this->root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path);
+    }
+}

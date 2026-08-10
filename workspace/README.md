@@ -130,7 +130,44 @@ Phase 2.10A keeps the six packages mapped explicitly in `workspace/release-packa
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
-`release:validate` is distinct from `quality`. It is also distinct from network-dependent `supply-chain`. Package splitting is Phase 2.10B, and remote synchronization and Packagist publication remain deferred. Prerelease consumer stability still requires separate 2.10B validation. RFC 0003 remains authoritative for release and version policy.
+`release:validate` is distinct from `quality`. It is also distinct from network-dependent `supply-chain`. Package splitting is Phase 2.10B validation work, and prerelease consumer stability is validated by the Phase 2.10B consumer matrix. RFC 0003 remains authoritative for release and version policy.
+
+### Package Split Validation
+
+Run deterministic package split validation:
+
+```bash
+composer --working-dir=workspace release:split:validate
+```
+
+`release:split:validate` reads `workspace/release-packages.json`, creates a disposable local clone with `--no-hardlinks`, runs every mapped `git subtree` split twice, validates repeated split SHA equality, validates exact subtree/root tree equality, validates exact inventory equality, validates generated split-root Composer manifests, and confirms package-specific Git history is retained. It creates no remote repository, pushes nothing, creates no source tags, works only on committed Git history/ref and runs in Policy PHP 8.4 CI.
+
+### Prerelease Consumer Validation
+
+Run offline prerelease and stable consumer validation:
+
+```bash
+composer --working-dir=workspace release:consumer:validate
+```
+
+`release:consumer:validate` creates temporary local VCS package repositories from generated split roots, creates disposable alpha/stable tags only, disables Packagist, disables Composer network access, validates expected success and expected failure cases, and uses disposable lockfiles. It is not currently a required CI step and is intended for pre-release/manual validation.
+
+For an EvolvePHP 2 alpha consumer, the recommended root consumer settings are:
+
+```json
+{
+    "minimum-stability": "alpha",
+    "prefer-stable": true
+}
+```
+
+These are root consumer settings. First-party package manifests must not add alpha stability policy. Existing first-party internal constraints remain `^2.0`; no package Composer manifest should add `@alpha`, `minimum-stability`, `prefer-stable` or a hard-coded `version` field. Top-level `@alpha` on only one package is insufficient for transitive alpha packages. Explicit root `@alpha` flags for every involved EvolvePHP package are a valid but more verbose alternative. Stable 2.0.0 consumers do not require alpha stability settings.
+
+In prose: set `minimum-stability: alpha` and `prefer-stable: true` only in the root alpha consumer.
+
+No package is published by `release:validate`, `release:split:validate` or `release:consumer:validate`. Remote package repositories, remote synchronization, Packagist registration, tags and releases remain deferred.
+
+`release:validate` remains metadata/package-boundary validation. `release:split:validate` validates generated split history/root content. `release:consumer:validate` validates package-resolution semantics. `supply-chain` remains network-dependent security/licence validation. `quality` remains ordinary workspace quality.
 
 ## Supply-Chain Security
 

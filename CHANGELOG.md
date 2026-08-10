@@ -4,6 +4,7 @@
 
 ### Documentation and governance
 
+- Added Phase 2.10B deterministic package split and prerelease consumer validation with repository-owned `git subtree` split checks, exact tree/inventory equivalence, generated split Composer validation, an offline alpha/stable consumer matrix, documented alpha consumer policy, retained internal `^2.0` constraints, Policy PHP 8.4 split-validation enforcement, manual/pre-release consumer validation, and no remote writes, tags or release artifacts.
 - Added Phase 2.10A deterministic package release validation with an explicit release package map/order, package-local README/licence preparation, and no remote publication or splitting yet.
 - Added Phase 2.9A supply-chain security foundation with Composer lockfile security audit enforcement, abandoned-package failure, locked production and development licence-policy checks for MIT, BSD-3-Clause and Apache-2.0, repository-owned Dependabot version-update configuration, Policy job enforcement, and documentation of GitHub setting boundaries.
 - Added Phase 2.8 developer-experience foundation with EditorConfig, VS Code extension recommendations, portable VS Code settings and portable task commands, PHP 8.4 language-analysis targeting, canonical Composer-script reuse, explicit non-mutating quality checks versus the Style Fix mutating task, no local executable paths, and no runtime debugging configuration.
