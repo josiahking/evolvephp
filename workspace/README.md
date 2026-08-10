@@ -118,6 +118,42 @@ composer --working-dir=workspace quality
 
 `quality` runs `architecture`, `analyse`, `style:check` and `test`, in that order. `style:fix` remains separate because it is mutating.
 
+## Supply-Chain Security
+
+Run the Composer lockfile security audit:
+
+```bash
+composer --working-dir=workspace security:audit
+```
+
+`security:audit` checks the committed `workspace/composer.lock` dependency set through Composer audit, keeps `require-dev` included intentionally and fails on abandoned packages. Vulnerability, malware and dependency-policy findings must not be hidden by advisory suppression without an explicit future security decision. There is no advisory suppression list in this foundation.
+
+Run the locked dependency licence-policy check:
+
+```bash
+composer --working-dir=workspace licenses:check
+```
+
+`licenses:check` validates locked production and development packages from both `packages` and `packages-dev`. The approved locked dependency licence identifiers are:
+
+- MIT
+- BSD-3-Clause
+- Apache-2.0
+
+This allowlist reflects reviewed dependencies in the committed lockfile. `Apache-2.0` was deliberately reviewed because `jetbrains/phpstorm-stubs` currently appears in `packages-dev`. The allowlist is a repository engineering dependency-admission policy, not legal advice or a general legal compatibility statement. New or unknown licence identifiers fail closed and require deliberate review before acceptance. Approval here does not remove distribution or attribution obligations that may apply if future release artifacts redistribute third-party material.
+
+Run the aggregate supply-chain gate:
+
+```bash
+composer --working-dir=workspace supply-chain
+```
+
+`supply-chain` runs `security:audit` and then `licenses:check`. It is distinct from deterministic normal Composer quality tooling: `quality` remains the architecture, static-analysis, style and PHPUnit aggregate, while `supply-chain` may require network access for fresh remote advisory data.
+
+CI executes the supply-chain gate through the required `Policy (PHP 8.4)` job after workspace dependencies are installed and before root policy tests. Dependabot version updates are repository-owned in `.github/dependabot.yml`: Composer updates watch `/workspace`, GitHub Actions updates watch `/`, and internal EvolvePHP path packages are excluded from Composer version-update pull requests.
+
+Dependabot alerts and Dependabot security updates are GitHub settings. `.github/dependabot.yml` alone does not prove those GitHub settings are enabled.
+
 ## VS Code Developer Experience
 
 VS Code is optional developer tooling, not framework runtime configuration. The repository root is the VS Code workspace; no separate `.code-workspace` file is required for this phase.
