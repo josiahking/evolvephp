@@ -423,7 +423,16 @@ function captureSourceState(ReleaseValidationProcessRunner $runner, string $root
 {
     return array(
         'head' => trim($runner->mustRun(array('git', '-C', $root, 'rev-parse', 'HEAD'))->stdout),
-        'refs' => trim($runner->mustRun(array('git', '-C', $root, 'show-ref', '--heads', '--tags'))->stdout),
+        'refs' => trim($runner->mustRun(array(
+            'git',
+            '-C',
+            $root,
+            'for-each-ref',
+            '--sort=refname',
+            '--format=%(objectname) %(refname)',
+            'refs/heads',
+            'refs/tags',
+        ))->stdout),
         'tags' => trim($runner->mustRun(array('git', '-C', $root, 'tag', '--list'))->stdout),
         'status' => trim($runner->mustRun(array('git', '-C', $root, 'status', '--short', '--untracked-files=all'))->stdout),
     );

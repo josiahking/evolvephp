@@ -42,6 +42,53 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/EvolvePHP .* validation passed/', $content);
     }
 
+    public function testSourceStateCaptureUsesDeterministicRefEnumerationForDetachedCi(): void
+    {
+        $content = $this->readProjectFile('workspace/tools/release-validation-common.php');
+
+        $this->assertStringContainsString("'for-each-ref'", $content);
+        $this->assertStringContainsString("'--sort=refname'", $content);
+        $this->assertStringContainsString("'--format=%(objectname) %(refname)'", $content);
+        $this->assertStringContainsString("'refs/heads'", $content);
+        $this->assertStringContainsString("'refs/tags'", $content);
+        $this->assertStringNotContainsString("'show-ref', '--heads', '--tags'", $content);
+        $this->assertStringNotContainsString('|| true', $content);
+        $this->assertStringNotContainsString('2>/dev/null', $content);
+    }
+
+    public function testSourceStateCaptureSupportsDetachedRepositoriesWithoutLocalHeadsOrTags(): void
+    {
+        require_once $this->path('workspace/tools/release-validation-common.php');
+
+        $runner = new ReleaseValidationProcessRunner();
+        $temporary = createTemporaryDirectory('evolvephp-detached-source-state-test-');
+
+        try {
+            $runner->mustRun(array('git', 'init'), $temporary->path);
+            $runner->mustRun(array('git', 'config', 'user.name', 'EvolvePHP Test'), $temporary->path);
+            $runner->mustRun(array('git', 'config', 'user.email', 'evolvephp-test@example.com'), $temporary->path);
+
+            file_put_contents($temporary->child('README.md'), "detached fixture\n");
+
+            $runner->mustRun(array('git', 'add', 'README.md'), $temporary->path);
+            $runner->mustRun(array('git', 'commit', '-m', 'Initial fixture'), $temporary->path);
+
+            $branch = trim($runner->mustRun(array('git', 'symbolic-ref', '--short', 'HEAD'), $temporary->path)->stdout);
+            $head = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD'), $temporary->path)->stdout);
+
+            $runner->mustRun(array('git', 'checkout', '--detach', $head), $temporary->path);
+            $runner->mustRun(array('git', 'branch', '-D', $branch), $temporary->path);
+
+            $state = captureSourceState($runner, $temporary->path);
+
+            $this->assertSame($head, $state['head']);
+            $this->assertSame('', $state['refs']);
+            $this->assertSame('', $state['tags']);
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
     public function testSplitValidatorDocumentsDeterministicSplitContract(): void
     {
         $content = $this->readProjectFile('workspace/tools/validate-package-splits.php');
