@@ -87,6 +87,21 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $this->assertDoesNotMatchPattern('/phpunit.*(?:core|components|helpers|index\.php|route\.php)/i', $job);
     }
 
+    public function testPolicyCheckoutFetchesCompleteHistoryForReleaseSplitValidation(): void
+    {
+        $policyCheckout = $this->extractStep($this->extractJob('policy'), 'Checkout repository');
+        $workspaceQualityCheckout = $this->extractStep($this->extractJob('workspace-quality'), 'Checkout repository');
+
+        $this->assertSame(1, substr_count($this->workflow, 'fetch-depth: 0'));
+        $this->assertMatchesPattern('/persist-credentials:\s*false/', $policyCheckout);
+        $this->assertMatchesPattern('/fetch-depth:\s*0/', $policyCheckout);
+        $this->assertStringContainsString('composer --working-dir=workspace release:split:validate', $this->extractJob('policy'));
+
+        $this->assertMatchesPattern('/persist-credentials:\s*false/', $workspaceQualityCheckout);
+        $this->assertDoesNotMatchPattern('/fetch-depth:\s*0/', $workspaceQualityCheckout);
+        $this->assertStringNotContainsString('release:split:validate', $this->extractJob('workspace-quality'));
+    }
+
     public function testWorkspaceQualityMatrixUsesLockfileInstallAndApprovedAggregateCommand(): void
     {
         $job = $this->extractJob('workspace-quality');
@@ -191,6 +206,15 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $this->assertSame(1, preg_match($pattern, $jobs, $matches), 'Missing job: ' . $job);
 
         return $matches['job'];
+    }
+
+    private function extractStep($job, $stepName)
+    {
+        $pattern = '/^\s{6}- name:\s*' . preg_quote($stepName, '/') . '\s*\R(?P<step>.*?)(?=^\s{6}- name:\s*|\z)/ms';
+
+        $this->assertSame(1, preg_match($pattern, $job, $matches), 'Missing step: ' . $stepName);
+
+        return $matches['step'];
     }
 
     private function projectPath($path)
