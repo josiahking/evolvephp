@@ -18,6 +18,12 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'README.md',
                 'docs/rfcs/README.md',
                 'packages/README.md',
+                'packages/contracts/README.md',
+                'packages/core/README.md',
+                'packages/http/README.md',
+                'packages/module/README.md',
+                'packages/plugin/README.md',
+                'packages/testing/README.md',
                 'workspace/README.md',
             ),
             $this->trackedReadmes()

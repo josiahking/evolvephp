@@ -46,6 +46,7 @@
             "@style:check",
             "@test"
         ],
+        "release:validate": "@php tools/validate-release-packages.php",
         "security:audit": "@composer audit --locked --abandoned=fail",
         "style:check": "@php vendor/bin/php-cs-fixer check --config=.php-cs-fixer.dist.php --diff --verbose",
         "style:fix": "@php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --diff --verbose",
