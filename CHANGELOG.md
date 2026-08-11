@@ -4,6 +4,7 @@
 
 ### Runtime foundation
 
+- Added Phase 3.2 configuration foundation with read-only public configuration and validation contracts, a public configuration exception catch boundary, immutable Core array-backed configuration, scalar/null/recursive-array value validation, dot-path lookup with distinct null and missing semantics, deterministic boot-time validator execution, fail-fast validation behavior, terminal failed-kernel instances, and internal Booting/Failed lifecycle states; environment loading, dotenv, container/PSR-11, configuration files, HTTP, module/plugin runtime, console and telemetry remain deferred.
 - Added Phase 3.1 application lifecycle foundation with a narrow public boot/shutdown contract, lifecycle exception catch boundaries, and a minimal Core `ApplicationKernel` state transition implementation; complete kernel behavior, container integration, execution handling, reset behavior, HTTP, module/plugin runtime, console and telemetry remain deferred.
 
 ### Documentation and governance

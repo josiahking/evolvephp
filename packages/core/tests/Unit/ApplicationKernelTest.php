@@ -22,7 +22,16 @@ final class ApplicationKernelTest extends TestCase
 
         self::assertTrue($kernel->isFinal());
         self::assertTrue($kernel->implementsInterface(ApplicationLifecycle::class));
-        self::assertNull($kernel->getConstructor());
+
+        $constructor = $kernel->getConstructor();
+
+        if ($constructor !== null) {
+            self::assertLessThanOrEqual(2, $constructor->getNumberOfParameters());
+
+            foreach ($constructor->getParameters() as $parameter) {
+                self::assertTrue($parameter->isDefaultValueAvailable(), 'ApplicationKernel constructor parameters must remain optional.');
+            }
+        }
     }
 
     public function test_new_kernel_can_boot_once(): void

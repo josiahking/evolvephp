@@ -114,9 +114,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPackageSourcesMatchPhase31RuntimeInventory(): void
+    public function testPackageSourcesMatchPhase32RuntimeInventory(): void
     {
-        foreach ($this->phase31SourceInventories() as $sourceDirectory => $expectedFiles) {
+        foreach ($this->phase32SourceInventories() as $sourceDirectory => $expectedFiles) {
             $fullSourceDirectory = $this->projectPath($sourceDirectory);
 
             $this->assertTrue(is_dir($fullSourceDirectory), $sourceDirectory . ' should exist before source files are inspected.');
@@ -124,7 +124,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedFiles,
                 $this->phpFilesUnderSource($fullSourceDirectory),
-                $sourceDirectory . ' should contain exactly the approved Phase 3.1 PHP source inventory.'
+                $sourceDirectory . ' should contain exactly the approved Phase 3.2 PHP source inventory.'
             );
         }
 
@@ -145,7 +145,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
         $this->assertMatchesPattern('/# EvolvePHP 2 Packages/i', $content);
         $this->assertMatchesPattern('/skeleton|foundation|boundar/i', $content);
-        $this->assertMatchesPattern('/runtime (?:framework )?implementation is not yet present/i', $content);
+        $this->assertMatchesPattern('/complete runtime (?:framework )?implementation is not yet present/i', $content);
         $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/i', $content);
         $this->assertMatchesPattern('/PHP `?\^8\.4`?/i', $content);
         $this->assertMatchesPattern('/arrows.*dependency direction.*not lifecycle invocation/i', $content);
@@ -235,16 +235,22 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
     }
 
-    private function phase31SourceInventories()
+    private function phase32SourceInventories()
     {
         return array(
             'packages/contracts/src' => array(
+                'Configuration/Configuration.php',
+                'Configuration/ConfigurationValidator.php',
+                'Exception/ConfigurationException.php',
                 'Exception/EvolveException.php',
                 'Exception/LifecycleException.php',
                 'Lifecycle/ApplicationLifecycle.php',
             ),
             'packages/core/src' => array(
                 'ApplicationKernel.php',
+                'Configuration/ArrayConfiguration.php',
+                'Exception/ConfigurationValidationFailed.php',
+                'Exception/InvalidConfiguration.php',
                 'Exception/InvalidLifecycleTransition.php',
                 'Lifecycle/ApplicationState.php',
             ),
