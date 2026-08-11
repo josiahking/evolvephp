@@ -158,7 +158,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
         }
     }
 
-    public function testEveryTrackedPackagePhpFileUsesStrictTypesAndSourcesRemainSkeletons(): void
+    public function testEveryTrackedPackagePhpFileUsesStrictTypes(): void
     {
         foreach ($this->trackedFiles() as $file) {
             $normalized = str_replace('\\', '/', $file);
@@ -170,12 +170,6 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
             $content = $this->readProjectFile($normalized);
 
             $this->assertStringContainsString('declare(strict_types=1);', $content, $normalized . ' must declare strict types.');
-        }
-
-        foreach ($this->packageSourceDirectories() as $directory) {
-            $phpFiles = $this->phpFilesUnder($this->projectPath($directory));
-
-            $this->assertSame(array(), $phpFiles, $directory . ' must remain free from runtime implementation PHP files in Phase 2.4.');
         }
     }
 
