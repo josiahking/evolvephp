@@ -4,15 +4,20 @@ Foundational public contracts for EvolvePHP 2.
 
 ## Public Contracts
 
-Phase 3.1 introduces the first stable public contract surface:
+Phase 3.2 extends the initial stable public contract surface:
 
 - `Evolve\Contracts\Lifecycle\ApplicationLifecycle`
+- `Evolve\Contracts\Configuration\Configuration`
+- `Evolve\Contracts\Configuration\ConfigurationValidator`
 - `Evolve\Contracts\Exception\EvolveException`
 - `Evolve\Contracts\Exception\LifecycleException`
+- `Evolve\Contracts\Exception\ConfigurationException`
 
-`ApplicationLifecycle` owns only the application boot/shutdown lifecycle. Execution handling, reset behavior, container access, configuration and framework runtime adapters are not part of this contract.
+`ApplicationLifecycle` owns only the application boot/shutdown lifecycle. `Configuration` is read-only to consumers and exposes presence, retrieval, required-value and full-export lookup behavior. `ConfigurationValidator` is a small boot-time validation extension point that receives the read-only configuration and returns `void`.
 
-Consumers should catch public exception contracts such as `LifecycleException` instead of depending on Core concrete exception classes.
+Consumers should catch public exception contracts such as `LifecycleException` and `ConfigurationException` instead of depending on Core concrete exception classes.
+
+Configuration files, environment and dotenv loading, container access, service definitions, execution handling, reset behavior, HTTP handling and framework runtime adapters are not part of these contracts.
 
 ## Package
 

@@ -10,6 +10,8 @@ namespace Evolve\Core\Lifecycle;
 enum ApplicationState
 {
     case Created;
+    case Booting;
     case Ready;
+    case Failed;
     case Stopped;
 }
