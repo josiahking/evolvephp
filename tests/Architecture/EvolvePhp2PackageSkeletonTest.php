@@ -114,17 +114,26 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPackageSourcesContainNoImplementationPhpFiles(): void
+    public function testPackageSourcesMatchPhase31RuntimeInventory(): void
     {
-        foreach ($this->packages() as $package) {
-            $sourceDirectory = $this->projectPath($package['src']);
+        foreach ($this->phase31SourceInventories() as $sourceDirectory => $expectedFiles) {
+            $fullSourceDirectory = $this->projectPath($sourceDirectory);
 
-            $this->assertTrue(is_dir($sourceDirectory), $package['src'] . ' should exist before source files are inspected.');
+            $this->assertTrue(is_dir($fullSourceDirectory), $sourceDirectory . ' should exist before source files are inspected.');
 
-            $phpFiles = $this->phpFilesUnder($sourceDirectory);
-
-            $this->assertSame(array(), $phpFiles, $package['src'] . ' should not contain implementation PHP files in Phase 2.1.');
+            $this->assertSame(
+                $expectedFiles,
+                $this->phpFilesUnderSource($fullSourceDirectory),
+                $sourceDirectory . ' should contain exactly the approved Phase 3.1 PHP source inventory.'
+            );
         }
+
+        $this->assertFileDoesNotExist($this->projectPath('packages/contracts/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/core/src/.gitkeep'));
+        $this->assertFileExists($this->projectPath('packages/http/src/.gitkeep'));
+        $this->assertFileExists($this->projectPath('packages/module/src/.gitkeep'));
+        $this->assertFileExists($this->projectPath('packages/plugin/src/.gitkeep'));
+        $this->assertFileExists($this->projectPath('packages/testing/src/.gitkeep'));
     }
 
     public function testPackageOverviewDocumentsSkeletonBoundariesAndCompatibilityLimits(): void
@@ -226,6 +235,26 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
     }
 
+    private function phase31SourceInventories()
+    {
+        return array(
+            'packages/contracts/src' => array(
+                'Exception/EvolveException.php',
+                'Exception/LifecycleException.php',
+                'Lifecycle/ApplicationLifecycle.php',
+            ),
+            'packages/core/src' => array(
+                'ApplicationKernel.php',
+                'Exception/InvalidLifecycleTransition.php',
+                'Lifecycle/ApplicationState.php',
+            ),
+            'packages/http/src' => array(),
+            'packages/module/src' => array(),
+            'packages/plugin/src' => array(),
+            'packages/testing/src' => array(),
+        );
+    }
+
     private function projectPath($path)
     {
         return $this->root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path);
@@ -250,7 +279,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         return $json;
     }
 
-    private function phpFilesUnder($directory)
+    private function phpFilesUnderSource($directory)
     {
         $files = array();
         $iterator = new RecursiveIteratorIterator(
@@ -259,7 +288,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
         foreach ($iterator as $file) {
             if ($file->isFile() && strtolower($file->getExtension()) === 'php') {
-                $files[] = $file->getPathname();
+                $relativePath = substr($file->getPathname(), strlen($directory) + 1);
+                $files[] = str_replace('\\', '/', $relativePath);
             }
         }
 

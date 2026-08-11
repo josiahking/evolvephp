@@ -2,7 +2,7 @@
 
 `packages/` contains the initial EvolvePHP 2 modular-monorepo package set.
 
-The packages define Composer package identities, namespace ownership and dependency direction for EvolvePHP 2. Runtime implementation is not yet present, and the packages are not yet published.
+The packages define Composer package identities, namespace ownership, dependency direction and the first Phase 3 lifecycle foundation for EvolvePHP 2. Complete runtime implementation is not yet present, and the packages are not yet published.
 
 All package manifests require PHP `^8.4`.
 
@@ -10,8 +10,8 @@ All package manifests require PHP `^8.4`.
 
 | Package | Namespace | Responsibility |
 | --- | --- | --- |
-| `evolvephp/contracts` | `Evolve\Contracts\` | Foundational public-contract boundary. |
-| `evolvephp/core` | `Evolve\Core\` | Core orchestration boundary for later kernel and container work. |
+| `evolvephp/contracts` | `Evolve\Contracts\` | Foundational public-contract boundary, including the initial application lifecycle and lifecycle-exception contracts. |
+| `evolvephp/core` | `Evolve\Core\` | Core orchestration boundary, including the initial minimal application lifecycle kernel. |
 | `evolvephp/http` | `Evolve\Http\` | HTTP boundary for later request, response, routing and middleware work. |
 | `evolvephp/module` | `Evolve\Module\` | Module SDK boundary for later descriptors and lifecycle contracts. |
 | `evolvephp/plugin` | `Evolve\Plugin\` | Plugin SDK boundary for later descriptors and lifecycle contracts. |
@@ -34,6 +34,8 @@ No optional package families are present here. Insight, Observe, Bridge, Runtime
 
 ## Current Limitations
 
-These packages are structural foundations only. They do not yet contain public contracts, interfaces, classes, utilities, lifecycle code or framework behavior.
+Contracts and Core now contain the first Phase 3 lifecycle foundation: a narrow application boot/shutdown contract, public lifecycle exception catch boundaries and a minimal Core lifecycle implementation.
+
+HTTP, Module, Plugin and Testing runtime source remains intentionally empty in this slice. EvolvePHP 2 does not yet provide HTTP handling, container integration, configuration, execution scopes, reset handling, console behavior, telemetry or production-ready framework runtime behavior.
 
 The EvolvePHP 2 Composer workspace resolves and validates these local packages. See [../workspace/README.md](../workspace/README.md) for setup, testing, quality commands, lockfile, static-analysis, coding-standard and architecture-boundary policy.

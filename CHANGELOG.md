@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Runtime foundation
+
+- Added Phase 3.1 application lifecycle foundation with a narrow public boot/shutdown contract, lifecycle exception catch boundaries, and a minimal Core `ApplicationKernel` state transition implementation; complete kernel behavior, container integration, execution handling, reset behavior, HTTP, module/plugin runtime, console and telemetry remain deferred.
+
 ### Documentation and governance
 
 - Added Phase 2.10B deterministic package split and prerelease consumer validation with repository-owned `git subtree` split checks, exact tree/inventory equivalence, generated split Composer validation, an offline alpha/stable consumer matrix, documented alpha consumer policy, retained internal `^2.0` constraints, Policy PHP 8.4 split-validation enforcement, manual/pre-release consumer validation, and no remote writes, tags or release artifacts.

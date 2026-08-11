@@ -127,14 +127,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         }
     }
 
-    public function testPhase25DoesNotCommitRuntimeImplementationOrGeneratedArchitectureArtifacts(): void
+    public function testArchitectureFoundationDoesNotCommitGeneratedArchitectureArtifacts(): void
     {
-        foreach (array_keys($this->packageSourceRules()) as $directory) {
-            $phpFiles = $this->trackedPhpFilesUnder($directory);
-
-            $this->assertSame(array(), $phpFiles, $directory . ' must remain free from runtime implementation PHP files in Phase 2.5.');
-        }
-
         foreach ($this->trackedFiles() as $file) {
             $normalized = str_replace('\\', '/', $file);
             $lower = strtolower($normalized);
