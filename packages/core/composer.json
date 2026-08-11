@@ -5,7 +5,11 @@
     "license": "BSD-3-Clause",
     "require": {
         "php": "^8.4",
-        "evolvephp/contracts": "^2.0"
+        "evolvephp/contracts": "^2.0",
+        "psr/container": "^1.1 || ^2.0"
+    },
+    "provide": {
+        "psr/container-implementation": "1.0.0"
     },
     "autoload": {
         "psr-4": {

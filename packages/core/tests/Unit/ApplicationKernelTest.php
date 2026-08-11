@@ -7,8 +7,10 @@ namespace Evolve\Core\Tests\Unit;
 use Evolve\Contracts\Exception\LifecycleException;
 use Evolve\Contracts\Lifecycle\ApplicationLifecycle;
 use Evolve\Core\ApplicationKernel;
+use Evolve\Core\Container\ServiceRegistry;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionNamedType;
 use Throwable;
 
 final class ApplicationKernelTest extends TestCase
@@ -26,11 +28,22 @@ final class ApplicationKernelTest extends TestCase
         $constructor = $kernel->getConstructor();
 
         if ($constructor !== null) {
-            self::assertLessThanOrEqual(2, $constructor->getNumberOfParameters());
+            self::assertSame(3, $constructor->getNumberOfParameters(), 'ApplicationKernel constructor should declare the approved Phase 3.3 parameters.');
+            self::assertSame(
+                ['configuration', 'validators', 'services'],
+                array_map(static fn($parameter): string => $parameter->getName(), $constructor->getParameters()),
+            );
 
             foreach ($constructor->getParameters() as $parameter) {
                 self::assertTrue($parameter->isDefaultValueAvailable(), 'ApplicationKernel constructor parameters must remain optional.');
             }
+
+            $services = $constructor->getParameters()[2];
+            $servicesType = $services->getType();
+
+            self::assertTrue($services->allowsNull(), 'ApplicationKernel services parameter should remain optional and nullable.');
+            self::assertInstanceOf(ReflectionNamedType::class, $servicesType);
+            self::assertSame(ServiceRegistry::class, $servicesType->getName());
         }
     }
 
