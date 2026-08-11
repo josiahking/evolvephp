@@ -96,12 +96,16 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
 
         $content = $this->readProjectFile('workspace/deptrac.php');
 
-        foreach ($this->expectedLayers() as $layerName => $pathPattern) {
+        foreach ($this->expectedFirstPartyLayers() as $layerName => $pathPattern) {
             $this->assertMatchesPattern('/Layer::withName\(\'' . preg_quote($layerName, '/') . '\'/', $content);
             $this->assertStringContainsString("DirectoryConfig::create('" . $pathPattern . "')", $content);
         }
 
-        $this->assertSame($this->expectedLayers(), $this->deptracLayerDirectories($content));
+        $this->assertSame($this->expectedFirstPartyLayers(), $this->deptracLayerDirectories($content));
+        $this->assertSame(
+            array('PsrContainer' => '^Psr\\\\Container\\\\.*'),
+            $this->deptracExternalClassLikeLayers($content)
+        );
         $this->assertSame($this->expectedRulesets(), $this->deptracRulesets($content));
 
         foreach (array('../packages/contracts/tests', '../packages/core/tests', '../packages/http/tests', '../packages/module/tests', '../packages/plugin/tests', '../packages/testing/tests') as $testPath) {
@@ -182,7 +186,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         $this->assertMatchesPattern('/dependency-boundar/i', $changelog);
     }
 
-    private function expectedLayers()
+    private function expectedFirstPartyLayers()
     {
         return array(
             'Contracts' => '../packages/contracts/src/.*',
@@ -198,7 +202,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
     {
         return array(
             'Contracts' => array(),
-            'Core' => array('Contracts'),
+            'PsrContainer' => array(),
+            'Core' => array('Contracts', 'PsrContainer'),
             'Http' => array('Contracts', 'Core'),
             'Module' => array('Contracts'),
             'Plugin' => array('Contracts'),
@@ -220,10 +225,25 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         return $layers;
     }
 
+    private function deptracExternalClassLikeLayers($content)
+    {
+        $layers = array();
+        $pattern = "/\\$(\\w+)\\s*=\\s*Layer::withName\\('([^']+)'\\)->collectors\\(\\s*ClassLikeConfig::create\\('([^']+)'\\),\\s*\\)/s";
+
+        preg_match_all($pattern, $content, $matches, PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $layers[$match[2]] = $match[3];
+        }
+
+        return $layers;
+    }
+
     private function deptracRulesets($content)
     {
         $variablesByLayer = array(
             'contracts' => 'Contracts',
+            'psrContainer' => 'PsrContainer',
             'core' => 'Core',
             'http' => 'Http',
             'module' => 'Module',
@@ -238,7 +258,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|core|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|psrContainer|core|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
@@ -248,8 +268,12 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $rulesets[$layerName] = $accesses;
         }
 
-        foreach (array('Contracts', 'Core', 'Http', 'Module', 'Plugin') as $productionLayer) {
+        foreach (array('Contracts', 'PsrContainer', 'Core', 'Http', 'Module', 'Plugin') as $productionLayer) {
             $this->assertNotContains('Testing', $rulesets[$productionLayer], $productionLayer . ' must not access Testing.');
+        }
+
+        foreach (array('Contracts', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
+            $this->assertNotContains('PsrContainer', $rulesets[$layerName], $layerName . ' must not access PsrContainer directly in Phase 3.3.');
         }
 
         return $rulesets;

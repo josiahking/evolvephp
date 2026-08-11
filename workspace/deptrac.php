@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Deptrac\Deptrac\Contract\Config\Collector\DirectoryConfig;
+use Deptrac\Deptrac\Contract\Config\Collector\ClassLikeConfig;
 use Deptrac\Deptrac\Contract\Config\DeptracConfig;
 use Deptrac\Deptrac\Contract\Config\Layer;
 use Deptrac\Deptrac\Contract\Config\Ruleset;
@@ -22,6 +23,9 @@ return static function (DeptracConfig $config): void {
             $contracts = Layer::withName('Contracts')->collectors(
                 DirectoryConfig::create('../packages/contracts/src/.*'),
             ),
+            $psrContainer = Layer::withName('PsrContainer')->collectors(
+                ClassLikeConfig::create('^Psr\\Container\\.*'),
+            ),
             $core = Layer::withName('Core')->collectors(
                 DirectoryConfig::create('../packages/core/src/.*'),
             ),
@@ -40,7 +44,8 @@ return static function (DeptracConfig $config): void {
         )
         ->rulesets(
             Ruleset::forLayer($contracts),
-            Ruleset::forLayer($core)->accesses($contracts),
+            Ruleset::forLayer($psrContainer),
+            Ruleset::forLayer($core)->accesses($contracts, $psrContainer),
             Ruleset::forLayer($http)->accesses($contracts, $core),
             Ruleset::forLayer($module)->accesses($contracts),
             Ruleset::forLayer($plugin)->accesses($contracts),

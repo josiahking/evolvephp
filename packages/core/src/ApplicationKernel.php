@@ -9,6 +9,7 @@ use Evolve\Contracts\Configuration\ConfigurationValidator;
 use Evolve\Contracts\Exception\ConfigurationException;
 use Evolve\Contracts\Lifecycle\ApplicationLifecycle;
 use Evolve\Core\Configuration\ArrayConfiguration;
+use Evolve\Core\Container\ServiceRegistry;
 use Evolve\Core\Exception\ConfigurationValidationFailed;
 use Evolve\Core\Exception\InvalidLifecycleTransition;
 use Evolve\Core\Lifecycle\ApplicationState;
@@ -26,12 +27,18 @@ final class ApplicationKernel implements ApplicationLifecycle
      */
     private array $validators = [];
 
+    private ?ServiceRegistry $services;
+
     /**
      * @param iterable<mixed> $validators
      */
-    public function __construct(?Configuration $configuration = null, iterable $validators = [])
-    {
+    public function __construct(
+        ?Configuration $configuration = null,
+        iterable $validators = [],
+        ?ServiceRegistry $services = null,
+    ) {
         $this->configuration = $configuration ?? new ArrayConfiguration();
+        $this->services = $services;
 
         foreach ($validators as $validator) {
             if (! $validator instanceof ConfigurationValidator) {
@@ -62,6 +69,14 @@ final class ApplicationKernel implements ApplicationLifecycle
             $this->state = ApplicationState::Failed;
 
             throw new ConfigurationValidationFailed('Configuration validation failed.', 0, $exception);
+        }
+
+        try {
+            $this->services?->freeze();
+        } catch (Throwable $exception) {
+            $this->state = ApplicationState::Failed;
+
+            throw $exception;
         }
 
         $this->state = ApplicationState::Ready;

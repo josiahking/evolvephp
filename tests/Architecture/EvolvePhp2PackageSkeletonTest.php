@@ -114,9 +114,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPackageSourcesMatchPhase32RuntimeInventory(): void
+    public function testPackageSourcesMatchPhase33RuntimeInventory(): void
     {
-        foreach ($this->phase32SourceInventories() as $sourceDirectory => $expectedFiles) {
+        foreach ($this->phase33SourceInventories() as $sourceDirectory => $expectedFiles) {
             $fullSourceDirectory = $this->projectPath($sourceDirectory);
 
             $this->assertTrue(is_dir($fullSourceDirectory), $sourceDirectory . ' should exist before source files are inspected.');
@@ -124,7 +124,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedFiles,
                 $this->phpFilesUnderSource($fullSourceDirectory),
-                $sourceDirectory . ' should contain exactly the approved Phase 3.2 PHP source inventory.'
+                $sourceDirectory . ' should contain exactly the approved Phase 3.3 PHP source inventory.'
             );
         }
 
@@ -165,6 +165,41 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertDoesNotMatchPattern('/' . preg_quote($probeHistory, '/') . '/i', $content);
     }
 
+    public function testCoreDeclaresPsrContainerInteroperabilityMetadata(): void
+    {
+        $coreManifest = $this->readJsonFile('packages/core/composer.json');
+
+        $this->assertSame(
+            '^1.1 || ^2.0',
+            $coreManifest['require']['psr/container'] ?? null,
+            'Core should require the approved PSR-11 container contract range.'
+        );
+        $this->assertSame(
+            array('psr/container-implementation' => '1.0.0'),
+            $coreManifest['provide'] ?? array(),
+            'Core should advertise the approved PSR-11 implementation metadata.'
+        );
+
+        foreach ($this->packages() as $package) {
+            if ($package['name'] === 'evolvephp/core') {
+                continue;
+            }
+
+            $manifest = $this->readJsonFile($package['manifest']);
+
+            $this->assertArrayNotHasKey(
+                'psr/container',
+                $manifest['require'],
+                $package['manifest'] . ' must not require PSR-11 for Phase 3.3.'
+            );
+            $this->assertArrayNotHasKey(
+                'provide',
+                $manifest,
+                $package['manifest'] . ' must not advertise PSR-11 implementation metadata.'
+            );
+        }
+    }
+
     public function testChangelogRecordsPhase21PackageSkeleton(): void
     {
         $content = $this->readProjectFile('CHANGELOG.md');
@@ -191,7 +226,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'name' => 'evolvephp/core',
                 'description' => 'Application kernel and runtime-neutral orchestration for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Core\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
+                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0', 'psr/container' => '^1.1 || ^2.0'),
             ),
             array(
                 'manifest' => 'packages/http/composer.json',
@@ -235,7 +270,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
     }
 
-    private function phase32SourceInventories()
+    private function phase33SourceInventories()
     {
         return array(
             'packages/contracts/src' => array(
@@ -249,9 +284,17 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'packages/core/src' => array(
                 'ApplicationKernel.php',
                 'Configuration/ArrayConfiguration.php',
+                'Container/ServiceContainer.php',
+                'Container/ServiceDefinition.php',
+                'Container/ServiceLifetime.php',
+                'Container/ServiceRegistry.php',
                 'Exception/ConfigurationValidationFailed.php',
                 'Exception/InvalidConfiguration.php',
                 'Exception/InvalidLifecycleTransition.php',
+                'Exception/InvalidServiceDefinition.php',
+                'Exception/ServiceNotFound.php',
+                'Exception/ServiceRegistryFrozen.php',
+                'Exception/ServiceResolutionFailed.php',
                 'Lifecycle/ApplicationState.php',
             ),
             'packages/http/src' => array(),
