@@ -12,8 +12,8 @@ use Evolve\Contracts\Exception\LifecycleException;
 use Evolve\Core\ApplicationKernel;
 use Evolve\Core\Container\ServiceLifetime;
 use Evolve\Core\Container\ServiceRegistry;
-use Evolve\Core\Exception\InvalidServiceDefinition;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use RuntimeException;
 use Throwable;
 
@@ -95,22 +95,40 @@ final class ApplicationKernelContainerTest extends TestCase
         self::assertTrue($registry->freeze()->has('later'));
     }
 
-    public function test_service_freeze_failure_prevents_readiness_and_is_terminal(): void
+    public function test_kernel_accepts_execution_definitions_without_constructing_or_scoping_them(): void
     {
+        $calls = [];
         $registry = new ServiceRegistry();
-        $registry->register('execution.service', ServiceLifetime::Execution, static fn(): object => new \stdClass());
-        $kernel = new ApplicationKernel(null, [], $registry);
+        $registry->register('execution.service', ServiceLifetime::Execution, static function () use (&$calls): object {
+            $calls[] = 'factory';
 
-        try {
-            $kernel->boot();
-            self::fail('Kernel boot should fail during service freeze.');
-        } catch (Throwable $exception) {
-            self::assertInstanceOf(InvalidServiceDefinition::class, $exception);
-        }
-
-        $this->assertFailsThroughLifecycleException(static function () use ($kernel): void {
-            $kernel->shutdown();
+            return new \stdClass();
         });
+        $validator = new class (static function () use (&$calls): void {
+            $calls[] = 'validator';
+        }) implements ConfigurationValidator {
+            public function __construct(private Closure $callback) {}
+
+            public function validate(Configuration $configuration): void
+            {
+                ($this->callback)();
+            }
+        };
+        $kernel = new ApplicationKernel(null, [$validator], $registry);
+
+        $kernel->boot();
+
+        self::assertSame(['validator'], $calls);
+        self::assertTrue($registry->freeze()->has('execution.service'));
+        self::assertTrue($registry->createExecutionScope()->has('execution.service'));
+        $kernelApi = new ReflectionClass($kernel);
+
+        self::assertFalse($kernelApi->hasMethod('createExecutionScope'));
+        self::assertFalse($kernelApi->hasMethod('beginExecution'));
+        self::assertFalse($kernelApi->hasMethod('currentScope'));
+
+        $kernel->shutdown();
+
         $this->assertFailsThroughLifecycleException(static function () use ($kernel): void {
             $kernel->boot();
         });

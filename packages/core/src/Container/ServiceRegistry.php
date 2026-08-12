@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Evolve\Core\Container;
 
+use Evolve\Core\Exception\ExecutionScopeUnavailable;
 use Evolve\Core\Exception\InvalidServiceDefinition;
 use Evolve\Core\Exception\ServiceRegistryFrozen;
+use Evolve\Core\Execution\ExecutionScope;
 use Psr\Container\ContainerInterface;
 
 final class ServiceRegistry
@@ -17,7 +19,7 @@ final class ServiceRegistry
 
     private bool $frozen = false;
 
-    private ?ContainerInterface $container = null;
+    private ?ServiceContainer $container = null;
 
     public function register(string $id, ServiceLifetime $lifetime, callable $factory): void
     {
@@ -48,14 +50,17 @@ final class ServiceRegistry
 
         $this->frozen = true;
 
-        foreach ($this->definitions as $definition) {
-            if ($definition->lifetime() === ServiceLifetime::Execution) {
-                throw new InvalidServiceDefinition('Execution lifetime is reserved and cannot be frozen in Phase 3.3.');
-            }
-        }
-
         $this->container = new ServiceContainer($this->definitions);
 
         return $this->container;
+    }
+
+    public function createExecutionScope(): ExecutionScope
+    {
+        if ($this->container === null) {
+            throw new ExecutionScopeUnavailable('Execution scope creation requires a successful explicit freeze first.');
+        }
+
+        return $this->container->createExecutionScope();
     }
 }

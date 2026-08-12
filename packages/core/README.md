@@ -4,7 +4,7 @@ Application kernel and runtime-neutral orchestration for EvolvePHP 2.
 
 ## Runtime Foundation
 
-Phase 3.3 extends `Evolve\Core\ApplicationKernel` as the initial lifecycle implementation for the public `ApplicationLifecycle` contract, the first Core host for boot-time configuration validation and the integration point that freezes an optional service registry before readiness.
+Phase 3.4 extends `Evolve\Core\ApplicationKernel` as the initial lifecycle implementation for the public `ApplicationLifecycle` contract, the first Core host for boot-time configuration validation and the integration point that freezes an optional service registry before readiness.
 
 The current lifecycle remains intentionally minimal:
 
@@ -17,11 +17,17 @@ The current lifecycle remains intentionally minimal:
 
 `Evolve\Core\Configuration\ArrayConfiguration` is an immutable array-backed configuration implementation created from already-materialized application values. It stores only scalar, null and recursive-array data, supports dot-path lookup through associative maps, treats missing values and explicit null values differently, and rejects objects, resources, malformed keys, ambiguous array maps and list-index path traversal.
 
-`Evolve\Core\Container\ServiceRegistry` is the restricted bootstrap registration API for explicit service definitions. Calling `freeze()` is explicit and idempotent, returns a PSR-11 `Psr\Container\ContainerInterface`, prevents later registration and does not construct service instances. The frozen resolver is read-only: services are consumed through `has()` and `get()`, with application-lifetime services cached after the first successful construction and transient services created on every read.
+`Evolve\Core\Container\ServiceRegistry` is the restricted bootstrap registration API for explicit service definitions. Calling `freeze()` is explicit and idempotent, returns a PSR-11 `Psr\Container\ContainerInterface`, prevents later registration and does not construct service instances. `createExecutionScope()` is legal only after successful explicit freeze and does not implicitly freeze the registry.
 
-Service identifiers follow PSR-11 opaque-string semantics: the empty string is invalid, while other strings are case-sensitive and not trimmed or normalized. `ServiceLifetime::Execution` is reserved vocabulary for later execution-scope work and is rejected during freeze in this phase. Circular dependencies, unknown services and ordinary factory failures are deterministic and catchable through PSR-11 exception interfaces; factory throwables are preserved as previous exceptions when wrapped.
+The frozen root resolver is read-only: services are consumed through `has()` and `get()`, with application-lifetime services cached after the first successful construction and transient services created on every read. Execution definitions are valid in the frozen graph. Root `has()` reports them, but root `get()` rejects them because they require an explicit `ExecutionScope`.
 
-This slice does not provide environment or dotenv loading, configuration files, autowiring, aliases, service tags, decorators, service-locator globals, execution-scope reset handling, HTTP handling, module/plugin runtime, console behavior or telemetry.
+`Evolve\Core\Execution\ExecutionScope` is a PSR-11 read-only resolver plus two lifecycle/reset methods: `registerResetParticipant()` and `close()`. Application values are shared from the root resolver across scopes, Execution values are lazy and cached once per scope, and Transient values remain uncached. Application factories always receive the root resolver, Execution factories receive the active scope resolver, and Transient factories receive the resolver used for that specific read; this prevents Application-to-Execution captive dependencies while allowing scoped Execution and Transient collaboration.
+
+Reset participation is explicit through the public Contracts `ResetParticipant` interface. A scope resets registered participants in reverse successful registration order, continues after participant failures, reports aggregate close failures through `ExecutionResetFailed::failures()`, closes terminally and idempotently, and releases execution-local caches, resolving state and reset participant references during close. Reset is deterministic execution-state cleanup, not automatic disposal of arbitrary services.
+
+Service identifiers follow PSR-11 opaque-string semantics: the empty string is invalid, while other strings are case-sensitive and not trimmed or normalized. Circular dependencies, unknown services, root Execution access and ordinary factory failures are deterministic and catchable through PSR-11 exception interfaces where they occur during service resolution; factory throwables are preserved as previous exceptions when wrapped.
+
+This slice does not provide environment or dotenv loading, configuration files, autowiring, aliases, service tags, decorators, service-locator globals, execution identifiers or context, execution orchestration, outcomes, quarantine behavior, HTTP handling, module/plugin runtime, console behavior, telemetry or persistent-worker concurrency guarantees.
 
 Core now depends on `evolvephp/contracts` and `psr/container`. The concrete lifecycle implementation, service definition model, frozen container implementation and internal state enum are not an invitation for consumers to depend on internal runtime classes.
 

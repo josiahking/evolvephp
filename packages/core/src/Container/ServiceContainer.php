@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Evolve\Core\Container;
 
+use Evolve\Core\Exception\ExecutionScopeUnavailable;
 use Evolve\Core\Exception\ServiceNotFound;
 use Evolve\Core\Exception\ServiceResolutionFailed;
+use Evolve\Core\Execution\ExecutionScope;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Throwable;
@@ -46,6 +48,10 @@ final class ServiceContainer implements ContainerInterface
 
         $definition = $this->definitions[$id];
 
+        if ($definition->lifetime() === ServiceLifetime::Execution) {
+            throw new ExecutionScopeUnavailable('Execution-lifetime services require an explicit execution scope.');
+        }
+
         if ($definition->lifetime() === ServiceLifetime::Application && array_key_exists($id, $this->instances)) {
             return $this->instances[$id];
         }
@@ -62,6 +68,20 @@ final class ServiceContainer implements ContainerInterface
     public function has(string $id): bool
     {
         return isset($this->definitions[$id]);
+    }
+
+    public function createExecutionScope(): ExecutionScope
+    {
+        return new ExecutionScopeContainer($this);
+    }
+
+    public function definition(string $id): ServiceDefinition
+    {
+        if (! isset($this->definitions[$id])) {
+            throw new ServiceNotFound('Service is not defined.');
+        }
+
+        return $this->definitions[$id];
     }
 
     private function resolve(ServiceDefinition $definition): mixed
