@@ -114,9 +114,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPackageSourcesMatchPhase37RuntimeInventory(): void
+    public function testPackageSourcesMatchPhase41RuntimeInventory(): void
     {
-        foreach ($this->phase37SourceInventories() as $sourceDirectory => $expectedFiles) {
+        foreach ($this->phase41SourceInventories() as $sourceDirectory => $expectedFiles) {
             $fullSourceDirectory = $this->projectPath($sourceDirectory);
 
             $this->assertTrue(is_dir($fullSourceDirectory), $sourceDirectory . ' should exist before source files are inspected.');
@@ -124,13 +124,13 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedFiles,
                 $this->phpFilesUnderSource($fullSourceDirectory),
-                $sourceDirectory . ' should contain exactly the approved Phase 3.7 PHP source inventory.'
+                $sourceDirectory . ' should contain exactly the approved Phase 4.1 PHP source inventory.'
             );
         }
 
         $this->assertFileDoesNotExist($this->projectPath('packages/contracts/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/core/src/.gitkeep'));
-        $this->assertFileExists($this->projectPath('packages/http/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/http/src/.gitkeep'));
         $this->assertFileExists($this->projectPath('packages/module/src/.gitkeep'));
         $this->assertFileExists($this->projectPath('packages/plugin/src/.gitkeep'));
         $this->assertFileExists($this->projectPath('packages/testing/src/.gitkeep'));
@@ -161,6 +161,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/minimal Core console foundation|runtime-neutral command foundation/i', $content);
         $this->assertMatchesPattern('/CommandRunner|CommandInput|CommandOutput|CommandResult/i', $content);
         $this->assertMatchesPattern('/CliCommand/i', $content);
+        $this->assertMatchesPattern('/Phase 4\.1.*PSR.*HTTP.*middleware/is', $content);
+        $this->assertMatchesPattern('/MiddlewarePipeline/i', $content);
+        $this->assertMatchesPattern('/routing.*deferred|deferred.*routing/i', $content);
+        $this->assertMatchesPattern('/HTTP execution-kernel integration.*deferred|deferred.*HTTP execution-kernel integration/i', $content);
         $this->assertMatchesPattern('/Runtime adapters.*deferred|Runtime.*adapters.*deferred/i', $content);
         $this->assertMatchesPattern('/Insight.*Observe.*OpenTelemetry.*deferred/is', $content);
 
@@ -224,7 +228,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/Doctor.*generator.*deferred/is', $content);
     }
 
-    public function testChangelogRecordsPhase21PackageSkeletonAndPhase37ConsoleFoundation(): void
+    public function testChangelogRecordsPhase21PackageSkeletonPhase37ConsoleFoundationAndPhase41HttpFoundation(): void
     {
         $content = $this->readProjectFile('CHANGELOG.md');
 
@@ -245,6 +249,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/CliCommand/i', $content);
         $this->assertMatchesPattern('/unknown-command dispatch boundary/i', $content);
         $this->assertMatchesPattern('/quarantine/i', $content);
+        $this->assertMatchesPattern('/Phase 4\.1/i', $content);
+        $this->assertMatchesPattern('/PSR.*HTTP.*interoperability/i', $content);
+        $this->assertMatchesPattern('/MiddlewarePipeline/i', $content);
         $this->assertDoesNotMatchPattern('/reserved-but-rejected/i', $content);
     }
 
@@ -273,7 +280,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'name' => 'evolvephp/http',
                 'description' => 'HTTP lifecycle, routing and middleware foundations for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Http\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0', 'evolvephp/core' => '^2.0'),
+                'require' => array(
+                    'php' => '^8.4',
+                    'evolvephp/contracts' => '^2.0',
+                    'evolvephp/core' => '^2.0',
+                    'psr/http-message' => '^1.1 || ^2.0',
+                    'psr/http-server-handler' => '^1.0',
+                    'psr/http-server-middleware' => '^1.0',
+                ),
             ),
             array(
                 'manifest' => 'packages/module/composer.json',
@@ -309,7 +323,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
     }
 
-    private function phase37SourceInventories()
+    private function phase41SourceInventories()
     {
         return array(
             'packages/contracts/src' => array(
@@ -365,7 +379,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Instrumentation/ObservationType.php',
                 'Lifecycle/ApplicationState.php',
             ),
-            'packages/http/src' => array(),
+            'packages/http/src' => array(
+                'Middleware/Internal/MiddlewareDispatcher.php',
+                'Middleware/MiddlewarePipeline.php',
+            ),
             'packages/module/src' => array(),
             'packages/plugin/src' => array(),
             'packages/testing/src' => array(),
