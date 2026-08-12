@@ -114,9 +114,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPackageSourcesMatchPhase33RuntimeInventory(): void
+    public function testPackageSourcesMatchPhase34RuntimeInventory(): void
     {
-        foreach ($this->phase33SourceInventories() as $sourceDirectory => $expectedFiles) {
+        foreach ($this->phase34SourceInventories() as $sourceDirectory => $expectedFiles) {
             $fullSourceDirectory = $this->projectPath($sourceDirectory);
 
             $this->assertTrue(is_dir($fullSourceDirectory), $sourceDirectory . ' should exist before source files are inspected.');
@@ -124,7 +124,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedFiles,
                 $this->phpFilesUnderSource($fullSourceDirectory),
-                $sourceDirectory . ' should contain exactly the approved Phase 3.3 PHP source inventory.'
+                $sourceDirectory . ' should contain exactly the approved Phase 3.4 PHP source inventory.'
             );
         }
 
@@ -152,6 +152,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/no production dependency on Testing/i', $content);
         $this->assertMatchesPattern('/workspace\/README\.md/i', $content);
         $this->assertMatchesPattern('/setup.*testing.*quality|testing.*quality.*setup|quality.*setup.*testing/is', $content);
+        $this->assertMatchesPattern('/execution-scope foundation|execution scopes/i', $content);
+        $this->assertMatchesPattern('/ResetParticipant|reset-participant/i', $content);
+        $this->assertMatchesPattern('/execution identifiers? or context/i', $content);
 
         foreach ($this->packages() as $package) {
             $this->assertStringContainsString($package['name'], $content);
@@ -200,13 +203,17 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testChangelogRecordsPhase21PackageSkeleton(): void
+    public function testChangelogRecordsPhase21PackageSkeletonAndPhase34ScopeFoundation(): void
     {
         $content = $this->readProjectFile('CHANGELOG.md');
 
         $this->assertMatchesPattern('/##\s+\[?Unreleased\]?/i', $content);
         $this->assertMatchesPattern('/Phase 2\.1/i', $content);
         $this->assertMatchesPattern('/initial EvolvePHP 2 package skeleton/i', $content);
+        $this->assertMatchesPattern('/Phase 3\.4/i', $content);
+        $this->assertMatchesPattern('/execution-scope and reset foundation/i', $content);
+        $this->assertMatchesPattern('/ResetParticipant/i', $content);
+        $this->assertDoesNotMatchPattern('/reserved-but-rejected/i', $content);
     }
 
     private function packages()
@@ -270,7 +277,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
     }
 
-    private function phase33SourceInventories()
+    private function phase34SourceInventories()
     {
         return array(
             'packages/contracts/src' => array(
@@ -279,22 +286,30 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/ConfigurationException.php',
                 'Exception/EvolveException.php',
                 'Exception/LifecycleException.php',
+                'Execution/ResetParticipant.php',
                 'Lifecycle/ApplicationLifecycle.php',
             ),
             'packages/core/src' => array(
                 'ApplicationKernel.php',
                 'Configuration/ArrayConfiguration.php',
+                'Container/ExecutionScopeContainer.php',
                 'Container/ServiceContainer.php',
                 'Container/ServiceDefinition.php',
                 'Container/ServiceLifetime.php',
                 'Container/ServiceRegistry.php',
                 'Exception/ConfigurationValidationFailed.php',
+                'Exception/ExecutionResetFailed.php',
+                'Exception/ExecutionScopeClosed.php',
+                'Exception/ExecutionScopeUnavailable.php',
                 'Exception/InvalidConfiguration.php',
                 'Exception/InvalidLifecycleTransition.php',
+                'Exception/InvalidResetParticipant.php',
                 'Exception/InvalidServiceDefinition.php',
                 'Exception/ServiceNotFound.php',
                 'Exception/ServiceRegistryFrozen.php',
                 'Exception/ServiceResolutionFailed.php',
+                'Execution/ExecutionScope.php',
+                'Execution/ResetCoordinator.php',
                 'Lifecycle/ApplicationState.php',
             ),
             'packages/http/src' => array(),

@@ -6,9 +6,12 @@ namespace Evolve\Core\Tests\Unit\Container;
 
 use Evolve\Core\Container\ServiceLifetime;
 use Evolve\Core\Container\ServiceRegistry;
+use Evolve\Core\Exception\ExecutionScopeUnavailable;
 use Evolve\Core\Exception\InvalidServiceDefinition;
 use Evolve\Core\Exception\ServiceRegistryFrozen;
+use Evolve\Core\Execution\ExecutionScope;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionEnum;
 use Throwable;
@@ -81,24 +84,59 @@ final class ServiceRegistryTest extends TestCase
         });
     }
 
-    public function test_execution_lifetime_is_reserved_and_rejected_during_freeze(): void
+    public function test_execution_lifetime_is_accepted_during_freeze_without_constructing_service(): void
     {
+        $constructed = 0;
         $registry = new ServiceRegistry();
-        $registry->register('execution.service', ServiceLifetime::Execution, static fn(): object => new \stdClass());
+        $registry->register('execution.service', ServiceLifetime::Execution, static function () use (&$constructed): object {
+            ++$constructed;
 
-        $this->expectContainerBootstrapFailure(InvalidServiceDefinition::class, static function () use ($registry): void {
-            $registry->freeze();
+            return new \stdClass();
         });
+
+        $container = $registry->freeze();
+        $second = $registry->freeze();
+
+        self::assertSame($container, $second);
+        self::assertTrue($container->has('execution.service'));
+        self::assertSame(0, $constructed);
     }
 
-    public function test_failed_freeze_leaves_registry_terminally_frozen(): void
+    public function test_create_execution_scope_requires_prior_successful_freeze_without_mutating_registry(): void
     {
         $registry = new ServiceRegistry();
         $registry->register('execution.service', ServiceLifetime::Execution, static fn(): object => new \stdClass());
 
-        $this->expectContainerBootstrapFailure(InvalidServiceDefinition::class, static function () use ($registry): void {
-            $registry->freeze();
-        });
+        try {
+            $registry->createExecutionScope();
+            self::fail('Execution scope creation before freeze should fail.');
+        } catch (Throwable $exception) {
+            self::assertInstanceOf(ExecutionScopeUnavailable::class, $exception);
+            self::assertContains(ContainerExceptionInterface::class, class_implements($exception));
+        }
+
+        $registry->register('later', ServiceLifetime::Application, static fn(): string => 'ok');
+
+        $container = $registry->freeze();
+
+        self::assertTrue($container->has('execution.service'));
+        self::assertTrue($container->has('later'));
+    }
+
+    public function test_create_execution_scope_returns_independent_psr11_scope_after_freeze(): void
+    {
+        $registry = new ServiceRegistry();
+        $registry->register('execution.service', ServiceLifetime::Execution, static fn(): object => new \stdClass());
+
+        $registry->freeze();
+
+        $first = $registry->createExecutionScope();
+        $second = $registry->createExecutionScope();
+
+        self::assertContains(ExecutionScope::class, class_implements($first));
+        self::assertContains(ContainerInterface::class, class_implements($first));
+        self::assertNotSame($first, $second);
+        self::assertNotContains(ContainerInterface::class, class_implements($registry));
 
         $this->expectContainerBootstrapFailure(ServiceRegistryFrozen::class, static function () use ($registry): void {
             $registry->register('later', ServiceLifetime::Application, static fn(): object => new \stdClass());

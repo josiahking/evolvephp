@@ -6,6 +6,7 @@ namespace Evolve\Core\Tests\Unit\Container;
 
 use Evolve\Core\Container\ServiceLifetime;
 use Evolve\Core\Container\ServiceRegistry;
+use Evolve\Core\Exception\ExecutionScopeUnavailable;
 use Evolve\Core\Exception\ServiceNotFound;
 use Evolve\Core\Exception\ServiceResolutionFailed;
 use PHPUnit\Framework\TestCase;
@@ -87,6 +88,28 @@ final class ServiceContainerTest extends TestCase
 
         self::assertNotSame($first, $second);
         self::assertSame(2, $calls);
+    }
+
+    public function test_root_container_reports_execution_definition_but_refuses_to_construct_it(): void
+    {
+        $calls = 0;
+        $container = $this->containerWith('execution', ServiceLifetime::Execution, static function () use (&$calls): object {
+            ++$calls;
+
+            return new \stdClass();
+        });
+
+        self::assertTrue($container->has('execution'));
+
+        try {
+            $container->get('execution');
+            self::fail('Root container should not construct execution-lifetime services.');
+        } catch (Throwable $exception) {
+            self::assertInstanceOf(ExecutionScopeUnavailable::class, $exception);
+            self::assertContains(ContainerExceptionInterface::class, class_implements($exception));
+        }
+
+        self::assertSame(0, $calls);
     }
 
     public function test_factories_receive_read_only_container_and_can_resolve_nested_dependencies(): void
