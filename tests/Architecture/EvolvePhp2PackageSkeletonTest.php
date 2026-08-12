@@ -114,9 +114,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPackageSourcesMatchPhase36RuntimeInventory(): void
+    public function testPackageSourcesMatchPhase37RuntimeInventory(): void
     {
-        foreach ($this->phase36SourceInventories() as $sourceDirectory => $expectedFiles) {
+        foreach ($this->phase37SourceInventories() as $sourceDirectory => $expectedFiles) {
             $fullSourceDirectory = $this->projectPath($sourceDirectory);
 
             $this->assertTrue(is_dir($fullSourceDirectory), $sourceDirectory . ' should exist before source files are inspected.');
@@ -124,7 +124,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedFiles,
                 $this->phpFilesUnderSource($fullSourceDirectory),
-                $sourceDirectory . ' should contain exactly the approved Phase 3.6 PHP source inventory.'
+                $sourceDirectory . ' should contain exactly the approved Phase 3.7 PHP source inventory.'
             );
         }
 
@@ -158,6 +158,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/ExecutionOrchestrator|runtime-neutral execution orchestration/i', $content);
         $this->assertMatchesPattern('/quarantine/i', $content);
         $this->assertMatchesPattern('/generic Core instrumentation|generic execution-lifecycle observation/i', $content);
+        $this->assertMatchesPattern('/minimal Core console foundation|runtime-neutral command foundation/i', $content);
+        $this->assertMatchesPattern('/CommandRunner|CommandInput|CommandOutput|CommandResult/i', $content);
+        $this->assertMatchesPattern('/CliCommand/i', $content);
+        $this->assertMatchesPattern('/Runtime adapters.*deferred|Runtime.*adapters.*deferred/i', $content);
         $this->assertMatchesPattern('/Insight.*Observe.*OpenTelemetry.*deferred/is', $content);
 
         foreach ($this->packages() as $package) {
@@ -207,7 +211,20 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testChangelogRecordsPhase21PackageSkeletonAndPhase36InstrumentationFoundation(): void
+    public function testCoreReadmeDocumentsConsoleFoundationBoundary(): void
+    {
+        $content = $this->readProjectFile('packages/core/README.md');
+
+        $this->assertMatchesPattern('/minimal runtime-neutral command foundation/i', $content);
+        $this->assertMatchesPattern('/CommandRunner.*ExecutionOrchestrator.*CliCommand/is', $content);
+        $this->assertMatchesPattern('/CommandInput.*raw ordered.*token/i', $content);
+        $this->assertMatchesPattern('/CommandOutput.*runtime-neutral/i', $content);
+        $this->assertMatchesPattern('/CommandResult.*exit status/i', $content);
+        $this->assertMatchesPattern('/no shell executable|does not provide a shell executable/i', $content);
+        $this->assertMatchesPattern('/Doctor.*generator.*deferred/is', $content);
+    }
+
+    public function testChangelogRecordsPhase21PackageSkeletonAndPhase37ConsoleFoundation(): void
     {
         $content = $this->readProjectFile('CHANGELOG.md');
 
@@ -222,6 +239,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/Phase 3\.6/i', $content);
         $this->assertMatchesPattern('/generic execution observations/i', $content);
         $this->assertMatchesPattern('/instrumentation-failure reporting/i', $content);
+        $this->assertMatchesPattern('/Phase 3\.7/i', $content);
+        $this->assertMatchesPattern('/runtime-neutral.*Command.*contract/i', $content);
+        $this->assertMatchesPattern('/CommandRunner.*ExecutionOrchestrator/is', $content);
+        $this->assertMatchesPattern('/CliCommand/i', $content);
+        $this->assertMatchesPattern('/unknown-command dispatch boundary/i', $content);
         $this->assertMatchesPattern('/quarantine/i', $content);
         $this->assertDoesNotMatchPattern('/reserved-but-rejected/i', $content);
     }
@@ -287,7 +309,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
     }
 
-    private function phase36SourceInventories()
+    private function phase37SourceInventories()
     {
         return array(
             'packages/contracts/src' => array(
@@ -302,16 +324,24 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'packages/core/src' => array(
                 'ApplicationKernel.php',
                 'Configuration/ArrayConfiguration.php',
+                'Console/Command.php',
+                'Console/CommandInput.php',
+                'Console/CommandOutput.php',
+                'Console/CommandRegistry.php',
+                'Console/CommandResult.php',
+                'Console/CommandRunner.php',
                 'Container/ExecutionScopeContainer.php',
                 'Container/ServiceContainer.php',
                 'Container/ServiceDefinition.php',
                 'Container/ServiceLifetime.php',
                 'Container/ServiceRegistry.php',
+                'Exception/CommandNotFound.php',
                 'Exception/ConfigurationValidationFailed.php',
                 'Exception/ExecutionResetFailed.php',
                 'Exception/ExecutionScopeClosed.php',
                 'Exception/ExecutionScopeUnavailable.php',
                 'Exception/ExecutionStartFailed.php',
+                'Exception/InvalidCommandDefinition.php',
                 'Exception/InvalidConfiguration.php',
                 'Exception/InvalidLifecycleTransition.php',
                 'Exception/InvalidResetParticipant.php',

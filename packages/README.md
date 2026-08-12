@@ -2,7 +2,7 @@
 
 `packages/` contains the initial EvolvePHP 2 modular-monorepo package set.
 
-The packages define Composer package identities, namespace ownership, dependency direction and the first Phase 3 lifecycle, configuration, service-container, execution-scope, runtime-neutral execution orchestration and generic Core instrumentation foundations for EvolvePHP 2. Complete runtime implementation is not yet present for the framework, and the packages are not yet published.
+The packages define Composer package identities, namespace ownership, dependency direction and the first Phase 3 lifecycle, configuration, service-container, execution-scope, runtime-neutral execution orchestration, generic Core instrumentation and minimal Core console foundations for EvolvePHP 2. Complete runtime implementation is not yet present for the framework, and the packages are not yet published.
 
 All package manifests require PHP `^8.4`.
 
@@ -11,7 +11,7 @@ All package manifests require PHP `^8.4`.
 | Package | Namespace | Responsibility |
 | --- | --- | --- |
 | `evolvephp/contracts` | `Evolve\Contracts\` | Foundational public-contract boundary, including the initial application lifecycle, configuration, reset-participant and exception contracts. |
-| `evolvephp/core` | `Evolve\Core\` | Core orchestration boundary, including the initial minimal application lifecycle kernel, array-backed configuration implementation, PSR-11-readable service container foundation, explicit execution scopes, runtime-neutral execution orchestration outcomes and generic execution-lifecycle observation hooks. |
+| `evolvephp/core` | `Evolve\Core\` | Core orchestration boundary, including the initial minimal application lifecycle kernel, array-backed configuration implementation, PSR-11-readable service container foundation, explicit execution scopes, runtime-neutral execution orchestration outcomes, generic execution-lifecycle observation hooks and the minimal runtime-neutral command foundation. |
 | `evolvephp/http` | `Evolve\Http\` | HTTP boundary for later request, response, routing and middleware work. |
 | `evolvephp/module` | `Evolve\Module\` | Module SDK boundary for later descriptors and lifecycle contracts. |
 | `evolvephp/plugin` | `Evolve\Plugin\` | Plugin SDK boundary for later descriptors and lifecycle contracts. |
@@ -30,7 +30,7 @@ The package graph follows an inward dependency principle:
 
 There is no production dependency on Testing.
 
-No optional package families are present here. Insight, Observe, OpenTelemetry, Bridge, Runtime, Deploy and other optional packages remain deferred to later approved work.
+No optional package families are present here. Insight, Observe, OpenTelemetry, Bridge, Runtime, Deploy and other optional packages remain deferred to later approved work. Runtime adapters are deferred; Core does not contain `runtime-cli`.
 
 ## Current Limitations
 
@@ -46,6 +46,8 @@ Core now provides a runtime-neutral `ExecutionOrchestrator` foundation for one s
 
 Core now provides generic execution-lifecycle observation hooks for the implemented orchestration boundary. Observation is optional, observations contain only safe structured execution facts, sink failure is reported separately as instrumentation failure and instrumentation cannot retry, abort, replace results, suppress cleanup or change reuse/quarantine decisions.
 
-HTTP, Module, Plugin and Testing runtime source remains intentionally empty in this slice. EvolvePHP 2 does not yet provide HTTP handling, environment or dotenv loading, configuration files, queue or scheduled-job adapters, retry policy, process recycling or termination, module/plugin runtime, console behavior, Insight, Observe, OpenTelemetry, tracing, metrics, logs, telemetry storage/export, persistent-worker concurrency guarantees or production-ready framework runtime behavior.
+Core now provides a minimal Core console foundation for command selection and dispatch. `CommandRunner` resolves a command from an immutable `CommandRegistry` and executes it through `ExecutionOrchestrator` as an `ExecutionKind::CliCommand` execution. `CommandInput` stores raw ordered token data only, `CommandOutput` remains runtime-neutral, and `CommandResult` carries exit-status semantics without turning non-zero statuses into framework throwables.
+
+HTTP, Module, Plugin and Testing runtime source remains intentionally empty in this slice. EvolvePHP 2 does not yet provide HTTP handling, environment or dotenv loading, configuration files, queue or scheduled-job adapters, retry policy, process recycling or termination, module/plugin runtime, runtime CLI adapters, shell executables, argv or shell parsing, stdout/stderr stream implementations, Symfony Console integration, Doctor, generators, developer tooling commands, Insight, Observe, OpenTelemetry, tracing, metrics, logs, telemetry storage/export, persistent-worker concurrency guarantees or production-ready framework runtime behavior. HTTP remains deferred until Phase 4, Module and Plugin runtime remain deferred until Phase 5, and Phase 6 owns developer tooling.
 
 The EvolvePHP 2 Composer workspace resolves and validates these local packages. See [../workspace/README.md](../workspace/README.md) for setup, testing, quality commands, lockfile, static-analysis, coding-standard and architecture-boundary policy.
