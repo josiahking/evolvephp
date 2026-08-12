@@ -4,7 +4,7 @@ Application kernel and runtime-neutral orchestration for EvolvePHP 2.
 
 ## Runtime Foundation
 
-Phase 3.4 extends `Evolve\Core\ApplicationKernel` as the initial lifecycle implementation for the public `ApplicationLifecycle` contract, the first Core host for boot-time configuration validation and the integration point that freezes an optional service registry before readiness.
+Phase 3.5 extends `Evolve\Core\ApplicationKernel` as the initial lifecycle implementation for the public `ApplicationLifecycle` contract, the first Core host for boot-time configuration validation and the integration point that freezes an optional service registry before readiness.
 
 The current lifecycle remains intentionally minimal:
 
@@ -25,9 +25,11 @@ The frozen root resolver is read-only: services are consumed through `has()` and
 
 Reset participation is explicit through the public Contracts `ResetParticipant` interface. A scope resets registered participants in reverse successful registration order, continues after participant failures, reports aggregate close failures through `ExecutionResetFailed::failures()`, closes terminally and idempotently, and releases execution-local caches, resolving state and reset participant references during close. Reset is deterministic execution-state cleanup, not automatic disposal of arbitrary services.
 
+`Evolve\Core\Execution\ExecutionOrchestrator` coordinates one runtime-neutral execution from identifier generation through explicit context creation, operation invocation, scope close and terminal outcome creation. The operation receives an immutable `ExecutionContext` and the explicit `ExecutionScope`; Core does not create an ambient current execution. `ExecutionOutcome` preserves the primary handler result or throwable separately from cleanup/reset failure and exposes an explicit `ProcessReuseDecision`. Clean handler failure remains reusable, while cleanup/reset failure requires quarantine and causes that orchestrator instance to refuse later work.
+
 Service identifiers follow PSR-11 opaque-string semantics: the empty string is invalid, while other strings are case-sensitive and not trimmed or normalized. Circular dependencies, unknown services, root Execution access and ordinary factory failures are deterministic and catchable through PSR-11 exception interfaces where they occur during service resolution; factory throwables are preserved as previous exceptions when wrapped.
 
-This slice does not provide environment or dotenv loading, configuration files, autowiring, aliases, service tags, decorators, service-locator globals, execution identifiers or context, execution orchestration, outcomes, quarantine behavior, HTTP handling, module/plugin runtime, console behavior, telemetry or persistent-worker concurrency guarantees.
+This slice does not provide environment or dotenv loading, configuration files, autowiring, aliases, service tags, decorators, service-locator globals, HTTP handling, queue or scheduled-job adapters, retry policy, process termination or recycling, module/plugin runtime, console behavior, telemetry, streaming or persistent-worker concurrency guarantees.
 
 Core now depends on `evolvephp/contracts` and `psr/container`. The concrete lifecycle implementation, service definition model, frozen container implementation and internal state enum are not an invitation for consumers to depend on internal runtime classes.
 

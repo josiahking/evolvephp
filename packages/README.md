@@ -2,7 +2,7 @@
 
 `packages/` contains the initial EvolvePHP 2 modular-monorepo package set.
 
-The packages define Composer package identities, namespace ownership, dependency direction and the first Phase 3 lifecycle, configuration, service-container and execution-scope foundations for EvolvePHP 2. Complete runtime implementation is not yet present for the framework, and the packages are not yet published.
+The packages define Composer package identities, namespace ownership, dependency direction and the first Phase 3 lifecycle, configuration, service-container, execution-scope and runtime-neutral execution orchestration foundations for EvolvePHP 2. Complete runtime implementation is not yet present for the framework, and the packages are not yet published.
 
 All package manifests require PHP `^8.4`.
 
@@ -11,7 +11,7 @@ All package manifests require PHP `^8.4`.
 | Package | Namespace | Responsibility |
 | --- | --- | --- |
 | `evolvephp/contracts` | `Evolve\Contracts\` | Foundational public-contract boundary, including the initial application lifecycle, configuration, reset-participant and exception contracts. |
-| `evolvephp/core` | `Evolve\Core\` | Core orchestration boundary, including the initial minimal application lifecycle kernel, array-backed configuration implementation, PSR-11-readable service container foundation and explicit execution scopes. |
+| `evolvephp/core` | `Evolve\Core\` | Core orchestration boundary, including the initial minimal application lifecycle kernel, array-backed configuration implementation, PSR-11-readable service container foundation, explicit execution scopes and runtime-neutral execution orchestration outcomes. |
 | `evolvephp/http` | `Evolve\Http\` | HTTP boundary for later request, response, routing and middleware work. |
 | `evolvephp/module` | `Evolve\Module\` | Module SDK boundary for later descriptors and lifecycle contracts. |
 | `evolvephp/plugin` | `Evolve\Plugin\` | Plugin SDK boundary for later descriptors and lifecycle contracts. |
@@ -34,7 +34,7 @@ No optional package families are present here. Insight, Observe, Bridge, Runtime
 
 ## Current Limitations
 
-Contracts and Core now contain the first Phase 3 lifecycle, configuration, service-container and execution-scope foundations: a narrow application boot/shutdown contract, public lifecycle and configuration exception catch boundaries, read-only configuration lookup contracts, a small validation contract, an explicit reset-participant contract, an immutable Core array-backed configuration implementation, deterministic boot-time validation before readiness, explicit service-registry freezing before readiness and explicit execution scopes created only after successful freeze.
+Contracts and Core now contain the first Phase 3 lifecycle, configuration, service-container, execution-scope and orchestration foundations: a narrow application boot/shutdown contract, public lifecycle and configuration exception catch boundaries, read-only configuration lookup contracts, a small validation contract, an explicit reset-participant contract, an immutable Core array-backed configuration implementation, deterministic boot-time validation before readiness, explicit service-registry freezing before readiness and explicit execution scopes created only after successful freeze.
 
 Configuration values are application-supplied scalar, null or recursive-array data. Dot-path lookup is supported for associative maps, missing values remain distinct from explicit null values, and validator failure makes that kernel instance terminal; construct a new kernel to retry corrected startup.
 
@@ -42,6 +42,8 @@ Core provides a restricted `ServiceRegistry` bootstrap API for explicit service 
 
 Execution scopes expose explicit per-scope `ResetParticipant` registration, reset participants in reverse successful registration order, aggregate reset failures after all participants have been attempted, close terminally and idempotently, and release execution-local references during close even when reset fails. Reset participation is not automatic disposal and is not discovered by scanning services.
 
-HTTP, Module, Plugin and Testing runtime source remains intentionally empty in this slice. EvolvePHP 2 does not yet provide HTTP handling, environment or dotenv loading, configuration files, execution identifiers or context, execution orchestration, outcomes, quarantine behavior, module/plugin runtime, console behavior, telemetry, persistent-worker concurrency guarantees or production-ready framework runtime behavior.
+Core now provides a runtime-neutral `ExecutionOrchestrator` foundation for one sequential unit of work. Each orchestration creates a locally generated opaque execution identifier, classifies the execution kind, passes an explicit immutable execution context and execution scope to the operation, captures the primary handler result or throwable, closes the scope, records cleanup/reset failure separately and reports whether the process remains reusable or must be quarantined. Handler failure alone does not imply quarantine; cleanup/reset failure requires fail-closed quarantine.
+
+HTTP, Module, Plugin and Testing runtime source remains intentionally empty in this slice. EvolvePHP 2 does not yet provide HTTP handling, environment or dotenv loading, configuration files, queue or scheduled-job adapters, retry policy, process recycling or termination, module/plugin runtime, console behavior, telemetry, persistent-worker concurrency guarantees or production-ready framework runtime behavior.
 
 The EvolvePHP 2 Composer workspace resolves and validates these local packages. See [../workspace/README.md](../workspace/README.md) for setup, testing, quality commands, lockfile, static-analysis, coding-standard and architecture-boundary policy.
