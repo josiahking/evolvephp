@@ -103,7 +103,11 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
 
         $this->assertSame($this->expectedFirstPartyLayers(), $this->deptracLayerDirectories($content));
         $this->assertSame(
-            array('PsrContainer' => '^Psr\\\\Container\\\\.*'),
+            array(
+                'PsrContainer' => '^Psr\\\\Container\\\\.*',
+                'PsrHttpMessage' => '^Psr\\\\Http\\\\Message\\\\.*',
+                'PsrHttpServer' => '^Psr\\\\Http\\\\Server\\\\.*',
+            ),
             $this->deptracExternalClassLikeLayers($content)
         );
         $this->assertSame($this->expectedRulesets(), $this->deptracRulesets($content));
@@ -179,11 +183,20 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         $this->assertMatchesPattern('/no production dependency on Testing/i', $packagesReadme);
         $this->assertMatchesPattern('/workspace\/README\.md/i', $packagesReadme);
         $this->assertMatchesPattern('/runtime implementation.*not yet present|not yet present.*runtime implementation/i', $packagesReadme);
+        $this->assertMatchesPattern('/Phase 4\.1.*PSR.*HTTP.*middleware/is', $packagesReadme);
+        $this->assertMatchesPattern('/MiddlewarePipeline/i', $packagesReadme);
+        $this->assertMatchesPattern('/routing.*deferred|deferred.*routing/i', $packagesReadme);
         $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/i', $packagesReadme);
+
+        $this->assertMatchesPattern('/PsrContainer/i', $workspaceReadme);
+        $this->assertMatchesPattern('/PsrHttpMessage/i', $workspaceReadme);
+        $this->assertMatchesPattern('/PsrHttpServer/i', $workspaceReadme);
+        $this->assertMatchesPattern('/PSR HTTP interfaces.*external interoperability standards|external interoperability standards.*PSR HTTP interfaces/is', $workspaceReadme);
 
         $this->assertMatchesPattern('/Phase 2\.5/i', $changelog);
         $this->assertMatchesPattern('/Deptrac/i', $changelog);
         $this->assertMatchesPattern('/dependency-boundar/i', $changelog);
+        $this->assertMatchesPattern('/Phase 4\.1/i', $changelog);
     }
 
     private function expectedFirstPartyLayers()
@@ -203,8 +216,10 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         return array(
             'Contracts' => array(),
             'PsrContainer' => array(),
+            'PsrHttpMessage' => array(),
+            'PsrHttpServer' => array(),
             'Core' => array('Contracts', 'PsrContainer'),
-            'Http' => array('Contracts', 'Core'),
+            'Http' => array('Contracts', 'Core', 'PsrHttpMessage', 'PsrHttpServer'),
             'Module' => array('Contracts'),
             'Plugin' => array('Contracts'),
             'Testing' => array('Contracts', 'Core', 'Http', 'Module', 'Plugin'),
@@ -244,6 +259,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         $variablesByLayer = array(
             'contracts' => 'Contracts',
             'psrContainer' => 'PsrContainer',
+            'psrHttpMessage' => 'PsrHttpMessage',
+            'psrHttpServer' => 'PsrHttpServer',
             'core' => 'Core',
             'http' => 'Http',
             'module' => 'Module',
@@ -258,7 +275,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|psrContainer|core|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|psrContainer|psrHttpMessage|psrHttpServer|core|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
@@ -268,12 +285,17 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $rulesets[$layerName] = $accesses;
         }
 
-        foreach (array('Contracts', 'PsrContainer', 'Core', 'Http', 'Module', 'Plugin') as $productionLayer) {
+        foreach (array('Contracts', 'PsrContainer', 'PsrHttpMessage', 'PsrHttpServer', 'Core', 'Http', 'Module', 'Plugin') as $productionLayer) {
             $this->assertNotContains('Testing', $rulesets[$productionLayer], $productionLayer . ' must not access Testing.');
         }
 
         foreach (array('Contracts', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
             $this->assertNotContains('PsrContainer', $rulesets[$layerName], $layerName . ' must not access PsrContainer directly in Phase 3.3.');
+        }
+
+        foreach (array('Contracts', 'Core', 'Module', 'Plugin', 'Testing') as $layerName) {
+            $this->assertNotContains('PsrHttpMessage', $rulesets[$layerName], $layerName . ' must not access PSR-7 HTTP message interfaces directly in Phase 4.1.');
+            $this->assertNotContains('PsrHttpServer', $rulesets[$layerName], $layerName . ' must not access PSR-15 HTTP server interfaces directly in Phase 4.1.');
         }
 
         return $rulesets;
