@@ -4,11 +4,20 @@ declare(strict_types=1);
 
 namespace Evolve\Core\Execution;
 
+use Evolve\Core\Instrumentation\InstrumentationFailure;
 use LogicException;
 use Throwable;
 
 final class ExecutionOutcome
 {
+    /**
+     * @var list<InstrumentationFailure>
+     */
+    private array $instrumentationFailures;
+
+    /**
+     * @param array<array-key, InstrumentationFailure> $instrumentationFailures
+     */
     private function __construct(
         private ExecutionIdentifier $identifier,
         private ExecutionKind $kind,
@@ -17,6 +26,7 @@ final class ExecutionOutcome
         private ?Throwable $primaryThrowable,
         private ?Throwable $cleanupThrowable,
         private ProcessReuseDecision $reuseDecision,
+        array $instrumentationFailures = [],
     ) {
         if ($this->primarySucceeded === ($this->primaryThrowable !== null)) {
             throw new LogicException('Execution outcome must contain exactly one primary state.');
@@ -29,13 +39,19 @@ final class ExecutionOutcome
         if ($this->reuseDecision === ProcessReuseDecision::QuarantineRequired && $this->cleanupThrowable === null) {
             throw new LogicException('Quarantine requires an isolation failure reason.');
         }
+
+        $this->instrumentationFailures = array_values($instrumentationFailures);
     }
 
+    /**
+     * @param array<array-key, InstrumentationFailure> $instrumentationFailures
+     */
     public static function succeeded(
         ExecutionIdentifier $identifier,
         ExecutionKind $kind,
         mixed $result,
         ?Throwable $cleanupThrowable,
+        array $instrumentationFailures = [],
     ): self {
         return new self(
             $identifier,
@@ -45,14 +61,19 @@ final class ExecutionOutcome
             null,
             $cleanupThrowable,
             self::reuseDecisionFor($cleanupThrowable),
+            $instrumentationFailures,
         );
     }
 
+    /**
+     * @param array<array-key, InstrumentationFailure> $instrumentationFailures
+     */
     public static function failed(
         ExecutionIdentifier $identifier,
         ExecutionKind $kind,
         Throwable $primaryThrowable,
         ?Throwable $cleanupThrowable,
+        array $instrumentationFailures = [],
     ): self {
         return new self(
             $identifier,
@@ -62,6 +83,7 @@ final class ExecutionOutcome
             $primaryThrowable,
             $cleanupThrowable,
             self::reuseDecisionFor($cleanupThrowable),
+            $instrumentationFailures,
         );
     }
 
@@ -131,6 +153,19 @@ final class ExecutionOutcome
     public function requiresQuarantine(): bool
     {
         return $this->reuseDecision->requiresQuarantine();
+    }
+
+    public function instrumentationFailed(): bool
+    {
+        return $this->instrumentationFailures !== [];
+    }
+
+    /**
+     * @return list<InstrumentationFailure>
+     */
+    public function instrumentationFailures(): array
+    {
+        return $this->instrumentationFailures;
     }
 
     private static function reuseDecisionFor(?Throwable $cleanupThrowable): ProcessReuseDecision

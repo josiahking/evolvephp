@@ -114,9 +114,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPackageSourcesMatchPhase35RuntimeInventory(): void
+    public function testPackageSourcesMatchPhase36RuntimeInventory(): void
     {
-        foreach ($this->phase35SourceInventories() as $sourceDirectory => $expectedFiles) {
+        foreach ($this->phase36SourceInventories() as $sourceDirectory => $expectedFiles) {
             $fullSourceDirectory = $this->projectPath($sourceDirectory);
 
             $this->assertTrue(is_dir($fullSourceDirectory), $sourceDirectory . ' should exist before source files are inspected.');
@@ -124,7 +124,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedFiles,
                 $this->phpFilesUnderSource($fullSourceDirectory),
-                $sourceDirectory . ' should contain exactly the approved Phase 3.5 PHP source inventory.'
+                $sourceDirectory . ' should contain exactly the approved Phase 3.6 PHP source inventory.'
             );
         }
 
@@ -157,6 +157,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/execution identifiers?|execution context/i', $content);
         $this->assertMatchesPattern('/ExecutionOrchestrator|runtime-neutral execution orchestration/i', $content);
         $this->assertMatchesPattern('/quarantine/i', $content);
+        $this->assertMatchesPattern('/generic Core instrumentation|generic execution-lifecycle observation/i', $content);
+        $this->assertMatchesPattern('/Insight.*Observe.*OpenTelemetry.*deferred/is', $content);
 
         foreach ($this->packages() as $package) {
             $this->assertStringContainsString($package['name'], $content);
@@ -205,7 +207,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testChangelogRecordsPhase21PackageSkeletonAndPhase35OrchestrationFoundation(): void
+    public function testChangelogRecordsPhase21PackageSkeletonAndPhase36InstrumentationFoundation(): void
     {
         $content = $this->readProjectFile('CHANGELOG.md');
 
@@ -217,6 +219,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/ResetParticipant/i', $content);
         $this->assertMatchesPattern('/Phase 3\.5/i', $content);
         $this->assertMatchesPattern('/runtime-neutral execution orchestration/i', $content);
+        $this->assertMatchesPattern('/Phase 3\.6/i', $content);
+        $this->assertMatchesPattern('/generic execution observations/i', $content);
+        $this->assertMatchesPattern('/instrumentation-failure reporting/i', $content);
         $this->assertMatchesPattern('/quarantine/i', $content);
         $this->assertDoesNotMatchPattern('/reserved-but-rejected/i', $content);
     }
@@ -282,7 +287,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
     }
 
-    private function phase35SourceInventories()
+    private function phase36SourceInventories()
     {
         return array(
             'packages/contracts/src' => array(
@@ -322,6 +327,12 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Execution/ExecutionScope.php',
                 'Execution/ProcessReuseDecision.php',
                 'Execution/ResetCoordinator.php',
+                'Instrumentation/InstrumentationFailure.php',
+                'Instrumentation/Observation.php',
+                'Instrumentation/ObservationDispatcher.php',
+                'Instrumentation/ObservationOutcome.php',
+                'Instrumentation/ObservationSink.php',
+                'Instrumentation/ObservationType.php',
                 'Lifecycle/ApplicationState.php',
             ),
             'packages/http/src' => array(),
