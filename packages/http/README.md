@@ -38,9 +38,15 @@ HTTP method matching is exact and case-sensitive. Methods remain as supplied, `G
 
 `RouteMatcher` traverses routes in collection insertion order. The first route whose path template and method both match wins; static routes are not automatically prioritized over parameter routes. If a path template matches but the method does not, matching continues to later routes. `allowedMethods()` exposes path-level routing metadata by aggregating exact methods for matching templates without creating 405 responses or `Allow` headers.
 
+Phase 4.3 adds routed handler dispatch through `Evolve\Http\Routing\RoutingRequestHandler`, a PSR-15 `RequestHandlerInterface` implementation. It accepts a `RouteMatcher` and optional ordered post-match middleware. Existing `MiddlewarePipeline` instances may wrap `RoutingRequestHandler` for pre-routing/global middleware, while middleware supplied directly to `RoutingRequestHandler` runs only after a successful route match.
+
+On successful matching, `RoutingRequestHandler` attaches the exact authoritative `RouteMatch` to the derived request with `RouteMatch::class` as the request attribute key, replacing any stale incoming value at that key. Route parameters remain inside `RouteMatch::parameters()` and are not injected as top-level request attributes. Dispatch then runs post-match middleware in order and terminates at the exact `Route::handler()` instance stored on the matched route.
+
+Unsuccessful routing now has typed public exception boundaries. `Evolve\Http\Exception\RouteNotFound` is thrown when no path template matches, and `Evolve\Http\Exception\MethodNotAllowed` is thrown when the path matches at least one route template but the request method does not match any route. `MethodNotAllowed::allowedMethods()` returns the exact allowed methods reported by `RouteMatcher`, preserving order and case without adding implicit `HEAD`, automatic `OPTIONS` or an `Allow` header.
+
 The package does not bundle a concrete PSR-7 implementation. Applications or later runtime slices must provide concrete request and response objects.
 
-Routed-handler dispatch, 404/405 response generation, route middleware composition, HTTP execution-kernel integration, response factories, runtime/SAPI request creation, response emission and OpenTelemetry propagation remain deferred to later Phase 4 slices.
+404/405 response creation, exception-to-response rendering, `Allow` header generation, PSR-17 response factories, HTTP execution-kernel integration, runtime/SAPI request creation, response emission and OpenTelemetry propagation remain deferred to later Phase 4 slices.
 
 ## Publication Status
 
