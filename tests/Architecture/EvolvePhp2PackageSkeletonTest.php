@@ -114,9 +114,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPackageSourcesMatchPhase41RuntimeInventory(): void
+    public function testPackageSourcesMatchPhase42RuntimeInventory(): void
     {
-        foreach ($this->phase41SourceInventories() as $sourceDirectory => $expectedFiles) {
+        foreach ($this->phase42SourceInventories() as $sourceDirectory => $expectedFiles) {
             $fullSourceDirectory = $this->projectPath($sourceDirectory);
 
             $this->assertTrue(is_dir($fullSourceDirectory), $sourceDirectory . ' should exist before source files are inspected.');
@@ -124,7 +124,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedFiles,
                 $this->phpFilesUnderSource($fullSourceDirectory),
-                $sourceDirectory . ' should contain exactly the approved Phase 4.1 PHP source inventory.'
+                $sourceDirectory . ' should contain exactly the approved Phase 4.2 PHP source inventory.'
             );
         }
 
@@ -163,7 +163,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/CliCommand/i', $content);
         $this->assertMatchesPattern('/Phase 4\.1.*PSR.*HTTP.*middleware/is', $content);
         $this->assertMatchesPattern('/MiddlewarePipeline/i', $content);
-        $this->assertMatchesPattern('/routing.*deferred|deferred.*routing/i', $content);
+        $this->assertMatchesPattern('/Phase 4\.2.*routing foundation/is', $content);
+        $this->assertMatchesPattern('/RouteCollection|RouteMatcher/i', $content);
+        $this->assertMatchesPattern('/routed dispatch.*deferred|deferred.*routed dispatch/i', $content);
         $this->assertMatchesPattern('/HTTP execution-kernel integration.*deferred|deferred.*HTTP execution-kernel integration/i', $content);
         $this->assertMatchesPattern('/Runtime adapters.*deferred|Runtime.*adapters.*deferred/i', $content);
         $this->assertMatchesPattern('/Insight.*Observe.*OpenTelemetry.*deferred/is', $content);
@@ -228,7 +230,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/Doctor.*generator.*deferred/is', $content);
     }
 
-    public function testChangelogRecordsPhase21PackageSkeletonPhase37ConsoleFoundationAndPhase41HttpFoundation(): void
+    public function testChangelogRecordsPhase21PackageSkeletonPhase37ConsoleFoundationPhase41HttpFoundationAndPhase42Routing(): void
     {
         $content = $this->readProjectFile('CHANGELOG.md');
 
@@ -252,6 +254,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/Phase 4\.1/i', $content);
         $this->assertMatchesPattern('/PSR.*HTTP.*interoperability/i', $content);
         $this->assertMatchesPattern('/MiddlewarePipeline/i', $content);
+        $this->assertMatchesPattern('/Phase 4\.2/i', $content);
+        $this->assertMatchesPattern('/routing foundation/i', $content);
+        $this->assertMatchesPattern('/RouteMatcher/i', $content);
         $this->assertDoesNotMatchPattern('/reserved-but-rejected/i', $content);
     }
 
@@ -323,7 +328,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
     }
 
-    private function phase41SourceInventories()
+    private function phase42SourceInventories()
     {
         return array(
             'packages/contracts/src' => array(
@@ -382,6 +387,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'packages/http/src' => array(
                 'Middleware/Internal/MiddlewareDispatcher.php',
                 'Middleware/MiddlewarePipeline.php',
+                'Routing/Internal/RoutePattern.php',
+                'Routing/Route.php',
+                'Routing/RouteCollection.php',
+                'Routing/RouteMatch.php',
+                'Routing/RouteMatcher.php',
             ),
             'packages/module/src' => array(),
             'packages/plugin/src' => array(),
