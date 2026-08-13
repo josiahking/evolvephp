@@ -28,9 +28,19 @@ The pipeline consumes PSR-7 `ServerRequestInterface` and `ResponseInterface` obj
 
 Middleware runs in the order supplied at construction. For middleware `A`, middleware `B` and terminal handler `T`, execution is `A before`, `B before`, `T`, `B after`, `A after`. Middleware may short-circuit by returning a response without invoking the next handler; remaining middleware and the terminal handler are then not executed.
 
+Phase 4.2 adds the routing foundation through `Evolve\Http\Routing\Route`, `RouteCollection`, `RouteMatch` and `RouteMatcher`.
+
+Routes store an exact ordered method list, a path-only template and a PSR-15 request handler instance. The handler is retained as route-definition data only; route matching does not invoke it.
+
+Route templates support static path segments and whole-segment `{parameter}` captures such as `/users/{id}`. Matching is deterministic and segment-based, preserves the original template as route identity, compares paths exactly, does not URL-decode captured values and does not trim trailing slashes, collapse repeated slashes or normalize case.
+
+HTTP method matching is exact and case-sensitive. Methods remain as supplied, `GET` and `get` are distinct, `HEAD` is not implied by `GET` and `OPTIONS` is not generated automatically.
+
+`RouteMatcher` traverses routes in collection insertion order. The first route whose path template and method both match wins; static routes are not automatically prioritized over parameter routes. If a path template matches but the method does not, matching continues to later routes. `allowedMethods()` exposes path-level routing metadata by aggregating exact methods for matching templates without creating 405 responses or `Allow` headers.
+
 The package does not bundle a concrete PSR-7 implementation. Applications or later runtime slices must provide concrete request and response objects.
 
-Routing, route matching, routed-handler dispatch, HTTP execution-kernel integration, response factories, runtime/SAPI request creation, response emission and OpenTelemetry propagation remain deferred to later Phase 4 slices.
+Routed-handler dispatch, 404/405 response generation, route middleware composition, HTTP execution-kernel integration, response factories, runtime/SAPI request creation, response emission and OpenTelemetry propagation remain deferred to later Phase 4 slices.
 
 ## Publication Status
 
