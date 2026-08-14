@@ -347,7 +347,9 @@ PsrHttpMessage
 PsrHttpServer
 ```
 
-`PsrContainer` represents the approved PSR-11 interoperability layer used by Core. `PsrHttpMessage` and `PsrHttpServer` represent the approved PSR-7 message and PSR-15 server middleware/handler interface layers used by Http. These PSR HTTP interfaces are external interoperability standards and do not change the first-party Evolve package dependency direction: Http still depends inward on Contracts and Core, while the other first-party packages do not receive direct PSR HTTP access in Phase 4.1.
+`PsrContainer` represents the approved PSR-11 interoperability layer used by Core. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http.
+
+These PSR HTTP interfaces are external interoperability standards and do not change the first-party Evolve package dependency direction. Adding `psr/http-factory` does not require a new Deptrac external namespace layer because PSR-17 factory interfaces live under `Psr\Http\Message`. Http still depends inward on Contracts and Core, while the other first-party packages do not receive direct PSR HTTP access in this foundation.
 
 Uncovered dependencies fail. No baseline or skipped violations are allowed. No graph is generated. New external dependency treatment requires deliberate architecture review.
 
