@@ -114,9 +114,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPackageSourcesMatchPhase45RuntimeInventory(): void
+    public function testPackageSourcesMatchPhase46RuntimeInventory(): void
     {
-        foreach ($this->phase45SourceInventories() as $sourceDirectory => $expectedFiles) {
+        foreach ($this->phase46SourceInventories() as $sourceDirectory => $expectedFiles) {
             $fullSourceDirectory = $this->projectPath($sourceDirectory);
 
             $this->assertTrue(is_dir($fullSourceDirectory), $sourceDirectory . ' should exist before source files are inspected.');
@@ -124,7 +124,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedFiles,
                 $this->phpFilesUnderSource($fullSourceDirectory),
-                $sourceDirectory . ' should contain exactly the approved Phase 4.5 PHP source inventory.'
+                $sourceDirectory . ' should contain exactly the approved Phase 4.6 PHP source inventory.'
             );
         }
 
@@ -177,6 +177,16 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/Phase 4\.5.*response\/error.*health foundation/is', $content);
         $this->assertMatchesPattern('/ExecutionOutcomeResponseResolver/i', $content);
         $this->assertMatchesPattern('/LivenessHandler|ReadinessHandler/i', $content);
+        $this->assertMatchesPattern('/Phase 4\.6.*ResponseEmitter/is', $content);
+        $this->assertMatchesPattern('/runtime-neutral response-emission boundary|runtime-neutral response emission boundary/i', $content);
+        $this->assertMatchesPattern('/response resolution.*emission|emission.*response resolution/is', $content);
+        $this->assertMatchesPattern('/Runtime.*concrete transmission|concrete transmission.*Runtime/is', $content);
+        $this->assertMatchesPattern('/Runtime.*quarantine.*recycle.*termination|quarantine.*recycle.*termination.*Runtime/is', $content);
+        $this->assertMatchesPattern('/no concrete SAPI emitter|concrete SAPI emitter.*not/i', $content);
+        $this->assertMatchesPattern('/concrete PSR-7 implementation.*not|no concrete PSR-7 implementation/i', $content);
+        $this->assertMatchesPattern('/Phase 4 HTTP package foundation.*complete|complete.*Phase 4 HTTP package foundation/i', $content);
+        $this->assertMatchesPattern('/complete production runtime.*deferred|production runtime.*still.*deferred/i', $content);
+        $this->assertMatchesPattern('/OpenTelemetry propagation.*deferred|trace context.*OpenTelemetry.*deferred/is', $content);
         $this->assertMatchesPattern('/Runtime adapters.*deferred|Runtime.*adapters.*deferred/i', $content);
         $this->assertMatchesPattern('/Insight.*Observe.*OpenTelemetry.*deferred/is', $content);
 
@@ -255,7 +265,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testHttpReadmeDocumentsPhase45ResponseHealthAndRuntimeBoundaries(): void
+    public function testHttpReadmeDocumentsPhase46ResponseEmitterAndRuntimeBoundaries(): void
     {
         $content = $this->readProjectFile('packages/http/README.md');
 
@@ -277,6 +287,18 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/empty.*bod/i', $content);
         $this->assertMatchesPattern('/false.*503|throwing.*503|503.*false|503.*throwing/is', $content);
         $this->assertMatchesPattern('/details.*not exposed|not expose.*details/is', $content);
+        $this->assertMatchesPattern('/ResponseEmitter/i', $content);
+        $this->assertMatchesPattern('/emit\s*\(\s*ResponseInterface\s+\$response\s*\)\s*:\s*void/i', $content);
+        $this->assertMatchesPattern('/emitter.*receives.*response only|receives only.*response/i', $content);
+        $this->assertMatchesPattern('/does not receive.*ExecutionOutcome|ExecutionOutcome.*does not receive/is', $content);
+        $this->assertMatchesPattern('/HttpKernel.*ExecutionOutcome.*ExecutionOutcomeResponseResolver.*ResponseInterface.*ResponseEmitter/is', $content);
+        $this->assertMatchesPattern('/no automatic emission|does not auto-emit|explicit emission/i', $content);
+        $this->assertMatchesPattern('/HttpKernel.*does not.*auto-emit|does not.*auto-emit.*HttpKernel/i', $content);
+        $this->assertMatchesPattern('/resolver.*does not.*auto-emit|does not.*auto-emit.*resolver/i', $content);
+        $this->assertMatchesPattern('/runtime-specific implementations?.*deferred|deferred.*runtime-specific implementations?/i', $content);
+        $this->assertMatchesPattern('/transmission failure.*deferred|deferred.*transmission failure/i', $content);
+        $this->assertMatchesPattern('/SAPI.*output functions.*not provided|header.*output.*not provided/is', $content);
+        $this->assertMatchesPattern('/quarantine.*recycle.*termination.*Runtime|Runtime.*quarantine.*recycle.*termination/is', $content);
     }
 
     public function testWorkspaceReadmeDocumentsPsr17WithinPsrHttpMessageLayer(): void
@@ -292,7 +314,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/no new Deptrac.*layer|does not require.*new Deptrac/is', $content);
     }
 
-    public function testChangelogRecordsPhase21PackageSkeletonPhase37ConsoleFoundationPhase41HttpFoundationPhase42RoutingPhase43RoutedDispatchPhase44HttpKernelAndPhase45ResponseHealth(): void
+    public function testChangelogRecordsPhase21PackageSkeletonPhase37ConsoleFoundationPhase41HttpFoundationPhase42RoutingPhase43RoutedDispatchPhase44HttpKernelPhase45ResponseHealthAndPhase46Emitter(): void
     {
         $content = $this->readProjectFile('CHANGELOG.md');
 
@@ -331,6 +353,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/response\/error.*health foundation|health foundation.*response\/error/is', $content);
         $this->assertMatchesPattern('/ExecutionOutcomeResponseResolver/i', $content);
         $this->assertMatchesPattern('/ReadinessCheck|LivenessHandler|ReadinessHandler/i', $content);
+        $this->assertMatchesPattern('/Phase 4\.6/i', $content);
+        $this->assertMatchesPattern('/ResponseEmitter/i', $content);
         $this->assertDoesNotMatchPattern('/reserved-but-rejected/i', $content);
     }
 
@@ -403,7 +427,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
     }
 
-    private function phase45SourceInventories()
+    private function phase46SourceInventories()
     {
         return array(
             'packages/contracts/src' => array(
@@ -469,6 +493,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Middleware/Internal/MiddlewareDispatcher.php',
                 'Middleware/MiddlewarePipeline.php',
                 'Response/ExecutionOutcomeResponseResolver.php',
+                'Response/ResponseEmitter.php',
                 'Routing/Internal/RoutePattern.php',
                 'Routing/Route.php',
                 'Routing/RouteCollection.php',

@@ -71,9 +71,15 @@ Health handlers are not auto-routed and no health paths or route names are reser
 
 Framework-created Phase 4.5 responses are intentionally empty and bodyless. Error and health responses do not expose request data, route parameters, exception messages, traces, readiness-check failure details or other sensitive runtime data. The only required protocol metadata added here is the `Allow` header for 405 responses.
 
+Phase 4.6 adds `Evolve\Http\Response\ResponseEmitter` as the public runtime-neutral response-emission boundary. Its conceptual contract is `emit(ResponseInterface $response): void`. The emitter receives only the resolved response; it does not receive `ExecutionOutcome`, `ServerRequestInterface`, execution context, execution scope, route metadata or runtime-specific values. The caller retains the original `ExecutionOutcome` separately for cleanup, instrumentation and reuse/quarantine decisions.
+
+The canonical Phase 4.6 flow is `HttpKernel` -> `ExecutionOutcome` -> `ExecutionOutcomeResponseResolver` -> `ResponseInterface` -> `ResponseEmitter`. Emission is explicit: `HttpKernel` does not auto-emit, and the resolver does not auto-emit. `ResponseEmitter` has no built-in implementation in this package. Runtime-specific implementations are deferred, including concrete SAPI, FPM, FrankenPHP and RoadRunner transmission adapters. Direct SAPI/header/output functions are not provided here; ownership of headers, body output, cookies and transmission failure policy belongs to future runtime adapters.
+
+Cleanup and quarantine decisions remain on `ExecutionOutcome`. Runtime decides whether and when to transmit, recycle or terminate after inspecting reuse and quarantine state. The emitter/transmission failure handling policy is deferred and is not converted into Core execution outcome state by this package.
+
 The package does not bundle a concrete PSR-7 implementation. Applications or later runtime slices must provide concrete request and response objects. Phase 4.5 requires only `ResponseFactoryInterface`; it does not use `StreamFactoryInterface`.
 
-HTML and JSON error rendering, problem-details DTOs, content negotiation, debug pages, automatic health routes, SAPI request creation, response emission, process termination/recycle adapters, runtime adapters and OpenTelemetry propagation remain deferred to later reviewed slices.
+Phase 4.6 closes the reviewed Phase 4 HTTP package foundation. HTML and JSON error rendering, problem-details DTOs, content negotiation, debug pages, automatic health routes, SAPI request creation, concrete response transmission, process termination/recycle adapters, runtime adapters, trace propagation and OpenTelemetry propagation remain deferred to later reviewed slices.
 
 ## Publication Status
 
