@@ -11,9 +11,9 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->root = dirname(__DIR__, 2);
     }
 
-    public function testWorkspaceRequiresPhpUnitOnlyAsADevelopmentDependency(): void
+    public function testRootRequiresPhpUnitOnlyAsADevelopmentDependency(): void
     {
-        $manifest = $this->readJsonFile('workspace/composer.json');
+        $manifest = $this->readJsonFile('composer.json');
 
         $this->assertArrayHasKey('require-dev', $manifest);
         $this->assertArrayHasKey('evolvephp/testing', $manifest['require-dev']);
@@ -23,9 +23,9 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertArrayNotHasKey('phpunit/phpunit', $manifest['require']);
     }
 
-    public function testWorkspaceComposerScriptsRunTheApprovedPhpUnitSuites(): void
+    public function testRootComposerScriptsRunTheApprovedPhpUnitSuites(): void
     {
-        $manifest = $this->readJsonFile('workspace/composer.json');
+        $manifest = $this->readJsonFile('composer.json');
         $expectedScripts = $this->workspaceScripts();
 
         $this->assertArrayHasKey('scripts', $manifest);
@@ -39,14 +39,14 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         }
     }
 
-    public function testWorkspacePhpUnitConfigurationDefinesSixPackageSuites(): void
+    public function testRootPhpUnitConfigurationDefinesSixPackageSuites(): void
     {
-        $path = $this->projectPath('workspace/phpunit.xml.dist');
+        $path = $this->projectPath('phpunit.xml.dist');
 
         $this->assertFileExists($path);
 
         $document = new DOMDocument();
-        $this->assertTrue($document->load($path), 'workspace/phpunit.xml.dist should be well formed XML.');
+        $this->assertTrue($document->load($path), 'phpunit.xml.dist should be well formed XML.');
 
         $root = $document->documentElement;
 
@@ -83,9 +83,9 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         }
     }
 
-    public function testWorkspaceLockfileRecordsLocalPackagesAndPhpUnit13(): void
+    public function testRootLockfileRecordsLocalPackagesAndPhpUnit13(): void
     {
-        $lock = $this->readJsonFile('workspace/composer.lock');
+        $lock = $this->readJsonFile('composer.lock');
 
         $this->assertArrayHasKey('content-hash', $lock);
         $this->assertNotSame('', $lock['content-hash']);
@@ -100,53 +100,51 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertSame(13, (int) strtok($packages['phpunit/phpunit'], '.'));
     }
 
-    public function testWorkspaceReadmeDocumentsPhpUnitFoundationPolicy(): void
+    public function testDevelopmentGuideDocumentsPhpUnitFoundationPolicy(): void
     {
-        $content = $this->readProjectFile('workspace/README.md');
+        $content = $this->readProjectFile('DEVELOPMENT.md');
 
         $this->assertMatchesPattern('/PHPUnit 13/i', $content);
         $this->assertMatchesPattern('/PHP 8\.4/i', $content);
-        $this->assertMatchesPattern('/workspace\/phpunit\.xml\.dist/i', $content);
-        $this->assertMatchesPattern('/composer --working-dir=workspace test/i', $content);
+        $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $content);
+        $this->assertMatchesPattern('/composer test/i', $content);
         $this->assertMatchesPattern('/test:contracts/i', $content);
         $this->assertMatchesPattern('/test:core/i', $content);
         $this->assertMatchesPattern('/test:http/i', $content);
         $this->assertMatchesPattern('/test:module/i', $content);
         $this->assertMatchesPattern('/test:plugin/i', $content);
         $this->assertMatchesPattern('/test:testing/i', $content);
-        $this->assertMatchesPattern('/workspace\/composer\.lock/i', $content);
+        $this->assertMatchesPattern('/composer\.lock/i', $content);
         $this->assertMatchesPattern('/platform emulation/i', $content);
         $this->assertMatchesPattern('/PHP 8\.4.*baseline|baseline.*PHP 8\.4/i', $content);
-        $this->assertMatchesPattern('/GitHub Actions.*workspace quality.*PHP 8\.4.*PHP 8\.5|workspace quality.*GitHub Actions.*PHP 8\.4.*PHP 8\.5|PHP 8\.4.*PHP 8\.5.*workspace quality.*GitHub Actions/i', $content);
-        $this->assertMatchesPattern('/current.*(?:workspace quality|package foundation|tooling)|(?:workspace quality|package foundation|tooling).*current/i', $content);
+        $this->assertMatchesPattern('/GitHub Actions.*root quality.*PHP 8\.4.*PHP 8\.5|root quality.*GitHub Actions.*PHP 8\.4.*PHP 8\.5|PHP 8\.4.*PHP 8\.5.*root quality.*GitHub Actions/i', $content);
+        $this->assertMatchesPattern('/current.*(?:root quality|package foundation|tooling)|(?:root quality|package foundation|tooling).*current/i', $content);
         $this->assertDoesNotMatchPattern('/PHP 8\.5.*pending|pending.*PHP 8\.5|Phase 2\.6.*pending|pending.*Phase 2\.6/i', $content);
         $this->assertMatchesPattern('/legacy root suite/i', $content);
-        $this->assertMatchesPattern('/EvolvePHP 2 workspace suite/i', $content);
+        $this->assertMatchesPattern('/EvolvePHP 2 root suite/i', $content);
     }
 
-    public function testWorkspaceReadmeOwnsDetailedPackageTestDocumentation(): void
+    public function testDevelopmentGuideOwnsDetailedPackageTestDocumentation(): void
     {
-        $workspaceReadme = $this->readProjectFile('workspace/README.md');
+        $developmentGuide = $this->readProjectFile('DEVELOPMENT.md');
         $packagesReadme = $this->readProjectFile('packages/README.md');
 
-        $this->assertMatchesPattern('/workspace\/phpunit\.xml\.dist/i', $workspaceReadme);
-        $this->assertMatchesPattern('/PHPUnit 13.*workspace|workspace.*PHPUnit 13/i', $workspaceReadme);
+        $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $developmentGuide);
+        $this->assertMatchesPattern('/PHPUnit 13.*root|root.*PHPUnit 13/i', $developmentGuide);
 
         foreach (array('test:contracts', 'test:core', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
-            $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $workspaceReadme);
+            $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $developmentGuide);
         }
 
         foreach ($this->packageSuites() as $suiteName => $suite) {
-            $testDirectory = preg_replace('/^\.\.\//', '', $suite['tests']);
-
-            $this->assertMatchesPattern('/`?' . preg_quote($suiteName, '/') . '`?.*' . preg_quote($testDirectory, '/') . '/i', $workspaceReadme);
+            $this->assertMatchesPattern('/`?' . preg_quote($suiteName, '/') . '`?.*' . preg_quote($suite['tests'], '/') . '/i', $developmentGuide);
         }
 
-        $this->assertMatchesPattern('/workspace\/README\.md/i', $packagesReadme);
+        $this->assertMatchesPattern('/DEVELOPMENT\.md/i', $packagesReadme);
         $this->assertMatchesPattern('/testing.*quality|quality.*testing/i', $packagesReadme);
         $this->assertDoesNotMatchPattern('/tests\/Unit\//i', $packagesReadme);
         $this->assertDoesNotMatchPattern('/test:contracts.*test:core.*test:http.*test:module.*test:plugin.*test:testing/is', $packagesReadme);
-        $this->assertDoesNotMatchPattern('/workspace\/phpunit\.xml\.dist.*PHPUnit|PHPUnit.*workspace\/phpunit\.xml\.dist/is', $packagesReadme);
+        $this->assertDoesNotMatchPattern('/phpunit\.xml\.dist.*PHPUnit|PHPUnit.*phpunit\.xml\.dist/is', $packagesReadme);
     }
 
     public function testChangelogRecordsPhase23PhpUnitFoundation(): void
@@ -164,27 +162,27 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
     {
         return array(
             'contracts' => array(
-                'tests' => '../packages/contracts/tests',
+                'tests' => 'packages/contracts/tests',
                 'smokeTest' => 'packages/contracts/tests/Unit/PackageManifestTest.php',
             ),
             'core' => array(
-                'tests' => '../packages/core/tests',
+                'tests' => 'packages/core/tests',
                 'smokeTest' => 'packages/core/tests/Unit/PackageManifestTest.php',
             ),
             'http' => array(
-                'tests' => '../packages/http/tests',
+                'tests' => 'packages/http/tests',
                 'smokeTest' => 'packages/http/tests/Unit/PackageManifestTest.php',
             ),
             'module' => array(
-                'tests' => '../packages/module/tests',
+                'tests' => 'packages/module/tests',
                 'smokeTest' => 'packages/module/tests/Unit/PackageManifestTest.php',
             ),
             'plugin' => array(
-                'tests' => '../packages/plugin/tests',
+                'tests' => 'packages/plugin/tests',
                 'smokeTest' => 'packages/plugin/tests/Unit/PackageManifestTest.php',
             ),
             'testing' => array(
-                'tests' => '../packages/testing/tests',
+                'tests' => 'packages/testing/tests',
                 'smokeTest' => 'packages/testing/tests/Unit/PackageManifestTest.php',
             ),
         );

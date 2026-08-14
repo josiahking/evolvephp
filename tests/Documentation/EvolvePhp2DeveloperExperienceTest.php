@@ -75,10 +75,9 @@ final class EvolvePhp2DeveloperExperienceTest extends TestCase
 
         foreach (array(
             '**/vendor/**',
-            '**/workspace/vendor/**',
-            '**/workspace/.phpstan-cache/**',
-            '**/workspace/.php-cs-fixer.cache',
-            '**/workspace/.deptrac.cache',
+            '**/.phpstan-cache/**',
+            '**/.php-cs-fixer.cache',
+            '**/.deptrac.cache',
         ) as $excludedPath) {
             $this->assertSame(true, $settings['files.watcherExclude'][$excludedPath], $excludedPath . ' should be excluded from file watching.');
             $this->assertSame(true, $settings['search.exclude'][$excludedPath], $excludedPath . ' should be excluded from search.');
@@ -110,7 +109,7 @@ final class EvolvePhp2DeveloperExperienceTest extends TestCase
         $tasks = $this->tasksByLabel($tasksFile['tasks']);
 
         $expectedComposerTasks = array(
-            'EvolvePHP 2: Install Workspace Dependencies' => 'install',
+            'EvolvePHP 2: Install Dependencies' => 'install',
             'EvolvePHP 2: Quality' => 'quality',
             'EvolvePHP 2: Tests' => 'test',
             'EvolvePHP 2: Architecture' => 'architecture',
@@ -123,7 +122,7 @@ final class EvolvePhp2DeveloperExperienceTest extends TestCase
             $this->assertArrayHasKey($label, $tasks);
             $this->assertSame('shell', $tasks[$label]['type']);
             $this->assertSame('composer', $tasks[$label]['command']);
-            $this->assertSame(array('--working-dir=workspace', $script), $tasks[$label]['args']);
+            $this->assertSame(array($script), $tasks[$label]['args']);
         }
 
         $this->assertArrayHasKey('EvolvePHP 2: Root Policy', $tasks);
@@ -131,7 +130,7 @@ final class EvolvePhp2DeveloperExperienceTest extends TestCase
         $this->assertSame('php', $tasks['EvolvePHP 2: Root Policy']['command']);
         $this->assertSame(
             array(
-                'workspace/vendor/bin/phpunit',
+                'vendor/bin/phpunit',
                 '--configuration',
                 'phpunit.xml.dist',
                 'tests/Architecture',
@@ -169,14 +168,14 @@ final class EvolvePhp2DeveloperExperienceTest extends TestCase
     {
         $combined = $this->readProjectFile('README.md')
             . "\n"
-            . $this->readProjectFile('workspace/README.md');
+            . $this->readProjectFile('DEVELOPMENT.md');
 
         foreach (array(
             '/VS Code.*optional developer tooling|optional developer tooling.*VS Code/i',
             '/not framework runtime|framework runtime.*not/i',
             '/PHP 8\.4\+.*Composer|Composer.*PHP 8\.4\+/i',
-            '/workspace\/composer\.json.*canonical|canonical.*workspace\/composer\.json/i',
-            '/Composer workspace scripts.*canonical|canonical.*Composer workspace scripts/i',
+            '/composer\.json.*canonical|canonical.*composer\.json/i',
+            '/Composer root scripts.*canonical|canonical.*Composer root scripts/i',
             '/tasks.*convenience wrappers|convenience wrappers.*tasks/i',
             '/Style Fix.*mutating|mutating.*Style Fix/i',
             '/Quality.*non-mutating|non-mutating.*Quality/i',

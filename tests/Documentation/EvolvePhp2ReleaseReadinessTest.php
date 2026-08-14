@@ -13,7 +13,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
 
     public function testReleasePackageMapDefinesCanonicalDependencyCompatibleOrder(): void
     {
-        $map = $this->readJsonFile('workspace/release-packages.json');
+        $map = $this->readJsonFile('release-packages.json');
 
         $this->assertSame(array('version', 'packages'), array_keys($map));
         $this->assertSame(1, $map['version']);
@@ -76,11 +76,11 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
 
     public function testReleaseValidatorIsReadOnlyNetworkFreeAndPortable(): void
     {
-        $content = $this->readProjectFile('workspace/tools/validate-release-packages.php');
+        $content = $this->readProjectFile('tools/validate-release-packages.php');
 
         $this->assertMatchesPattern('/^<\?php\s+declare\(strict_types=1\);/s', $content);
         $this->assertStringContainsString('--root=', $content);
-        $this->assertStringContainsString('workspace/release-packages.json', $content);
+        $this->assertStringContainsString('release-packages.json', $content);
         $this->assertStringContainsString('DIRECTORY_SEPARATOR', $content);
 
         foreach (array(
@@ -110,7 +110,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
 
     public function testWorkspaceComposerExposesReleaseValidationWithoutChangingQualityOrSupplyChain(): void
     {
-        $manifest = $this->readJsonFile('workspace/composer.json');
+        $manifest = $this->readJsonFile('composer.json');
         $scripts = $manifest['scripts'];
 
         $this->assertArrayHasKey('release:validate', $scripts);
@@ -123,11 +123,11 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
 
     public function testWorkspaceReadmeDocumentsReleaseValidationBoundaries(): void
     {
-        $content = $this->readProjectFile('workspace/README.md');
+        $content = $this->readProjectFile('DEVELOPMENT.md');
 
         foreach (array(
             '/## Release Validation/',
-            '/composer --working-dir=workspace release:validate/',
+            '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
             '/six packages.*mapped explicitly|mapped explicitly.*six packages/i',
             '/dependency-compatible/i',

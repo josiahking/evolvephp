@@ -17,7 +17,7 @@ final class EvolvePhp2SupplyChainSecurityTest extends TestCase
 
         $this->assertMatchesPattern('/^version:\s*2\s*$/m', $content);
         $this->assertMatchesPattern('/package-ecosystem:\s*"composer"|package-ecosystem:\s*composer/', $content);
-        $this->assertMatchesPattern('/directory:\s*"\/workspace"|directory:\s*\/workspace/', $content);
+        $this->assertMatchesPattern('/directory:\s*"\/"|directory:\s*\//', $content);
         $this->assertMatchesPattern('/package-ecosystem:\s*"github-actions"|package-ecosystem:\s*github-actions/', $content);
         $this->assertMatchesPattern('/directory:\s*"\/"|directory:\s*\/\s*$/m', $content);
         $this->assertSame(2, preg_match_all('/interval:\s*"weekly"|interval:\s*weekly/', $content, $matches));
@@ -38,7 +38,7 @@ final class EvolvePhp2SupplyChainSecurityTest extends TestCase
 
     public function testWorkspaceComposerDeclaresCanonicalSupplyChainScripts(): void
     {
-        $manifest = $this->readJsonFile('workspace/composer.json');
+        $manifest = $this->readJsonFile('composer.json');
 
         $this->assertArrayHasKey('scripts', $manifest);
         $this->assertArrayHasKey('security:audit', $manifest['scripts']);
@@ -52,7 +52,7 @@ final class EvolvePhp2SupplyChainSecurityTest extends TestCase
 
     public function testLicenceCheckerEnforcesLockedProductionAndDevelopmentPolicy(): void
     {
-        $content = $this->readProjectFile('workspace/tools/check-licenses.php');
+        $content = $this->readProjectFile('tools/check-licenses.php');
 
         foreach (array('MIT', 'BSD-3-Clause', 'Apache-2.0') as $license) {
             $this->assertMatchesPattern('/[\'"]' . preg_quote($license, '/') . '[\'"]/', $content);
@@ -89,32 +89,32 @@ final class EvolvePhp2SupplyChainSecurityTest extends TestCase
 
         $this->assertMatchesPattern('/name:\s*Policy \(PHP 8\.4\)/', $policyJob);
         $this->assertMatchesPattern('/name:\s*Workspace quality \(PHP \$\{\{ matrix\.php \}\}\)/', $workflow);
-        $this->assertStringContainsString('composer --working-dir=workspace supply-chain', $policyJob);
-        $this->assertSame(1, preg_match_all('/composer --working-dir=workspace supply-chain/', $workflow, $matches));
+        $this->assertStringContainsString('composer supply-chain', $policyJob);
+        $this->assertSame(1, preg_match_all('/composer supply-chain/', $workflow, $matches));
         $this->assertBefore(
-            'composer --working-dir=workspace install --no-interaction --no-progress --prefer-dist',
-            'composer --working-dir=workspace supply-chain',
+            'composer install --no-interaction --no-progress --prefer-dist',
+            'composer supply-chain',
             $policyJob
         );
         $this->assertBefore(
-            'composer --working-dir=workspace supply-chain',
-            'php workspace/vendor/bin/phpunit --configuration phpunit.xml.dist tests/Architecture tests/Documentation',
+            'composer supply-chain',
+            'php vendor/bin/phpunit --configuration phpunit.xml.dist tests/Architecture tests/Documentation',
             $policyJob
         );
         $this->assertMatchesPattern('/^permissions:\s*\R\s{2}contents:\s*read\s*$/m', $workflow);
-        $this->assertDoesNotMatchPattern('/composer --working-dir=workspace supply-chain/', $this->extractJob($workflow, 'workspace-quality'));
+        $this->assertDoesNotMatchPattern('/composer supply-chain/', $this->extractJob($workflow, 'workspace-quality'));
     }
 
     public function testDocumentationRecordsSupplyChainSecurityBoundaries(): void
     {
-        $readme = $this->readProjectFile('workspace/README.md');
+        $readme = $this->readProjectFile('DEVELOPMENT.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
         foreach (array(
             '/## Supply-Chain Security/',
-            '/composer --working-dir=workspace security:audit/',
-            '/composer --working-dir=workspace licenses:check/',
-            '/composer --working-dir=workspace supply-chain/',
+            '/composer security:audit/',
+            '/composer licenses:check/',
+            '/composer supply-chain/',
             '/committed lockfile|lockfile.*committed/i',
             '/abandoned packages fail|fail.*abandoned packages/i',
             '/require-dev.*included|development dependencies.*included/i',
@@ -129,7 +129,7 @@ final class EvolvePhp2SupplyChainSecurityTest extends TestCase
             '/no advisory suppression|advisory suppression.*no/i',
             '/network access|remote advisory/i',
             '/quality.*distinct|distinct.*quality/i',
-            '/Dependabot.*\/workspace/i',
+            '/Dependabot.*\//i',
             '/GitHub Actions/',
             '/GitHub settings/i',
             '/vulnerability alerts|security updates/i',

@@ -1,0 +1,20 @@
+includes:
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - packages/contracts/src
+        - packages/contracts/tests
+        - packages/core/src
+        - packages/core/tests
+        - packages/http/src
+        - packages/http/tests
+        - packages/module/src
+        - packages/module/tests
+        - packages/plugin/src
+        - packages/plugin/tests
+        - packages/testing/src
+        - packages/testing/tests
+    tmpDir: .phpstan-cache
+    reportIgnoresWithoutComments: true

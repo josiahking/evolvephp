@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Repository
+
+- Added Phase 4.7 repository cutover with root-native Composer, PHPUnit, PHPStan, PHP-CS-Fixer, Deptrac, release-validation, package split validation, supply-chain checks and developer-experience commands; removed the tracked workspace directory and EvolvePHP 1 runtime files from the 2.x working tree while preserving master and Git history. The PHP 8.4/8.5 root quality matrix now runs from the repository root; the protected `Workspace quality (PHP 8.4)` and `Workspace quality (PHP 8.5)` context names are retained for governance compatibility.
+
 ### Runtime foundation
 
 - Added Phase 4.6 runtime-neutral `ResponseEmitter` boundary and Phase 4 integration acceptance in `evolvephp/http`, including an explicit post-resolution emission boundary after `ExecutionOutcomeResponseResolver`, integration coverage across accepted Phase 4 middleware, routing, execution, response/error and health components, and no concrete runtime/SAPI emission or OpenTelemetry propagation.

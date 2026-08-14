@@ -11,24 +11,20 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         $this->root = dirname(__DIR__, 2);
     }
 
-    public function testWorkspaceOwnsDeptracAsTheOnlyArchitectureBoundaryDependency(): void
+    public function testRootOwnsDeptracAsTheOnlyArchitectureBoundaryDependency(): void
     {
-        $workspaceManifest = $this->readJsonFile('workspace/composer.json');
-
-        $this->assertArrayHasKey('require-dev', $workspaceManifest);
-        $this->assertArrayHasKey('deptrac/deptrac', $workspaceManifest['require-dev']);
-        $this->assertSame('^4.7', $workspaceManifest['require-dev']['deptrac/deptrac']);
-        $this->assertArrayNotHasKey('deptrac/deptrac', $workspaceManifest['require']);
-
         $rootManifest = $this->readJsonFile('composer.json');
-        $this->assertPackageAbsentFromManifest('deptrac/deptrac', $rootManifest, 'composer.json');
+
+        $this->assertArrayHasKey('require-dev', $rootManifest);
+        $this->assertArrayHasKey('deptrac/deptrac', $rootManifest['require-dev']);
+        $this->assertSame('^4.7', $rootManifest['require-dev']['deptrac/deptrac']);
+        $this->assertArrayNotHasKey('deptrac/deptrac', $rootManifest['require']);
 
         foreach ($this->packageManifests() as $path) {
             $this->assertPackageAbsentFromManifest('deptrac/deptrac', $this->readJsonFile($path), $path);
         }
 
         foreach (array('qossmic/deptrac', 'phparkitect/phparkitect', 'shipmonk/composer-dependency-analyser') as $package) {
-            $this->assertPackageAbsentFromManifest($package, $workspaceManifest, 'workspace/composer.json');
             $this->assertPackageAbsentFromManifest($package, $rootManifest, 'composer.json');
 
             foreach ($this->packageManifests() as $path) {
@@ -37,9 +33,9 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         }
     }
 
-    public function testWorkspaceDeclaresExactNonMutatingArchitectureScriptAndQualityPipeline(): void
+    public function testRootDeclaresExactNonMutatingArchitectureScriptAndQualityPipeline(): void
     {
-        $manifest = $this->readJsonFile('workspace/composer.json');
+        $manifest = $this->readJsonFile('composer.json');
         $scripts = $manifest['scripts'];
 
         $expectedArchitecture = '@php vendor/bin/deptrac analyse --config-file=deptrac.php --no-progress --report-uncovered --fail-on-uncovered';
@@ -70,9 +66,9 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         }
     }
 
-    public function testDeptracConfigurationIsWorkspaceOwnedAndStrict(): void
+    public function testDeptracConfigurationIsRootOwnedAndStrict(): void
     {
-        $this->assertFileExists($this->projectPath('workspace/deptrac.php'));
+        $this->assertFileExists($this->projectPath('deptrac.php'));
 
         $trackedFiles = $this->trackedFiles();
         $forbiddenBasenameAlternatives = array(
@@ -91,10 +87,10 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         }
 
         $gitignore = $this->readProjectFile('.gitignore');
-        $this->assertStringContainsString('/workspace/.deptrac.cache', $gitignore);
-        $this->assertNotContains('workspace/.deptrac.cache', $trackedFiles, 'Deptrac cache must not be tracked.');
+        $this->assertStringContainsString('/.deptrac.cache', $gitignore);
+        $this->assertNotContains('.deptrac.cache', $trackedFiles, 'Deptrac cache must not be tracked.');
 
-        $content = $this->readProjectFile('workspace/deptrac.php');
+        $content = $this->readProjectFile('deptrac.php');
 
         foreach ($this->expectedFirstPartyLayers() as $layerName => $pathPattern) {
             $this->assertMatchesPattern('/Layer::withName\(\'' . preg_quote($layerName, '/') . '\'/', $content);
@@ -112,7 +108,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         );
         $this->assertSame($this->expectedRulesets(), $this->deptracRulesets($content));
 
-        foreach (array('../packages/contracts/tests', '../packages/core/tests', '../packages/http/tests', '../packages/module/tests', '../packages/plugin/tests', '../packages/testing/tests') as $testPath) {
+        foreach (array('packages/contracts/tests', 'packages/core/tests', 'packages/http/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
             $this->assertStringNotContainsString($testPath, $content);
         }
 
@@ -149,7 +145,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
 
     public function testDocumentationRecordsArchitectureBoundaryPolicy(): void
     {
-        $workspaceReadme = $this->readProjectFile('workspace/README.md');
+        $developmentGuide = $this->readProjectFile('DEVELOPMENT.md');
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
@@ -164,8 +160,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             '/no baseline|baseline.*not/i',
             '/no graph|graph.*not/i',
             '/PHP 8\.5.*Phase 2\.6/i',
-        ) as $workspacePattern) {
-            $this->assertMatchesPattern($workspacePattern, $workspaceReadme);
+        ) as $developmentPattern) {
+            $this->assertMatchesPattern($developmentPattern, $developmentGuide);
         }
 
         foreach (array(
@@ -176,22 +172,22 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'Plugin    -> Contracts',
             'Testing   -> Contracts, Core, Http, Module, Plugin',
         ) as $matrixLine) {
-            $this->assertStringContainsString($matrixLine, $workspaceReadme);
+            $this->assertStringContainsString($matrixLine, $developmentGuide);
         }
 
         $this->assertMatchesPattern('/depend inward|inward dependency/i', $packagesReadme);
         $this->assertMatchesPattern('/no production dependency on Testing/i', $packagesReadme);
-        $this->assertMatchesPattern('/workspace\/README\.md/i', $packagesReadme);
+        $this->assertMatchesPattern('/DEVELOPMENT\.md/i', $packagesReadme);
         $this->assertMatchesPattern('/runtime implementation.*not yet present|not yet present.*runtime implementation/i', $packagesReadme);
         $this->assertMatchesPattern('/Phase 4\.1.*PSR.*HTTP.*middleware/is', $packagesReadme);
         $this->assertMatchesPattern('/MiddlewarePipeline/i', $packagesReadme);
-        $this->assertMatchesPattern('/routing.*deferred|deferred.*routing/i', $packagesReadme);
+        $this->assertMatchesPattern('/Phase 4\.2.*routing foundation/is', $packagesReadme);
         $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/i', $packagesReadme);
 
-        $this->assertMatchesPattern('/PsrContainer/i', $workspaceReadme);
-        $this->assertMatchesPattern('/PsrHttpMessage/i', $workspaceReadme);
-        $this->assertMatchesPattern('/PsrHttpServer/i', $workspaceReadme);
-        $this->assertMatchesPattern('/PSR HTTP interfaces.*external interoperability standards|external interoperability standards.*PSR HTTP interfaces/is', $workspaceReadme);
+        $this->assertMatchesPattern('/PsrContainer/i', $developmentGuide);
+        $this->assertMatchesPattern('/PsrHttpMessage/i', $developmentGuide);
+        $this->assertMatchesPattern('/PsrHttpServer/i', $developmentGuide);
+        $this->assertMatchesPattern('/PSR HTTP interfaces.*external interoperability standards|external interoperability standards.*PSR HTTP interfaces/is', $developmentGuide);
 
         $this->assertMatchesPattern('/Phase 2\.5/i', $changelog);
         $this->assertMatchesPattern('/Deptrac/i', $changelog);
@@ -202,12 +198,12 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
     private function expectedFirstPartyLayers()
     {
         return array(
-            'Contracts' => '../packages/contracts/src/.*',
-            'Core' => '../packages/core/src/.*',
-            'Http' => '../packages/http/src/.*',
-            'Module' => '../packages/module/src/.*',
-            'Plugin' => '../packages/plugin/src/.*',
-            'Testing' => '../packages/testing/src/.*',
+            'Contracts' => 'packages/contracts/src/.*',
+            'Core' => 'packages/core/src/.*',
+            'Http' => 'packages/http/src/.*',
+            'Module' => 'packages/module/src/.*',
+            'Plugin' => 'packages/plugin/src/.*',
+            'Testing' => 'packages/testing/src/.*',
         );
     }
 

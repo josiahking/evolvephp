@@ -11,9 +11,9 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
         $this->root = dirname(__DIR__, 2);
     }
 
-    public function testWorkspaceOwnsApprovedStaticAnalysisAndCodingStandardsDevelopmentDependencies(): void
+    public function testRootOwnsApprovedStaticAnalysisAndCodingStandardsDevelopmentDependencies(): void
     {
-        $manifest = $this->readJsonFile('workspace/composer.json');
+        $manifest = $this->readJsonFile('composer.json');
 
         $expectedQualityRequireDev = array(
             'friendsofphp/php-cs-fixer' => '^3.95',
@@ -30,11 +30,16 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
         }
     }
 
-    public function testRootAndPackageManifestsDoNotOwnQualityTooling(): void
+    public function testRootAndPackageManifestsDoNotOwnUnapprovedQualityTooling(): void
     {
         $rootManifest = $this->readJsonFile('composer.json');
 
-        foreach ($this->forbiddenQualityPackages() as $package) {
+        foreach ($this->qualityPackages() as $package) {
+            $this->assertArrayNotHasKey($package, $rootManifest['require']);
+            $this->assertArrayHasKey($package, $rootManifest['require-dev']);
+        }
+
+        foreach ($this->unapprovedQualityPackages() as $package) {
             $this->assertArrayNotHasKey($package, $rootManifest['require']);
             $this->assertArrayNotHasKey($package, $rootManifest['require-dev']);
         }
@@ -52,9 +57,9 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
         }
     }
 
-    public function testWorkspaceScriptsDeclareApprovedStaticAnalysisAndCodingStandardsCommands(): void
+    public function testRootScriptsDeclareApprovedStaticAnalysisAndCodingStandardsCommands(): void
     {
-        $manifest = $this->readJsonFile('workspace/composer.json');
+        $manifest = $this->readJsonFile('composer.json');
 
         $expectedScripts = array(
             'analyse' => '@php vendor/bin/phpstan analyse --configuration phpstan.neon.dist --no-progress',
@@ -83,10 +88,10 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
         );
     }
 
-    public function testConfigurationFilesAreOwnedByWorkspaceAndNoTrackedAlternativesExist(): void
+    public function testConfigurationFilesAreRootOwnedAndNoTrackedAlternativesExist(): void
     {
-        $this->assertFileExists($this->projectPath('workspace/phpstan.neon.dist'));
-        $this->assertFileExists($this->projectPath('workspace/.php-cs-fixer.dist.php'));
+        $this->assertFileExists($this->projectPath('phpstan.neon.dist'));
+        $this->assertFileExists($this->projectPath('.php-cs-fixer.dist.php'));
 
         $trackedFiles = $this->trackedFiles();
         $forbidden = array(
@@ -111,7 +116,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
 
     public function testPhpStanConfigurationDeclaresApprovedPolicy(): void
     {
-        $content = $this->readProjectFile('workspace/phpstan.neon.dist');
+        $content = $this->readProjectFile('phpstan.neon.dist');
 
         $this->assertStringContainsString('- vendor/phpstan/phpstan-phpunit/extension.neon', $content);
         $this->assertStringNotContainsString('vendor/phpstan/phpstan-phpunit/rules.neon', $content);
@@ -130,7 +135,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
 
     public function testPhpCsFixerConfigurationDeclaresApprovedPolicy(): void
     {
-        $content = $this->readProjectFile('workspace/.php-cs-fixer.dist.php');
+        $content = $this->readProjectFile('.php-cs-fixer.dist.php');
 
         $this->assertStringContainsString('declare(strict_types=1);', $content);
         $this->assertStringContainsString("'@PER-CS3x0' => true", $content);
@@ -178,16 +183,16 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
         $content = $this->readProjectFile('.gitignore');
 
         foreach (array(
-            '/workspace/.phpstan-cache/',
-            '/workspace/.php-cs-fixer.cache',
-            '/workspace/phpstan.neon',
-            '/workspace/.php-cs-fixer.php',
+            '/.phpstan-cache/',
+            '/.php-cs-fixer.cache',
+            '/phpstan.neon',
+            '/.php-cs-fixer.php',
         ) as $ignoredPath) {
             $this->assertStringContainsString($ignoredPath, $content);
         }
 
-        $this->assertStringContainsString('/workspace/vendor/', $content);
-        $this->assertStringContainsString('!workspace/composer.lock', $content);
+        $this->assertStringContainsString('/vendor/', $content);
+        $this->assertDoesNotMatchPattern('/^!?composer\.lock$/m', $content);
         $this->assertStringNotContainsString('phpstan-baseline', $content);
         $this->assertStringNotContainsString('psalm-baseline', $content);
     }
@@ -218,13 +223,27 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
         );
     }
 
+    private function unapprovedQualityPackages()
+    {
+        return array(
+            'vimeo/psalm',
+            'squizlabs/php_codesniffer',
+            'symplify/easy-coding-standard',
+            'phpstan/extension-installer',
+            'phpstan/phpstan-strict-rules',
+            'qossmic/deptrac',
+            'rector/rector',
+            'infection/infection',
+        );
+    }
+
     private function packageAnalysisPaths()
     {
         $paths = array();
 
         foreach (array('contracts', 'core', 'http', 'module', 'plugin', 'testing') as $package) {
-            $paths[] = '../packages/' . $package . '/src';
-            $paths[] = '../packages/' . $package . '/tests';
+            $paths[] = 'packages/' . $package . '/src';
+            $paths[] = 'packages/' . $package . '/tests';
         }
 
         return $paths;
@@ -316,5 +335,10 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
     private function assertMatchesPattern($pattern, $content)
     {
         $this->assertSame(1, preg_match($pattern, $content), 'Failed asserting that content matches ' . $pattern);
+    }
+
+    private function assertDoesNotMatchPattern($pattern, $content)
+    {
+        $this->assertSame(0, preg_match($pattern, $content), 'Failed asserting that content does not match ' . $pattern);
     }
 }

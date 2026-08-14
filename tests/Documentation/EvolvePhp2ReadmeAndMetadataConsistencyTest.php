@@ -15,6 +15,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
     {
         $this->assertSame(
             array(
+                'DEVELOPMENT.md',
                 'README.md',
                 'docs/rfcs/README.md',
                 'packages/README.md',
@@ -24,7 +25,6 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'packages/module/README.md',
                 'packages/plugin/README.md',
                 'packages/testing/README.md',
-                'workspace/README.md',
             ),
             $this->trackedReadmes()
         );
@@ -37,7 +37,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $this->assertMatchesPattern('/2\.x.*EvolvePHP 2|EvolvePHP 2.*2\.x/is', $content);
         $this->assertMatchesPattern('/master.*EvolvePHP 1|EvolvePHP 1.*master/is', $content);
         $this->assertMatchesPattern('/not an in-place refactor/i', $content);
-        $this->assertMatchesPattern('/package.*workspace.*quality|quality.*workspace.*package/is', $content);
+        $this->assertMatchesPattern('/package.*root.*quality|quality.*root.*package/is', $content);
         $this->assertMatchesPattern('/runtime framework implementation.*not yet complete|not yet complete.*runtime framework implementation/is', $content);
         $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/is', $content);
     }
@@ -49,20 +49,20 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $this->assertMatchesPattern('/requires PHP 8\.4|PHP 8\.4.*required/i', $content);
         $this->assertMatchesPattern('/PHP baseline:\s*PHP 8\.4|PHP 8\.4.*baseline/i', $content);
         $this->assertMatchesPattern('/GitHub Actions.*(?:PHP 8\.4.*PHP 8\.5|PHP 8\.5.*PHP 8\.4)|(?:PHP 8\.4.*PHP 8\.5|PHP 8\.5.*PHP 8\.4).*GitHub Actions/i', $content);
-        $this->assertMatchesPattern('/workspace quality pipeline|quality pipeline.*workspace/i', $content);
-        $this->assertMatchesPattern('/current.*(?:workspace|tooling|package foundation)|(?:workspace|tooling|package foundation).*current/i', $content);
+        $this->assertMatchesPattern('/ quality pipeline|quality pipeline.*root/i', $content);
+        $this->assertMatchesPattern('/current.*(?:root|tooling|package foundation)|(?:root|tooling|package foundation).*current/i', $content);
         $this->assertMatchesPattern('/runtime framework implementation.*not yet complete|not yet complete.*runtime framework implementation/i', $content);
         $this->assertDoesNotMatchPattern('/PHP 8\.5.*pending|pending.*PHP 8\.5|Do not claim PHP 8\.5/i', $content);
-        $this->assertDoesNotMatchPattern('/production[- ]ready|runtime framework supports PHP 8\.5|all runtime.*PHP 8\.5/i', $content);
+        $this->assertDoesNotMatchPattern('/production[- ]ready\s+framework|runtime framework supports PHP 8\.5|all runtime.*PHP 8\.5/i', $content);
     }
 
-    public function testRootReadmeUsesWorkspaceSetupAndAvoidsLegacySetupAsEvolvePhp2Setup(): void
+    public function testRootReadmeUsesRootSetupAndAvoidsLegacySetupAsEvolvePhp2Setup(): void
     {
         $content = $this->readProjectFile('README.md');
 
         $this->assertStringContainsString('git switch 2.x', $content);
-        $this->assertStringContainsString('composer --working-dir=workspace install', $content);
-        $this->assertStringContainsString('composer --working-dir=workspace quality', $content);
+        $this->assertStringContainsString('composer install', $content);
+        $this->assertStringContainsString('composer quality', $content);
         $this->assertStringNotContainsString('php -S localhost:8800', $content);
         $this->assertDoesNotMatchPattern('/Review and update.*configs\//is', $content);
         $this->assertDoesNotMatchPattern('/route\.php.*dispatch|dispatch.*route\.php/is', $content);
@@ -74,7 +74,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $misspelledKeyword = 'elvovephp' . ' framework';
 
         $this->assertSame(
-            'A lightweight component-based PHP framework for building structured web applications.',
+            'A modernization-first PHP framework for building modular applications and evolving existing PHP systems without a full rewrite.',
             $manifest['description']
         );
         $this->assertContains('evolvephp framework', $manifest['keywords']);
@@ -82,22 +82,22 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $this->assertSame('EvolvePHP Community', $manifest['authors'][1]['name']);
     }
 
-    public function testWorkspaceReadmeOwnsInstallUpdateAndQualityToolingPolicy(): void
+    public function testDevelopmentGuideOwnsInstallUpdateAndQualityToolingPolicy(): void
     {
-        $content = $this->readProjectFile('workspace/README.md');
+        $content = $this->readProjectFile('DEVELOPMENT.md');
 
-        $this->assertStringContainsString('composer --working-dir=workspace install', $content);
-        $this->assertStringContainsString('composer --working-dir=workspace update', $content);
+        $this->assertStringContainsString('composer install', $content);
+        $this->assertStringContainsString('composer update', $content);
         $this->assertMatchesPattern('/install.*normal|normal.*install/is', $content);
         $this->assertMatchesPattern('/update.*intentional|intentional.*update/is', $content);
         $this->assertMatchesPattern('/update.*changes dependency resolution|changes dependency resolution.*update/is', $content);
 
         foreach (array('validate', 'test', 'analyse', 'architecture', 'style:check', 'style:fix', 'quality') as $script) {
-            $this->assertStringContainsString('composer --working-dir=workspace ' . $script, $content);
+            $this->assertStringContainsString('composer ' . $script, $content);
         }
 
         foreach (array('test:contracts', 'test:core', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
-            $this->assertStringContainsString('composer --working-dir=workspace ' . $script, $content);
+            $this->assertStringContainsString('composer ' . $script, $content);
         }
     }
 
@@ -111,19 +111,19 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         }
     }
 
-    public function testPackagesReadmeLinksToWorkspaceAndDoesNotOwnDetailedDeptracPolicy(): void
+    public function testPackagesReadmeLinksToDevelopmentGuideAndDoesNotOwnDetailedDeptracPolicy(): void
     {
         $content = $this->readProjectFile('packages/README.md');
 
-        $this->assertStringContainsString('workspace/README.md', $content);
+        $this->assertStringContainsString('DEVELOPMENT.md', $content);
         $this->assertDoesNotMatchPattern('/Contracts\s*->\s*\.\.\/packages\/contracts\/src\/\.\*\s*->\s*Evolve\\\\Contracts\\\\/', $content);
         $this->assertDoesNotMatchPattern('/Phase 2\.[0-9].*(?:adds|now provides|creates|verifies)/i', $content);
         $this->assertDoesNotMatchPattern('/Before Phase 2\.3/i', $content);
     }
 
-    public function testWorkspaceReadmeOwnsCompleteArchitectureMatrix(): void
+    public function testDevelopmentGuideOwnsCompleteArchitectureMatrix(): void
     {
-        $content = $this->readProjectFile('workspace/README.md');
+        $content = $this->readProjectFile('DEVELOPMENT.md');
 
         foreach ($this->expectedArchitectureMatrixLines() as $line) {
             $this->assertStringContainsString($line, $content);
@@ -212,7 +212,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $readmes = array();
 
         foreach ($this->trackedFiles() as $file) {
-            if (preg_match('/(?:^|\/)readme(?:\.[^\/]+)?$/i', $file)) {
+            if ($file === 'DEVELOPMENT.md' || preg_match('/(?:^|\/)readme(?:\.[^\/]+)?$/i', $file)) {
                 $readmes[] = $file;
             }
         }

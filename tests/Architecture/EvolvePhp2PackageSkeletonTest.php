@@ -150,7 +150,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/PHP `?\^8\.4`?/i', $content);
         $this->assertMatchesPattern('/arrows.*dependency direction.*not lifecycle invocation/i', $content);
         $this->assertMatchesPattern('/no production dependency on Testing/i', $content);
-        $this->assertMatchesPattern('/workspace\/README\.md/i', $content);
+        $this->assertMatchesPattern('/DEVELOPMENT\.md/i', $content);
         $this->assertMatchesPattern('/setup.*testing.*quality|testing.*quality.*setup|quality.*setup.*testing/is', $content);
         $this->assertMatchesPattern('/execution-scope foundation|execution scopes/i', $content);
         $this->assertMatchesPattern('/ResetParticipant|reset-participant/i', $content);
@@ -301,9 +301,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/quarantine.*recycle.*termination.*Runtime|Runtime.*quarantine.*recycle.*termination/is', $content);
     }
 
-    public function testWorkspaceReadmeDocumentsPsr17WithinPsrHttpMessageLayer(): void
+    public function testDevelopmentGuideDocumentsPsr17WithinPsrHttpMessageLayer(): void
     {
-        $content = $this->readProjectFile('workspace/README.md');
+        $content = $this->readProjectFile('DEVELOPMENT.md');
 
         $this->assertMatchesPattern('/PsrHttpMessage/i', $content);
         $this->assertMatchesPattern('/PSR-7.*message interfaces/i', $content);

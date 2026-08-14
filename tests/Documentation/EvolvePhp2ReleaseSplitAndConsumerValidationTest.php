@@ -13,11 +13,11 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 
     public function testReleaseSplitAndConsumerValidationToolsAreRepositoryOwnedPhpEntrypoints(): void
     {
-        $this->assertFileExists($this->path('workspace/tools/release-validation-common.php'));
+        $this->assertFileExists($this->path('tools/release-validation-common.php'));
 
         foreach (array(
-            'workspace/tools/validate-package-splits.php',
-            'workspace/tools/validate-prerelease-consumers.php',
+            'tools/validate-package-splits.php',
+            'tools/validate-prerelease-consumers.php',
         ) as $path) {
             $content = $this->readProjectFile($path);
 
@@ -30,7 +30,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 
     public function testSharedHelperUsesArgumentVectorProcessesAndDoesNotRunOnInclude(): void
     {
-        $content = $this->readProjectFile('workspace/tools/release-validation-common.php');
+        $content = $this->readProjectFile('tools/release-validation-common.php');
 
         $this->assertStringContainsString('proc_open(', $content);
         $this->assertStringContainsString('bypass_shell', $content);
@@ -44,7 +44,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 
     public function testSourceStateCaptureUsesDeterministicRefEnumerationForDetachedCi(): void
     {
-        $content = $this->readProjectFile('workspace/tools/release-validation-common.php');
+        $content = $this->readProjectFile('tools/release-validation-common.php');
 
         $this->assertStringContainsString("'for-each-ref'", $content);
         $this->assertStringContainsString("'--sort=refname'", $content);
@@ -58,7 +58,11 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 
     public function testSourceStateCaptureSupportsDetachedRepositoriesWithoutLocalHeadsOrTags(): void
     {
-        require_once $this->path('workspace/tools/release-validation-common.php');
+        $helperPath = $this->path('tools/release-validation-common.php');
+
+        $this->assertFileExists($helperPath, 'tools/release-validation-common.php must exist before detached source-state behaviour is tested.');
+
+        require_once $helperPath;
 
         $runner = new ReleaseValidationProcessRunner();
         $temporary = createTemporaryDirectory('evolvephp-detached-source-state-test-');
@@ -91,7 +95,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 
     public function testSplitValidatorDocumentsDeterministicSplitContract(): void
     {
-        $content = $this->readProjectFile('workspace/tools/validate-package-splits.php');
+        $content = $this->readProjectFile('tools/validate-package-splits.php');
 
         foreach (array(
             '--root=',
@@ -116,7 +120,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 
     public function testConsumerValidatorDocumentsOfflinePrereleaseAndStableMatrix(): void
     {
-        $content = $this->readProjectFile('workspace/tools/validate-prerelease-consumers.php');
+        $content = $this->readProjectFile('tools/validate-prerelease-consumers.php');
 
         foreach (array(
             'COMPOSER_DISABLE_NETWORK',
@@ -144,7 +148,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 
     public function testWorkspaceComposerExposesReleaseValidationScriptsWithoutPrepareScript(): void
     {
-        $manifest = $this->readJsonFile('workspace/composer.json');
+        $manifest = $this->readJsonFile('composer.json');
 
         $this->assertSame(array('@architecture', '@analyse', '@style:check', '@test'), $manifest['scripts']['quality']);
         $this->assertSame(array('@security:audit', '@licenses:check'), $manifest['scripts']['supply-chain']);
@@ -182,19 +186,19 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertSame(1, substr_count($workflow, 'name: Policy (PHP 8.4)'));
         $this->assertSame(1, substr_count($workflow, 'name: Workspace quality (PHP ${{ matrix.php }})'));
         $this->assertSame(1, substr_count($workflow, 'Run release package split validation'));
-        $this->assertStringContainsString('composer --working-dir=workspace release:split:validate', $workflow);
+        $this->assertStringContainsString('composer release:split:validate', $workflow);
         $this->assertStringNotContainsString('release:consumer:validate', $workflow);
-        $this->assertStringContainsString('Run workspace supply-chain checks', $workflow);
+        $this->assertStringContainsString('Run root supply-chain checks', $workflow);
         $this->assertStringContainsString('Run root policy tests', $workflow);
     }
 
     public function testWorkspaceReadmeDocumentsAlphaConsumerPolicyAndDeferredPublication(): void
     {
-        $content = $this->readProjectFile('workspace/README.md');
+        $content = $this->readProjectFile('DEVELOPMENT.md');
 
         foreach (array(
-            'composer --working-dir=workspace release:split:validate',
-            'composer --working-dir=workspace release:consumer:validate',
+            'composer release:split:validate',
+            'composer release:consumer:validate',
             'minimum-stability: alpha',
             'prefer-stable: true',
             'Explicit root `@alpha` flags',
@@ -239,7 +243,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 
     private function releasePackages()
     {
-        $map = $this->readJsonFile('workspace/release-packages.json');
+        $map = $this->readJsonFile('release-packages.json');
 
         $this->assertSame(1, $map['version']);
         $this->assertCount(6, $map['packages']);
