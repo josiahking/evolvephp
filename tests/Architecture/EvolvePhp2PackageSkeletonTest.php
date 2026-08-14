@@ -114,9 +114,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPackageSourcesMatchPhase43RuntimeInventory(): void
+    public function testPackageSourcesMatchPhase44RuntimeInventory(): void
     {
-        foreach ($this->phase43SourceInventories() as $sourceDirectory => $expectedFiles) {
+        foreach ($this->phase44SourceInventories() as $sourceDirectory => $expectedFiles) {
             $fullSourceDirectory = $this->projectPath($sourceDirectory);
 
             $this->assertTrue(is_dir($fullSourceDirectory), $sourceDirectory . ' should exist before source files are inspected.');
@@ -124,7 +124,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedFiles,
                 $this->phpFilesUnderSource($fullSourceDirectory),
-                $sourceDirectory . ' should contain exactly the approved Phase 4.3 PHP source inventory.'
+                $sourceDirectory . ' should contain exactly the approved Phase 4.4 PHP source inventory.'
             );
         }
 
@@ -168,8 +168,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/Phase 4\.3.*routed handler dispatch/is', $content);
         $this->assertMatchesPattern('/RoutingRequestHandler/i', $content);
         $this->assertMatchesPattern('/RouteNotFound|MethodNotAllowed/i', $content);
+        $this->assertMatchesPattern('/Phase 4\.4.*HTTP execution-kernel integration/is', $content);
+        $this->assertMatchesPattern('/HttpKernel/i', $content);
+        $this->assertMatchesPattern('/ExecutionOrchestrator.*HttpRequest|HttpRequest.*ExecutionOrchestrator/is', $content);
+        $this->assertMatchesPattern('/ExecutionOutcome/i', $content);
         $this->assertMatchesPattern('/404\/405 response creation.*deferred|deferred.*404\/405 response creation/i', $content);
-        $this->assertMatchesPattern('/HTTP execution-kernel integration.*deferred|deferred.*HTTP execution-kernel integration/i', $content);
         $this->assertMatchesPattern('/Runtime adapters.*deferred|Runtime.*adapters.*deferred/i', $content);
         $this->assertMatchesPattern('/Insight.*Observe.*OpenTelemetry.*deferred/is', $content);
 
@@ -233,7 +236,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/Doctor.*generator.*deferred/is', $content);
     }
 
-    public function testChangelogRecordsPhase21PackageSkeletonPhase37ConsoleFoundationPhase41HttpFoundationPhase42RoutingAndPhase43RoutedDispatch(): void
+    public function testChangelogRecordsPhase21PackageSkeletonPhase37ConsoleFoundationPhase41HttpFoundationPhase42RoutingPhase43RoutedDispatchAndPhase44HttpKernel(): void
     {
         $content = $this->readProjectFile('CHANGELOG.md');
 
@@ -264,6 +267,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/routed handler dispatch/i', $content);
         $this->assertMatchesPattern('/RoutingRequestHandler/i', $content);
         $this->assertMatchesPattern('/RouteNotFound.*MethodNotAllowed|MethodNotAllowed.*RouteNotFound/i', $content);
+        $this->assertMatchesPattern('/Phase 4\.4/i', $content);
+        $this->assertMatchesPattern('/HTTP execution-kernel integration/i', $content);
+        $this->assertMatchesPattern('/HttpKernel.*ExecutionOrchestrator|ExecutionOrchestrator.*HttpKernel/i', $content);
+        $this->assertMatchesPattern('/ExecutionOutcome/i', $content);
         $this->assertDoesNotMatchPattern('/reserved-but-rejected/i', $content);
     }
 
@@ -335,7 +342,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
     }
 
-    private function phase43SourceInventories()
+    private function phase44SourceInventories()
     {
         return array(
             'packages/contracts/src' => array(
@@ -394,6 +401,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'packages/http/src' => array(
                 'Exception/MethodNotAllowed.php',
                 'Exception/RouteNotFound.php',
+                'HttpKernel.php',
                 'Middleware/Internal/MiddlewareDispatcher.php',
                 'Middleware/MiddlewarePipeline.php',
                 'Routing/Internal/RoutePattern.php',

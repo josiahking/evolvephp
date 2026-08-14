@@ -44,9 +44,21 @@ On successful matching, `RoutingRequestHandler` attaches the exact authoritative
 
 Unsuccessful routing now has typed public exception boundaries. `Evolve\Http\Exception\RouteNotFound` is thrown when no path template matches, and `Evolve\Http\Exception\MethodNotAllowed` is thrown when the path matches at least one route template but the request method does not match any route. `MethodNotAllowed::allowedMethods()` returns the exact allowed methods reported by `RouteMatcher`, preserving order and case without adding implicit `HEAD`, automatic `OPTIONS` or an `Allow` header.
 
+Phase 4.4 adds HTTP execution-kernel integration through `Evolve\Http\HttpKernel`. `HttpKernel` is the outer HTTP execution boundary: it wraps an already-composed PSR-15 `RequestHandlerInterface`, delegates every `handle()` call to the Core `ExecutionOrchestrator` as `ExecutionKind::HttpRequest` and returns the resulting `ExecutionOutcome`.
+
+`HttpKernel` does not itself implement PSR-15 because PSR-15 handlers must return `ResponseInterface`, while the execution boundary must preserve the full `ExecutionOutcome` so callers can inspect the primary response or throwable, cleanup/reset failure, instrumentation failures and the reuse/quarantine decision. The wrapped PSR-15 handler remains inside the execution.
+
+During the Core operation, `HttpKernel` derives the request with authoritative request-local execution attributes: `ExecutionContext::class` contains the current immutable `ExecutionContext`, and `ExecutionScope::class` contains the current `ExecutionScope`. Stale incoming values at either key are replaced. These attributes are request-local integration data, not static current-execution state, process-wide registries or ambient service-locator APIs.
+
+Existing `MiddlewarePipeline` and `RoutingRequestHandler` instances can run inside the same HTTP execution, so pre-routing middleware, route matching, post-match middleware and the final route handler observe the same execution context and scope. `ExecutionScope` is a low-level lifecycle integration boundary for explicit request-lifetime resources and reset participation; normal application dependencies should still prefer explicit constructor injection.
+
+When the wrapped handler returns a response, that exact `ResponseInterface` instance remains the primary result. When the wrapped handler throws, the exact throwable remains the primary failure. Cleanup/reset failure stays separately observable on `ExecutionOutcome` and requires quarantine without replacing the primary response or primary throwable. Existing generic Core execution instrumentation is reused with the HTTP execution kind; no HTTP-specific telemetry, route observations, spans, logs, metrics, OpenTelemetry propagation or baggage handling is introduced.
+
+Callers must inspect `ExecutionOutcome` and its reuse decision. `HttpKernel` does not emit a response, terminate a process, recycle a worker or convert failures into HTTP responses.
+
 The package does not bundle a concrete PSR-7 implementation. Applications or later runtime slices must provide concrete request and response objects.
 
-404/405 response creation, exception-to-response rendering, `Allow` header generation, PSR-17 response factories, HTTP execution-kernel integration, runtime/SAPI request creation, response emission and OpenTelemetry propagation remain deferred to later Phase 4 slices.
+404/405 response creation, exception-to-response rendering, `Allow` header generation, PSR-17 response factories, health endpoints, runtime/SAPI request creation, response emission, process termination/recycle adapters and OpenTelemetry propagation remain deferred to later Phase 4 slices.
 
 ## Publication Status
 
