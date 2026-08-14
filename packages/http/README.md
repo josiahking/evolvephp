@@ -17,6 +17,7 @@ PHP `^8.4`
 This package also consumes the selected external PSR HTTP interoperability interfaces:
 
 - `psr/http-message`
+- `psr/http-factory`
 - `psr/http-server-handler`
 - `psr/http-server-middleware`
 
@@ -56,9 +57,23 @@ When the wrapped handler returns a response, that exact `ResponseInterface` inst
 
 Callers must inspect `ExecutionOutcome` and its reuse decision. `HttpKernel` does not emit a response, terminate a process, recycle a worker or convert failures into HTTP responses.
 
-The package does not bundle a concrete PSR-7 implementation. Applications or later runtime slices must provide concrete request and response objects.
+Phase 4.5 adds the response/error and health foundation. `Evolve\Http\Response\ExecutionOutcomeResponseResolver` converts only `ExecutionKind::HttpRequest` outcomes into PSR-7 `ResponseInterface` instances after `HttpKernel` has returned its `ExecutionOutcome`. Keeping response resolution after `HttpKernel` preserves the original primary response or throwable, cleanup/reset failure, instrumentation failures and reuse/quarantine decision for callers and runtime policy.
 
-404/405 response creation, exception-to-response rendering, `Allow` header generation, PSR-17 response factories, health endpoints, runtime/SAPI request creation, response emission, process termination/recycle adapters and OpenTelemetry propagation remain deferred to later Phase 4 slices.
+Successful HTTP outcomes must contain a `ResponseInterface`; the resolver returns that exact response instance without cloning, wrapping, rebuilding, changing headers or consulting the response factory. Non-HTTP outcomes are rejected as programming errors. A successful HTTP outcome with a non-response primary result is also rejected as an unexpected programming error.
+
+Failed HTTP outcomes use the PSR-17 `ResponseFactoryInterface` from `psr/http-factory`. `RouteNotFound` maps to an empty `404` response. `MethodNotAllowed` maps to an empty `405` response with exactly one `Allow` header whose value is the exact `implode(', ', $exception->allowedMethods())` result, preserving method order and case without adding `HEAD` or `OPTIONS`. Any other primary `Throwable` maps to a generic empty `500` response without interpreting exception codes as HTTP status codes.
+
+Cleanup failures, instrumentation failures and the process reuse/quarantine state remain stored on `ExecutionOutcome` and do not change response resolution. Runtime callers must still inspect the reuse decision. `ExecutionStartFailed` can happen before an `ExecutionOutcome` exists and remains a runtime concern rather than a resolver concern.
+
+Phase 4.5 also adds explicit health-handler building blocks. `Evolve\Http\Health\LivenessHandler` is a PSR-15 handler that always returns an empty `200` response and performs no dependency checks. `Evolve\Http\Health\ReadinessCheck` is the minimal public readiness contract with `isReady(): bool`. `Evolve\Http\Health\ReadinessHandler` consumes and validates its check iterable during construction, preserves insertion order and returns an empty `200` response for zero checks or all-ready checks. The first false or throwing readiness check short-circuits later checks and returns an empty `503` response.
+
+Health handlers are not auto-routed and no health paths or route names are reserved. Applications explicitly place `LivenessHandler` or `ReadinessHandler` in whichever route definitions they choose.
+
+Framework-created Phase 4.5 responses are intentionally empty and bodyless. Error and health responses do not expose request data, route parameters, exception messages, traces, readiness-check failure details or other sensitive runtime data. The only required protocol metadata added here is the `Allow` header for 405 responses.
+
+The package does not bundle a concrete PSR-7 implementation. Applications or later runtime slices must provide concrete request and response objects. Phase 4.5 requires only `ResponseFactoryInterface`; it does not use `StreamFactoryInterface`.
+
+HTML and JSON error rendering, problem-details DTOs, content negotiation, debug pages, automatic health routes, SAPI request creation, response emission, process termination/recycle adapters, runtime adapters and OpenTelemetry propagation remain deferred to later reviewed slices.
 
 ## Publication Status
 

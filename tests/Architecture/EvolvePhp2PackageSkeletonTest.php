@@ -114,9 +114,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPackageSourcesMatchPhase44RuntimeInventory(): void
+    public function testPackageSourcesMatchPhase45RuntimeInventory(): void
     {
-        foreach ($this->phase44SourceInventories() as $sourceDirectory => $expectedFiles) {
+        foreach ($this->phase45SourceInventories() as $sourceDirectory => $expectedFiles) {
             $fullSourceDirectory = $this->projectPath($sourceDirectory);
 
             $this->assertTrue(is_dir($fullSourceDirectory), $sourceDirectory . ' should exist before source files are inspected.');
@@ -124,7 +124,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedFiles,
                 $this->phpFilesUnderSource($fullSourceDirectory),
-                $sourceDirectory . ' should contain exactly the approved Phase 4.4 PHP source inventory.'
+                $sourceDirectory . ' should contain exactly the approved Phase 4.5 PHP source inventory.'
             );
         }
 
@@ -172,7 +172,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/HttpKernel/i', $content);
         $this->assertMatchesPattern('/ExecutionOrchestrator.*HttpRequest|HttpRequest.*ExecutionOrchestrator/is', $content);
         $this->assertMatchesPattern('/ExecutionOutcome/i', $content);
-        $this->assertMatchesPattern('/404\/405 response creation.*deferred|deferred.*404\/405 response creation/i', $content);
+        $this->assertMatchesPattern('/RouteNotFound.*empty 404|empty 404.*RouteNotFound/is', $content);
+        $this->assertMatchesPattern('/MethodNotAllowed.*empty 405|empty 405.*MethodNotAllowed/is', $content);
+        $this->assertMatchesPattern('/Phase 4\.5.*response\/error.*health foundation/is', $content);
+        $this->assertMatchesPattern('/ExecutionOutcomeResponseResolver/i', $content);
+        $this->assertMatchesPattern('/LivenessHandler|ReadinessHandler/i', $content);
         $this->assertMatchesPattern('/Runtime adapters.*deferred|Runtime.*adapters.*deferred/i', $content);
         $this->assertMatchesPattern('/Insight.*Observe.*OpenTelemetry.*deferred/is', $content);
 
@@ -236,7 +240,59 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/Doctor.*generator.*deferred/is', $content);
     }
 
-    public function testChangelogRecordsPhase21PackageSkeletonPhase37ConsoleFoundationPhase41HttpFoundationPhase42RoutingPhase43RoutedDispatchAndPhase44HttpKernel(): void
+    public function testHttpPackageDeclaresPsr17ResponseFactoryWithoutConcretePsr7Implementation(): void
+    {
+        $httpManifest = $this->readJsonFile('packages/http/composer.json');
+
+        $this->assertSame('^1.0', $httpManifest['require']['psr/http-factory'] ?? null);
+
+        foreach ($this->concretePsr7Implementations() as $packageName) {
+            $this->assertArrayNotHasKey(
+                $packageName,
+                $httpManifest['require'],
+                'HTTP must not require a concrete PSR-7 implementation for Phase 4.5.'
+            );
+        }
+    }
+
+    public function testHttpReadmeDocumentsPhase45ResponseHealthAndRuntimeBoundaries(): void
+    {
+        $content = $this->readProjectFile('packages/http/README.md');
+
+        $this->assertMatchesPattern('/psr\/http-factory/i', $content);
+        $this->assertMatchesPattern('/PSR-17.*ResponseFactoryInterface|ResponseFactoryInterface.*PSR-17/is', $content);
+        $this->assertMatchesPattern('/concrete PSR-7 implementation.*not bundled|not bundle.*concrete PSR-7 implementation/is', $content);
+        $this->assertMatchesPattern('/ExecutionOutcomeResponseResolver/i', $content);
+        $this->assertMatchesPattern('/after.*HttpKernel/is', $content);
+        $this->assertMatchesPattern('/RouteNotFound.*404|404.*RouteNotFound/is', $content);
+        $this->assertMatchesPattern('/MethodNotAllowed.*405|405.*MethodNotAllowed/is', $content);
+        $this->assertMatchesPattern('/Allow/i', $content);
+        $this->assertMatchesPattern('/Throwable.*500|500.*Throwable/is', $content);
+        $this->assertMatchesPattern('/cleanup.*instrumentation.*reuse|reuse.*cleanup.*instrumentation/is', $content);
+        $this->assertMatchesPattern('/ExecutionStartFailed.*runtime concern|runtime concern.*ExecutionStartFailed/is', $content);
+        $this->assertMatchesPattern('/ReadinessCheck/i', $content);
+        $this->assertMatchesPattern('/LivenessHandler/i', $content);
+        $this->assertMatchesPattern('/ReadinessHandler/i', $content);
+        $this->assertMatchesPattern('/not auto-routed|no automatic health routes|not automatically register/is', $content);
+        $this->assertMatchesPattern('/empty.*bod/i', $content);
+        $this->assertMatchesPattern('/false.*503|throwing.*503|503.*false|503.*throwing/is', $content);
+        $this->assertMatchesPattern('/details.*not exposed|not expose.*details/is', $content);
+    }
+
+    public function testWorkspaceReadmeDocumentsPsr17WithinPsrHttpMessageLayer(): void
+    {
+        $content = $this->readProjectFile('workspace/README.md');
+
+        $this->assertMatchesPattern('/PsrHttpMessage/i', $content);
+        $this->assertMatchesPattern('/PSR-7.*message interfaces/i', $content);
+        $this->assertMatchesPattern('/PSR-17.*factory interfaces/i', $content);
+        $this->assertMatchesPattern('/PsrHttpServer.*PSR-15/is', $content);
+        $this->assertMatchesPattern('/psr\/http-factory/i', $content);
+        $this->assertMatchesPattern('/Psr\\\\Http\\\\Message|Psr\\\Http\\\Message|Psr\\\\\\\\Http\\\\\\\\Message/i', $content);
+        $this->assertMatchesPattern('/no new Deptrac.*layer|does not require.*new Deptrac/is', $content);
+    }
+
+    public function testChangelogRecordsPhase21PackageSkeletonPhase37ConsoleFoundationPhase41HttpFoundationPhase42RoutingPhase43RoutedDispatchPhase44HttpKernelAndPhase45ResponseHealth(): void
     {
         $content = $this->readProjectFile('CHANGELOG.md');
 
@@ -271,6 +327,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/HTTP execution-kernel integration/i', $content);
         $this->assertMatchesPattern('/HttpKernel.*ExecutionOrchestrator|ExecutionOrchestrator.*HttpKernel/i', $content);
         $this->assertMatchesPattern('/ExecutionOutcome/i', $content);
+        $this->assertMatchesPattern('/Phase 4\.5/i', $content);
+        $this->assertMatchesPattern('/response\/error.*health foundation|health foundation.*response\/error/is', $content);
+        $this->assertMatchesPattern('/ExecutionOutcomeResponseResolver/i', $content);
+        $this->assertMatchesPattern('/ReadinessCheck|LivenessHandler|ReadinessHandler/i', $content);
         $this->assertDoesNotMatchPattern('/reserved-but-rejected/i', $content);
     }
 
@@ -303,6 +363,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                     'php' => '^8.4',
                     'evolvephp/contracts' => '^2.0',
                     'evolvephp/core' => '^2.0',
+                    'psr/http-factory' => '^1.0',
                     'psr/http-message' => '^1.1 || ^2.0',
                     'psr/http-server-handler' => '^1.0',
                     'psr/http-server-middleware' => '^1.0',
@@ -342,7 +403,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
     }
 
-    private function phase44SourceInventories()
+    private function phase45SourceInventories()
     {
         return array(
             'packages/contracts/src' => array(
@@ -401,9 +462,13 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'packages/http/src' => array(
                 'Exception/MethodNotAllowed.php',
                 'Exception/RouteNotFound.php',
+                'Health/LivenessHandler.php',
+                'Health/ReadinessCheck.php',
+                'Health/ReadinessHandler.php',
                 'HttpKernel.php',
                 'Middleware/Internal/MiddlewareDispatcher.php',
                 'Middleware/MiddlewarePipeline.php',
+                'Response/ExecutionOutcomeResponseResolver.php',
                 'Routing/Internal/RoutePattern.php',
                 'Routing/Route.php',
                 'Routing/RouteCollection.php',
@@ -414,6 +479,17 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'packages/module/src' => array(),
             'packages/plugin/src' => array(),
             'packages/testing/src' => array(),
+        );
+    }
+
+    private function concretePsr7Implementations()
+    {
+        return array(
+            'guzzlehttp/psr7',
+            'laminas/laminas-diactoros',
+            'nyholm/psr7',
+            'slim/psr7',
+            'symfony/psr-http-message-bridge',
         );
     }
 
