@@ -8,6 +8,7 @@
 
 ### Component foundation
 
+- Added Phase 5.2 immutable descriptor foundation in `evolvephp/module` and `evolvephp/plugin`, including public pre-beta experimental `ModuleDescriptor`, `PluginDescriptor`, package-owned EvolvePHP-major compatibility validation and typed compatibility failures; component versions, dependencies, capabilities, registration, entry-point lifecycle, boot, discovery, enablement, serialization and Core integration remain deferred.
 - Added Phase 5.1 Component Identity Foundation in `evolvephp/contracts`, including public pre-beta experimental `ComponentIdentifier` and `ComponentType` vocabulary for future Module and Plugin metadata; Module/Plugin entry points, descriptors, discovery, enablement, dependency/capability graphs, registration, boot/ready/shutdown orchestration and Core integration remain deferred.
 
 ### Runtime foundation

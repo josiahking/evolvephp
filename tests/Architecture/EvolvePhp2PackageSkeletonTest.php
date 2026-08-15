@@ -131,8 +131,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertFileDoesNotExist($this->projectPath('packages/contracts/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/core/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/http/src/.gitkeep'));
-        $this->assertFileExists($this->projectPath('packages/module/src/.gitkeep'));
-        $this->assertFileExists($this->projectPath('packages/plugin/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/module/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/plugin/src/.gitkeep'));
         $this->assertFileExists($this->projectPath('packages/testing/src/.gitkeep'));
     }
 
@@ -227,6 +227,41 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery/i', $content);
         $this->assertMatchesPattern('/registration.*deferred|deferred.*registration/i', $content);
         $this->assertMatchesPattern('/boot.*ready.*shutdown.*deferred|deferred.*boot.*ready.*shutdown/is', $content);
+    }
+
+    public function testPhase52ModuleAndPluginDescriptorFoundationIsDocumented(): void
+    {
+        $moduleReadme = $this->readProjectFile('packages/module/README.md');
+        $pluginReadme = $this->readProjectFile('packages/plugin/README.md');
+        $packagesReadme = $this->readProjectFile('packages/README.md');
+        $changelog = $this->readProjectFile('CHANGELOG.md');
+
+        foreach (array($moduleReadme, $pluginReadme, $packagesReadme, $changelog) as $content) {
+            $this->assertMatchesPattern('/Phase 5\.2/i', $content);
+            $this->assertMatchesPattern('/experimental/i', $content);
+            $this->assertMatchesPattern('/immutable descriptor/i', $content);
+            $this->assertMatchesPattern('/EvolvePHP-major compatibility validation|EvolvePHP major compatibility validation/i', $content);
+            $this->assertMatchesPattern('/dependencies?.*deferred|deferred.*dependencies?/is', $content);
+            $this->assertMatchesPattern('/entry-point.*deferred|deferred.*entry-point|lifecycle.*deferred|deferred.*lifecycle/is', $content);
+            $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery/is', $content);
+            $this->assertMatchesPattern('/enablement.*deferred|deferred.*enablement/is', $content);
+        }
+
+        $this->assertMatchesPattern('/ModuleDescriptor/i', $moduleReadme);
+        $this->assertMatchesPattern('/ComponentIdentifier/i', $moduleReadme);
+        $this->assertMatchesPattern('/ComponentType::Module|hard-coded Module type/i', $moduleReadme);
+        $this->assertMatchesPattern('/ModuleCompatibilityValidator/i', $moduleReadme);
+
+        $this->assertMatchesPattern('/PluginDescriptor/i', $pluginReadme);
+        $this->assertMatchesPattern('/ComponentIdentifier/i', $pluginReadme);
+        $this->assertMatchesPattern('/ComponentType::Plugin|hard-coded Plugin type/i', $pluginReadme);
+        $this->assertMatchesPattern('/PluginCompatibilityValidator/i', $pluginReadme);
+
+        $this->assertMatchesPattern('/ModuleDescriptor/i', $packagesReadme);
+        $this->assertMatchesPattern('/PluginDescriptor/i', $packagesReadme);
+        $this->assertMatchesPattern('/not.*complete.*lifecycle|lifecycle.*not.*complete/is', $packagesReadme);
+        $this->assertMatchesPattern('/Phase 5\.2.*ModuleDescriptor|ModuleDescriptor.*Phase 5\.2/is', $changelog);
+        $this->assertMatchesPattern('/Phase 5\.2.*PluginDescriptor|PluginDescriptor.*Phase 5\.2/is', $changelog);
     }
 
     public function testCoreDeclaresPsrContainerInteroperabilityMetadata(): void
@@ -532,8 +567,16 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Routing/RouteMatcher.php',
                 'Routing/RoutingRequestHandler.php',
             ),
-            'packages/module/src' => array(),
-            'packages/plugin/src' => array(),
+            'packages/module/src' => array(
+                'Exception/IncompatibleModuleDescriptor.php',
+                'ModuleCompatibilityValidator.php',
+                'ModuleDescriptor.php',
+            ),
+            'packages/plugin/src' => array(
+                'Exception/IncompatiblePluginDescriptor.php',
+                'PluginCompatibilityValidator.php',
+                'PluginDescriptor.php',
+            ),
             'packages/testing/src' => array(),
         );
     }

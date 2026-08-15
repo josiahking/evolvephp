@@ -2,6 +2,22 @@
 
 Framework plugin SDK and lifecycle support for EvolvePHP 2.
 
+## Phase 5.2 Descriptor Foundation
+
+Phase 5.2 adds the public experimental `Evolve\Plugin\PluginDescriptor` in-memory immutable descriptor and `Evolve\Plugin\PluginCompatibilityValidator`.
+
+`PluginDescriptor` reuses `Evolve\Contracts\Component\ComponentIdentifier`, preserves the exact accepted human-readable name, always reports the hard-coded Plugin type through `ComponentType::Plugin`, exposes descriptor schema version `1`, and declares an EvolvePHP major as a positive integer. Structural descriptor validity is separate from framework compatibility: positive non-2 majors are valid descriptor metadata, while `PluginCompatibilityValidator` performs explicit EvolvePHP major compatibility validation for the currently supported major `2`.
+
+These APIs are PUBLIC EXPERIMENTAL and pre-beta. They are not stable lifecycle APIs.
+
+Deferred from this slice:
+
+- component versions, dependencies and capabilities remain deferred to Phase 5.3;
+- registration remains deferred to Phase 5.4;
+- entry-point contracts, lifecycle and boot remain deferred to Phase 5.5;
+- discovery and enablement remain deferred to Phase 5.6;
+- descriptor serialization remains deferred.
+
 ## Package
 
 `evolvephp/plugin`
