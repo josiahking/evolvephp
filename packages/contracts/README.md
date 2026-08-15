@@ -34,10 +34,12 @@ These APIs are public, pre-beta and marked `@experimental`. They are not stable 
 The accepted identifier grammar is:
 
 ```text
-^[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?(?:/[a-z0-9](?:[a-z0-9._-]*[a-z0-9])?)?$
+identifier = side | side "/" side
+side = alnum | alnum { alnum | "." | "_" | "-" } alnum
+alnum = lowercase ASCII letter | ASCII digit
 ```
 
-The grammar allows either `side` or `side/side`, with at most one `/`. Each side starts and ends with lowercase ASCII alphanumeric characters and may contain lowercase ASCII alphanumeric characters, `.`, `_` or `-` internally.
+The grammar allows either `side` or `side/side`, with at most one `/`. Each side is non-empty, starts and ends with lowercase ASCII alphanumeric characters, and may contain lowercase ASCII alphanumeric characters, `.`, `_` or `-` internally. Accepted input is preserved exactly; no trimming, lowercasing or normalization occurs.
 
 `ComponentType` is the experimental Module/Plugin identity vocabulary only. `ApplicationLifecycle` remains application lifecycle, and `ResetParticipant` remains execution reset. Phase 5.1 does not implement Module/Plugin lifecycle entry points; lifecycle, descriptor behavior, discovery, registration, boot, ready and shutdown behavior remain deferred.
 
