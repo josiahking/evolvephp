@@ -20,6 +20,7 @@ final class PrereleaseConsumerValidator
     public function validate(string $root, string $ref, ?string $composer): array
     {
         $packages = loadReleasePackages($root);
+        $lockedRuntimePackages = loadLockedRuntimePackageRepositoryPackages($root);
         $sourceState = captureSourceState($this->runner, $root);
         $temp = createTemporaryDirectory();
 
@@ -35,14 +36,14 @@ final class PrereleaseConsumerValidator
             $stableRepositories = $this->createTaggedRepositories($temp->child('stable-repositories'), $splitRoots, self::STABLE_VERSION);
 
             $results = array();
-            $results[] = $this->runExpectedFailureCase($temp, $composer, 'Alpha case A', $alphaRepositories, array('evolvephp/http' => '2.0.0-alpha.1'));
-            $results[] = $this->runExpectedFailureCase($temp, $composer, 'Alpha case B', $alphaRepositories, array('evolvephp/http' => '^2.0@alpha'));
-            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Alpha case C', $alphaRepositories, array('evolvephp/http' => '^2.0'), array('minimum-stability' => 'alpha', 'prefer-stable' => true), array(
+            $results[] = $this->runExpectedFailureCase($temp, $composer, 'Alpha case A', $alphaRepositories, $lockedRuntimePackages, array('evolvephp/http' => '2.0.0-alpha.1'));
+            $results[] = $this->runExpectedFailureCase($temp, $composer, 'Alpha case B', $alphaRepositories, $lockedRuntimePackages, array('evolvephp/http' => '^2.0@alpha'));
+            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Alpha case C', $alphaRepositories, $lockedRuntimePackages, array('evolvephp/http' => '^2.0'), array('minimum-stability' => 'alpha', 'prefer-stable' => true), array(
                 'evolvephp/contracts' => self::ALPHA_VERSION,
                 'evolvephp/core' => self::ALPHA_VERSION,
                 'evolvephp/http' => self::ALPHA_VERSION,
             ));
-            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Alpha case D', $alphaRepositories, array(
+            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Alpha case D', $alphaRepositories, $lockedRuntimePackages, array(
                 'evolvephp/contracts' => '^2.0@alpha',
                 'evolvephp/core' => '^2.0@alpha',
                 'evolvephp/http' => '^2.0@alpha',
@@ -51,10 +52,10 @@ final class PrereleaseConsumerValidator
                 'evolvephp/core' => self::ALPHA_VERSION,
                 'evolvephp/http' => self::ALPHA_VERSION,
             ));
-            $results[] = $this->runExpectedFailureCase($temp, $composer, 'Full-graph case E', $alphaRepositories, array('evolvephp/testing' => '^2.0@alpha'));
-            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case F', $alphaRepositories, array('evolvephp/testing' => '^2.0'), array('minimum-stability' => 'alpha', 'prefer-stable' => true), $this->expectedVersions($packages, self::ALPHA_VERSION));
-            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case G', $alphaRepositories, $this->explicitAlphaRootRequirements($packages), array(), $this->expectedVersions($packages, self::ALPHA_VERSION));
-            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Stable case H', $stableRepositories, array('evolvephp/testing' => '^2.0'), array(), $this->expectedVersions($packages, self::STABLE_VERSION));
+            $results[] = $this->runExpectedFailureCase($temp, $composer, 'Full-graph case E', $alphaRepositories, $lockedRuntimePackages, array('evolvephp/testing' => '^2.0@alpha'));
+            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case F', $alphaRepositories, $lockedRuntimePackages, array('evolvephp/testing' => '^2.0'), array('minimum-stability' => 'alpha', 'prefer-stable' => true), $this->expectedVersions($packages, self::ALPHA_VERSION));
+            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case G', $alphaRepositories, $lockedRuntimePackages, $this->explicitAlphaRootRequirements($packages), array(), $this->expectedVersions($packages, self::ALPHA_VERSION));
+            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Stable case H', $stableRepositories, $lockedRuntimePackages, array('evolvephp/testing' => '^2.0'), array(), $this->expectedVersions($packages, self::STABLE_VERSION));
 
             assertSourceStatePreserved($this->runner, $root, $sourceState);
 
@@ -113,12 +114,13 @@ final class PrereleaseConsumerValidator
 
     /**
      * @param array<string, string> $repositories
+     * @param list<array<string, mixed>> $lockedRuntimePackages
      * @param array<string, string> $requirements
      * @return array{name: string, outcome: string, detail: string}
      */
-    private function runExpectedFailureCase(ReleaseValidationTemporaryDirectory $temp, ?string $composer, string $caseName, array $repositories, array $requirements): array
+    private function runExpectedFailureCase(ReleaseValidationTemporaryDirectory $temp, ?string $composer, string $caseName, array $repositories, array $lockedRuntimePackages, array $requirements): array
     {
-        $consumer = $this->createConsumer($temp, $caseName, $repositories, $requirements, array());
+        $consumer = $this->createConsumer($temp, $caseName, $repositories, $lockedRuntimePackages, $requirements, array());
         $result = $this->runComposerUpdate($consumer, $temp, $composer);
         $output = $result->output();
 
@@ -135,14 +137,15 @@ final class PrereleaseConsumerValidator
 
     /**
      * @param array<string, string> $repositories
+     * @param list<array<string, mixed>> $lockedRuntimePackages
      * @param array<string, string> $requirements
      * @param array<string, string|bool> $consumerOptions
      * @param array<string, string> $expectedVersions
      * @return array{name: string, outcome: string, detail: string}
      */
-    private function runExpectedSuccessCase(ReleaseValidationTemporaryDirectory $temp, ?string $composer, string $caseName, array $repositories, array $requirements, array $consumerOptions, array $expectedVersions): array
+    private function runExpectedSuccessCase(ReleaseValidationTemporaryDirectory $temp, ?string $composer, string $caseName, array $repositories, array $lockedRuntimePackages, array $requirements, array $consumerOptions, array $expectedVersions): array
     {
-        $consumer = $this->createConsumer($temp, $caseName, $repositories, $requirements, $consumerOptions);
+        $consumer = $this->createConsumer($temp, $caseName, $repositories, $lockedRuntimePackages, $requirements, $consumerOptions);
         $result = $this->runComposerUpdate($consumer, $temp, $composer);
 
         if ($result->exitCode !== 0) {
@@ -160,10 +163,11 @@ final class PrereleaseConsumerValidator
 
     /**
      * @param array<string, string> $repositories
+     * @param list<array<string, mixed>> $lockedRuntimePackages
      * @param array<string, string> $requirements
      * @param array<string, string|bool> $consumerOptions
      */
-    private function createConsumer(ReleaseValidationTemporaryDirectory $temp, string $caseName, array $repositories, array $requirements, array $consumerOptions): string
+    private function createConsumer(ReleaseValidationTemporaryDirectory $temp, string $caseName, array $repositories, array $lockedRuntimePackages, array $requirements, array $consumerOptions): string
     {
         $directory = $temp->child('consumers/' . strtolower(str_replace(' ', '-', $caseName)));
 
@@ -172,6 +176,7 @@ final class PrereleaseConsumerValidator
         }
 
         $repositoryEntries = array(array('packagist.org' => false));
+        $repositoryEntries[] = array('type' => 'package', 'package' => $lockedRuntimePackages);
 
         foreach ($repositories as $repository) {
             $repositoryEntries[] = array('type' => 'vcs', 'url' => normalizePath($repository));

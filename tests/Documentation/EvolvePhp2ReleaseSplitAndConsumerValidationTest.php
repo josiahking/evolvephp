@@ -146,6 +146,59 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/\\b(?:curl|gh|git push|remote add|config --global)\\b/i', $content);
     }
 
+    public function testConsumerValidatorUsesLockedRuntimePackagesForOfflineThirdPartyResolution(): void
+    {
+        require_once $this->path('tools/release-validation-common.php');
+
+        $this->assertTrue(
+            function_exists('loadLockedRuntimePackageRepositoryPackages'),
+            'release-validation-common.php must expose lockfile-derived runtime package repository metadata.'
+        );
+
+        $fixtures = loadLockedRuntimePackageRepositoryPackages($this->root);
+        $lock = $this->readJsonFile('composer.lock');
+        $runtimePackages = $this->lockedPackagesByName($lock['packages']);
+        $devPackageNames = array_keys($this->lockedPackagesByName($lock['packages-dev']));
+        $runtimePackageNames = array_keys($runtimePackages);
+        $devOnlyPackageNames = array_diff($devPackageNames, $runtimePackageNames);
+        $fixtureNames = array_column($fixtures, 'name');
+        $sortedFixtureNames = $fixtureNames;
+
+        sort($sortedFixtureNames);
+
+        $this->assertSame($sortedFixtureNames, $fixtureNames, 'Offline runtime package metadata must be sorted deterministically.');
+
+        foreach ($this->directExternalRuntimeRequirements() as $packageName) {
+            $this->assertContains($packageName, $fixtureNames, $packageName . ' must be available to offline consumers.');
+        }
+
+        foreach ($fixtures as $fixture) {
+            $this->assertIsString($fixture['name']);
+            $this->assertNotSame('', $fixture['name']);
+            $this->assertIsString($fixture['version']);
+            $this->assertNotSame('', $fixture['version']);
+            $this->assertFalse(str_starts_with($fixture['name'], 'evolvephp/'), $fixture['name'] . ' must not be supplied from lockfile metadata.');
+            $this->assertFalse($this->isPlatformRequirement($fixture['name']), $fixture['name'] . ' must not be supplied as a package repository entry.');
+            $this->assertArrayHasKey($fixture['name'], $runtimePackages, $fixture['name'] . ' must come from composer.lock packages.');
+            $this->assertSame($runtimePackages[$fixture['name']]['version'], $fixture['version'], $fixture['name'] . ' must keep the locked runtime version.');
+            $this->assertTrue(
+                isset($fixture['source']) || isset($fixture['dist']),
+                $fixture['name'] . ' must contain source or dist metadata for the offline package repository.'
+            );
+        }
+
+        foreach ($devOnlyPackageNames as $packageName) {
+            $this->assertNotContains($packageName, $fixtureNames, $packageName . ' must not come from composer.lock packages-dev.');
+        }
+
+        $content = $this->readProjectFile('tools/validate-prerelease-consumers.php');
+
+        $this->assertStringContainsString("'type' => 'package'", $content);
+        $this->assertStringContainsString("'package' => \$lockedRuntimePackages", $content);
+        $this->assertStringContainsString("'packagist.org' => false", $content);
+        $this->assertStringContainsString("'COMPOSER_DISABLE_NETWORK' => '1'", $content);
+    }
+
     public function testWorkspaceComposerExposesReleaseValidationScriptsWithoutPrepareScript(): void
     {
         $manifest = $this->readJsonFile('composer.json');
@@ -249,6 +302,54 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertCount(6, $map['packages']);
 
         return $map['packages'];
+    }
+
+    private function directExternalRuntimeRequirements()
+    {
+        $requirements = array();
+
+        foreach ($this->releasePackages() as $package) {
+            $manifest = $this->readJsonFile($package['directory'] . '/composer.json');
+
+            foreach ($manifest['require'] as $packageName => $constraint) {
+                if (str_starts_with($packageName, 'evolvephp/') || $this->isPlatformRequirement($packageName)) {
+                    continue;
+                }
+
+                $requirements[$packageName] = true;
+            }
+        }
+
+        $names = array_keys($requirements);
+        sort($names);
+
+        return $names;
+    }
+
+    private function lockedPackagesByName($packages)
+    {
+        $this->assertIsArray($packages);
+
+        $locked = array();
+
+        foreach ($packages as $package) {
+            $this->assertIsArray($package);
+            $this->assertArrayHasKey('name', $package);
+            $this->assertArrayHasKey('version', $package);
+
+            $locked[$package['name']] = $package;
+        }
+
+        ksort($locked);
+
+        return $locked;
+    }
+
+    private function isPlatformRequirement($packageName)
+    {
+        return $packageName === 'php'
+            || str_starts_with($packageName, 'ext-')
+            || str_starts_with($packageName, 'lib-');
     }
 
     private function path($path)

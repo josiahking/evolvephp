@@ -253,6 +253,120 @@ function readJsonFile(string $path, string $label)
 }
 
 /**
+ * @return list<array<string, mixed>>
+ */
+function loadLockedRuntimePackageRepositoryPackages(string $root): array
+{
+    $lock = readJsonFile(joinPaths($root, 'composer.lock'), 'composer.lock');
+
+    if (!is_array($lock)) {
+        releaseValidationFail('composer.lock must decode to an object.');
+    }
+
+    if (!array_key_exists('packages', $lock) || !is_array($lock['packages'])) {
+        releaseValidationFail('composer.lock packages must be an array.');
+    }
+
+    $packages = array();
+
+    foreach ($lock['packages'] as $index => $package) {
+        $entry = $index + 1;
+
+        if (!is_array($package)) {
+            releaseValidationFail('composer.lock packages entry ' . $entry . ' must be an object.');
+        }
+
+        $name = $package['name'] ?? null;
+
+        if (!is_string($name) || $name === '') {
+            releaseValidationFail('composer.lock packages entry ' . $entry . ' must contain a non-empty name.');
+        }
+
+        if (str_starts_with($name, 'evolvephp/') || isPlatformPackageName($name)) {
+            continue;
+        }
+
+        $version = $package['version'] ?? null;
+
+        if (!is_string($version) || $version === '') {
+            releaseValidationFail('composer.lock package ' . $name . ' must contain a non-empty version.');
+        }
+
+        if (isset($packages[$name])) {
+            releaseValidationFail('composer.lock packages contains duplicate runtime package metadata for ' . $name . '.');
+        }
+
+        $definition = array(
+            'name' => $name,
+            'version' => $version,
+        );
+
+        foreach (array('require', 'conflict', 'replace', 'provide') as $field) {
+            if (!array_key_exists($field, $package)) {
+                continue;
+            }
+
+            if (!is_array($package[$field])) {
+                releaseValidationFail('composer.lock package ' . $name . ' field ' . $field . ' must be an object.');
+            }
+
+            $definition[$field] = sortedAssociativeArray($package[$field]);
+        }
+
+        if (array_key_exists('type', $package)) {
+            if (!is_string($package['type']) || $package['type'] === '') {
+                releaseValidationFail('composer.lock package ' . $name . ' field type must be a non-empty string.');
+            }
+
+            $definition['type'] = $package['type'];
+        }
+
+        foreach (array('source', 'dist') as $field) {
+            if (!array_key_exists($field, $package)) {
+                continue;
+            }
+
+            if (!is_array($package[$field]) || $package[$field] === array()) {
+                releaseValidationFail('composer.lock package ' . $name . ' field ' . $field . ' must be an object.');
+            }
+
+            $definition[$field] = sortedAssociativeArray($package[$field]);
+        }
+
+        if (!isset($definition['source']) && !isset($definition['dist'])) {
+            releaseValidationFail('composer.lock package ' . $name . ' must contain source or dist metadata for offline package repositories.');
+        }
+
+        $packages[$name] = $definition;
+    }
+
+    ksort($packages);
+
+    return array_values($packages);
+}
+
+function isPlatformPackageName(string $name): bool
+{
+    return $name === 'php'
+        || $name === 'hhvm'
+        || str_starts_with($name, 'composer-')
+        || str_starts_with($name, 'ext-')
+        || str_starts_with($name, 'lib-')
+        || str_starts_with($name, 'php-');
+}
+
+/**
+ * @param array<string, mixed> $values
+ * @return array<string, mixed>
+ */
+function sortedAssociativeArray(array $values): array
+{
+    ksort($values);
+
+    return $values;
+}
+
+/**
  * @return list<array{name: string, directory: string}>
  */
 function loadReleasePackages(string $root): array
