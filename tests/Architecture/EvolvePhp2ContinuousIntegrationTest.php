@@ -69,20 +69,20 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $this->assertDoesNotMatchPattern('/actions\/cache/', $this->workflow);
     }
 
-    public function testPolicyJobRunsRootPolicySuitesWithWorkspacePhpUnitOnPhp84(): void
+    public function testPolicyJobRunsRootPolicySuitesWithRootPhpUnitOnPhp84(): void
     {
         $job = $this->extractJob('policy');
 
         $this->assertMatchesPattern('/name:\s*Policy \(PHP 8\.4\)/', $job);
         $this->assertMatchesPattern('/runs-on:\s*ubuntu-24\.04/', $job);
         $this->assertMatchesPattern('/php-version:\s*\'8\.4\'/', $job);
-        $this->assertStringContainsString('composer --working-dir=workspace validate --strict --check-lock', $job);
-        $this->assertStringContainsString('composer --working-dir=workspace install --no-interaction --no-progress --prefer-dist', $job);
-        $this->assertSame(1, substr_count($job, 'composer --working-dir=workspace supply-chain'));
-        $this->assertSame(1, substr_count($job, 'composer --working-dir=workspace release:split:validate'));
-        $this->assertStringContainsString('php workspace/vendor/bin/phpunit --configuration phpunit.xml.dist tests/Architecture tests/Documentation', $job);
+        $this->assertStringContainsString('composer validate --strict --check-lock', $job);
+        $this->assertStringContainsString('composer install --no-interaction --no-progress --prefer-dist', $job);
+        $this->assertSame(1, substr_count($job, 'composer supply-chain'));
+        $this->assertSame(1, substr_count($job, 'composer release:split:validate'));
+        $this->assertStringContainsString('php vendor/bin/phpunit --configuration phpunit.xml.dist tests/Architecture tests/Documentation', $job);
         $this->assertStringNotContainsString('release:consumer:validate', $this->workflow);
-        $this->assertDoesNotMatchPattern('/composer install(?! --working-dir=workspace)|composer --working-dir=\.\s+install/', $job);
+        $this->assertDoesNotMatchPattern('/--working-dir=workspace|composer --working-dir=\.\s+install/', $job);
         $this->assertDoesNotMatchPattern('/composer update|--ignore-platform-reqs?|config\.platform\.php/', $job);
         $this->assertDoesNotMatchPattern('/phpunit.*(?:core|components|helpers|index\.php|route\.php)/i', $job);
     }
@@ -95,7 +95,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $this->assertSame(1, substr_count($this->workflow, 'fetch-depth: 0'));
         $this->assertMatchesPattern('/persist-credentials:\s*false/', $policyCheckout);
         $this->assertMatchesPattern('/fetch-depth:\s*0/', $policyCheckout);
-        $this->assertStringContainsString('composer --working-dir=workspace release:split:validate', $this->extractJob('policy'));
+        $this->assertStringContainsString('composer release:split:validate', $this->extractJob('policy'));
 
         $this->assertMatchesPattern('/persist-credentials:\s*false/', $workspaceQualityCheckout);
         $this->assertDoesNotMatchPattern('/fetch-depth:\s*0/', $workspaceQualityCheckout);
@@ -109,11 +109,11 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $this->assertMatchesPattern('/name:\s*Workspace quality \(PHP \$\{\{ matrix\.php \}\}\)/', $job);
         $this->assertMatchesPattern('/strategy:\s*\R\s{6}fail-fast:\s*false/', $job);
         $this->assertMatchesPattern('/php:\s*\R\s{10}- \'8\.4\'\s*\R\s{10}- \'8\.5\'/m', $job);
-        $this->assertStringContainsString('composer --working-dir=workspace validate --strict --check-lock', $job);
-        $this->assertStringContainsString('composer --working-dir=workspace install --no-interaction --no-progress --prefer-dist', $job);
-        $this->assertStringContainsString('composer --working-dir=workspace quality', $job);
+        $this->assertStringContainsString('composer validate --strict --check-lock', $job);
+        $this->assertStringContainsString('composer install --no-interaction --no-progress --prefer-dist', $job);
+        $this->assertStringContainsString('composer quality', $job);
         $this->assertDoesNotMatchPattern('/composer update|style:fix|continue-on-error|--ignore-platform-reqs?/', $job);
-        $this->assertDoesNotMatchPattern('/composer --working-dir=workspace (architecture|analyse|style:check|test)(?:\s|$)/', $job);
+        $this->assertDoesNotMatchPattern('/composer (architecture|analyse|style:check|test)(?:\s|$)/', $job);
     }
 
     public function testWorkflowExcludesReleasePublishingSecretsCachesAndDeployments(): void
@@ -137,7 +137,6 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
             '/actions\/cache/',
             '/environment:/',
             '/sudo\b/',
-            '/composer install(?! --working-dir=workspace)/',
             '/--ignore-platform-reqs?/',
             '/config\.platform\.php/',
         ) as $pattern) {
@@ -147,7 +146,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
 
     public function testDocumentationRecordsContinuousIntegrationCompatibilityEvidence(): void
     {
-        $workspaceReadme = $this->readProjectFile('workspace/README.md');
+        $workspaceReadme = $this->readProjectFile('DEVELOPMENT.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
         foreach (array(
@@ -161,9 +160,9 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
             '/concurrency.*cancel|cancel.*concurrency/i',
             '/Ubuntu 24\.04/',
             '/policy job.*PHP 8\.4|PHP 8\.4.*policy job/i',
-            '/Architecture and Documentation.*workspace PHPUnit 13|workspace PHPUnit 13.*Architecture and Documentation/i',
+            '/Architecture and Documentation.*root PHPUnit 13|root PHPUnit 13.*Architecture and Documentation/i',
             '/EvolvePHP 1 runtime.*not part|not part.*EvolvePHP 1 runtime/i',
-            '/workspace quality matrix.*PHP 8\.4.*PHP 8\.5|PHP 8\.4.*PHP 8\.5.*workspace quality matrix/i',
+            '/ quality matrix.*PHP 8\.4.*PHP 8\.5|PHP 8\.4.*PHP 8\.5.*root quality matrix/i',
             '/Composer validation.*before.*install|validate.*before.*install/i',
             '/lockfile.*composer install|composer install.*lockfile/i',
             '/no `composer update`|not run `composer update`/i',
@@ -172,7 +171,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
             '/immutable.*full-SHA|full-SHA.*immutable/i',
             '/release comments.*SHA|SHA.*release comments/i',
             '/Phase 2\.6 CI matrix.*successfully executed|successfully executed.*Phase 2\.6 CI matrix/i',
-            '/workspace quality.*passes.*PHP 8\.4.*PHP 8\.5|PHP 8\.4.*PHP 8\.5.*workspace quality.*passes/i',
+            '/ quality.*passes.*PHP 8\.4.*PHP 8\.5|PHP 8\.4.*PHP 8\.5.*root quality.*passes/i',
             '/current.*(?:workspace|tooling|package foundation)|(?:workspace|tooling|package foundation).*current/i',
             '/EvolvePHP 1 runtime.*(?:not part|excluded)|(?:not part|excluded).*EvolvePHP 1 runtime/i',
             '/runtime implementation.*(?:incomplete|not complete)|(?:incomplete|not complete).*runtime implementation/i',
@@ -181,7 +180,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         }
 
         $this->assertMatchesPattern('/Phase 2\.6/i', $changelog);
-        $this->assertMatchesPattern('/PHP 8\.4\/8\.5 workspace quality matrix/i', $changelog);
+        $this->assertMatchesPattern('/PHP 8\.4\/8\.5 root quality matrix/i', $changelog);
         $this->assertMatchesPattern('/successful initial CI execution|initial GitHub Actions execution completed successfully|CI execution.*successfully/i', $changelog);
         $this->assertMatchesPattern('/separate PHP 8\.4 root-policy job/i', $changelog);
         $this->assertMatchesPattern('/lockfile-based workspace installation/i', $changelog);

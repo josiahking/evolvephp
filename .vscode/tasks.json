@@ -2,11 +2,10 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "EvolvePHP 2: Install Workspace Dependencies",
+            "label": "EvolvePHP 2: Install Dependencies",
             "type": "shell",
             "command": "composer",
             "args": [
-                "--working-dir=workspace",
                 "install"
             ],
             "problemMatcher": []
@@ -16,7 +15,6 @@
             "type": "shell",
             "command": "composer",
             "args": [
-                "--working-dir=workspace",
                 "quality"
             ],
             "group": "test",
@@ -27,7 +25,6 @@
             "type": "shell",
             "command": "composer",
             "args": [
-                "--working-dir=workspace",
                 "test"
             ],
             "group": "test",
@@ -38,7 +35,6 @@
             "type": "shell",
             "command": "composer",
             "args": [
-                "--working-dir=workspace",
                 "architecture"
             ],
             "group": "test",
@@ -49,7 +45,6 @@
             "type": "shell",
             "command": "composer",
             "args": [
-                "--working-dir=workspace",
                 "analyse"
             ],
             "group": "test",
@@ -60,7 +55,6 @@
             "type": "shell",
             "command": "composer",
             "args": [
-                "--working-dir=workspace",
                 "style:check"
             ],
             "group": "test",
@@ -71,7 +65,6 @@
             "type": "shell",
             "command": "composer",
             "args": [
-                "--working-dir=workspace",
                 "style:fix"
             ],
             "problemMatcher": []
@@ -81,7 +74,7 @@
             "type": "shell",
             "command": "php",
             "args": [
-                "workspace/vendor/bin/phpunit",
+                "vendor/bin/phpunit",
                 "--configuration",
                 "phpunit.xml.dist",
                 "tests/Architecture",

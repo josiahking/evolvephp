@@ -2,16 +2,14 @@
     "intelephense.environment.phpVersion": "8.4.0",
     "files.watcherExclude": {
         "**/vendor/**": true,
-        "**/workspace/vendor/**": true,
-        "**/workspace/.phpstan-cache/**": true,
-        "**/workspace/.php-cs-fixer.cache": true,
-        "**/workspace/.deptrac.cache": true
+        "**/.phpstan-cache/**": true,
+        "**/.php-cs-fixer.cache": true,
+        "**/.deptrac.cache": true
     },
     "search.exclude": {
         "**/vendor/**": true,
-        "**/workspace/vendor/**": true,
-        "**/workspace/.phpstan-cache/**": true,
-        "**/workspace/.php-cs-fixer.cache": true,
-        "**/workspace/.deptrac.cache": true
+        "**/.phpstan-cache/**": true,
+        "**/.php-cs-fixer.cache": true,
+        "**/.deptrac.cache": true
     }
 }
