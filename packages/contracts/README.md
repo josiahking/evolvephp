@@ -20,6 +20,29 @@ Consumers should catch public exception contracts such as `LifecycleException` a
 
 Configuration files, environment and dotenv loading, container access, service definitions, execution identifiers, execution orchestration, reset ordering policy, HTTP handling and framework runtime adapters are not part of these contracts.
 
+## Experimental Component Identity
+
+Phase 5.1 adds experimental component identity vocabulary shared by future Module and Plugin metadata:
+
+- `Evolve\Contracts\Component\ComponentIdentifier`
+- `Evolve\Contracts\Component\ComponentType`
+
+These APIs are public, pre-beta and marked `@experimental`. They are not stable public lifecycle APIs.
+
+`ComponentIdentifier` accepts an explicitly supplied machine identifier and preserves the exact accepted string through `value()` and `__toString()`. It performs no normalization: accepted identifiers are not lowercased, trimmed or derived from filesystem paths, PHP class names, namespaces or Composer installation order.
+
+The accepted identifier grammar is:
+
+```text
+identifier = side | side "/" side
+side = alnum | alnum { alnum | "." | "_" | "-" } alnum
+alnum = lowercase ASCII letter | ASCII digit
+```
+
+The grammar allows either `side` or `side/side`, with at most one `/`. Each side is non-empty, starts and ends with lowercase ASCII alphanumeric characters, and may contain lowercase ASCII alphanumeric characters, `.`, `_` or `-` internally. Accepted input is preserved exactly; no trimming, lowercasing or normalization occurs.
+
+`ComponentType` is the experimental Module/Plugin identity vocabulary only. `ApplicationLifecycle` remains application lifecycle, and `ResetParticipant` remains execution reset. Phase 5.1 does not implement Module/Plugin lifecycle entry points; lifecycle, descriptor behavior, discovery, registration, boot, ready and shutdown behavior remain deferred.
+
 ## Package
 
 `evolvephp/contracts`

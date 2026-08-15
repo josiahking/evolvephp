@@ -114,9 +114,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPackageSourcesMatchPhase46RuntimeInventory(): void
+    public function testPackageSourcesMatchAcceptedPackageSourceInventory(): void
     {
-        foreach ($this->phase46SourceInventories() as $sourceDirectory => $expectedFiles) {
+        foreach ($this->acceptedPackageSourceInventories() as $sourceDirectory => $expectedFiles) {
             $fullSourceDirectory = $this->projectPath($sourceDirectory);
 
             $this->assertTrue(is_dir($fullSourceDirectory), $sourceDirectory . ' should exist before source files are inspected.');
@@ -124,7 +124,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedFiles,
                 $this->phpFilesUnderSource($fullSourceDirectory),
-                $sourceDirectory . ' should contain exactly the approved Phase 4.6 PHP source inventory.'
+                $sourceDirectory . ' should contain exactly the approved package PHP source inventory.'
             );
         }
 
@@ -200,6 +200,33 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertDoesNotMatchPattern('/' . preg_quote($uninstalledHistory, '/') . '/i', $content);
         $this->assertDoesNotMatchPattern('/' . preg_quote($phpCompatibilityHistory, '/') . '/i', $content);
         $this->assertDoesNotMatchPattern('/' . preg_quote($probeHistory, '/') . '/i', $content);
+    }
+
+    public function testContractsReadmeDocumentsPhase51ComponentIdentityFoundation(): void
+    {
+        $content = $this->readProjectFile('packages/contracts/README.md');
+
+        $this->assertMatchesPattern('/ComponentIdentifier/i', $content);
+        $this->assertMatchesPattern('/ComponentType/i', $content);
+        $this->assertMatchesPattern('/experimental/i', $content);
+        $this->assertMatchesPattern('/identifier grammar/i', $content);
+        $this->assertMatchesPattern('/no normalization|not normaliz/i', $content);
+        $this->assertMatchesPattern('/Module.*Plugin.*identity vocabulary|Plugin.*Module.*identity vocabulary/is', $content);
+        $this->assertMatchesPattern('/lifecycle.*deferred|deferred.*lifecycle/is', $content);
+        $this->assertMatchesPattern('/descriptor.*deferred|deferred.*descriptor/is', $content);
+    }
+
+    public function testPackageOverviewDocumentsPhase51ComponentIdentityFoundationBoundary(): void
+    {
+        $content = $this->readProjectFile('packages/README.md');
+
+        $this->assertMatchesPattern('/Phase 5\.1.*Component Identity Foundation/is', $content);
+        $this->assertMatchesPattern('/experimental shared identity vocabulary|shared experimental identity vocabulary/i', $content);
+        $this->assertMatchesPattern('/Module\/Plugin entry points.*not implemented|not implemented.*Module\/Plugin entry points/is', $content);
+        $this->assertMatchesPattern('/descriptors?.*deferred|deferred.*descriptors?/i', $content);
+        $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery/i', $content);
+        $this->assertMatchesPattern('/registration.*deferred|deferred.*registration/i', $content);
+        $this->assertMatchesPattern('/boot.*ready.*shutdown.*deferred|deferred.*boot.*ready.*shutdown/is', $content);
     }
 
     public function testCoreDeclaresPsrContainerInteroperabilityMetadata(): void
@@ -314,7 +341,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/no new Deptrac.*layer|does not require.*new Deptrac/is', $content);
     }
 
-    public function testChangelogRecordsPhase21PackageSkeletonPhase37ConsoleFoundationPhase41HttpFoundationPhase42RoutingPhase43RoutedDispatchPhase44HttpKernelPhase45ResponseHealthAndPhase46Emitter(): void
+    public function testChangelogRecordsPhase21PackageSkeletonPhase37ConsoleFoundationPhase41HttpFoundationPhase42RoutingPhase43RoutedDispatchPhase44HttpKernelPhase45ResponseHealthPhase46EmitterAndPhase51ComponentIdentity(): void
     {
         $content = $this->readProjectFile('CHANGELOG.md');
 
@@ -355,6 +382,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/ReadinessCheck|LivenessHandler|ReadinessHandler/i', $content);
         $this->assertMatchesPattern('/Phase 4\.6/i', $content);
         $this->assertMatchesPattern('/ResponseEmitter/i', $content);
+        $this->assertMatchesPattern('/Phase 5\.1/i', $content);
+        $this->assertMatchesPattern('/Component Identity Foundation/i', $content);
         $this->assertDoesNotMatchPattern('/reserved-but-rejected/i', $content);
     }
 
@@ -427,10 +456,12 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
     }
 
-    private function phase46SourceInventories()
+    private function acceptedPackageSourceInventories()
     {
         return array(
             'packages/contracts/src' => array(
+                'Component/ComponentIdentifier.php',
+                'Component/ComponentType.php',
                 'Configuration/Configuration.php',
                 'Configuration/ConfigurationValidator.php',
                 'Exception/ConfigurationException.php',
