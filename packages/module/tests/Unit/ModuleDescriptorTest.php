@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Evolve\Module\Tests\Unit;
 
+use Evolve\Contracts\Component\ComponentConflict;
+use Evolve\Contracts\Component\ComponentDependency;
+use Evolve\Contracts\Component\ComponentDependencyKind;
+use Evolve\Contracts\Component\ComponentGraphRelations;
 use Evolve\Contracts\Component\ComponentIdentifier;
 use Evolve\Contracts\Component\ComponentType;
 use Evolve\Module\ModuleDescriptor;
@@ -103,6 +107,61 @@ final class ModuleDescriptorTest extends TestCase
         self::assertSame(1, $descriptor->schemaVersion());
     }
 
+    public function test_three_argument_constructor_still_creates_empty_graph_declaration(): void
+    {
+        $identifier = new ComponentIdentifier('billing');
+        $descriptor = new ModuleDescriptor($identifier, 'Billing', 2);
+        $declaration = $descriptor->graphDeclaration();
+
+        self::assertSame($identifier, $declaration->identifier());
+        self::assertSame([], $declaration->relations()->dependencies());
+        self::assertSame([], $declaration->relations()->conflicts());
+        self::assertSame([], $declaration->relations()->requiredCapabilities());
+        self::assertSame([], $declaration->relations()->providedCapabilities());
+    }
+
+    public function test_supplied_graph_relations_are_exposed_through_same_declaration_object(): void
+    {
+        $identifier = new ComponentIdentifier('billing');
+        $relations = new ComponentGraphRelations(
+            [new ComponentDependency(new ComponentIdentifier('catalog'), ComponentDependencyKind::Required)],
+        );
+        $descriptor = new ModuleDescriptor($identifier, 'Billing', 2, $relations);
+
+        self::assertSame($identifier, $descriptor->graphDeclaration()->identifier());
+        self::assertSame($relations, $descriptor->graphDeclaration()->relations());
+        self::assertSame($descriptor->graphDeclaration(), $descriptor->graphDeclaration());
+    }
+
+    public function test_rejects_self_dependency_during_construction(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new ModuleDescriptor(
+            new ComponentIdentifier('billing'),
+            'Billing',
+            2,
+            new ComponentGraphRelations(
+                [new ComponentDependency(new ComponentIdentifier('billing'), ComponentDependencyKind::Required)],
+            ),
+        );
+    }
+
+    public function test_rejects_self_conflict_during_construction(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new ModuleDescriptor(
+            new ComponentIdentifier('billing'),
+            'Billing',
+            2,
+            new ComponentGraphRelations(
+                [],
+                [new ComponentConflict(new ComponentIdentifier('billing'))],
+            ),
+        );
+    }
+
     public function test_class_is_final_and_readonly(): void
     {
         $descriptor = new ReflectionClass(ModuleDescriptor::class);
@@ -125,7 +184,7 @@ final class ModuleDescriptorTest extends TestCase
         $descriptor = new ReflectionClass(ModuleDescriptor::class);
 
         self::assertSame(
-            ['__construct', 'evolveMajor', 'identifier', 'name', 'schemaVersion', 'type'],
+            ['__construct', 'evolveMajor', 'graphDeclaration', 'identifier', 'name', 'schemaVersion', 'type'],
             $this->publicMethodNames($descriptor),
         );
     }

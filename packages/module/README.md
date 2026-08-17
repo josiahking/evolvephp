@@ -8,11 +8,15 @@ Phase 5.2 adds the public experimental `Evolve\Module\ModuleDescriptor` in-memor
 
 `ModuleDescriptor` reuses `Evolve\Contracts\Component\ComponentIdentifier`, preserves the exact accepted human-readable name, always reports the hard-coded Module type through `ComponentType::Module`, exposes descriptor schema version `1`, and declares an EvolvePHP major as a positive integer. Structural descriptor validity is separate from framework compatibility: positive non-2 majors are valid descriptor metadata, while `ModuleCompatibilityValidator` performs explicit EvolvePHP major compatibility validation for the currently supported major `2`.
 
+Phase 5.3A extends `ModuleDescriptor` with `graphDeclaration()`, returning an immutable `Evolve\Contracts\Component\ComponentGraphDeclaration` built during descriptor construction. Existing three-argument descriptor construction remains valid and creates an empty graph declaration. A caller may also supply `ComponentGraphRelations` to declare required or optional dependencies, declarative conflicts, required capabilities with `ExactlyOne` or `OneOrMore` cardinality and provided capability identifiers.
+
+The graph declaration is declaration vocabulary only. Relation ordering is canonical and deterministic, but declaration order has no startup-order semantics. Phase 5.3A does not resolve dependencies, activate optional dependencies, resolve conflicts, select capability providers, detect cycles, discover components, register components, order boot or introduce component versions, version constraints or SemVer graph decisions.
+
 These APIs are PUBLIC EXPERIMENTAL and pre-beta. They are not stable lifecycle APIs.
 
 Deferred from this slice:
 
-- component versions, dependencies and capabilities remain deferred to Phase 5.3;
+- graph validation and resolution behavior remain deferred to Phase 5.3B;
 - registration remains deferred to Phase 5.4;
 - entry-point contracts, lifecycle and boot remain deferred to Phase 5.5;
 - discovery and enablement remain deferred to Phase 5.6;
