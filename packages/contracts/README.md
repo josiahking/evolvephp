@@ -43,6 +43,36 @@ The grammar allows either `side` or `side/side`, with at most one `/`. Each side
 
 `ComponentType` is the experimental Module/Plugin identity vocabulary only. `ApplicationLifecycle` remains application lifecycle, and `ResetParticipant` remains execution reset. Phase 5.1 does not implement Module/Plugin lifecycle entry points; lifecycle, descriptor behavior, discovery, registration, boot, ready and shutdown behavior remain deferred.
 
+## Experimental Component Graph Declarations
+
+Phase 5.3A adds public experimental declaration vocabulary for component dependency, conflict and capability metadata:
+
+- `Evolve\Contracts\Component\ComponentGraphDeclaration`
+- `Evolve\Contracts\Component\ComponentGraphRelations`
+- `Evolve\Contracts\Component\ComponentDependency`
+- `Evolve\Contracts\Component\ComponentDependencyKind`
+- `Evolve\Contracts\Component\ComponentConflict`
+- `Evolve\Contracts\Component\CapabilityIdentifier`
+- `Evolve\Contracts\Component\CapabilityRequirement`
+- `Evolve\Contracts\Component\CapabilityCardinality`
+
+These APIs are public, pre-beta and marked `@experimental`. They are not stable lifecycle APIs and they do not resolve or execute the graph.
+
+`ComponentGraphDeclaration` is a narrow immutable projection for one component. It preserves the supplied `ComponentIdentifier` and `ComponentGraphRelations` objects, rejects self-dependency and self-conflict, and does not perform global graph validation.
+
+`ComponentGraphRelations` stores immutable lists of dependencies, conflicts, required capabilities and provided capabilities. Dependencies are declarative and can be `ComponentDependencyKind::Required` or `ComponentDependencyKind::Optional`. Conflicts are declarative component targets. Required capabilities combine a `CapabilityIdentifier` with `CapabilityCardinality::ExactlyOne` or `CapabilityCardinality::OneOrMore`; provided capabilities are represented only as provided capability identifiers.
+
+Relation lists are runtime-validated for list shape and element type, reject duplicate or contradictory declarations, and are exposed in canonical `strcmp()` identifier order. Declaration order has no startup-order semantics.
+
+`CapabilityIdentifier` accepts an explicitly supplied lowercase ASCII capability identifier and preserves the exact accepted string through `value()` and `__toString()`. It performs no trimming, lowercasing or normalization. The accepted identifier grammar is:
+
+```text
+capability = alnum | alnum { alnum | "." | "_" | "-" } alnum
+alnum = lowercase ASCII letter | ASCII digit
+```
+
+Phase 5.3A does not implement dependency resolution, missing dependency errors, optional dependency activation, conflict resolution, capability-provider indexing or selection, ambiguity resolution, cycle detection, startup ordering, component versions, version constraints or Composer SemVer graph decisions. Phase 5.3B owns graph validation and resolution behavior; later Phase 5 slices own registration, lifecycle and discovery.
+
 ## Package
 
 `evolvephp/contracts`

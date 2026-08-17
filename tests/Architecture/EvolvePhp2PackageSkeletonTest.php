@@ -241,7 +241,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertMatchesPattern('/experimental/i', $content);
             $this->assertMatchesPattern('/immutable descriptor/i', $content);
             $this->assertMatchesPattern('/EvolvePHP-major compatibility validation|EvolvePHP major compatibility validation/i', $content);
-            $this->assertMatchesPattern('/dependencies?.*deferred|deferred.*dependencies?/is', $content);
+            $this->assertMatchesPattern('/graph validation.*resolution.*deferred|dependency resolution.*deferred|deferred.*dependency resolution/is', $content);
             $this->assertMatchesPattern('/entry-point.*deferred|deferred.*entry-point|lifecycle.*deferred|deferred.*lifecycle/is', $content);
             $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery/is', $content);
             $this->assertMatchesPattern('/enablement.*deferred|deferred.*enablement/is', $content);
@@ -262,6 +262,40 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/not.*complete.*lifecycle|lifecycle.*not.*complete/is', $packagesReadme);
         $this->assertMatchesPattern('/Phase 5\.2.*ModuleDescriptor|ModuleDescriptor.*Phase 5\.2/is', $changelog);
         $this->assertMatchesPattern('/Phase 5\.2.*PluginDescriptor|PluginDescriptor.*Phase 5\.2/is', $changelog);
+    }
+
+    public function testPhase53aGraphDeclarationVocabularyIsDocumentedWithoutResolutionClaims(): void
+    {
+        $contractsReadme = $this->readProjectFile('packages/contracts/README.md');
+        $moduleReadme = $this->readProjectFile('packages/module/README.md');
+        $pluginReadme = $this->readProjectFile('packages/plugin/README.md');
+        $packagesReadme = $this->readProjectFile('packages/README.md');
+        $changelog = $this->readProjectFile('CHANGELOG.md');
+
+        foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $packagesReadme, $changelog) as $content) {
+            $this->assertMatchesPattern('/Phase 5\.3A/i', $content);
+            $this->assertMatchesPattern('/experimental/i', $content);
+            $this->assertMatchesPattern('/declaration vocabulary|graph declaration vocabulary/i', $content);
+            $this->assertMatchesPattern('/required.*optional|optional.*required/is', $content);
+            $this->assertMatchesPattern('/conflicts?.*declarative|declarative.*conflicts?/is', $content);
+            $this->assertMatchesPattern('/ExactlyOne|ExactlyOne/i', $content);
+            $this->assertMatchesPattern('/OneOrMore/i', $content);
+            $this->assertMatchesPattern('/provided capability identifiers?|capability identifiers?.*provided/is', $content);
+            $this->assertMatchesPattern('/canonical.*order|order.*canonical/is', $content);
+            $this->assertMatchesPattern('/startup-order semantics|startup order.*semantics|no startup-order/i', $content);
+            $this->assertMatchesPattern('/does not.*resolve|resolution.*deferred|resolve.*deferred/is', $content);
+            $this->assertMatchesPattern('/Phase 5\.3B/i', $content);
+        }
+
+        foreach (array($moduleReadme, $pluginReadme, $packagesReadme, $changelog) as $content) {
+            $this->assertMatchesPattern('/graphDeclaration/i', $content);
+            $this->assertMatchesPattern('/three-argument.*construction.*valid|construction.*three-argument.*valid/is', $content);
+        }
+
+        foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $packagesReadme, $changelog) as $content) {
+            $this->assertDoesNotMatchPattern('/composer\/semver/i', $content);
+            $this->assertDoesNotMatchPattern('/ProviderSelection|ProvidedCapability|CapabilityProvider|ProviderDescriptor/', $content);
+        }
     }
 
     public function testCoreDeclaresPsrContainerInteroperabilityMetadata(): void
@@ -495,6 +529,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
     {
         return array(
             'packages/contracts/src' => array(
+                'Component/CapabilityCardinality.php',
+                'Component/CapabilityIdentifier.php',
+                'Component/CapabilityRequirement.php',
+                'Component/ComponentConflict.php',
+                'Component/ComponentDependency.php',
+                'Component/ComponentDependencyKind.php',
+                'Component/ComponentGraphDeclaration.php',
+                'Component/ComponentGraphRelations.php',
                 'Component/ComponentIdentifier.php',
                 'Component/ComponentType.php',
                 'Configuration/Configuration.php',
