@@ -121,6 +121,26 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $this->assertDoesNotMatchPattern('/Before Phase 2\.3/i', $content);
     }
 
+    public function testCoreReadmeDocumentsCorrectPhase3LifecycleChronology(): void
+    {
+        $content = $this->readProjectFile('packages/core/README.md');
+
+        $this->assertDoesNotMatchPattern(
+            '/Phase 3\.5\s+extends\s+`Evolve\\\\Core\\\\ApplicationKernel`\s+as the initial lifecycle implementation/i',
+            $content,
+        );
+
+        $this->assertMatchesPattern(
+            '/Phase 3\.1 introduced `Evolve\\\\Core\\\\ApplicationKernel` as the initial lifecycle implementation/i',
+            $content,
+        );
+
+        $this->assertMatchesPattern(
+            '/in Phase 3\.5, runtime-neutral execution orchestration/i',
+            $content,
+        );
+    }
+
     public function testDevelopmentGuideOwnsCompleteArchitectureMatrix(): void
     {
         $content = $this->readProjectFile('DEVELOPMENT.md');

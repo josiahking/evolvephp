@@ -4,7 +4,7 @@ Application kernel and runtime-neutral orchestration for EvolvePHP 2.
 
 ## Runtime Foundation
 
-Phase 3.5 extends `Evolve\Core\ApplicationKernel` as the initial lifecycle implementation for the public `ApplicationLifecycle` contract, the first Core host for boot-time configuration validation and the integration point that freezes an optional service registry before readiness.
+Phase 3.1 introduced `Evolve\Core\ApplicationKernel` as the initial lifecycle implementation for the public `ApplicationLifecycle` contract. Phases 3.2 through 3.5 extended the runtime foundation with boot-time configuration validation, service-registry freezing, explicit execution scopes and, in Phase 3.5, runtime-neutral execution orchestration.
 
 The current lifecycle remains intentionally minimal:
 
