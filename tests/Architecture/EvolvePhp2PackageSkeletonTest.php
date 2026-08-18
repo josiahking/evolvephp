@@ -294,6 +294,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
         foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $packagesReadme, $changelog) as $content) {
             $this->assertDoesNotMatchPattern('/composer\/semver/i', $content);
+        }
+
+        foreach (array($contractsReadme, $moduleReadme, $pluginReadme) as $content) {
             $this->assertDoesNotMatchPattern('/ProviderSelection|ProvidedCapability|CapabilityProvider|ProviderDescriptor/', $content);
         }
     }
@@ -330,6 +333,38 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 $manifest,
                 $package['manifest'] . ' must not advertise PSR-11 implementation metadata.'
             );
+        }
+    }
+
+    public function testPhase53bCoreGraphResolutionIsDocumentedWithinAcceptedBoundaries(): void
+    {
+        $coreReadme = $this->readProjectFile('packages/core/README.md');
+        $packagesReadme = $this->readProjectFile('packages/README.md');
+        $changelog = $this->readProjectFile('CHANGELOG.md');
+
+        foreach (array($coreReadme, $packagesReadme, $changelog) as $content) {
+            $this->assertMatchesPattern('/Phase 5\.3B/i', $content);
+            $this->assertMatchesPattern('/experimental/i', $content);
+            $this->assertMatchesPattern('/Core-owned graph validation|Core-owned.*graph.*resolution|graph validation.*Core-owned/is', $content);
+            $this->assertMatchesPattern('/ComponentGraphResolver/i', $content);
+            $this->assertMatchesPattern('/ResolvedComponentGraph/i', $content);
+            $this->assertMatchesPattern('/CapabilityProviderSelection/i', $content);
+            $this->assertMatchesPattern('/consumer-scoped.*provider selection|provider selection.*consumer-scoped/is', $content);
+            $this->assertMatchesPattern('/required.*optional|optional.*required/is', $content);
+            $this->assertMatchesPattern('/ExactlyOne/i', $content);
+            $this->assertMatchesPattern('/OneOrMore/i', $content);
+            $this->assertMatchesPattern('/deterministic.*dependency-first|dependency-first.*deterministic/is', $content);
+            $this->assertMatchesPattern('/cycle.*canonical|canonical.*cycle/i', $content);
+            $this->assertMatchesPattern('/registration.*deferred|deferred.*registration/is', $content);
+            $this->assertMatchesPattern('/boot.*ready.*shutdown.*deferred|deferred.*boot.*ready.*shutdown/is', $content);
+            $this->assertMatchesPattern('/discovery.*enablement.*deferred|deferred.*discovery.*enablement/is', $content);
+            $this->assertDoesNotMatchPattern('/composer\/semver/i', $content);
+            $this->assertDoesNotMatchPattern('/implements?.*SemVer|SemVer.*implemented/i', $content);
+        }
+
+        foreach (array($coreReadme, $packagesReadme) as $content) {
+            $this->assertMatchesPattern('/Contracts declarations|Contracts graph declarations|consumes.*ComponentGraphDeclaration/is', $content);
+            $this->assertMatchesPattern('/conflict.*validation|validates.*conflicts?/is', $content);
         }
     }
 
@@ -549,6 +584,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             ),
             'packages/core/src' => array(
                 'ApplicationKernel.php',
+                'Component/CapabilityProviderSelection.php',
+                'Component/ComponentGraphResolver.php',
+                'Component/ResolvedComponentGraph.php',
                 'Configuration/ArrayConfiguration.php',
                 'Console/Command.php',
                 'Console/CommandInput.php',
@@ -561,17 +599,25 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Container/ServiceDefinition.php',
                 'Container/ServiceLifetime.php',
                 'Container/ServiceRegistry.php',
+                'Exception/ActiveComponentConflict.php',
+                'Exception/AmbiguousCapabilityProvider.php',
                 'Exception/CommandNotFound.php',
+                'Exception/ComponentDependencyCycle.php',
+                'Exception/ComponentGraphResolutionFailed.php',
                 'Exception/ConfigurationValidationFailed.php',
+                'Exception/DuplicateComponentIdentifier.php',
                 'Exception/ExecutionResetFailed.php',
                 'Exception/ExecutionScopeClosed.php',
                 'Exception/ExecutionScopeUnavailable.php',
                 'Exception/ExecutionStartFailed.php',
+                'Exception/InvalidCapabilityProviderSelection.php',
                 'Exception/InvalidCommandDefinition.php',
                 'Exception/InvalidConfiguration.php',
                 'Exception/InvalidLifecycleTransition.php',
                 'Exception/InvalidResetParticipant.php',
                 'Exception/InvalidServiceDefinition.php',
+                'Exception/MissingCapabilityProvider.php',
+                'Exception/MissingComponentDependency.php',
                 'Exception/ServiceNotFound.php',
                 'Exception/ServiceRegistryFrozen.php',
                 'Exception/ServiceResolutionFailed.php',
