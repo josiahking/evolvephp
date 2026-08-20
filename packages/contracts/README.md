@@ -73,6 +73,14 @@ alnum = lowercase ASCII letter | ASCII digit
 
 Phase 5.3A does not implement dependency resolution, missing dependency errors, optional dependency activation, conflict resolution, capability-provider indexing or selection, ambiguity resolution, cycle detection, startup ordering, component versions, version constraints or Composer SemVer graph decisions. Phase 5.3B owns graph validation and resolution behavior; later Phase 5 slices own registration, lifecycle and discovery.
 
+## Experimental Component Service Registration
+
+Phase 5.4 adds `Evolve\Contracts\Component\Registration\ServiceDefinitionRegistrar` as a public experimental, contribution-only service-definition boundary. Components may contribute Application, Execution or Transient service definitions through the three explicit registration methods only.
+
+Factories are documented as accepting zero or one active PSR-11 resolver argument. This gives Contracts deliberate external-standard access to `Psr\Container\ContainerInterface` for the public factory contract, but Contracts remains first-party-inward and is not a container implementation.
+
+Core owns the restricted registrar implementation, registration ordering, staging and atomic publication. Registration order comes from `ResolvedComponentGraph`, service definitions are staged before publication, registration failure publishes nothing, registration does not resolve or construct services, and registration does not freeze the registry. `ApplicationKernel` integration, entry-point lifecycle, boot and ready remain Phase 5.5; discovery and enablement remain Phase 5.6.
+
 ## Package
 
 `evolvephp/contracts`
@@ -83,7 +91,11 @@ PHP `^8.4`
 
 ## Dependencies
 
-None.
+First-party EvolvePHP dependencies: None.
+
+External dependencies:
+
+- `psr/container`
 
 ## Publication Status
 

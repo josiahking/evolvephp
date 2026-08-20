@@ -18,6 +18,8 @@ use Throwable;
  */
 final class ExecutionScopeContainer implements ExecutionScope
 {
+    private const SERVICE_KEY_PREFIX = 'service:';
+
     private const STATE_OPEN = 'open';
 
     private const STATE_CLOSING = 'closing';
@@ -90,27 +92,27 @@ final class ExecutionScopeContainer implements ExecutionScope
 
     private function getExecution(ServiceDefinition $definition): mixed
     {
-        $id = $definition->identifier();
+        $key = $this->serviceKey($definition->identifier());
 
-        if (array_key_exists($id, $this->instances)) {
-            return $this->instances[$id];
+        if (array_key_exists($key, $this->instances)) {
+            return $this->instances[$key];
         }
 
         $service = $this->resolve($definition);
-        $this->instances[$id] = $service;
+        $this->instances[$key] = $service;
 
         return $service;
     }
 
     private function resolve(ServiceDefinition $definition): mixed
     {
-        $id = $definition->identifier();
+        $key = $this->serviceKey($definition->identifier());
 
-        if (isset($this->resolving[$id])) {
+        if (isset($this->resolving[$key])) {
             throw new ServiceResolutionFailed('Circular service dependency detected.');
         }
 
-        $this->resolving[$id] = true;
+        $this->resolving[$key] = true;
 
         try {
             return $definition->create($this);
@@ -119,7 +121,7 @@ final class ExecutionScopeContainer implements ExecutionScope
         } catch (Throwable $exception) {
             throw new ServiceResolutionFailed('Service resolution failed.', 0, $exception);
         } finally {
-            unset($this->resolving[$id]);
+            unset($this->resolving[$key]);
         }
     }
 
@@ -128,5 +130,10 @@ final class ExecutionScopeContainer implements ExecutionScope
         if ($this->state !== self::STATE_OPEN) {
             throw new ExecutionScopeClosed('Execution scope is closed.');
         }
+    }
+
+    private function serviceKey(string $id): string
+    {
+        return self::SERVICE_KEY_PREFIX . $id;
     }
 }

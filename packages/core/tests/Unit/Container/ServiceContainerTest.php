@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionProperty;
 use RuntimeException;
 use Throwable;
 
@@ -172,6 +173,35 @@ final class ServiceContainerTest extends TestCase
         $this->assertResolutionFailure($container, 'self-cycle');
     }
 
+    public function test_numeric_looking_ids_use_prefixed_internal_definition_instance_and_resolving_keys(): void
+    {
+        $seenResolvingKeys = [];
+        $registry = new ServiceRegistry();
+        $registry->register('1', ServiceLifetime::Application, function (ContainerInterface $container) use (&$seenResolvingKeys): string {
+            $seenResolvingKeys = array_keys($this->propertyValue($container, 'resolving'));
+
+            return '1';
+        });
+        $registry->register('01', ServiceLifetime::Transient, static fn(): string => '01');
+        $registry->register('-1', ServiceLifetime::Transient, static fn(): string => '-1');
+        $registry->register('+1', ServiceLifetime::Transient, static fn(): string => '+1');
+        $registry->register('0', ServiceLifetime::Transient, static fn(): string => '0');
+
+        $container = $registry->freeze();
+
+        self::assertSame('1', $container->get('1'));
+        self::assertSame(['service:1'], $seenResolvingKeys);
+        self::assertSame(['service:1'], array_keys($this->propertyValue($container, 'instances')));
+        self::assertSame(
+            ['service:1', 'service:01', 'service:-1', 'service:+1', 'service:0'],
+            array_keys($this->propertyValue($container, 'definitions')),
+        );
+        self::assertSame('01', $container->get('01'));
+        self::assertSame('-1', $container->get('-1'));
+        self::assertSame('+1', $container->get('+1'));
+        self::assertSame('0', $container->get('0'));
+    }
+
     private function containerWith(string $id, ServiceLifetime $lifetime, callable $factory): ContainerInterface
     {
         $registry = new ServiceRegistry();
@@ -199,5 +229,12 @@ final class ServiceContainerTest extends TestCase
             self::assertInstanceOf(ServiceResolutionFailed::class, $exception);
             self::assertContains(ContainerExceptionInterface::class, class_implements($exception));
         }
+    }
+
+    private function propertyValue(object $object, string $property): mixed
+    {
+        $reflection = new ReflectionProperty($object, $property);
+
+        return $reflection->getValue($object);
     }
 }

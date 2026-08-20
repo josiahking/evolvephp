@@ -17,6 +17,8 @@ use Throwable;
  */
 final class ServiceContainer implements ContainerInterface
 {
+    private const SERVICE_KEY_PREFIX = 'service:';
+
     /**
      * @var array<string, ServiceDefinition>
      */
@@ -42,24 +44,26 @@ final class ServiceContainer implements ContainerInterface
 
     public function get(string $id): mixed
     {
-        if (! isset($this->definitions[$id])) {
+        $key = $this->serviceKey($id);
+
+        if (! isset($this->definitions[$key])) {
             throw new ServiceNotFound('Service is not defined.');
         }
 
-        $definition = $this->definitions[$id];
+        $definition = $this->definitions[$key];
 
         if ($definition->lifetime() === ServiceLifetime::Execution) {
             throw new ExecutionScopeUnavailable('Execution-lifetime services require an explicit execution scope.');
         }
 
-        if ($definition->lifetime() === ServiceLifetime::Application && array_key_exists($id, $this->instances)) {
-            return $this->instances[$id];
+        if ($definition->lifetime() === ServiceLifetime::Application && array_key_exists($key, $this->instances)) {
+            return $this->instances[$key];
         }
 
         $service = $this->resolve($definition);
 
         if ($definition->lifetime() === ServiceLifetime::Application) {
-            $this->instances[$id] = $service;
+            $this->instances[$key] = $service;
         }
 
         return $service;
@@ -67,7 +71,7 @@ final class ServiceContainer implements ContainerInterface
 
     public function has(string $id): bool
     {
-        return isset($this->definitions[$id]);
+        return isset($this->definitions[$this->serviceKey($id)]);
     }
 
     public function createExecutionScope(): ExecutionScope
@@ -77,22 +81,24 @@ final class ServiceContainer implements ContainerInterface
 
     public function definition(string $id): ServiceDefinition
     {
-        if (! isset($this->definitions[$id])) {
+        $key = $this->serviceKey($id);
+
+        if (! isset($this->definitions[$key])) {
             throw new ServiceNotFound('Service is not defined.');
         }
 
-        return $this->definitions[$id];
+        return $this->definitions[$key];
     }
 
     private function resolve(ServiceDefinition $definition): mixed
     {
-        $id = $definition->identifier();
+        $key = $this->serviceKey($definition->identifier());
 
-        if (isset($this->resolving[$id])) {
+        if (isset($this->resolving[$key])) {
             throw new ServiceResolutionFailed('Circular service dependency detected.');
         }
 
-        $this->resolving[$id] = true;
+        $this->resolving[$key] = true;
 
         try {
             return $definition->create($this);
@@ -101,7 +107,12 @@ final class ServiceContainer implements ContainerInterface
         } catch (Throwable $exception) {
             throw new ServiceResolutionFailed('Service resolution failed.', 0, $exception);
         } finally {
-            unset($this->resolving[$id]);
+            unset($this->resolving[$key]);
         }
+    }
+
+    private function serviceKey(string $id): string
+    {
+        return self::SERVICE_KEY_PREFIX . $id;
     }
 }

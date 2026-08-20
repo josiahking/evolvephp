@@ -185,6 +185,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/i', $packagesReadme);
 
         $this->assertMatchesPattern('/PsrContainer/i', $developmentGuide);
+        $this->assertMatchesPattern('/Contracts external standards.*PsrContainer|PsrContainer.*Contracts external standards/is', $developmentGuide);
+        $this->assertMatchesPattern('/Phase 5\.4.*service-definition factory contract|service-definition factory contract.*Phase 5\.4/is', $developmentGuide);
         $this->assertMatchesPattern('/PsrHttpMessage/i', $developmentGuide);
         $this->assertMatchesPattern('/PsrHttpServer/i', $developmentGuide);
         $this->assertMatchesPattern('/PSR HTTP interfaces.*external interoperability standards|external interoperability standards.*PSR HTTP interfaces/is', $developmentGuide);
@@ -210,7 +212,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
     private function expectedRulesets()
     {
         return array(
-            'Contracts' => array(),
+            'Contracts' => array('PsrContainer'),
             'PsrContainer' => array(),
             'PsrHttpMessage' => array(),
             'PsrHttpServer' => array(),
@@ -285,8 +287,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $this->assertNotContains('Testing', $rulesets[$productionLayer], $productionLayer . ' must not access Testing.');
         }
 
-        foreach (array('Contracts', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
-            $this->assertNotContains('PsrContainer', $rulesets[$layerName], $layerName . ' must not access PsrContainer directly in Phase 3.3.');
+        foreach (array('Http', 'Module', 'Plugin', 'Testing') as $layerName) {
+            $this->assertNotContains('PsrContainer', $rulesets[$layerName], $layerName . ' must not access PsrContainer directly without an approved boundary.');
         }
 
         foreach (array('Contracts', 'Core', 'Module', 'Plugin', 'Testing') as $layerName) {
