@@ -370,6 +370,47 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
+    public function testPhase55ComponentLifecycleOrchestrationIsDocumentedWithinAcceptedBoundaries(): void
+    {
+        $contractsReadme = $this->readProjectFile('packages/contracts/README.md');
+        $moduleReadme = $this->readProjectFile('packages/module/README.md');
+        $pluginReadme = $this->readProjectFile('packages/plugin/README.md');
+        $coreReadme = $this->readProjectFile('packages/core/README.md');
+        $packagesReadme = $this->readProjectFile('packages/README.md');
+        $changelog = $this->readProjectFile('CHANGELOG.md');
+
+        foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $coreReadme, $packagesReadme, $changelog) as $content) {
+            $this->assertMatchesPattern('/Phase 5\.5/i', $content);
+            $this->assertMatchesPattern('/experimental/i', $content);
+            $this->assertMatchesPattern('/ComponentEntryPoint/i', $content);
+            $this->assertMatchesPattern('/register.*boot.*ready.*shutdown|boot.*ready.*shutdown/is', $content);
+            $this->assertMatchesPattern('/discovery.*Phase 5\.6|enablement.*Phase 5\.6/is', $content);
+        }
+
+        $this->assertMatchesPattern('/ComponentBootContext/i', $contractsReadme);
+        $this->assertMatchesPattern('/application-lifecycle only|application lifecycle only/i', $contractsReadme);
+        $this->assertMatchesPattern('/failure cleanup.*boot failure|boot failure.*failure cleanup/is', $contractsReadme);
+        $this->assertMatchesPattern('/successful.*shutdown|shutdown.*successful/is', $contractsReadme);
+
+        $this->assertMatchesPattern('/Evolve\\\\Module\\\\Module/i', $moduleReadme);
+        $this->assertMatchesPattern('/extends.*ComponentEntryPoint|ComponentEntryPoint.*extends/is', $moduleReadme);
+        $this->assertMatchesPattern('/descriptor discovery.*deferred|discovery.*deferred/is', $moduleReadme);
+
+        $this->assertMatchesPattern('/Evolve\\\\Plugin\\\\Plugin/i', $pluginReadme);
+        $this->assertMatchesPattern('/extends.*ComponentEntryPoint|ComponentEntryPoint.*extends/is', $pluginReadme);
+        $this->assertMatchesPattern('/descriptor discovery.*deferred|discovery.*deferred/is', $pluginReadme);
+
+        $this->assertMatchesPattern('/Core owns.*orchestration|orchestration.*Core owns/is', $coreReadme);
+        $this->assertMatchesPattern('/registration.*freeze.*boot.*ready/is', $coreReadme);
+        $this->assertMatchesPattern('/reverse.*shutdown|shutdown.*reverse/is', $coreReadme);
+        $this->assertMatchesPattern('/startup cleanup|boot failure cleanup/i', $coreReadme);
+        $this->assertMatchesPattern('/best-effort shutdown|shutdown.*best-effort/is', $coreReadme);
+        $this->assertMatchesPattern('/no per-execution component lifecycle work|no request.*component lifecycle/i', $coreReadme);
+        $this->assertMatchesPattern('/no Core dependency on Module\/Plugin|Core.*not.*Module.*Plugin/is', $coreReadme);
+
+        $this->assertDoesNotMatchPattern('/package publication|production readiness|hot unloading|runtime auto-discovery|Composer plugin discovery|telemetry integration|persistent runtime certification|benchmark superiority/i', $changelog);
+    }
+
     public function testPhase53bCoreGraphResolutionIsDocumentedWithinAcceptedBoundaries(): void
     {
         $coreReadme = $this->readProjectFile('packages/core/README.md');
@@ -601,9 +642,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Component/CapabilityCardinality.php',
                 'Component/CapabilityIdentifier.php',
                 'Component/CapabilityRequirement.php',
+                'Component/ComponentBootContext.php',
                 'Component/ComponentConflict.php',
                 'Component/ComponentDependency.php',
                 'Component/ComponentDependencyKind.php',
+                'Component/ComponentEntryPoint.php',
                 'Component/ComponentGraphDeclaration.php',
                 'Component/ComponentGraphRelations.php',
                 'Component/ComponentIdentifier.php',
@@ -621,6 +664,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'ApplicationKernel.php',
                 'Component/CapabilityProviderSelection.php',
                 'Component/ComponentGraphResolver.php',
+                'Component/Lifecycle/ComponentLifecycleBinding.php',
+                'Component/Lifecycle/ComponentLifecycleCoordinator.php',
+                'Component/Lifecycle/ComponentLifecycleFailure.php',
+                'Component/Lifecycle/RestrictedComponentBootContext.php',
                 'Component/Registration/ComponentRegistration.php',
                 'Component/Registration/ComponentRegistrationCoordinator.php',
                 'Component/Registration/RestrictedServiceDefinitionRegistrar.php',
@@ -644,6 +691,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/ComponentDependencyCycle.php',
                 'Exception/ComponentGraphResolutionFailed.php',
                 'Exception/ComponentServiceRegistrationFailed.php',
+                'Exception/ComponentShutdownFailed.php',
+                'Exception/ComponentStartupFailed.php',
                 'Exception/ConfigurationValidationFailed.php',
                 'Exception/DuplicateComponentIdentifier.php',
                 'Exception/ExecutionResetFailed.php',
@@ -697,11 +746,13 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             ),
             'packages/module/src' => array(
                 'Exception/IncompatibleModuleDescriptor.php',
+                'Module.php',
                 'ModuleCompatibilityValidator.php',
                 'ModuleDescriptor.php',
             ),
             'packages/plugin/src' => array(
                 'Exception/IncompatiblePluginDescriptor.php',
+                'Plugin.php',
                 'PluginCompatibilityValidator.php',
                 'PluginDescriptor.php',
             ),
