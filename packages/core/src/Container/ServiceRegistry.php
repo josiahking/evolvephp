@@ -12,6 +12,8 @@ use Psr\Container\ContainerInterface;
 
 final class ServiceRegistry
 {
+    private const SERVICE_KEY_PREFIX = 'service:';
+
     /**
      * @var array<string, ServiceDefinition>
      */
@@ -23,19 +25,19 @@ final class ServiceRegistry
 
     public function register(string $id, ServiceLifetime $lifetime, callable $factory): void
     {
-        if ($this->frozen) {
-            throw new ServiceRegistryFrozen('Service registry is frozen and cannot accept registrations.');
-        }
+        $this->assertMutable();
 
         if ($id === '') {
             throw new InvalidServiceDefinition('Service identifier must be a non-empty string.');
         }
 
-        if (isset($this->definitions[$id])) {
+        $key = $this->serviceKey($id);
+
+        if (isset($this->definitions[$key])) {
             throw new InvalidServiceDefinition('Service identifier is already registered.');
         }
 
-        $this->definitions[$id] = new ServiceDefinition($id, $lifetime, $factory);
+        $this->definitions[$key] = new ServiceDefinition($id, $lifetime, $factory);
     }
 
     public function freeze(): ContainerInterface
@@ -62,5 +64,83 @@ final class ServiceRegistry
         }
 
         return $this->container->createExecutionScope();
+    }
+
+    /**
+     * @internal
+     */
+    public function assertMutable(): void
+    {
+        if ($this->frozen) {
+            throw new ServiceRegistryFrozen('Service registry is frozen and cannot accept registrations.');
+        }
+    }
+
+    /**
+     * @internal
+     *
+     * @return list<string>
+     */
+    public function definitionIdentifiers(): array
+    {
+        return array_map(
+            static fn(ServiceDefinition $definition): string => $definition->identifier(),
+            array_values($this->definitions),
+        );
+    }
+
+    /**
+     * @internal
+     *
+     * @param array<mixed> $definitions
+     */
+    public function assertCanPublishDefinitions(array $definitions): void
+    {
+        $this->assertMutable();
+
+        $seen = [];
+
+        foreach ($definitions as $definition) {
+            if (!$definition instanceof ServiceDefinition) {
+                throw new InvalidServiceDefinition('Service publication batch must contain service definitions.');
+            }
+
+            $id = $definition->identifier();
+
+            if ($id === '') {
+                throw new InvalidServiceDefinition('Service identifier must be a non-empty string.');
+            }
+
+            $key = $this->serviceKey($id);
+
+            if (isset($this->definitions[$key]) || isset($seen[$key])) {
+                throw new InvalidServiceDefinition('Service identifier is already registered.');
+            }
+
+            $seen[$key] = true;
+        }
+    }
+
+    /**
+     * @internal
+     *
+     * @param list<ServiceDefinition> $definitions
+     */
+    public function publishDefinitions(array $definitions): void
+    {
+        $this->assertCanPublishDefinitions($definitions);
+
+        $published = [];
+
+        foreach ($definitions as $definition) {
+            $published[$this->serviceKey($definition->identifier())] = $definition;
+        }
+
+        $this->definitions += $published;
+    }
+
+    private function serviceKey(string $id): string
+    {
+        return self::SERVICE_KEY_PREFIX . $id;
     }
 }

@@ -337,6 +337,9 @@ There is no production dependency on Testing. Testing may depend on all five pro
 The root also models deliberate external standard layers:
 
 ```text
+Contracts external standards
+PsrContainer
+
 Core external standards
 PsrContainer
 
@@ -345,7 +348,7 @@ PsrHttpMessage
 PsrHttpServer
 ```
 
-`PsrContainer` represents the approved PSR-11 interoperability layer used by Core. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http.
+`PsrContainer` represents the approved PSR-11 interoperability layer used by Core and, starting in Phase 5.4, by Contracts specifically for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http.
 
 These PSR HTTP interfaces are external interoperability standards and do not change the first-party Evolve package dependency direction. Adding `psr/http-factory` does not require a new Deptrac external namespace layer because PSR-17 factory interfaces live under `Psr\Http\Message`. Http still depends inward on Contracts and Core, while the other first-party packages do not receive direct PSR HTTP access in this foundation.
 

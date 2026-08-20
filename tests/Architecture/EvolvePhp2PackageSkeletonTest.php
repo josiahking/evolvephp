@@ -301,10 +301,21 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testCoreDeclaresPsrContainerInteroperabilityMetadata(): void
+    public function testContractsAndCoreDeclarePsrContainerInteroperabilityMetadata(): void
     {
+        $contractsManifest = $this->readJsonFile('packages/contracts/composer.json');
         $coreManifest = $this->readJsonFile('packages/core/composer.json');
 
+        $this->assertSame(
+            '^1.1 || ^2.0',
+            $contractsManifest['require']['psr/container'] ?? null,
+            'Contracts should require PSR-11 for the Phase 5.4 public service-definition factory contract.'
+        );
+        $this->assertArrayNotHasKey(
+            'provide',
+            $contractsManifest,
+            'Contracts must not advertise PSR-11 implementation metadata.'
+        );
         $this->assertSame(
             '^1.1 || ^2.0',
             $coreManifest['require']['psr/container'] ?? null,
@@ -317,7 +328,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
 
         foreach ($this->packages() as $package) {
-            if ($package['name'] === 'evolvephp/core') {
+            if ($package['name'] === 'evolvephp/contracts' || $package['name'] === 'evolvephp/core') {
                 continue;
             }
 
@@ -326,13 +337,36 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertArrayNotHasKey(
                 'psr/container',
                 $manifest['require'],
-                $package['manifest'] . ' must not require PSR-11 for Phase 3.3.'
+                $package['manifest'] . ' must not require PSR-11 without an approved interoperability boundary.'
             );
             $this->assertArrayNotHasKey(
                 'provide',
                 $manifest,
                 $package['manifest'] . ' must not advertise PSR-11 implementation metadata.'
             );
+        }
+    }
+
+    public function testPhase54RestrictedRegistrationIsDocumentedWithinAcceptedBoundaries(): void
+    {
+        $contractsReadme = $this->readProjectFile('packages/contracts/README.md');
+        $coreReadme = $this->readProjectFile('packages/core/README.md');
+        $packagesReadme = $this->readProjectFile('packages/README.md');
+        $changelog = $this->readProjectFile('CHANGELOG.md');
+
+        foreach (array($contractsReadme, $coreReadme, $packagesReadme, $changelog) as $content) {
+            $this->assertMatchesPattern('/Phase 5\.4/i', $content);
+            $this->assertMatchesPattern('/ServiceDefinitionRegistrar/i', $content);
+            $this->assertMatchesPattern('/experimental/i', $content);
+            $this->assertMatchesPattern('/contribution-only|definition contribution/i', $content);
+            $this->assertMatchesPattern('/ResolvedComponentGraph/i', $content);
+            $this->assertMatchesPattern('/staged.*atomic|atomic.*staged/is', $content);
+            $this->assertMatchesPattern('/publish(?:es)? nothing|nothing.*publish/is', $content);
+            $this->assertMatchesPattern('/does not.*resolve services|does not.*construct services|no service construction/is', $content);
+            $this->assertMatchesPattern('/does not.*freeze|no automatic.*freeze/is', $content);
+            $this->assertMatchesPattern('/ApplicationKernel.*Phase 5\.5|Phase 5\.5.*ApplicationKernel/is', $content);
+            $this->assertMatchesPattern('/entry-point.*Phase 5\.5|lifecycle.*Phase 5\.5/is', $content);
+            $this->assertMatchesPattern('/discovery.*Phase 5\.6|enablement.*Phase 5\.6/is', $content);
         }
     }
 
@@ -500,7 +534,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'name' => 'evolvephp/contracts',
                 'description' => 'Foundational public contracts for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Contracts\\',
-                'require' => array('php' => '^8.4'),
+                'require' => array('php' => '^8.4', 'psr/container' => '^1.1 || ^2.0'),
             ),
             array(
                 'manifest' => 'packages/core/composer.json',
@@ -574,6 +608,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Component/ComponentGraphRelations.php',
                 'Component/ComponentIdentifier.php',
                 'Component/ComponentType.php',
+                'Component/Registration/ServiceDefinitionRegistrar.php',
                 'Configuration/Configuration.php',
                 'Configuration/ConfigurationValidator.php',
                 'Exception/ConfigurationException.php',
@@ -586,6 +621,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'ApplicationKernel.php',
                 'Component/CapabilityProviderSelection.php',
                 'Component/ComponentGraphResolver.php',
+                'Component/Registration/ComponentRegistration.php',
+                'Component/Registration/ComponentRegistrationCoordinator.php',
+                'Component/Registration/RestrictedServiceDefinitionRegistrar.php',
+                'Component/Registration/ServiceDefinitionContributionBuffer.php',
                 'Component/ResolvedComponentGraph.php',
                 'Configuration/ArrayConfiguration.php',
                 'Console/Command.php',
@@ -604,6 +643,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/CommandNotFound.php',
                 'Exception/ComponentDependencyCycle.php',
                 'Exception/ComponentGraphResolutionFailed.php',
+                'Exception/ComponentServiceRegistrationFailed.php',
                 'Exception/ConfigurationValidationFailed.php',
                 'Exception/DuplicateComponentIdentifier.php',
                 'Exception/ExecutionResetFailed.php',

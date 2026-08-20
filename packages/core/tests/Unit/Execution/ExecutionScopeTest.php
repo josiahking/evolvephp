@@ -17,6 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionProperty;
 use RuntimeException;
 use Throwable;
 use WeakReference;
@@ -361,6 +362,31 @@ final class ExecutionScopeTest extends TestCase
         self::assertNull($weak?->get());
     }
 
+    public function test_numeric_looking_ids_use_prefixed_execution_instance_and_resolving_keys(): void
+    {
+        $seenResolvingKeys = [];
+        $registry = new ServiceRegistry();
+        $registry->register('1', ServiceLifetime::Execution, function (ContainerInterface $container) use (&$seenResolvingKeys): string {
+            $seenResolvingKeys = array_keys($this->propertyValue($container, 'resolving'));
+
+            return '1';
+        });
+        $registry->register('01', ServiceLifetime::Execution, static fn(): string => '01');
+        $registry->register('-1', ServiceLifetime::Execution, static fn(): string => '-1');
+        $registry->register('+1', ServiceLifetime::Execution, static fn(): string => '+1');
+        $registry->register('0', ServiceLifetime::Execution, static fn(): string => '0');
+
+        $scope = $this->scopeFrom($registry);
+
+        self::assertSame('1', $scope->get('1'));
+        self::assertSame(['service:1'], $seenResolvingKeys);
+        self::assertSame(['service:1'], array_keys($this->propertyValue($scope, 'instances')));
+        self::assertSame('01', $scope->get('01'));
+        self::assertSame('-1', $scope->get('-1'));
+        self::assertSame('+1', $scope->get('+1'));
+        self::assertSame('0', $scope->get('0'));
+    }
+
     private function scopeFrom(ServiceRegistry $registry): ExecutionScope
     {
         $registry->freeze();
@@ -413,5 +439,12 @@ final class ExecutionScopeTest extends TestCase
         } catch (Throwable $exception) {
             return $exception;
         }
+    }
+
+    private function propertyValue(object $object, string $property): mixed
+    {
+        $reflection = new ReflectionProperty($object, $property);
+
+        return $reflection->getValue($object);
     }
 }

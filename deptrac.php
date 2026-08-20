@@ -49,7 +49,7 @@ return static function (DeptracConfig $config): void {
             ),
         )
         ->rulesets(
-            Ruleset::forLayer($contracts),
+            Ruleset::forLayer($contracts)->accesses($psrContainer),
             Ruleset::forLayer($psrContainer),
             Ruleset::forLayer($psrHttpMessage),
             Ruleset::forLayer($psrHttpServer),

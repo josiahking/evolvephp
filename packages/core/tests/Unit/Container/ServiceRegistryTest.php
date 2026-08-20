@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionEnum;
+use ReflectionProperty;
 use Throwable;
 
 final class ServiceRegistryTest extends TestCase
@@ -143,6 +144,27 @@ final class ServiceRegistryTest extends TestCase
         });
     }
 
+    public function test_numeric_looking_service_identifiers_use_prefixed_internal_definition_keys(): void
+    {
+        $registry = new ServiceRegistry();
+
+        foreach (['1', '01', '-1', '+1', '0'] as $id) {
+            $registry->register($id, ServiceLifetime::Transient, static fn(): string => $id);
+        }
+
+        self::assertSame(
+            ['service:1', 'service:01', 'service:-1', 'service:+1', 'service:0'],
+            array_keys($this->propertyValue($registry, 'definitions')),
+        );
+
+        $container = $registry->freeze();
+
+        foreach (['1', '01', '-1', '+1', '0'] as $id) {
+            self::assertTrue($container->has($id));
+            self::assertSame($id, $container->get($id));
+        }
+    }
+
     /**
      * @param class-string<Throwable> $expected
      * @param callable(): mixed $operation
@@ -157,5 +179,12 @@ final class ServiceRegistryTest extends TestCase
         } catch (Throwable $exception) {
             self::assertInstanceOf($expected, $exception);
         }
+    }
+
+    private function propertyValue(object $object, string $property): mixed
+    {
+        $reflection = new ReflectionProperty($object, $property);
+
+        return $reflection->getValue($object);
     }
 }

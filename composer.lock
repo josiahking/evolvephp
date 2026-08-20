@@ -12,10 +12,11 @@
             "dist": {
                 "type": "path",
                 "url": "packages/contracts",
-                "reference": "4588e71cec1200f3faab2a577b6ecc48269640f5"
+                "reference": "b0e2168f6d6a4fd7b8351f2b27fbb2592742488b"
             },
             "require": {
-                "php": "^8.4"
+                "php": "^8.4",
+                "psr/container": "^1.1 || ^2.0"
             },
             "type": "library",
             "autoload": {
