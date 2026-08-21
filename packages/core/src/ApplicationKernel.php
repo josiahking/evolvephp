@@ -8,6 +8,7 @@ use Evolve\Contracts\Configuration\Configuration;
 use Evolve\Contracts\Configuration\ConfigurationValidator;
 use Evolve\Contracts\Exception\ConfigurationException;
 use Evolve\Contracts\Lifecycle\ApplicationLifecycle;
+use Evolve\Core\Component\ComponentBootstrapper;
 use Evolve\Core\Component\Lifecycle\ComponentLifecycleCoordinator;
 use Evolve\Core\Configuration\ArrayConfiguration;
 use Evolve\Core\Container\ServiceRegistry;
@@ -30,7 +31,9 @@ final class ApplicationKernel implements ApplicationLifecycle
 
     private ?ServiceRegistry $services;
 
-    private ?ComponentLifecycleCoordinator $components;
+    private ?ComponentLifecycleCoordinator $components = null;
+
+    private ?ComponentBootstrapper $componentBootstrapper = null;
 
     /**
      * @param iterable<mixed> $validators
@@ -39,11 +42,16 @@ final class ApplicationKernel implements ApplicationLifecycle
         ?Configuration $configuration = null,
         iterable $validators = [],
         ?ServiceRegistry $services = null,
-        ?ComponentLifecycleCoordinator $components = null,
+        ComponentLifecycleCoordinator|ComponentBootstrapper|null $components = null,
     ) {
         $this->configuration = $configuration ?? new ArrayConfiguration();
         $this->services = $services;
-        $this->components = $components;
+
+        if ($components instanceof ComponentBootstrapper) {
+            $this->componentBootstrapper = $components;
+        } else {
+            $this->components = $components;
+        }
 
         foreach ($validators as $validator) {
             if (! $validator instanceof ConfigurationValidator) {
@@ -66,6 +74,8 @@ final class ApplicationKernel implements ApplicationLifecycle
             foreach ($this->validators as $validator) {
                 $validator->validate($this->configuration);
             }
+
+            $this->componentBootstrapper?->validateConfiguration($this->configuration);
         } catch (ConfigurationException $exception) {
             $this->state = ApplicationState::Failed;
 
@@ -77,6 +87,10 @@ final class ApplicationKernel implements ApplicationLifecycle
         }
 
         try {
+            if ($this->componentBootstrapper !== null) {
+                $this->components = $this->componentBootstrapper->prepare($this->configuration);
+            }
+
             if ($this->components !== null && $this->services === null) {
                 $this->services = new ServiceRegistry();
             }

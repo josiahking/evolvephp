@@ -14,7 +14,7 @@ The graph declaration is declaration vocabulary only. Relation ordering is canon
 
 These APIs are PUBLIC EXPERIMENTAL and pre-beta.
 
-At the time of the Phase 5.2 descriptor foundation, graph validation and dependency resolution were deferred to Phase 5.3B, while registration, entry-point contracts, lifecycle and boot behavior were still deferred to later Phase 5 slices. Phase 5.5 now adds the shared entry-point interface while descriptor discovery still remains deferred.
+At the time of the Phase 5.2 descriptor foundation, graph validation and dependency resolution were deferred to Phase 5.3B, while registration, entry-point contracts, lifecycle and boot behavior were still deferred to later Phase 5 slices. Phase 5.5 now adds the shared entry-point interface, and Phase 5.6A adds explicit application-supplied definitions while descriptor discovery still remains deferred.
 
 ## Phase 5.5 Entry Point
 
@@ -24,8 +24,16 @@ An enabled module entry point participates in the shared component sequence: `re
 
 Deferred from this slice:
 
-- descriptor discovery, descriptor loading and enablement remain deferred to Phase 5.6;
+- descriptor discovery and descriptor loading remain deferred;
 - descriptor serialization remains deferred.
+
+## Phase 5.6A Explicit Definition
+
+Phase 5.6A adds the public experimental `Evolve\Module\ModuleDefinition`. It wraps an already-created `ModuleDescriptor` and an explicit module entry-point class name.
+
+`ModuleDefinition` preserves the descriptor's identifier, type and exact graph declaration object. Its `validate()` method runs the existing `ModuleCompatibilityValidator` and checks that the configured entry-point class exists and implements `Evolve\Module\Module`. Entry-point instances are created only when Core prepares an explicitly enabled definition for lifecycle execution.
+
+Discovery, descriptor loading, Composer `extra` metadata, automatic package scanning, module self-enablement, descriptor serialization and version-constraint evaluation remain deferred from this slice.
 
 ## Package
 
