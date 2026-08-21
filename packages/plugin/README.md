@@ -35,6 +35,44 @@ Phase 5.6A adds the public experimental `Evolve\Plugin\PluginDefinition`. It wra
 
 Discovery, descriptor loading, Composer `extra` metadata, automatic package scanning, plugin self-enablement, descriptor serialization and version-constraint evaluation remain deferred from this slice.
 
+## Phase 5.6B Composer Plugin Discovery
+
+Phase 5.6B adds the public experimental `Evolve\Plugin\Discovery\ComposerPluginDiscovery` for packaged plugins. The caller must supply the explicit local Composer 2 `installed.json` filesystem path, for example a known `vendor/composer/installed.json` path. Discovery does not infer `vendor/`, the project root, the current working directory or environment configuration.
+
+Composer metadata is recognized at `extra.evolvephp.plugin`, and one Composer package exposes at most one Phase 5.6B plugin. The Composer package name is the authoritative identifier; plugin metadata must not declare an `identifier` field. Discovery returns `PluginDefinition` instances sorted by package name, maps optional graph metadata into the existing Contracts graph declarations, and does not validate, instantiate or check entry-point classes while discovering metadata.
+
+Schema 1 requires `schema`, `type`, `name`, `evolve_major` and `entry_point`. The optional `graph` object may contain `dependencies`, `conflicts`, `requires` and `provides`. Dependency `kind` values are `required` and `optional`; capability `cardinality` values are `exactly_one` and `one_or_more`.
+
+```json
+{
+  "extra": {
+    "evolvephp": {
+      "plugin": {
+        "schema": 1,
+        "type": "plugin",
+        "name": "Queue Plugin",
+        "evolve_major": 2,
+        "entry_point": "Vendor\\Queue\\QueuePlugin",
+        "graph": {
+          "dependencies": [
+            { "component": "vendor/cache", "kind": "optional" }
+          ],
+          "conflicts": ["vendor/legacy-queue"],
+          "requires": [
+            { "capability": "logger", "cardinality": "exactly_one" }
+          ],
+          "provides": ["queue"]
+        }
+      }
+    }
+  }
+}
+```
+
+Application-controlled enablement still belongs to Core through `evolve.components.enabled`. Disabled definitions remain inert, including incompatible Evolve major values and missing or wrong entry-point classes, until the application enables them through the existing `ComponentBootstrapper`.
+
+Discovery is intentionally narrow: installed.json only, Composer 2 only, no recursive package scanning, no root composer.json application module discovery, no network discovery, no plugin self-enablement, no caching, no package publication, and no new Composer dependency or Composer runtime API requirement.
+
 ## Package
 
 `evolvephp/plugin`

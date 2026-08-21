@@ -410,7 +410,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/no per-execution component lifecycle work|no request.*component lifecycle/i', $coreReadme);
         $this->assertMatchesPattern('/no Core dependency on Module\/Plugin|Core.*not.*Module.*Plugin/is', $coreReadme);
 
-        $this->assertDoesNotMatchPattern('/package publication|production readiness|hot unloading|runtime auto-discovery|Composer plugin discovery|telemetry integration|persistent runtime certification|benchmark superiority/i', $changelog);
+        $this->assertDoesNotMatchPattern('/package publication|production readiness|hot unloading|runtime auto-discovery|telemetry integration|persistent runtime certification|benchmark superiority/i', $changelog);
     }
 
     public function testPhase53bCoreGraphResolutionIsDocumentedWithinAcceptedBoundaries(): void
@@ -484,6 +484,37 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertMatchesPattern('/existing graph|graph resolver/i', $content);
             $this->assertMatchesPattern('/Phase 5\.5 lifecycle coordinator|lifecycle coordinator/i', $content);
         }
+    }
+
+    public function testPhase56bComposerPluginDiscoveryIsDocumentedWithinAcceptedBoundaries(): void
+    {
+        $pluginReadme = $this->readProjectFile('packages/plugin/README.md');
+        $packagesReadme = $this->readProjectFile('packages/README.md');
+        $changelog = $this->readProjectFile('CHANGELOG.md');
+
+        foreach (array($pluginReadme, $packagesReadme, $changelog) as $content) {
+            $this->assertMatchesPattern('/Phase 5\.6B/i', $content);
+            $this->assertMatchesPattern('/ComposerPluginDiscovery/i', $content);
+            $this->assertMatchesPattern('/vendor\/composer\/installed\.json|installed\.json/i', $content);
+            $this->assertMatchesPattern('/extra\.evolvephp\.plugin/i', $content);
+            $this->assertMatchesPattern('/package name.*authoritative identifier|authoritative identifier.*package name/is', $content);
+            $this->assertMatchesPattern('/application-controlled enablement|app-controlled enablement|evolve\.components\.enabled/i', $content);
+            $this->assertMatchesPattern('/disabled.*inert|inert.*disabled/is', $content);
+            $this->assertMatchesPattern('/does not.*instantiate|no entry-point construction|does not.*construct/is', $content);
+            $this->assertMatchesPattern('/does not.*Composer 1|Composer 1.*not supported|Composer 2/i', $content);
+            $this->assertMatchesPattern('/no recursive package scanning|does not recursively scan|installed\.json only/i', $content);
+            $this->assertMatchesPattern('/no new Composer dependency|no dependency change|without adding Composer runtime/i', $content);
+        }
+
+        $this->assertMatchesPattern('/caller.*suppl.*explicit local.*installed\.json|explicit local.*installed\.json.*caller.*suppl/is', $pluginReadme);
+        $this->assertMatchesPattern('/does not infer.*vendor.*project root.*current working directory.*environment configuration/is', $pluginReadme);
+        $this->assertMatchesPattern('/at most one.*Phase 5\.6B plugin/is', $pluginReadme);
+        $this->assertMatchesPattern('/schema.*type.*name.*evolve_major.*entry_point/is', $pluginReadme);
+        $this->assertMatchesPattern('/dependencies.*conflicts.*requires.*provides/is', $pluginReadme);
+        $this->assertMatchesPattern('/required.*optional/is', $pluginReadme);
+        $this->assertMatchesPattern('/exactly_one.*one_or_more/is', $pluginReadme);
+        $this->assertMatchesPattern('/must not declare an `identifier` field|no identifier field/i', $pluginReadme);
+        $this->assertDoesNotMatchPattern('/auto-enable plugins/i', $pluginReadme . "\n" . $packagesReadme . "\n" . $changelog);
     }
 
     public function testCoreReadmeDocumentsConsoleFoundationBoundary(): void
@@ -799,7 +830,12 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'ModuleDescriptor.php',
             ),
             'packages/plugin/src' => array(
+                'Discovery/ComposerPluginDiscovery.php',
+                'Exception/ComposerPluginDiscoveryFailed.php',
+                'Exception/ComposerPluginMetadataUnavailable.php',
+                'Exception/DuplicateComposerPluginIdentifier.php',
                 'Exception/IncompatiblePluginDescriptor.php',
+                'Exception/MalformedComposerPluginMetadata.php',
                 'Plugin.php',
                 'PluginCompatibilityValidator.php',
                 'PluginDefinition.php',
