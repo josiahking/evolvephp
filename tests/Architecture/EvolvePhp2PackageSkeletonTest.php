@@ -133,7 +133,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertFileDoesNotExist($this->projectPath('packages/http/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/module/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/plugin/src/.gitkeep'));
-        $this->assertFileExists($this->projectPath('packages/testing/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/testing/src/.gitkeep'));
     }
 
     public function testPackageOverviewDocumentsSkeletonBoundariesAndCompatibilityLimits(): void
@@ -841,7 +841,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'PluginDefinition.php',
                 'PluginDescriptor.php',
             ),
-            'packages/testing/src' => array(),
+            'packages/testing/src' => array(
+                'Component/ComponentDefinitionFixture.php',
+                'Component/ComponentEntryPointFixture.php',
+            ),
         );
     }
 
