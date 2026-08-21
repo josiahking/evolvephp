@@ -12,14 +12,19 @@ Phase 5.3A extends `PluginDescriptor` with `graphDeclaration()`, returning an im
 
 The graph declaration is declaration vocabulary only. Relation ordering is canonical and deterministic, but declaration order has no startup-order semantics. Phase 5.3A does not resolve dependencies, activate optional dependencies, resolve conflicts, select capability providers, detect cycles, discover components, register components, order boot or introduce component versions, version constraints or SemVer graph decisions.
 
-These APIs are PUBLIC EXPERIMENTAL and pre-beta. They are not stable lifecycle APIs.
+These APIs are PUBLIC EXPERIMENTAL and pre-beta.
+
+At the time of the Phase 5.2 descriptor foundation, graph validation and dependency resolution were deferred to Phase 5.3B, while registration, entry-point contracts, lifecycle and boot behavior were still deferred to later Phase 5 slices. Phase 5.5 now adds the shared entry-point interface while descriptor discovery still remains deferred.
+
+## Phase 5.5 Entry Point
+
+Phase 5.5 adds the public experimental `Evolve\Plugin\Plugin` entry-point interface. `Plugin` extends `Evolve\Contracts\Component\ComponentEntryPoint` and introduces no Plugin-specific lifecycle methods.
+
+An enabled plugin entry point participates in the shared component sequence: `register()` contributes service definitions through `ServiceDefinitionRegistrar`, Core freezes the service-definition graph, `boot()` receives an application-lifecycle-only `ComponentBootContext`, `ready()` runs after all enabled components boot, and `shutdown()` releases application-lifetime resources in reverse successful boot order. Deferred failure cleanup registered during `boot()` is only for that plugin's boot failure; successful plugins still clean up through normal shutdown.
 
 Deferred from this slice:
 
-- graph validation and resolution behavior remain deferred to Phase 5.3B;
-- registration remains deferred to Phase 5.4;
-- entry-point contracts, lifecycle and boot remain deferred to Phase 5.5;
-- discovery and enablement remain deferred to Phase 5.6;
+- descriptor discovery, descriptor loading and enablement remain deferred to Phase 5.6;
 - descriptor serialization remains deferred.
 
 ## Package

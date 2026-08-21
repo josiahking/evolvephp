@@ -7,6 +7,7 @@ namespace Evolve\Core\Tests\Unit;
 use Evolve\Contracts\Exception\LifecycleException;
 use Evolve\Contracts\Lifecycle\ApplicationLifecycle;
 use Evolve\Core\ApplicationKernel;
+use Evolve\Core\Component\Lifecycle\ComponentLifecycleCoordinator;
 use Evolve\Core\Container\ServiceRegistry;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -28,9 +29,9 @@ final class ApplicationKernelTest extends TestCase
         $constructor = $kernel->getConstructor();
 
         if ($constructor !== null) {
-            self::assertSame(3, $constructor->getNumberOfParameters(), 'ApplicationKernel constructor should declare the approved Phase 3.3 parameters.');
+            self::assertSame(4, $constructor->getNumberOfParameters(), 'ApplicationKernel constructor should declare the approved Phase 5.5 parameters.');
             self::assertSame(
-                ['configuration', 'validators', 'services'],
+                ['configuration', 'validators', 'services', 'components'],
                 array_map(static fn($parameter): string => $parameter->getName(), $constructor->getParameters()),
             );
 
@@ -44,6 +45,13 @@ final class ApplicationKernelTest extends TestCase
             self::assertTrue($services->allowsNull(), 'ApplicationKernel services parameter should remain optional and nullable.');
             self::assertInstanceOf(ReflectionNamedType::class, $servicesType);
             self::assertSame(ServiceRegistry::class, $servicesType->getName());
+
+            $components = $constructor->getParameters()[3];
+            $componentsType = $components->getType();
+
+            self::assertTrue($components->allowsNull(), 'ApplicationKernel components parameter should remain optional and nullable.');
+            self::assertInstanceOf(ReflectionNamedType::class, $componentsType);
+            self::assertSame(ComponentLifecycleCoordinator::class, $componentsType->getName());
         }
     }
 

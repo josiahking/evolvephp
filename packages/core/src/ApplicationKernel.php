@@ -8,6 +8,7 @@ use Evolve\Contracts\Configuration\Configuration;
 use Evolve\Contracts\Configuration\ConfigurationValidator;
 use Evolve\Contracts\Exception\ConfigurationException;
 use Evolve\Contracts\Lifecycle\ApplicationLifecycle;
+use Evolve\Core\Component\Lifecycle\ComponentLifecycleCoordinator;
 use Evolve\Core\Configuration\ArrayConfiguration;
 use Evolve\Core\Container\ServiceRegistry;
 use Evolve\Core\Exception\ConfigurationValidationFailed;
@@ -29,6 +30,8 @@ final class ApplicationKernel implements ApplicationLifecycle
 
     private ?ServiceRegistry $services;
 
+    private ?ComponentLifecycleCoordinator $components;
+
     /**
      * @param iterable<mixed> $validators
      */
@@ -36,9 +39,11 @@ final class ApplicationKernel implements ApplicationLifecycle
         ?Configuration $configuration = null,
         iterable $validators = [],
         ?ServiceRegistry $services = null,
+        ?ComponentLifecycleCoordinator $components = null,
     ) {
         $this->configuration = $configuration ?? new ArrayConfiguration();
         $this->services = $services;
+        $this->components = $components;
 
         foreach ($validators as $validator) {
             if (! $validator instanceof ConfigurationValidator) {
@@ -72,7 +77,26 @@ final class ApplicationKernel implements ApplicationLifecycle
         }
 
         try {
-            $this->services?->freeze();
+            if ($this->components !== null && $this->services === null) {
+                $this->services = new ServiceRegistry();
+            }
+
+            if ($this->components !== null) {
+                $registry = $this->services;
+
+                if ($registry === null) {
+                    throw new InvalidLifecycleTransition('Component lifecycle registration requires a service registry.');
+                }
+
+                $this->components->register($registry);
+            }
+
+            $services = $this->services?->freeze();
+
+            if ($this->components !== null && $services !== null) {
+                $this->components->boot($services);
+                $this->components->ready();
+            }
         } catch (Throwable $exception) {
             $this->state = ApplicationState::Failed;
 
@@ -86,6 +110,14 @@ final class ApplicationKernel implements ApplicationLifecycle
     {
         if ($this->state !== ApplicationState::Ready) {
             throw new InvalidLifecycleTransition('Application kernel cannot shut down from the current lifecycle state.');
+        }
+
+        try {
+            $this->components?->shutdown();
+        } catch (Throwable $exception) {
+            $this->state = ApplicationState::Stopped;
+
+            throw $exception;
         }
 
         $this->state = ApplicationState::Stopped;
