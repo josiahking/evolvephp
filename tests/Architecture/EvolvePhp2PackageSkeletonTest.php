@@ -366,7 +366,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertMatchesPattern('/does not.*freeze|no automatic.*freeze/is', $content);
             $this->assertMatchesPattern('/ApplicationKernel.*Phase 5\.5|Phase 5\.5.*ApplicationKernel/is', $content);
             $this->assertMatchesPattern('/entry-point.*Phase 5\.5|lifecycle.*Phase 5\.5/is', $content);
-            $this->assertMatchesPattern('/discovery.*Phase 5\.6|enablement.*Phase 5\.6/is', $content);
+            $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery/is', $content);
+            $this->assertMatchesPattern('/enablement.*Phase 5\.6A|Phase 5\.6A.*enablement/is', $content);
         }
     }
 
@@ -384,7 +385,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertMatchesPattern('/experimental/i', $content);
             $this->assertMatchesPattern('/ComponentEntryPoint/i', $content);
             $this->assertMatchesPattern('/register.*boot.*ready.*shutdown|boot.*ready.*shutdown/is', $content);
-            $this->assertMatchesPattern('/discovery.*Phase 5\.6|enablement.*Phase 5\.6/is', $content);
+            $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery/is', $content);
+            $this->assertMatchesPattern('/enablement.*Phase 5\.6A|Phase 5\.6A.*enablement/is', $content);
         }
 
         $this->assertMatchesPattern('/ComponentBootContext/i', $contractsReadme);
@@ -432,7 +434,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertMatchesPattern('/cycle.*canonical|canonical.*cycle/i', $content);
             $this->assertMatchesPattern('/registration.*deferred|deferred.*registration/is', $content);
             $this->assertMatchesPattern('/boot.*ready.*shutdown.*deferred|deferred.*boot.*ready.*shutdown/is', $content);
-            $this->assertMatchesPattern('/discovery.*enablement.*deferred|deferred.*discovery.*enablement/is', $content);
+            $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery/is', $content);
+            $this->assertMatchesPattern('/enablement.*Phase 5\.6A|Phase 5\.6A.*enablement|app-controlled enablement/i', $content);
             $this->assertDoesNotMatchPattern('/composer\/semver/i', $content);
             $this->assertDoesNotMatchPattern('/implements?.*SemVer|SemVer.*implemented/i', $content);
         }
@@ -440,6 +443,46 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         foreach (array($coreReadme, $packagesReadme) as $content) {
             $this->assertMatchesPattern('/Contracts declarations|Contracts graph declarations|consumes.*ComponentGraphDeclaration/is', $content);
             $this->assertMatchesPattern('/conflict.*validation|validates.*conflicts?/is', $content);
+        }
+    }
+
+    public function testPhase56aExplicitComponentBootstrapIsDocumentedWithinAcceptedBoundaries(): void
+    {
+        $contractsReadme = $this->readProjectFile('packages/contracts/README.md');
+        $moduleReadme = $this->readProjectFile('packages/module/README.md');
+        $pluginReadme = $this->readProjectFile('packages/plugin/README.md');
+        $coreReadme = $this->readProjectFile('packages/core/README.md');
+        $packagesReadme = $this->readProjectFile('packages/README.md');
+        $changelog = $this->readProjectFile('CHANGELOG.md');
+
+        foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $coreReadme, $packagesReadme, $changelog) as $content) {
+            $this->assertMatchesPattern('/Phase 5\.6A/i', $content);
+            $this->assertMatchesPattern('/experimental|pre-beta/i', $content);
+            $this->assertMatchesPattern('/explicit/i', $content);
+            $this->assertMatchesPattern('/Composer `extra`|Composer discovery|package scanning|automatic package scanning/i', $content);
+            $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery|does not define package discovery/is', $content);
+            $this->assertMatchesPattern('/automatic enablement.*deferred|self-enablement|app-controlled enablement|application-controlled enablement/i', $content);
+            $this->assertMatchesPattern('/component versions|dependency version ranges|SemVer/i', $content);
+        }
+
+        $this->assertMatchesPattern('/ComponentDefinition/i', $contractsReadme);
+        $this->assertMatchesPattern('/identifier.*type.*graphDeclaration|graph declaration.*entry-point/is', $contractsReadme);
+
+        $this->assertMatchesPattern('/ModuleDefinition/i', $moduleReadme);
+        $this->assertMatchesPattern('/ModuleCompatibilityValidator/i', $moduleReadme);
+        $this->assertMatchesPattern('/entry-point class.*implements.*Module|implements.*Evolve\\\\Module\\\\Module/is', $moduleReadme);
+
+        $this->assertMatchesPattern('/PluginDefinition/i', $pluginReadme);
+        $this->assertMatchesPattern('/PluginCompatibilityValidator/i', $pluginReadme);
+        $this->assertMatchesPattern('/entry-point class.*implements.*Plugin|implements.*Evolve\\\\Plugin\\\\Plugin/is', $pluginReadme);
+
+        foreach (array($coreReadme, $packagesReadme, $changelog) as $content) {
+            $this->assertMatchesPattern('/ComponentBootstrapper/i', $content);
+            $this->assertMatchesPattern('/evolve\.components\.enabled/i', $content);
+            $this->assertMatchesPattern('/disabled.*inert|inert.*disabled/i', $content);
+            $this->assertMatchesPattern('/validat.*before.*entry-point creation|validat.*before.*creating|validate-all-before-create/i', $content);
+            $this->assertMatchesPattern('/existing graph|graph resolver/i', $content);
+            $this->assertMatchesPattern('/Phase 5\.5 lifecycle coordinator|lifecycle coordinator/i', $content);
         }
     }
 
@@ -644,6 +687,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Component/CapabilityRequirement.php',
                 'Component/ComponentBootContext.php',
                 'Component/ComponentConflict.php',
+                'Component/ComponentDefinition.php',
                 'Component/ComponentDependency.php',
                 'Component/ComponentDependencyKind.php',
                 'Component/ComponentEntryPoint.php',
@@ -663,6 +707,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'packages/core/src' => array(
                 'ApplicationKernel.php',
                 'Component/CapabilityProviderSelection.php',
+                'Component/ComponentBootstrapper.php',
                 'Component/ComponentGraphResolver.php',
                 'Component/Lifecycle/ComponentLifecycleBinding.php',
                 'Component/Lifecycle/ComponentLifecycleCoordinator.php',
@@ -688,7 +733,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/ActiveComponentConflict.php',
                 'Exception/AmbiguousCapabilityProvider.php',
                 'Exception/CommandNotFound.php',
+                'Exception/ComponentDefinitionValidationFailed.php',
                 'Exception/ComponentDependencyCycle.php',
+                'Exception/ComponentEntryPointCreationFailed.php',
                 'Exception/ComponentGraphResolutionFailed.php',
                 'Exception/ComponentServiceRegistrationFailed.php',
                 'Exception/ComponentShutdownFailed.php',
@@ -748,12 +795,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/IncompatibleModuleDescriptor.php',
                 'Module.php',
                 'ModuleCompatibilityValidator.php',
+                'ModuleDefinition.php',
                 'ModuleDescriptor.php',
             ),
             'packages/plugin/src' => array(
                 'Exception/IncompatiblePluginDescriptor.php',
                 'Plugin.php',
                 'PluginCompatibilityValidator.php',
+                'PluginDefinition.php',
                 'PluginDescriptor.php',
             ),
             'packages/testing/src' => array(),

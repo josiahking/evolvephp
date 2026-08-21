@@ -55,7 +55,13 @@ Startup cleanup follows RFC 0004: if boot fails, the failing component's deferre
 
 This slice provides no shell executable, runtime CLI adapter, argument or option parsing, stdout/stderr stream integration, Doctor, generators or developer commands; Doctor, generators and developer commands remain deferred. It also does not provide environment or dotenv loading, configuration files, autowiring, aliases, service tags, decorators, service-locator globals, HTTP handling, queue or scheduled-job adapters, retry policy, process termination or recycling, module/plugin runtime, telemetry products or integrations, streaming or persistent-worker concurrency guarantees.
 
-Phase 5.5 does not implement discovery, enablement, component instantiation, component versions, dependency version ranges, Composer semantic-version constraint evaluation or Module/Plugin runtime managers. Discovery and enablement remain deferred to Phase 5.6.
+Phase 5.5 did not implement discovery, enablement, component instantiation, component versions, dependency version ranges, Composer semantic-version constraint evaluation or Module/Plugin runtime managers. Phase 5.6A adds explicit application-controlled enablement while discovery remains deferred.
+
+Core now owns the Phase 5.6A explicit component bootstrap boundary under `Evolve\Core\Component\ComponentBootstrapper`. Applications pass explicit `ComponentDefinition` objects to the bootstrapper and control activation through the `evolve.components.enabled` configuration list. When that configuration path is absent, no components are active. Unknown, duplicated, malformed or non-string enabled identifiers fail configuration validation before any component validation or entry-point creation occurs.
+
+The bootstrapper keeps disabled definitions inert. For enabled definitions, Core validates every enabled definition before creating any entry point, resolves the existing graph from those validated definitions, creates entry points in resolved dependency-first order and hands exact declaration-to-entry-point bindings to the existing Phase 5.5 lifecycle coordinator. Definition validation and entry-point construction failures preserve the previous throwable and expose the affected `ComponentIdentifier`.
+
+Phase 5.6A does not provide Composer discovery, package scanning, descriptor file loading, Composer `extra` schema, automatic enablement, component versions, dependency version ranges, SemVer graph decisions, hot reload or per-execution component lifecycle work.
 
 Core now depends on `evolvephp/contracts` and `psr/container`. The concrete lifecycle implementation, service definition model, frozen container implementation and internal state enum are not an invitation for consumers to depend on internal runtime classes.
 

@@ -79,7 +79,7 @@ Phase 5.4 adds `Evolve\Contracts\Component\Registration\ServiceDefinitionRegistr
 
 Factories are documented as accepting zero or one active PSR-11 resolver argument. This gives Contracts deliberate external-standard access to `Psr\Container\ContainerInterface` for the public factory contract, but Contracts remains first-party-inward and is not a container implementation.
 
-Core owns the restricted registrar implementation, registration ordering, staging and atomic publication. Registration order comes from `ResolvedComponentGraph`, service definitions are staged before publication, registration failure publishes nothing, registration does not resolve or construct services, and registration does not freeze the registry. `ApplicationKernel` integration, entry-point lifecycle, boot and ready were deferred from Phase 5.4 to Phase 5.5; discovery and enablement remain Phase 5.6.
+Core owns the restricted registrar implementation, registration ordering, staging and atomic publication. Registration order comes from `ResolvedComponentGraph`, service definitions are staged before publication, registration failure publishes nothing, registration does not resolve or construct services, and registration does not freeze the registry. `ApplicationKernel` integration, entry-point lifecycle, boot and ready were deferred from Phase 5.4 to Phase 5.5; explicit application-controlled enablement is introduced in Phase 5.6A while discovery remains deferred.
 
 ## Experimental Component Lifecycle Entry Points
 
@@ -89,7 +89,15 @@ Phase 5.5 adds `Evolve\Contracts\Component\ComponentEntryPoint` and `Evolve\Cont
 
 `ComponentBootContext` exposes a frozen/read-only PSR-11 resolver through `services()` and failure-only boot cleanup through `deferFailureCleanup(callable $cleanup): void`. The boot context resolver is application-lifecycle only, not execution or request scope, and it does not expose mutable `ServiceRegistry`. Failure cleanup is only for resources allocated during an in-progress boot failure. It runs only when that component's boot fails, while successful components remain responsible for normal shutdown.
 
-Discovery and enablement remain deferred to Phase 5.6. These contracts do not provide runtime auto-discovery, component self-enablement, hot unload, request-scope lifecycle hooks or telemetry integration.
+Discovery remains deferred. These contracts do not provide runtime auto-discovery, component self-enablement, hot unload, request-scope lifecycle hooks or telemetry integration.
+
+## Experimental Component Definitions
+
+Phase 5.6A adds `Evolve\Contracts\Component\ComponentDefinition` as a public experimental bridge between already-created descriptor metadata and lifecycle entry-point creation.
+
+A component definition exposes the component identifier, component type, exact `ComponentGraphDeclaration` object, explicit startup validation and explicit `ComponentEntryPoint` creation. Implementations are application-supplied and are prepared before Core resolves the active component graph or runs lifecycle callbacks.
+
+This contract does not define package discovery, Composer `extra` metadata, descriptor file formats, automatic installation scanning, component self-enablement, component versions, dependency version ranges or SemVer graph decisions. Those concerns remain outside Phase 5.6A.
 
 ## Package
 

@@ -7,11 +7,13 @@ namespace Evolve\Core\Tests\Unit;
 use Evolve\Contracts\Exception\LifecycleException;
 use Evolve\Contracts\Lifecycle\ApplicationLifecycle;
 use Evolve\Core\ApplicationKernel;
+use Evolve\Core\Component\ComponentBootstrapper;
 use Evolve\Core\Component\Lifecycle\ComponentLifecycleCoordinator;
 use Evolve\Core\Container\ServiceRegistry;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionNamedType;
+use ReflectionUnionType;
 use Throwable;
 
 final class ApplicationKernelTest extends TestCase
@@ -50,8 +52,13 @@ final class ApplicationKernelTest extends TestCase
             $componentsType = $components->getType();
 
             self::assertTrue($components->allowsNull(), 'ApplicationKernel components parameter should remain optional and nullable.');
-            self::assertInstanceOf(ReflectionNamedType::class, $componentsType);
-            self::assertSame(ComponentLifecycleCoordinator::class, $componentsType->getName());
+            self::assertInstanceOf(ReflectionUnionType::class, $componentsType);
+            $componentTypeNames = array_map(
+                static fn(ReflectionNamedType $type): string => $type->getName(),
+                $componentsType->getTypes(),
+            );
+            sort($componentTypeNames);
+            self::assertSame([ComponentBootstrapper::class, ComponentLifecycleCoordinator::class, 'null'], $componentTypeNames);
         }
     }
 
