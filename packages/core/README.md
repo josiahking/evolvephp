@@ -91,3 +91,38 @@ Independent Composer installation guidance will be added when package publicatio
 ## Licence
 
 BSD-3-Clause. See `LICENSE.md`.
+## Evolve Doctor Foundation
+
+Core includes the first runtime-neutral Evolve Doctor diagnostic foundation.
+Doctor checks implement `Evolve\Core\Doctor\DoctorCheck` and produce immutable
+`DoctorFinding` values with stable machine-readable identifiers, a
+`DoctorStatus` of `pass`, `warning`, or `fail`, a human-readable message, and an
+optional remediation hint.
+
+`DoctorRunner` accepts explicitly supplied checks, preserves their registration
+order, rejects duplicate or malformed check identifiers, and verifies that each
+returned finding matches the originating check identifier. `DoctorReport`
+preserves findings in runner order and treats the report as successful when no
+finding has a `fail` status. Warning findings remain diagnostic data and do not
+make a report unsuccessful.
+
+Runtime checks currently provided by Core are limited to:
+
+- `Runtime\PhpVersionCheck`, which verifies that an explicitly supplied or
+  current PHP runtime version satisfies the minimum PHP version requirement of
+  `8.4.0`.
+- `Runtime\PhpExtensionCheck`, which checks a caller-supplied ordered list of
+  required PHP extensions using an injectable lookup callback for deterministic
+  tests.
+
+Normal diagnostic problems, such as an unsupported PHP version or missing PHP
+extension, are represented as `fail` findings. Malformed definitions, such as
+duplicate check identifiers, invalid diagnostic identifiers, invalid extension
+declarations, or malformed explicitly supplied PHP versions, fail fast with
+standard exceptions.
+
+Current limitations: this foundation does not provide an `evolve doctor` CLI
+command, `bin/evolve`, JSON output, Composer compatibility diagnosis,
+environment inspection, route inspection, writable-path validation, Bridge
+validation, persistent-worker certification, Evolve Audit integration, or
+automatic remediation.
