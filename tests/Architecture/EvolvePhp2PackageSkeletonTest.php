@@ -761,6 +761,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Container/ServiceDefinition.php',
                 'Container/ServiceLifetime.php',
             'Container/ServiceRegistry.php',
+            'Doctor/Console/DoctorCommand.php',
             'Doctor/DoctorCheck.php',
             'Doctor/DoctorFinding.php',
             'Doctor/DoctorReport.php',
