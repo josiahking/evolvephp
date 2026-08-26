@@ -126,3 +126,40 @@ command, `bin/evolve`, JSON output, Composer compatibility diagnosis,
 environment inspection, route inspection, writable-path validation, Bridge
 validation, persistent-worker certification, Evolve Audit integration, or
 automatic remediation.
+## Evolve Doctor Console Adapter
+
+Core provides `Evolve\Core\Doctor\Console\DoctorCommand`, a runtime-neutral
+adapter from an explicitly configured `DoctorRunner` to the existing Core
+`Command` abstraction. The command name is `doctor` and its description is
+`Run configured Evolve Doctor diagnostic checks.`
+
+The adapter accepts no arguments or options. Empty input runs the configured
+Doctor runner and renders findings deterministically in report order as:
+
+```text
+[STATUS] identifier: message
+```
+
+When a finding includes remediation, the command emits a following normal output
+line:
+
+```text
+Remediation: <remediation>
+```
+
+PASS, WARNING, and FAIL findings are diagnostic output written through the
+normal command output channel. FAIL findings produce command exit status `1`.
+Warnings alone remain successful and produce exit status `0`. Unsupported
+arguments or options produce exit status `2` with the error
+`The doctor command does not accept arguments or options.`
+
+Malformed Doctor definitions and programming failures remain throwables. When
+the command is dispatched through Core's generic `CommandRunner`, execution
+continues to use the existing `ExecutionOrchestrator` lifecycle for CLI command
+failures.
+
+Current limitations: this phase does not provide `bin/evolve`, argv parsing,
+runtime stdout/stderr stream implementations, TTY support, ANSI formatting,
+prompts, command help UI, JSON Doctor output, Composer compatibility checks,
+project discovery, route inspection, environment inspection, writable-path
+inspection, create-project, or generators.
