@@ -158,8 +158,37 @@ the command is dispatched through Core's generic `CommandRunner`, execution
 continues to use the existing `ExecutionOrchestrator` lifecycle for CLI command
 failures.
 
-Current limitations: this phase does not provide `bin/evolve`, argv parsing,
-runtime stdout/stderr stream implementations, TTY support, ANSI formatting,
-prompts, command help UI, JSON Doctor output, Composer compatibility checks,
-project discovery, route inspection, environment inspection, writable-path
-inspection, create-project, or generators.
+Current Doctor command adapter limitations: this layer does not provide argv
+parsing, TTY support, ANSI formatting, prompts, command help UI, JSON Doctor
+output, Composer compatibility checks, project discovery, route inspection,
+environment inspection, writable-path inspection, create-project, or generators.
+## Evolve CLI Entrypoint
+
+Core exposes a Composer binary for the first shell-facing Evolve CLI entrypoint:
+
+```text
+vendor/bin/evolve doctor
+```
+
+The package-owned `bin/evolve` executable is a thin composition root around the
+existing Core console abstractions. It wires `CliApplication` to `CommandRunner`,
+registers the existing `DoctorCommand`, and configures the default shell Doctor
+runner with the PHP version check.
+
+Current shell behavior:
+
+- stdout is used for normal command and Doctor diagnostic output.
+- stderr is used for shell and usage errors.
+- exit `0` means the Doctor report was successful.
+- exit `1` means Doctor reported at least one diagnostic failure.
+- exit `2` means CLI usage failed, such as a missing command or unsupported
+  Doctor argument.
+- PASS, WARNING, and FAIL rendering remains owned by `DoctorCommand`.
+- Caller-configured PHP extension checks remain available programmatically but
+  are not auto-discovered by the shell entrypoint yet.
+
+Current limitations: there is no option parser, `--help` or help framework,
+JSON output, command listing or completion, Composer or project inspection,
+automatic required-extension discovery, route inspection, environment
+inspection, writable-path inspection, create-project support, generators,
+Bridge or Audit integration, or interactive, TTY, or ANSI behavior.

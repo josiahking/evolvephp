@@ -38,7 +38,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "6d6004c21b5cf7c44aed07ebb2da538e8ffb0c48"
+                "reference": "75ecd3a61fcdfa62cfa168fbfce965709f455973"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -48,6 +48,9 @@
             "provide": {
                 "psr/container-implementation": "1.0.0"
             },
+            "bin": [
+                "bin/evolve"
+            ],
             "type": "library",
             "autoload": {
                 "psr-4": {
