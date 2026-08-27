@@ -10,6 +10,7 @@ use Evolve\Core\Console\Runtime\StreamCommandOutput;
 use Evolve\Core\Container\ServiceRegistry;
 use Evolve\Core\Doctor\Console\DoctorCommand;
 use Evolve\Core\Doctor\DoctorRunner as EvolveDoctorRunner;
+use Evolve\Core\Doctor\Project\ComposerRequiredExtensionsCheck;
 use Evolve\Core\Doctor\Runtime\PhpVersionCheck;
 use Evolve\Core\Execution\ExecutionOrchestrator;
 
@@ -44,10 +45,16 @@ require $autoload();
 $services = new ServiceRegistry();
 $services->freeze();
 
+$workingDirectory = getcwd();
+$composerJsonPath = is_string($workingDirectory)
+    ? $workingDirectory . DIRECTORY_SEPARATOR . 'composer.json'
+    : 'composer.json';
+
 $application = new CliApplication(new CommandRunner(
     new CommandRegistry([
         new DoctorCommand(new EvolveDoctorRunner([
             new PhpVersionCheck(),
+            new ComposerRequiredExtensionsCheck($composerJsonPath),
         ])),
     ]),
     new ExecutionOrchestrator($services),

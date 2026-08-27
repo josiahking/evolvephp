@@ -114,18 +114,25 @@ Runtime checks currently provided by Core are limited to:
 - `Runtime\PhpExtensionCheck`, which checks a caller-supplied ordered list of
   required PHP extensions using an injectable lookup callback for deterministic
   tests.
+- `Project\ComposerRequiredExtensionsCheck`, which reads one local
+  `composer.json` path, inspects only top-level `require` keys beginning with
+  `ext-`, normalizes extension names to lowercase, and checks whether those
+  extensions are loaded. It intentionally ignores `require-dev` and does not
+  evaluate extension version constraints.
 
 Normal diagnostic problems, such as an unsupported PHP version or missing PHP
-extension, are represented as `fail` findings. Malformed definitions, such as
-duplicate check identifiers, invalid diagnostic identifiers, invalid extension
-declarations, or malformed explicitly supplied PHP versions, fail fast with
-standard exceptions.
+extension, are represented as `fail` findings. Project Composer evidence
+problems, such as a missing, unreadable, malformed, or structurally invalid
+project manifest, are also represented as `fail` findings. Malformed
+definitions, such as duplicate check identifiers, invalid diagnostic
+identifiers, invalid caller-supplied extension declarations, or malformed
+explicitly supplied PHP versions, fail fast with standard exceptions.
 
-Current limitations: this foundation does not provide an `evolve doctor` CLI
-command, `bin/evolve`, JSON output, Composer compatibility diagnosis,
-environment inspection, route inspection, writable-path validation, Bridge
-validation, persistent-worker certification, Evolve Audit integration, or
-automatic remediation.
+Current limitations: this foundation does not provide JSON output, arbitrary
+Composer dependency graph compatibility analysis, a Composer semver solver,
+extension version-constraint evaluation, environment inspection, route
+inspection, writable-path validation, Bridge validation, persistent-worker
+certification, Evolve Audit integration, or automatic remediation.
 ## Evolve Doctor Console Adapter
 
 Core provides `Evolve\Core\Doctor\Console\DoctorCommand`, a runtime-neutral
@@ -160,7 +167,8 @@ failures.
 
 Current Doctor command adapter limitations: this layer does not provide argv
 parsing, TTY support, ANSI formatting, prompts, command help UI, JSON Doctor
-output, Composer compatibility checks, project discovery, route inspection,
+output, arbitrary Composer dependency graph compatibility analysis, a Composer
+semver solver, extension version-constraint evaluation, route inspection,
 environment inspection, writable-path inspection, create-project, or generators.
 ## Evolve CLI Entrypoint
 
@@ -173,7 +181,16 @@ vendor/bin/evolve doctor
 The package-owned `bin/evolve` executable is a thin composition root around the
 existing Core console abstractions. It wires `CliApplication` to `CommandRunner`,
 registers the existing `DoctorCommand`, and configures the default shell Doctor
-runner with the PHP version check.
+runner with:
+
+1. PHP runtime version diagnosis.
+2. Current-project Composer runtime extension discovery from `composer.json`
+   `require` declarations whose package names begin with `ext-`.
+
+The project manifest is resolved from the process current working directory.
+Only top-level `require` is inspected; `require-dev` is intentionally ignored.
+Extension names are normalized to lowercase before lookup, and this diagnosis
+checks only whether each declared extension is loaded.
 
 Current shell behavior:
 
@@ -184,11 +201,15 @@ Current shell behavior:
 - exit `2` means CLI usage failed, such as a missing command or unsupported
   Doctor argument.
 - PASS, WARNING, and FAIL rendering remains owned by `DoctorCommand`.
+- Missing or malformed current-project Composer evidence is a Doctor diagnostic
+  failure, writes diagnostics to stdout, and exits `1`.
+- Shell usage errors remain stderr output and exit `2`.
 - Caller-configured PHP extension checks remain available programmatically but
-  are not auto-discovered by the shell entrypoint yet.
+  are not automatically added by the shell entrypoint.
 
 Current limitations: there is no option parser, `--help` or help framework,
-JSON output, command listing or completion, Composer or project inspection,
-automatic required-extension discovery, route inspection, environment
-inspection, writable-path inspection, create-project support, generators,
-Bridge or Audit integration, or interactive, TTY, or ANSI behavior.
+JSON output, command listing or completion, arbitrary Composer dependency graph
+compatibility analysis, Composer semver solving, extension version-constraint
+evaluation, route inspection, environment inspection, writable-path inspection,
+create-project support, generators, Bridge or Audit integration, or
+interactive, TTY, or ANSI behavior.
