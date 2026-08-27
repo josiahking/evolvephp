@@ -11,6 +11,9 @@
     "provide": {
         "psr/container-implementation": "1.0.0"
     },
+    "bin": [
+        "bin/evolve"
+    ],
     "autoload": {
         "psr-4": {
             "Evolve\\Core\\": "src/"

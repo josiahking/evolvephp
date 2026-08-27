@@ -4,6 +4,32 @@ use PHPUnit\Framework\TestCase;
 
 final class EvolvePhp2PackageSkeletonTest extends TestCase
 {
+    public function testCorePackageExposesOnlyEvolveBinary(): void
+    {
+        self::assertFileExists(dirname(__DIR__, 2) . '/packages/core/bin/evolve');
+
+        $manifest = json_decode(
+            file_get_contents(dirname(__DIR__, 2) . '/packages/core/composer.json'),
+            true,
+            flags: JSON_THROW_ON_ERROR,
+        );
+
+        self::assertSame(['bin/evolve'], $manifest['bin'] ?? null);
+    }
+
+    public function testOnlyCorePackageExposesComposerBinary(): void
+    {
+        foreach (['contracts', 'http', 'module', 'plugin', 'testing'] as $package) {
+            $manifest = json_decode(
+                file_get_contents(dirname(__DIR__, 2) . sprintf('/packages/%s/composer.json', $package)),
+                true,
+                flags: JSON_THROW_ON_ERROR,
+            );
+
+            self::assertArrayNotHasKey('bin', $manifest);
+        }
+    }
+
     private $root;
 
     protected function setUp(): void
@@ -756,6 +782,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'Console/CommandRegistry.php',
             'Console/CommandResult.php',
             'Console/CommandRunner.php',
+            'Console/Runtime/CliApplication.php',
+            'Console/Runtime/StreamCommandOutput.php',
                 'Container/ExecutionScopeContainer.php',
                 'Container/ServiceContainer.php',
                 'Container/ServiceDefinition.php',
