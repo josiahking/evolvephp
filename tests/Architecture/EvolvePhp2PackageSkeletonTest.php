@@ -795,6 +795,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'Doctor/DoctorReport.php',
             'Doctor/DoctorRunner.php',
             'Doctor/DoctorStatus.php',
+            'Doctor/Project/ComposerRequiredExtensionsCheck.php',
             'Doctor/Runtime/PhpExtensionCheck.php',
             'Doctor/Runtime/PhpVersionCheck.php',
                 'Exception/ActiveComponentConflict.php',

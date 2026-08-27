@@ -8,12 +8,42 @@ use PHPUnit\Framework\TestCase;
 
 final class EvolveBinaryTest extends TestCase
 {
-    public function testDoctorCommandRunsDefaultPhpVersionCheck(): void
+    /** @var list<string> */
+    private array $temporaryDirectories = [];
+
+    protected function tearDown(): void
     {
-        $result = $this->runEvolve(['doctor']);
+        foreach (array_reverse($this->temporaryDirectories) as $directory) {
+            if (is_dir($directory)) {
+                rmdir($directory);
+            }
+        }
+
+        $this->temporaryDirectories = [];
+    }
+
+    public function testDoctorCommandRunsDefaultPhpVersionAndProjectComposerExtensionChecks(): void
+    {
+        $result = $this->runEvolve(['doctor'], dirname(__DIR__, 5));
 
         self::assertSame(0, $result->exitCode);
         self::assertStringContainsString('[PASS] runtime.php.version:', $result->stdout);
+        self::assertStringContainsString('[PASS] project.composer.extensions:', $result->stdout);
+        $phpVersionPosition = strpos($result->stdout, '[PASS] runtime.php.version:');
+        $composerExtensionsPosition = strpos($result->stdout, '[PASS] project.composer.extensions:');
+        self::assertNotFalse($phpVersionPosition);
+        self::assertNotFalse($composerExtensionsPosition);
+        self::assertLessThan($composerExtensionsPosition, $phpVersionPosition);
+        self::assertSame('', $result->stderr);
+    }
+
+    public function testDoctorCommandReportsMissingProjectComposerManifestAsDiagnosticFailure(): void
+    {
+        $result = $this->runEvolve(['doctor'], $this->makeTemporaryDirectory());
+
+        self::assertSame(1, $result->exitCode);
+        self::assertStringContainsString('[PASS] runtime.php.version:', $result->stdout);
+        self::assertStringContainsString('[FAIL] project.composer.extensions:', $result->stdout);
         self::assertSame('', $result->stderr);
     }
 
@@ -45,7 +75,7 @@ final class EvolveBinaryTest extends TestCase
     /**
      * @param list<string> $arguments
      */
-    private function runEvolve(array $arguments): BinaryResult
+    private function runEvolve(array $arguments, ?string $workingDirectory = null): BinaryResult
     {
         $binary = dirname(__DIR__, 3) . '/bin/evolve';
         $command = [PHP_BINARY, $binary, ...$arguments];
@@ -55,7 +85,7 @@ final class EvolveBinaryTest extends TestCase
             2 => ['pipe', 'w'],
         ];
 
-        $process = proc_open($command, $descriptorSpec, $pipes);
+        $process = proc_open($command, $descriptorSpec, $pipes, $workingDirectory);
 
         self::assertIsResource($process);
 
@@ -70,6 +100,17 @@ final class EvolveBinaryTest extends TestCase
             $stdout,
             $stderr,
         );
+    }
+
+    private function makeTemporaryDirectory(): string
+    {
+        $directory = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'evolve-binary-' . bin2hex(random_bytes(6));
+
+        mkdir($directory);
+
+        $this->temporaryDirectories[] = $directory;
+
+        return $directory;
     }
 }
 
