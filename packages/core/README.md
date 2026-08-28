@@ -213,3 +213,26 @@ compatibility analysis, Composer semver solving, extension version-constraint
 evaluation, route inspection, environment inspection, writable-path inspection,
 create-project support, generators, Bridge or Audit integration, or
 interactive, TTY, or ANSI behavior.
+## Doctor project diagnostics
+
+Core includes caller-configured project diagnostic primitives in addition to the
+package-owned shell Doctor checks.
+
+`Project\EnvironmentVariablesCheck` checks an explicitly supplied ordered list
+of required environment-variable names for presence only. Empty-string values
+count as present, values are never exposed in messages or remediation, and the
+check does not load dotenv files, parse `.env.example`, or define which
+variables an application requires.
+
+`Project\WritablePathsCheck` checks an explicitly supplied ordered list of local
+filesystem paths with writability inspection. It does not create paths, chmod
+files, change permissions, perform automatic remediation, or establish default
+storage/cache conventions.
+
+These checks are programmatic Doctor primitives and are not automatically wired
+into the package-owned shell Doctor. The shell Doctor remains limited to:
+
+1. PHP runtime version
+2. current-project Composer-declared extension presence
+
+Route inspection remains deferred.
