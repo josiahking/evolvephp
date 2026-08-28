@@ -854,6 +854,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Middleware/MiddlewarePipeline.php',
                 'Response/ExecutionOutcomeResponseResolver.php',
                 'Response/ResponseEmitter.php',
+                'Routing/Console/RouteListCommand.php',
                 'Routing/Internal/RoutePattern.php',
                 'Routing/Route.php',
                 'Routing/RouteCollection.php',
