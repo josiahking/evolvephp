@@ -81,6 +81,14 @@ The package does not bundle a concrete PSR-7 implementation. Applications or lat
 
 Phase 4.6 closes the reviewed Phase 4 HTTP package foundation. HTML and JSON error rendering, problem-details DTOs, content negotiation, debug pages, automatic health routes, SAPI request creation, concrete response transmission, process termination/recycle adapters, runtime adapters, trace propagation and OpenTelemetry propagation remain deferred to later reviewed slices.
 
+Phase 6.4C adds `Evolve\Http\Routing\Console\RouteListCommand` as a caller-registerable console command adapter for route inspection. The command receives an explicit `RouteCollection` through constructor injection and uses the existing Core Console API, keeping the dependency direction as HTTP -> Core.
+
+`route:list` renders only configured route methods and paths. It preserves `RouteCollection` order, method order, method case and route path text exactly, and it does not invoke or expose route handlers. Empty collections write `No routes are configured.` to normal output.
+
+The adapter accepts no arguments or options. Unsupported input writes `The route:list command does not accept arguments or options.` to error output and returns exit code `2` without rendering routes.
+
+The command is not automatically registered in `packages/core/bin/evolve`, and this package does not provide application bootstrapping or automatic route discovery for it. Application-owned or skeleton CLI composition remains deferred.
+
 ## Publication Status
 
 EvolvePHP 2 is pre-release. This package is not yet independently published, and the current canonical source is the EvolvePHP monorepo:
