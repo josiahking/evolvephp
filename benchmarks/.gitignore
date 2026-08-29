@@ -1,0 +1,6 @@
+/vendor/
+/.phpbench/
+/.phpunit.cache/
+/results/local/
+/results/tmp/
+/profiles/
