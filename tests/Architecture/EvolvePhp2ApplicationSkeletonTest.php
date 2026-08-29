@@ -80,7 +80,7 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
         $this->assertStringContainsString("require dirname(__DIR__) . '/vendor/autoload.php';", $bin);
         $this->assertStringContainsString("require dirname(__DIR__) . '/bootstrap/console.php';", $bin);
         $this->assertStringContainsString('new StreamCommandOutput(STDOUT, STDERR)', $bin);
-        $this->assertStringContainsString('$application->run(array_slice($argv, 1), $output)', $bin);
+        $this->assertStringContainsString('$application->run(array_slice($argv ?? [], 1), $output)', $bin);
 
         foreach (array(
             'ServiceRegistry',

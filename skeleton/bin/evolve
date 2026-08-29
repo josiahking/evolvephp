@@ -25,4 +25,4 @@ if (! $application instanceof CliApplication) {
 
 $output = new StreamCommandOutput(STDOUT, STDERR);
 
-exit($application->run(array_slice($argv, 1), $output));
+exit($application->run(array_slice($argv ?? [], 1), $output));
