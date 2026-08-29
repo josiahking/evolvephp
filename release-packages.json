@@ -24,6 +24,10 @@
         {
             "name": "evolvephp/testing",
             "directory": "packages/testing"
+        },
+        {
+            "name": "evolvephp/dev-tools",
+            "directory": "packages/dev-tools"
         }
     ]
 }

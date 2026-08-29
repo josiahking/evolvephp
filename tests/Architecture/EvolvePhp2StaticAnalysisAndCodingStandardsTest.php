@@ -241,7 +241,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
     {
         $paths = array();
 
-        foreach (array('contracts', 'core', 'http', 'module', 'plugin', 'testing') as $package) {
+        foreach (array('contracts', 'core', 'dev-tools', 'http', 'module', 'plugin', 'testing') as $package) {
             $paths[] = 'packages/' . $package . '/src';
             $paths[] = 'packages/' . $package . '/tests';
         }
@@ -254,6 +254,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
         return array(
             'packages/contracts/composer.json',
             'packages/core/composer.json',
+            'packages/dev-tools/composer.json',
             'packages/http/composer.json',
             'packages/module/composer.json',
             'packages/plugin/composer.json',
@@ -266,6 +267,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
         return array(
             'packages/contracts/src',
             'packages/core/src',
+            'packages/dev-tools/src',
             'packages/http/src',
             'packages/module/src',
             'packages/plugin/src',
@@ -283,7 +285,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
         $output = array();
         $exitCode = 0;
 
-        exec('git ls-files', $output, $exitCode);
+        exec('git ls-files --cached --others --exclude-standard', $output, $exitCode);
 
         $this->assertSame(0, $exitCode, 'git ls-files should succeed.');
 

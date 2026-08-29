@@ -9,7 +9,7 @@ use InvalidArgumentException;
 use RuntimeException;
 
 /**
- * @internal
+ * @experimental
  */
 final readonly class StreamCommandOutput implements CommandOutput
 {

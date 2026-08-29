@@ -66,6 +66,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
 
         $expectedRequireDev = array(
             'deptrac/deptrac' => '^4.7',
+            'evolvephp/dev-tools' => '^2.0@dev',
             'evolvephp/testing' => '^2.0@dev',
             'friendsofphp/php-cs-fixer' => '^3.95',
             'phpstan/phpstan' => '^2.2',
@@ -110,6 +111,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'licenses:check' => '@php tools/check-licenses.php',
             'quality' => array('@architecture', '@analyse', '@style:check', '@test'),
             'release:consumer:validate' => '@php tools/validate-prerelease-consumers.php',
+            'release:skeleton:validate' => '@php tools/validate-skeleton-project.php',
             'release:split:validate' => '@php tools/validate-package-splits.php',
             'release:validate' => '@php tools/validate-release-packages.php',
             'security:audit' => '@composer audit --locked --abandoned=fail',
@@ -119,6 +121,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist',
             'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
+            'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
             'test:http' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http',
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
             'test:plugin' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin',
@@ -146,6 +149,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'tools/validate-package-splits.php',
             'tools/validate-prerelease-consumers.php',
             'tools/validate-release-packages.php',
+            'tools/validate-skeleton-project.php',
         ) as $path) {
             $this->assertFileExists($this->projectPath($path), $path . ' should exist at repository root after cutover.');
         }
@@ -180,7 +184,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         }
     }
 
-    public function testReleaseMapContainsOnlyTheSixReleasePackages(): void
+    public function testReleaseMapContainsOnlyTheSevenReleasePackages(): void
     {
         $map = $this->readJsonFile('release-packages.json');
 
@@ -193,6 +197,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
                 array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
                 array('name' => 'evolvephp/testing', 'directory' => 'packages/testing'),
+                array('name' => 'evolvephp/dev-tools', 'directory' => 'packages/dev-tools'),
             ),
             $map['packages']
         );
@@ -207,7 +212,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
 
         foreach (array($readme, $development) as $content) {
             $this->assertMatchesPattern('/repository root.*EvolvePHP 2.*development root|EvolvePHP 2.*development root.*repository root/is', $content);
-            $this->assertMatchesPattern('/not a seventh release package|not.*publishable.*framework package/is', $content);
+            $this->assertMatchesPattern('/not a release package|not.*publishable.*framework package/is', $content);
         }
     }
 
@@ -216,6 +221,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         return array(
             'evolvephp/contracts',
             'evolvephp/core',
+            'evolvephp/dev-tools',
             'evolvephp/http',
             'evolvephp/module',
             'evolvephp/plugin',

@@ -21,10 +21,12 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'packages/README.md',
                 'packages/contracts/README.md',
                 'packages/core/README.md',
+                'packages/dev-tools/README.md',
                 'packages/http/README.md',
                 'packages/module/README.md',
                 'packages/plugin/README.md',
                 'packages/testing/README.md',
+                'skeleton/README.md',
             ),
             $this->trackedReadmes()
         );
@@ -96,7 +98,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             $this->assertStringContainsString('composer ' . $script, $content);
         }
 
-        foreach (array('test:contracts', 'test:core', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertStringContainsString('composer ' . $script, $content);
         }
     }
@@ -220,6 +222,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         return array(
             'Contracts -> none',
             'Core      -> Contracts',
+            'DevTools  -> Contracts, Core, Module, Plugin',
             'Http      -> Contracts, Core',
             'Module    -> Contracts',
             'Plugin    -> Contracts',
@@ -247,7 +250,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $output = array();
         $exitCode = 0;
 
-        exec('git ls-files', $output, $exitCode);
+        exec('git ls-files --cached --others --exclude-standard', $output, $exitCode);
 
         $this->assertSame(0, $exitCode, 'git ls-files should succeed.');
 

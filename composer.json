@@ -33,6 +33,7 @@
                 "versions": {
                     "evolvephp/contracts": "2.0.x-dev",
                     "evolvephp/core": "2.0.x-dev",
+                    "evolvephp/dev-tools": "2.0.x-dev",
                     "evolvephp/http": "2.0.x-dev",
                     "evolvephp/module": "2.0.x-dev",
                     "evolvephp/plugin": "2.0.x-dev",
@@ -52,6 +53,7 @@
     },
     "require-dev": {
         "deptrac/deptrac": "^4.7",
+        "evolvephp/dev-tools": "^2.0@dev",
         "evolvephp/testing": "^2.0@dev",
         "friendsofphp/php-cs-fixer": "^3.95",
         "phpstan/phpstan": "^2.2",
@@ -69,6 +71,7 @@
             "@test"
         ],
         "release:consumer:validate": "@php tools/validate-prerelease-consumers.php",
+        "release:skeleton:validate": "@php tools/validate-skeleton-project.php",
         "release:split:validate": "@php tools/validate-package-splits.php",
         "release:validate": "@php tools/validate-release-packages.php",
         "security:audit": "@composer audit --locked --abandoned=fail",
@@ -81,6 +84,7 @@
         "test": "@php vendor/bin/phpunit --configuration phpunit.xml.dist",
         "test:contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts",
         "test:core": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core",
+        "test:dev-tools": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools",
         "test:http": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http",
         "test:module": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module",
         "test:plugin": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin",

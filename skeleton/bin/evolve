@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+use Evolve\Core\Console\Runtime\CliApplication;
+use Evolve\Core\Console\Runtime\StreamCommandOutput;
+
+$autoload = dirname(__DIR__) . '/vendor/autoload.php';
+
+if (! is_file($autoload)) {
+    fwrite(STDERR, 'Composer autoload file was not found. Run composer install first.' . PHP_EOL);
+
+    exit(1);
+}
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+
+$application = require dirname(__DIR__) . '/bootstrap/console.php';
+
+if (! $application instanceof CliApplication) {
+    fwrite(STDERR, 'Console bootstrap did not return a CLI application.' . PHP_EOL);
+
+    exit(1);
+}
+
+$output = new StreamCommandOutput(STDOUT, STDERR);
+
+exit($application->run(array_slice($argv ?? [], 1), $output));

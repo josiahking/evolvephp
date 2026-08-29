@@ -1,0 +1,18 @@
+{
+    "name": "evolvephp/dev-tools",
+    "description": "Development-time generators and tooling for EvolvePHP 2 applications.",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "require": {
+        "php": "^8.4",
+        "evolvephp/contracts": "^2.0",
+        "evolvephp/core": "^2.0",
+        "evolvephp/module": "^2.0",
+        "evolvephp/plugin": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evolve\\DevTools\\": "src/"
+        }
+    }
+}
