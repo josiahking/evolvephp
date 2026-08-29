@@ -5,16 +5,40 @@ declare(strict_types=1);
 namespace Evolve\Benchmarks\PhpBench\Http;
 
 use Evolve\Benchmarks\Support\BenchmarkFixtureFactory;
+use Evolve\Http\Routing\RouteMatch;
+use Evolve\Http\Routing\RouteMatcher;
 use PhpBench\Attributes as Bench;
+use Psr\Http\Message\ServerRequestInterface;
 
 #[Bench\Revs(100)]
 #[Bench\Iterations(10)]
 #[Bench\Warmup(2)]
 final class RouteMatcherBench
 {
+    private RouteMatcher $matcher;
+
+    private ServerRequestInterface $request;
+
+    private string $allowedMethodsPath = '';
+
+    #[Bench\BeforeMethods(['setUpRouteScenario'])]
     #[Bench\Groups(['http', 'routing'])]
     #[Bench\ParamProviders(['routeMatchScenarios'])]
     public function benchRouteMatching(array $params): void
+    {
+        $match = $this->matcher->match($this->request);
+        $match?->route()->path();
+    }
+
+    #[Bench\BeforeMethods(['setUpAllowedMethodsScenario'])]
+    #[Bench\Groups(['http', 'routing'])]
+    #[Bench\ParamProviders(['routeMissScenarios'])]
+    public function benchAllowedMethodsForMissAndMethodMismatch(array $params): void
+    {
+        $this->matcher->allowedMethods($this->allowedMethodsPath);
+    }
+
+    public function setUpRouteScenario(array $params): void
     {
         $fixture = BenchmarkFixtureFactory::routeMatchingFixture(
             $params['routes'],
@@ -22,15 +46,21 @@ final class RouteMatcherBench
             $params['position'],
         );
 
-        $fixture['matcher']->match($fixture['request']);
+        $this->matcher = $fixture['matcher'];
+        $this->request = $fixture['request'];
     }
 
-    #[Bench\Groups(['http', 'routing'])]
-    #[Bench\ParamProviders(['routeMissScenarios'])]
-    public function benchAllowedMethodsForMissAndMethodMismatch(array $params): void
+    public function setUpAllowedMethodsScenario(array $params): void
     {
         $fixture = BenchmarkFixtureFactory::routeMatchingFixture($params['routes'], $params['category']);
-        $fixture['matcher']->allowedMethods($fixture['request']->getUri()->getPath());
+        $this->matcher = $fixture['matcher'];
+        $this->request = $fixture['request'];
+        $this->allowedMethodsPath = $this->request->getUri()->getPath();
+    }
+
+    public function matchPreparedRoute(): ?RouteMatch
+    {
+        return $this->matcher->match($this->request);
     }
 
     /**

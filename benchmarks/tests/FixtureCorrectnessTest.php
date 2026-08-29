@@ -100,4 +100,56 @@ final class FixtureCorrectnessTest extends TestCase
         self::assertSame(25, $evidence['reset_count']);
         self::assertCount(6, $evidence['checkpoints']);
     }
+
+    public function testRouteMatcherBenchmarkPreparesMatcherOutsideTimedMatch(): void
+    {
+        $bench = new \Evolve\Benchmarks\PhpBench\Http\RouteMatcherBench();
+        $bench->setUpRouteScenario(['routes' => 10, 'category' => 'static', 'position' => 'first']);
+
+        $match = $bench->matchPreparedRoute();
+
+        self::assertNotNull($match);
+        self::assertSame('/bench/static-0', $match->route()->path());
+    }
+
+    public function testContainerResolutionBenchmarkPreparesCachedResolutionBeforeMeasurement(): void
+    {
+        $bench = new \Evolve\Benchmarks\PhpBench\Core\ContainerResolutionBench();
+        $bench->setUpApplicationCachedResolution(['services' => 10]);
+
+        $first = $bench->resolvePreparedApplicationCachedService();
+        $second = $bench->resolvePreparedApplicationCachedService();
+
+        self::assertSame($first, $second);
+        self::assertSame('bench.application.9', $bench->applicationServiceId());
+    }
+
+    public function testFirstResolutionBenchmarkMethodsDeclareSingleRevAndZeroWarmup(): void
+    {
+        $appMethod = new \ReflectionMethod(\Evolve\Benchmarks\PhpBench\Core\ContainerResolutionBench::class, 'benchApplicationFirstResolution');
+        $executionMethod = new \ReflectionMethod(\Evolve\Benchmarks\PhpBench\Core\ContainerResolutionBench::class, 'benchExecutionFirstResolution');
+
+        self::assertSame([1], $this->revsFor($appMethod));
+        self::assertSame([0], $this->warmupFor($appMethod));
+        self::assertSame([1], $this->revsFor($executionMethod));
+        self::assertSame([0], $this->warmupFor($executionMethod));
+    }
+
+    private function revsFor(\ReflectionMethod $method): array
+    {
+        $attributes = $method->getAttributes('PhpBench\\Attributes\\Revs');
+
+        self::assertNotEmpty($attributes);
+
+        return $attributes[0]->newInstance()->revs;
+    }
+
+    private function warmupFor(\ReflectionMethod $method): array
+    {
+        $attributes = $method->getAttributes('PhpBench\\Attributes\\Warmup');
+
+        self::assertNotEmpty($attributes);
+
+        return $attributes[0]->newInstance()->revs;
+    }
 }
