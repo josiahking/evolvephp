@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9442ed6c5c8830854a00e08fe412fc14",
+    "content-hash": "e07fe7a44d4ac0e967376da7aeb47b38",
     "packages": [
         {
             "name": "evolvephp/contracts",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/contracts",
-                "reference": "b0e2168f6d6a4fd7b8351f2b27fbb2592742488b"
+                "reference": "c82982b8fa82f0c8028daa158a03393b1073d727"
             },
             "require": {
                 "php": "^8.4",
@@ -38,7 +38,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "75ecd3a61fcdfa62cfa168fbfce965709f455973"
+                "reference": "bf25bc1d02d1fe9eec98ddcec991a5e62e24a804"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -71,7 +71,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/http",
-                "reference": "64b9fa40a594b29def52fb1d030d1f03267fe2c9"
+                "reference": "5408f617b399ebb5b18e8eebd1960f2002bdd255"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -102,7 +102,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/module",
-                "reference": "49dbb11bbaf7b3055f96e1088bb7b6426456fc08"
+                "reference": "07aa67ad9e14920771aa6fcb193bfa0db2e0652c"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -128,7 +128,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/plugin",
-                "reference": "37635d4cc25735038fc80f144af7e8ebb9ae8ad2"
+                "reference": "c4878830ce15932ae492e776e560bf60806db784"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -957,12 +957,41 @@
             "time": "2023-08-08T05:53:35+00:00"
         },
         {
+            "name": "evolvephp/dev-tools",
+            "version": "2.0.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "packages/dev-tools",
+                "reference": "4326d7659e1a360543196587c93a958a6dc91282"
+            },
+            "require": {
+                "evolvephp/contracts": "^2.0",
+                "evolvephp/core": "^2.0",
+                "evolvephp/module": "^2.0",
+                "evolvephp/plugin": "^2.0",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\DevTools\\": "src/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Development-time generators and tooling for EvolvePHP 2 applications.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
             "name": "evolvephp/testing",
             "version": "2.0.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/testing",
-                "reference": "b80336f2ede6a0f9b6a932430c461b9b0d97fd0e"
+                "reference": "0c3fef62e713b38539a715fc3aaa06e4b841ef44"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -5999,6 +6028,7 @@
     "stability-flags": {
         "evolvephp/contracts": 20,
         "evolvephp/core": 20,
+        "evolvephp/dev-tools": 20,
         "evolvephp/http": 20,
         "evolvephp/module": 20,
         "evolvephp/plugin": 20,

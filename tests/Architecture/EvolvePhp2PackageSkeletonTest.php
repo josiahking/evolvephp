@@ -19,7 +19,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
     public function testOnlyCorePackageExposesComposerBinary(): void
     {
-        foreach (['contracts', 'http', 'module', 'plugin', 'testing'] as $package) {
+        foreach (['contracts', 'dev-tools', 'http', 'module', 'plugin', 'testing'] as $package) {
             $manifest = json_decode(
                 file_get_contents(dirname(__DIR__, 2) . sprintf('/packages/%s/composer.json', $package)),
                 true,
@@ -156,6 +156,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
         $this->assertFileDoesNotExist($this->projectPath('packages/contracts/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/core/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/dev-tools/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/http/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/module/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/plugin/src/.gitkeep'));
@@ -686,6 +687,20 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0', 'psr/container' => '^1.1 || ^2.0'),
             ),
             array(
+                'manifest' => 'packages/dev-tools/composer.json',
+                'src' => 'packages/dev-tools/src',
+                'name' => 'evolvephp/dev-tools',
+                'description' => 'Development-time generators and tooling for EvolvePHP 2 applications.',
+                'namespace' => 'Evolve\\DevTools\\',
+                'require' => array(
+                    'php' => '^8.4',
+                    'evolvephp/contracts' => '^2.0',
+                    'evolvephp/core' => '^2.0',
+                    'evolvephp/module' => '^2.0',
+                    'evolvephp/plugin' => '^2.0',
+                ),
+            ),
+            array(
                 'manifest' => 'packages/http/composer.json',
                 'src' => 'packages/http/src',
                 'name' => 'evolvephp/http',
@@ -843,6 +858,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Instrumentation/ObservationType.php',
                 'Lifecycle/ApplicationState.php',
             ),
+            'packages/dev-tools/src' => array(
+                'Console/ComponentScaffoldGenerator.php',
+                'Console/ModuleNewCommand.php',
+                'Console/PluginNewCommand.php',
+            ),
             'packages/http/src' => array(
                 'Exception/MethodNotAllowed.php',
                 'Exception/RouteNotFound.php',
@@ -884,6 +904,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'packages/testing/src' => array(
                 'Component/ComponentDefinitionFixture.php',
                 'Component/ComponentEntryPointFixture.php',
+                'Console/RecordingCommandOutput.php',
             ),
         );
     }

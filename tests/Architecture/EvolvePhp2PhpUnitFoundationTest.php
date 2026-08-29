@@ -16,6 +16,8 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $manifest = $this->readJsonFile('composer.json');
 
         $this->assertArrayHasKey('require-dev', $manifest);
+        $this->assertArrayHasKey('evolvephp/dev-tools', $manifest['require-dev']);
+        $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/dev-tools']);
         $this->assertArrayHasKey('evolvephp/testing', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/testing']);
         $this->assertArrayHasKey('phpunit/phpunit', $manifest['require-dev']);
@@ -39,7 +41,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         }
     }
 
-    public function testRootPhpUnitConfigurationDefinesSixPackageSuites(): void
+    public function testRootPhpUnitConfigurationDefinesSevenPackageSuites(): void
     {
         $path = $this->projectPath('phpunit.xml.dist');
 
@@ -110,6 +112,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/composer test/i', $content);
         $this->assertMatchesPattern('/test:contracts/i', $content);
         $this->assertMatchesPattern('/test:core/i', $content);
+        $this->assertMatchesPattern('/test:dev-tools/i', $content);
         $this->assertMatchesPattern('/test:http/i', $content);
         $this->assertMatchesPattern('/test:module/i', $content);
         $this->assertMatchesPattern('/test:plugin/i', $content);
@@ -132,7 +135,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $developmentGuide);
         $this->assertMatchesPattern('/PHPUnit 13.*root|root.*PHPUnit 13/i', $developmentGuide);
 
-        foreach (array('test:contracts', 'test:core', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $developmentGuide);
         }
 
@@ -143,7 +146,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/DEVELOPMENT\.md/i', $packagesReadme);
         $this->assertMatchesPattern('/testing.*quality|quality.*testing/i', $packagesReadme);
         $this->assertDoesNotMatchPattern('/tests\/Unit\//i', $packagesReadme);
-        $this->assertDoesNotMatchPattern('/test:contracts.*test:core.*test:http.*test:module.*test:plugin.*test:testing/is', $packagesReadme);
+        $this->assertDoesNotMatchPattern('/test:contracts.*test:core.*test:dev-tools.*test:http.*test:module.*test:plugin.*test:testing/is', $packagesReadme);
         $this->assertDoesNotMatchPattern('/phpunit\.xml\.dist.*PHPUnit|PHPUnit.*phpunit\.xml\.dist/is', $packagesReadme);
     }
 
@@ -168,6 +171,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'core' => array(
                 'tests' => 'packages/core/tests',
                 'smokeTest' => 'packages/core/tests/Unit/PackageManifestTest.php',
+            ),
+            'dev-tools' => array(
+                'tests' => 'packages/dev-tools/tests',
+                'smokeTest' => 'packages/dev-tools/tests/Unit/PackageManifestTest.php',
             ),
             'http' => array(
                 'tests' => 'packages/http/tests',
@@ -194,6 +201,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist',
             'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
+            'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
             'test:http' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http',
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
             'test:plugin' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin',
@@ -206,6 +214,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         return array(
             'evolvephp/contracts',
             'evolvephp/core',
+            'evolvephp/dev-tools',
             'evolvephp/http',
             'evolvephp/module',
             'evolvephp/plugin',

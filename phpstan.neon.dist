@@ -8,6 +8,8 @@ parameters:
         - packages/contracts/tests
         - packages/core/src
         - packages/core/tests
+        - packages/dev-tools/src
+        - packages/dev-tools/tests
         - packages/http/src
         - packages/http/tests
         - packages/module/src
@@ -16,5 +18,8 @@ parameters:
         - packages/plugin/tests
         - packages/testing/src
         - packages/testing/tests
+        - skeleton/bin/evolve
+        - skeleton/bootstrap
+        - skeleton/config
     tmpDir: .phpstan-cache
     reportIgnoresWithoutComments: true

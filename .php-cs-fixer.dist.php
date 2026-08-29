@@ -8,6 +8,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/contracts/tests',
         'packages/core/src',
         'packages/core/tests',
+        'packages/dev-tools/src',
+        'packages/dev-tools/tests',
         'packages/http/src',
         'packages/http/tests',
         'packages/module/src',
@@ -16,6 +18,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/plugin/tests',
         'packages/testing/src',
         'packages/testing/tests',
+        'skeleton/bootstrap',
+        'skeleton/config',
     ]);
 
 return (new PhpCsFixer\Config())

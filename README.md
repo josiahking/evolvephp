@@ -6,7 +6,7 @@
 
 EvolvePHP 2 is a separate redesign, not an in-place refactor, replacement or rewrite of the EvolvePHP 1 runtime history.
 
-Phase 4.7 promoted the EvolvePHP 2 Composer, PHPUnit, PHPStan, PHP-CS-Fixer, Deptrac, release-validation and supply-chain development root from `workspace/` to the repository root. The root project is not a seventh release package. That root cutover does not delete `master`, does not delete history and does not change the preserved EvolvePHP 1 line.
+Phase 4.7 promoted the EvolvePHP 2 Composer, PHPUnit, PHPStan, PHP-CS-Fixer, Deptrac, release-validation and supply-chain development root from `workspace/` to the repository root. The root project is not a release package. That root cutover does not delete `master`, does not delete history and does not change the preserved EvolvePHP 1 line.
 
 ## Project Overview
 

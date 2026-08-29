@@ -25,6 +25,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
                 array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
                 array('name' => 'evolvephp/testing', 'directory' => 'packages/testing'),
+                array('name' => 'evolvephp/dev-tools', 'directory' => 'packages/dev-tools'),
             ),
             $map['packages']
         );
@@ -57,7 +58,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             $this->assertStringContainsString('BSD-3-Clause', $content);
             $this->assertStringContainsString('`LICENSE.md`', $content);
             $this->assertDoesNotMatchPattern('/composer require/i', $content);
-            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:contracts|core|http|module|plugin|testing)/i', $content);
+            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:contracts|core|dev-tools|http|module|plugin|testing)/i', $content);
         }
     }
 
@@ -72,6 +73,19 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 $package['directory'] . '/LICENSE.md should match root LICENSE.md byte-for-byte.'
             );
         }
+    }
+
+    public function testPackageLicenceWhitespaceExceptionIsNarrowAndDeliberate(): void
+    {
+        $attributes = $this->readProjectFile('.gitattributes');
+
+        $this->assertSame(
+            array(
+                '# Package licences intentionally mirror root LICENSE.md byte-for-byte.',
+                'packages/*/LICENSE.md -whitespace',
+            ),
+            $this->nonEmptyLines($attributes)
+        );
     }
 
     public function testReleaseValidatorIsReadOnlyNetworkFreeAndPortable(): void
@@ -129,7 +143,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/## Release Validation/',
             '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
-            '/six packages.*mapped explicitly|mapped explicitly.*six packages/i',
+            '/seven packages.*mapped explicitly|mapped explicitly.*seven packages|extends.*map.*seven packages/i',
             '/dependency-compatible/i',
             '/package-local README/i',
             '/package-local.*licen[cs]es/i',
@@ -178,6 +192,13 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'dependencies' => '`evolvephp/contracts`',
             ),
             array(
+                'name' => 'evolvephp/dev-tools',
+                'directory' => 'packages/dev-tools',
+                'human' => 'EvolvePHP DevTools',
+                'responsibility' => 'Development-time generators and tooling for EvolvePHP 2 applications.',
+                'dependencies' => '`evolvephp/contracts`, `evolvephp/core`, `evolvephp/module`, `evolvephp/plugin`',
+            ),
+            array(
                 'name' => 'evolvephp/module',
                 'directory' => 'packages/module',
                 'human' => 'EvolvePHP Module',
@@ -222,6 +243,17 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
         $this->assertNotFalse($content, $path . ' should be readable.');
 
         return $content;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function nonEmptyLines(string $content): array
+    {
+        return array_values(array_filter(
+            preg_split('/\r?\n/', $content) ?: array(),
+            static fn (string $line): bool => $line !== ''
+        ));
     }
 
     private function readJsonFile($path)

@@ -44,6 +44,9 @@ jobs:
       - name: Run release package split validation
         run: composer release:split:validate
 
+      - name: Run application skeleton create-project validation
+        run: composer release:skeleton:validate
+
       - name: Run root supply-chain checks
         run: composer supply-chain
 

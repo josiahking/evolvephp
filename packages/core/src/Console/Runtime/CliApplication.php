@@ -13,7 +13,7 @@ use Evolve\Core\Execution\ExecutionOutcome;
 use LogicException;
 
 /**
- * @internal
+ * @experimental
  */
 final readonly class CliApplication
 {

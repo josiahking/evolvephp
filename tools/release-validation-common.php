@@ -25,11 +25,26 @@ final class ReleaseValidationProcessResult
 
 final class ReleaseValidationProcessRunner
 {
+    private const DEFAULT_TIMEOUT_SECONDS = 300;
+
+    public function __construct(
+        private readonly int $timeoutSeconds = self::DEFAULT_TIMEOUT_SECONDS,
+    ) {
+        if ($timeoutSeconds < 1) {
+            throw new ReleaseValidationFailure('Process timeout must be at least 1 second.');
+        }
+    }
+
     /**
      * @param list<string> $command
      * @param array<string, string> $environment
      */
-    public function run(array $command, ?string $workingDirectory = null, array $environment = array()): ReleaseValidationProcessResult
+    public function run(
+        array $command,
+        ?string $workingDirectory = null,
+        array $environment = array(),
+        ?string $stage = null,
+    ): ReleaseValidationProcessResult
     {
         if ($command === array()) {
             throw new ReleaseValidationFailure('Cannot run an empty process command.');
@@ -41,10 +56,12 @@ final class ReleaseValidationProcessRunner
             }
         }
 
+        $stdoutPath = $this->createProcessOutputFile('stdout');
+        $stderrPath = $this->createProcessOutputFile('stderr');
         $descriptorSpec = array(
             0 => array('pipe', 'r'),
-            1 => array('pipe', 'w'),
-            2 => array('pipe', 'w'),
+            1 => array('file', $stdoutPath, 'w'),
+            2 => array('file', $stderrPath, 'w'),
         );
 
         $processEnvironment = null;
@@ -64,40 +81,178 @@ final class ReleaseValidationProcessRunner
         );
 
         if (!is_resource($process)) {
+            $this->removeProcessOutputFiles($stdoutPath, $stderrPath);
+
             throw new ReleaseValidationFailure('Unable to start process: ' . describeCommand($command));
         }
 
         fclose($pipes[0]);
-        $stdout = stream_get_contents($pipes[1]);
-        $stderr = stream_get_contents($pipes[2]);
-        fclose($pipes[1]);
-        fclose($pipes[2]);
 
-        $exitCode = proc_close($process);
+        $deadline = microtime(true) + $this->timeoutSeconds;
+        $lastStatus = proc_get_status($process);
 
-        return new ReleaseValidationProcessResult(
-            $command,
-            $exitCode,
-            is_string($stdout) ? $stdout : '',
-            is_string($stderr) ? $stderr : ''
-        );
+        try {
+            while ($lastStatus['running']) {
+                if (microtime(true) >= $deadline) {
+                    $this->terminateProcess($process, $lastStatus['pid']);
+                    $exitCode = proc_close($process);
+                    $stdout = $this->readProcessOutputFile($stdoutPath);
+                    $stderr = $this->readProcessOutputFile($stderrPath);
+
+                    throw new ReleaseValidationFailure(
+                        'Process timed out after '
+                        . $this->formatTimeout()
+                        . $this->stageDescription($stage)
+                        . ': '
+                        . describeCommand($command)
+                        . $this->capturedOutputDescription($stdout, $stderr)
+                    );
+                }
+
+                usleep(10000);
+                $lastStatus = proc_get_status($process);
+            }
+
+            $exitCode = proc_close($process);
+
+            if ($exitCode === -1 && isset($lastStatus['exitcode']) && is_int($lastStatus['exitcode'])) {
+                $exitCode = $lastStatus['exitcode'];
+            }
+
+            return new ReleaseValidationProcessResult(
+                $command,
+                $exitCode,
+                $this->readProcessOutputFile($stdoutPath),
+                $this->readProcessOutputFile($stderrPath)
+            );
+        } finally {
+            $this->removeProcessOutputFiles($stdoutPath, $stderrPath);
+        }
     }
 
     /**
      * @param list<string> $command
      * @param array<string, string> $environment
      */
-    public function mustRun(array $command, ?string $workingDirectory = null, array $environment = array()): ReleaseValidationProcessResult
+    public function mustRun(
+        array $command,
+        ?string $workingDirectory = null,
+        array $environment = array(),
+        ?string $stage = null,
+    ): ReleaseValidationProcessResult
     {
-        $result = $this->run($command, $workingDirectory, $environment);
+        $result = $this->run($command, $workingDirectory, $environment, $stage);
 
         if ($result->exitCode !== 0) {
             throw new ReleaseValidationFailure(
-                'Process failed with exit code ' . $result->exitCode . ': ' . describeCommand($command) . "\n" . $result->output()
+                'Process failed with exit code '
+                . $result->exitCode
+                . $this->stageDescription($stage)
+                . ': '
+                . describeCommand($command)
+                . "\n"
+                . $result->output()
             );
         }
 
         return $result;
+    }
+
+    /**
+     * @param resource $process
+     */
+    private function terminateProcess(mixed $process, int $pid): void
+    {
+        if (DIRECTORY_SEPARATOR === '\\' && $pid > 0 && $this->terminateWindowsProcessTree($pid)) {
+            return;
+        }
+
+        proc_terminate($process);
+        $deadline = microtime(true) + 1.0;
+
+        do {
+            $status = proc_get_status($process);
+
+            if (!$status['running']) {
+                return;
+            }
+
+            usleep(10000);
+        } while (microtime(true) < $deadline);
+
+        proc_terminate($process, 9);
+    }
+
+    private function terminateWindowsProcessTree(int $pid): bool
+    {
+        $process = proc_open(
+            array('taskkill', '/PID', (string) $pid, '/T', '/F'),
+            array(
+                0 => array('pipe', 'r'),
+                1 => array('pipe', 'w'),
+                2 => array('pipe', 'w'),
+            ),
+            $pipes,
+            null,
+            null,
+            array('bypass_shell' => true)
+        );
+
+        if (!is_resource($process)) {
+            return false;
+        }
+
+        fclose($pipes[0]);
+        stream_get_contents($pipes[1]);
+        stream_get_contents($pipes[2]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+
+        return proc_close($process) === 0;
+    }
+
+    private function stageDescription(?string $stage): string
+    {
+        return $stage === null ? '' : ' during ' . $stage;
+    }
+
+    private function formatTimeout(): string
+    {
+        return $this->timeoutSeconds . ' ' . ($this->timeoutSeconds === 1 ? 'second' : 'seconds');
+    }
+
+    private function capturedOutputDescription(string $stdout, string $stderr): string
+    {
+        $output = trim($stdout . "\n" . $stderr);
+
+        return $output === '' ? '' : "\n" . $output;
+    }
+
+    private function createProcessOutputFile(string $label): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'evolvephp-process-' . $label . '-');
+
+        if ($path === false) {
+            throw new ReleaseValidationFailure('Unable to allocate process ' . $label . ' capture file.');
+        }
+
+        return $path;
+    }
+
+    private function readProcessOutputFile(string $path): string
+    {
+        $output = file_get_contents($path);
+
+        return is_string($output) ? $output : '';
+    }
+
+    private function removeProcessOutputFiles(string $stdoutPath, string $stderrPath): void
+    {
+        foreach (array($stdoutPath, $stderrPath) as $path) {
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        }
     }
 }
 
@@ -257,92 +412,200 @@ function readJsonFile(string $path, string $label)
  */
 function loadLockedRuntimePackageRepositoryPackages(string $root): array
 {
+    return loadLockedPackageRepositoryPackages($root);
+}
+
+/**
+ * @return list<array<string, mixed>>
+ */
+function loadSkeletonLockedPackageRepositoryPackages(string $root): array
+{
+    $manifest = readJsonFile(joinPaths($root, 'skeleton/composer.json'), 'skeleton composer.json');
+    $lockedPackages = lockedPackageRepositoryPackagesByName($root, true);
+    $packageNames = array();
+    $queue = array();
+
+    foreach (array('require', 'require-dev') as $section) {
+        if (!isset($manifest[$section])) {
+            continue;
+        }
+
+        if (!is_array($manifest[$section])) {
+            releaseValidationFail('skeleton composer.json ' . $section . ' must be an object.');
+        }
+
+        foreach (array_keys($manifest[$section]) as $packageName) {
+            if (is_string($packageName) && isSkeletonExternalPackageName($packageName)) {
+                $queue[] = $packageName;
+            }
+        }
+    }
+
+    foreach (loadReleasePackages($root) as $package) {
+        $packageManifest = readJsonFile(joinPaths($root, $package['directory'] . '/composer.json'), $package['name'] . ' composer.json');
+
+        if (!isset($packageManifest['require']) || !is_array($packageManifest['require'])) {
+            releaseValidationFail($package['name'] . ' composer.json require must be an object.');
+        }
+
+        foreach (array_keys($packageManifest['require']) as $packageName) {
+            if (is_string($packageName) && isSkeletonExternalPackageName($packageName)) {
+                $queue[] = $packageName;
+            }
+        }
+    }
+
+    while ($queue !== array()) {
+        $packageName = array_shift($queue);
+
+        if (!is_string($packageName) || isset($packageNames[$packageName])) {
+            continue;
+        }
+
+        if (!isset($lockedPackages[$packageName])) {
+            releaseValidationFail('Skeleton offline dependency is missing from composer.lock: ' . $packageName);
+        }
+
+        $packageNames[$packageName] = true;
+        $requires = $lockedPackages[$packageName]['require'] ?? array();
+
+        if (!is_array($requires)) {
+            releaseValidationFail('composer.lock package ' . $packageName . ' require field must be an object.');
+        }
+
+        foreach (array_keys($requires) as $requiredPackageName) {
+            if (is_string($requiredPackageName) && isSkeletonExternalPackageName($requiredPackageName)) {
+                $queue[] = $requiredPackageName;
+            }
+        }
+    }
+
+    $selected = array();
+
+    foreach (array_keys($packageNames) as $packageName) {
+        $vendorPath = joinPaths($root, 'vendor/' . $packageName);
+
+        if (!is_dir($vendorPath)) {
+            releaseValidationFail('Locked package is not installed locally for offline skeleton validation: ' . $packageName);
+        }
+
+        $selected[$packageName] = $lockedPackages[$packageName];
+    }
+
+    ksort($selected);
+
+    return array_values($selected);
+}
+
+/**
+ * @return list<array<string, mixed>>
+ */
+function loadLockedPackageRepositoryPackages(string $root, bool $includeDev = false): array
+{
+    return array_values(lockedPackageRepositoryPackagesByName($root, $includeDev));
+}
+
+/**
+ * @return array<string, array<string, mixed>>
+ */
+function lockedPackageRepositoryPackagesByName(string $root, bool $includeDev = false): array
+{
     $lock = readJsonFile(joinPaths($root, 'composer.lock'), 'composer.lock');
 
     if (!is_array($lock)) {
         releaseValidationFail('composer.lock must decode to an object.');
     }
 
-    if (!array_key_exists('packages', $lock) || !is_array($lock['packages'])) {
-        releaseValidationFail('composer.lock packages must be an array.');
+    foreach (array('packages', 'packages-dev') as $section) {
+        if (!array_key_exists($section, $lock) || !is_array($lock[$section])) {
+            releaseValidationFail('composer.lock ' . $section . ' must be an array.');
+        }
     }
 
     $packages = array();
+    $sections = $includeDev ? array('packages', 'packages-dev') : array('packages');
 
-    foreach ($lock['packages'] as $index => $package) {
-        $entry = $index + 1;
+    foreach ($sections as $section) {
+        foreach ($lock[$section] as $index => $package) {
+            $entry = $index + 1;
 
-        if (!is_array($package)) {
-            releaseValidationFail('composer.lock packages entry ' . $entry . ' must be an object.');
-        }
+            if (!is_array($package)) {
+                releaseValidationFail('composer.lock ' . $section . ' entry ' . $entry . ' must be an object.');
+            }
 
-        $name = $package['name'] ?? null;
+            $name = $package['name'] ?? null;
 
-        if (!is_string($name) || $name === '') {
-            releaseValidationFail('composer.lock packages entry ' . $entry . ' must contain a non-empty name.');
-        }
+            if (!is_string($name) || $name === '') {
+                releaseValidationFail('composer.lock ' . $section . ' entry ' . $entry . ' must contain a non-empty name.');
+            }
 
-        if (str_starts_with($name, 'evolvephp/') || isPlatformPackageName($name)) {
-            continue;
-        }
-
-        $version = $package['version'] ?? null;
-
-        if (!is_string($version) || $version === '') {
-            releaseValidationFail('composer.lock package ' . $name . ' must contain a non-empty version.');
-        }
-
-        if (isset($packages[$name])) {
-            releaseValidationFail('composer.lock packages contains duplicate runtime package metadata for ' . $name . '.');
-        }
-
-        $definition = array(
-            'name' => $name,
-            'version' => $version,
-        );
-
-        foreach (array('require', 'conflict', 'replace', 'provide') as $field) {
-            if (!array_key_exists($field, $package)) {
+            if (str_starts_with($name, 'evolvephp/') || isPlatformPackageName($name)) {
                 continue;
             }
 
-            if (!is_array($package[$field])) {
-                releaseValidationFail('composer.lock package ' . $name . ' field ' . $field . ' must be an object.');
+            $version = $package['version'] ?? null;
+
+            if (!is_string($version) || $version === '') {
+                releaseValidationFail('composer.lock package ' . $name . ' must contain a non-empty version.');
             }
 
-            $definition[$field] = sortedAssociativeArray($package[$field]);
-        }
-
-        if (array_key_exists('type', $package)) {
-            if (!is_string($package['type']) || $package['type'] === '') {
-                releaseValidationFail('composer.lock package ' . $name . ' field type must be a non-empty string.');
+            if (isset($packages[$name])) {
+                releaseValidationFail('composer.lock contains duplicate package repository metadata for ' . $name . '.');
             }
 
-            $definition['type'] = $package['type'];
-        }
+            $definition = array(
+                'name' => $name,
+                'version' => $version,
+            );
 
-        foreach (array('source', 'dist') as $field) {
-            if (!array_key_exists($field, $package)) {
-                continue;
+            foreach (array('require', 'conflict', 'replace', 'provide') as $field) {
+                if (!array_key_exists($field, $package)) {
+                    continue;
+                }
+
+                if (!is_array($package[$field])) {
+                    releaseValidationFail('composer.lock package ' . $name . ' field ' . $field . ' must be an object.');
+                }
+
+                $definition[$field] = sortedAssociativeArray($package[$field]);
             }
 
-            if (!is_array($package[$field]) || $package[$field] === array()) {
-                releaseValidationFail('composer.lock package ' . $name . ' field ' . $field . ' must be an object.');
+            if (array_key_exists('type', $package)) {
+                if (!is_string($package['type']) || $package['type'] === '') {
+                    releaseValidationFail('composer.lock package ' . $name . ' field type must be a non-empty string.');
+                }
+
+                $definition['type'] = $package['type'];
             }
 
-            $definition[$field] = sortedAssociativeArray($package[$field]);
-        }
+            foreach (array('source', 'dist') as $field) {
+                if (!array_key_exists($field, $package)) {
+                    continue;
+                }
 
-        if (!isset($definition['source']) && !isset($definition['dist'])) {
-            releaseValidationFail('composer.lock package ' . $name . ' must contain source or dist metadata for offline package repositories.');
-        }
+                if (!is_array($package[$field]) || $package[$field] === array()) {
+                    releaseValidationFail('composer.lock package ' . $name . ' field ' . $field . ' must be an object.');
+                }
 
-        $packages[$name] = $definition;
+                $definition[$field] = sortedAssociativeArray($package[$field]);
+            }
+
+            if (!isset($definition['source']) && !isset($definition['dist'])) {
+                releaseValidationFail('composer.lock package ' . $name . ' must contain source or dist metadata for offline package repositories.');
+            }
+
+            $packages[$name] = $definition;
+        }
     }
 
     ksort($packages);
 
-    return array_values($packages);
+    return $packages;
+}
+
+function isSkeletonExternalPackageName(string $name): bool
+{
+    return !str_starts_with($name, 'evolvephp/') && !isPlatformPackageName($name);
 }
 
 function isPlatformPackageName(string $name): bool
@@ -381,8 +644,8 @@ function loadReleasePackages(string $root): array
         releaseValidationFail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 6) {
-        releaseValidationFail('release-packages.json must contain exactly six package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 7) {
+        releaseValidationFail('release-packages.json must contain exactly seven package entries.');
     }
 
     $expected = array(
@@ -392,6 +655,7 @@ function loadReleasePackages(string $root): array
         array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
         array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
         array('name' => 'evolvephp/testing', 'directory' => 'packages/testing'),
+        array('name' => 'evolvephp/dev-tools', 'directory' => 'packages/dev-tools'),
     );
 
     $packages = array();

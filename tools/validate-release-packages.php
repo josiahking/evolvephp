@@ -87,6 +87,7 @@ function expectedPackages(): array
         'evolvephp/plugin' => array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
         'evolvephp/http' => array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
         'evolvephp/testing' => array('name' => 'evolvephp/testing', 'directory' => 'packages/testing'),
+        'evolvephp/dev-tools' => array('name' => 'evolvephp/dev-tools', 'directory' => 'packages/dev-tools'),
     );
 }
 
@@ -98,6 +99,7 @@ function expectedNamespaces(): array
     return array(
         'evolvephp/contracts' => 'Evolve\\Contracts\\',
         'evolvephp/core' => 'Evolve\\Core\\',
+        'evolvephp/dev-tools' => 'Evolve\\DevTools\\',
         'evolvephp/module' => 'Evolve\\Module\\',
         'evolvephp/plugin' => 'Evolve\\Plugin\\',
         'evolvephp/http' => 'Evolve\\Http\\',
@@ -117,6 +119,7 @@ function expectedGraph(): array
         'evolvephp/plugin' => array('evolvephp/contracts'),
         'evolvephp/http' => array('evolvephp/contracts', 'evolvephp/core'),
         'evolvephp/testing' => array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/http', 'evolvephp/module', 'evolvephp/plugin'),
+        'evolvephp/dev-tools' => array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/module', 'evolvephp/plugin'),
     );
 }
 
@@ -140,8 +143,8 @@ function validateMap(string $root): array
         fail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 6) {
-        fail('release-packages.json must contain exactly six package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 7) {
+        fail('release-packages.json must contain exactly seven package entries.');
     }
 
     $expectedPackages = array_values(expectedPackages());
@@ -493,7 +496,7 @@ function validateReadme(array $package, string $readmePath): void
         fail($package['name'] . ' README.md must state that independent publication has not begun yet.');
     }
 
-    if (preg_match('/github\.com\/josiahking\/evolvephp[-\/](?:contracts|core|http|module|plugin|testing)/i', $content) === 1) {
+    if (preg_match('/github\.com\/josiahking\/evolvephp[-\/](?:contracts|core|dev-tools|http|module|plugin|testing)/i', $content) === 1) {
         fail($package['name'] . ' README.md must not claim a split repository URL.');
     }
 

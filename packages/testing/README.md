@@ -46,6 +46,16 @@ replace `ModuleDefinition`, `PluginDefinition`, module or plugin entry-point
 interfaces, graph resolution, lifecycle orchestration, service registration
 policy, discovery, developer tooling, mocks or PHPUnit assertions.
 
+## Console Output Recorder
+
+Phase 6.4F adds `Evolve\Testing\Console\RecordingCommandOutput`, a public
+experimental in-memory implementation of Core's `CommandOutput` contract.
+
+It starts empty, records normal lines through `lines()`, records error lines
+through `errorLines()` and preserves write order within each stream. It is meant
+for command tests and does not replace PHPUnit assertions, process execution,
+TTY/ANSI handling or a full CLI testing framework.
+
 ## Publication Status
 
 EvolvePHP 2 is pre-release. This package is not yet independently published, and the current canonical source is the EvolvePHP monorepo:

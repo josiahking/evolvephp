@@ -13,6 +13,7 @@ return static function (DeptracConfig $config): void {
         ->paths(
             'packages/contracts/src',
             'packages/core/src',
+            'packages/dev-tools/src',
             'packages/http/src',
             'packages/module/src',
             'packages/plugin/src',
@@ -35,6 +36,9 @@ return static function (DeptracConfig $config): void {
             $core = Layer::withName('Core')->collectors(
                 DirectoryConfig::create('packages/core/src/.*'),
             ),
+            $devTools = Layer::withName('DevTools')->collectors(
+                DirectoryConfig::create('packages/dev-tools/src/.*'),
+            ),
             $http = Layer::withName('Http')->collectors(
                 DirectoryConfig::create('packages/http/src/.*'),
             ),
@@ -54,6 +58,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($psrHttpMessage),
             Ruleset::forLayer($psrHttpServer),
             Ruleset::forLayer($core)->accesses($contracts, $psrContainer),
+            Ruleset::forLayer($devTools)->accesses($contracts, $core, $module, $plugin),
             Ruleset::forLayer($http)->accesses($contracts, $core, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($module)->accesses($contracts),
             Ruleset::forLayer($plugin)->accesses($contracts),

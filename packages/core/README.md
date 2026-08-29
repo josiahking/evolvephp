@@ -53,7 +53,9 @@ Boot receives a frozen PSR-11 resolver through a restricted `ComponentBootContex
 
 Startup cleanup follows RFC 0004: if boot fails, the failing component's deferred boot failure cleanup runs LIFO, the failing component does not receive normal shutdown, previously booted components shut down in reverse order and the original boot throwable remains primary through `ComponentStartupFailed::getPrevious()`. If ready fails, every booted component, including the component whose ready callback failed, shuts down in reverse order and the original ready throwable remains primary. The coordinator prevents invalid, duplicate and reentrant lifecycle transitions and no per-execution component lifecycle work is introduced.
 
-This slice provides no shell executable, runtime CLI adapter, argument or option parsing, stdout/stderr stream integration, Doctor, generators or developer commands; Doctor, generators and developer commands remain deferred. It also does not provide environment or dotenv loading, configuration files, autowiring, aliases, service tags, decorators, service-locator globals, HTTP handling, queue or scheduled-job adapters, retry policy, process termination or recycling, module/plugin runtime, telemetry products or integrations, streaming or persistent-worker concurrency guarantees.
+The runtime CLI composition helpers `Evolve\Core\Console\Runtime\CliApplication` and `Evolve\Core\Console\Runtime\StreamCommandOutput` are public experimental APIs for explicit caller-owned shell composition. They preserve Core command execution behavior without introducing a service locator, command discovery, global application object or automatic application bootstrapping. The Core console foundation still does not provide a shell executable for general application composition.
+
+This slice provides no argument or option parsing, Doctor generators or developer commands. It also does not provide environment or dotenv loading, configuration files, autowiring, aliases, service tags, decorators, service-locator globals, HTTP handling, queue or scheduled-job adapters, retry policy, process termination or recycling, module/plugin runtime, telemetry products or integrations, streaming or persistent-worker concurrency guarantees.
 
 Phase 5.5 did not implement discovery, enablement, component instantiation, component versions, dependency version ranges, Composer semantic-version constraint evaluation or Module/Plugin runtime managers. Phase 5.6A adds explicit application-controlled enablement while discovery remains deferred.
 
@@ -213,6 +215,12 @@ compatibility analysis, Composer semver solving, extension version-constraint
 evaluation, route inspection, environment inspection, writable-path inspection,
 create-project support, generators, Bridge or Audit integration, or
 interactive, TTY, or ANSI behavior.
+
+Application skeleton CLI composition is separate from Core's package-owned
+binary. The EvolvePHP skeleton explicitly composes the public experimental
+`CliApplication` and `StreamCommandOutput` APIs with Core command primitives and
+HTTP-owned command adapters. Core remains independent of HTTP; application-owned
+shells decide which non-Core commands to register.
 ## Doctor project diagnostics
 
 Core includes caller-configured project diagnostic primitives in addition to the
