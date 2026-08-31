@@ -403,6 +403,75 @@ final class RoutingFoundationTest extends TestCase
         self::assertSame(['id' => '99'], $matcher->match($this->request('GET', '/users/99'))?->parameters());
     }
 
+    public function test_large_static_route_table_matches_correctly(): void
+    {
+        $routes = [];
+        for ($i = 0; $i < 100; $i++) {
+            $routes[] = $this->route(['GET'], "/static/path/{$i}");
+        }
+        $targetRoute = $this->route(['GET'], '/static/path/50');
+        $routes[50] = $targetRoute;
+
+        $matcher = $this->matcher($routes);
+
+        self::assertSame($targetRoute, $matcher->match($this->request('GET', '/static/path/50'))?->route());
+    }
+
+    public function test_mixed_static_and_parameterized_large_table_maintains_order(): void
+    {
+        $routes = [];
+        for ($i = 0; $i < 50; $i++) {
+            $routes[] = $this->route(['GET'], "/static/item/{$i}");
+            $routes[] = $this->route(['POST'], '/param/item/{id}');
+        }
+
+        $matcher = $this->matcher($routes);
+
+        $match = $matcher->match($this->request('GET', '/static/item/0'));
+        self::assertNotNull($match);
+        self::assertSame('/static/item/0', $match->route()->path());
+
+        $match = $matcher->match($this->request('POST', '/param/item/xyz'));
+        self::assertNotNull($match);
+        self::assertSame(['id' => 'xyz'], $match->parameters());
+    }
+
+    public function test_allowed_methods_with_mixed_static_and_parameterized_routes(): void
+    {
+        $routes = [
+            $this->route(['GET'], '/users/{id}'),
+            $this->route(['POST'], '/users/{id}/action'),
+            $this->route(['PUT'], '/users/{id}'),
+            $this->route(['PATCH'], '/users/42'),
+        ];
+
+        $matcher = $this->matcher($routes);
+
+        self::assertSame(['GET', 'PUT', 'PATCH'], $matcher->allowedMethods('/users/42'));
+        self::assertSame(['GET', 'PUT'], $matcher->allowedMethods('/users/99'));
+    }
+
+    public function test_repeated_matching_with_same_matcher_instance(): void
+    {
+        $routes = [
+            $this->route(['GET'], '/api/users/{id}'),
+            $this->route(['POST'], '/api/data/{type}'),
+        ];
+
+        $matcher = $this->matcher($routes);
+
+        $match1 = $matcher->match($this->request('GET', '/api/users/alice'));
+        self::assertSame(['id' => 'alice'], $match1?->parameters());
+
+        $match2 = $matcher->match($this->request('POST', '/api/data/reports'));
+        self::assertSame(['type' => 'reports'], $match2?->parameters());
+
+        $match3 = $matcher->match($this->request('GET', '/api/users/bob'));
+        self::assertSame(['id' => 'bob'], $match3?->parameters());
+
+        self::assertNotSame($match1->parameters(), $match3->parameters());
+    }
+
     /**
      * @param iterable<Route> $routes
      */

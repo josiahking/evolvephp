@@ -16,6 +16,8 @@ final readonly class RoutePattern
      */
     private array $segments;
 
+    private bool $isStatic;
+
     /**
      * @param list<array{kind: 'static'|'parameter', value: string}> $segments
      */
@@ -24,6 +26,21 @@ final readonly class RoutePattern
         array $segments,
     ) {
         $this->segments = $segments;
+        $this->isStatic = !$this->hasParameters($segments);
+    }
+
+    /**
+     * @param list<array{kind: 'static'|'parameter', value: string}> $segments
+     */
+    private static function hasParameters(array $segments): bool
+    {
+        foreach ($segments as $segment) {
+            if ($segment['kind'] === 'parameter') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static function fromPath(string $path): self
@@ -101,10 +118,25 @@ final readonly class RoutePattern
             return null;
         }
 
+        if ($this->isStatic) {
+            return $path === $this->path ? [] : null;
+        }
+
         $candidateSegments = $path === '/'
             ? []
             : explode('/', substr($path, 1));
 
+        return $this->matchSegments($candidateSegments);
+    }
+
+    /**
+     * @param list<string> $candidateSegments
+     * @return array<string, string>|null
+     *
+     * @internal
+     */
+    public function matchSegments(array $candidateSegments): ?array
+    {
         if (count($candidateSegments) !== count($this->segments)) {
             return null;
         }
@@ -130,5 +162,13 @@ final readonly class RoutePattern
         }
 
         return $parameters;
+    }
+
+    /**
+     * @internal
+     */
+    public function isStatic(): bool
+    {
+        return $this->isStatic;
     }
 }
