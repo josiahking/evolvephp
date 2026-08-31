@@ -102,9 +102,9 @@ Cross-framework comparison, optimization work, and regression budgets are intent
 
 Benchmark and comparator infrastructure is EvolvePHP framework-development tooling. It is not required by applications built with EvolvePHP and is intentionally excluded from normal production application dependency graphs.
 
-Phase 6.5C1 establishes comparator fixture correctness, dependency isolation and reproducibility. It does not establish that EvolvePHP is faster than Laravel, Symfony, Slim or Phalcon.
+The comparator foundation establishes fixture correctness, dependency isolation and reproducibility. It does not establish that EvolvePHP is faster than Laravel, Symfony, Slim or Phalcon.
 
-Authoritative cross-framework performance measurements belong to Phase 6.5C2 and require the controlled PHP 8.4 benchmark environment.
+Authoritative cross-framework performance measurements require the documented controlled PHP 8.4 benchmark environment.
 
 ### Comparator Installation
 
@@ -138,7 +138,7 @@ The smoke command loads `benchmarks/comparators/matrix.json`, validates fixture 
 
 ### Comparator Versions
 
-The Phase 6.5C1 matrix records these selected versions and lockfile hashes:
+The comparator matrix records these selected versions and lockfile hashes:
 
 | Comparator | Package | Version | Constraint | Lockfile SHA-256 |
 | --- | --- | --- | --- | --- |
@@ -201,4 +201,4 @@ Local development machines without the extension are allowed to report Phalcon u
 
 ### Local Comparator Results
 
-Any local comparator output is local and non-canonical. It may prove fixture correctness, availability handling, schema shape and dependency isolation, but it must not be used as an authoritative performance comparison. Phase 6.5C2 owns controlled PHP 8.4 cross-framework measurement, normalization, publication and remediation decisions.
+Any local comparator output is local and non-canonical. It may prove fixture correctness, availability handling, schema shape and dependency isolation, but it must not be used as an authoritative performance comparison. Controlled cross-framework measurement, normalization, publication and remediation decisions must use the documented PHP 8.4 benchmark protocol.
