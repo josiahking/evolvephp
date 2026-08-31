@@ -256,9 +256,13 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
 
         $this->assertSame(0, $exitCode, 'git ls-files should succeed.');
 
-        return array_map(function ($file) {
+        $files = array_map(function ($file) {
             return str_replace('\\', '/', $file);
         }, $output);
+
+        return array_values(array_filter($files, function ($file) {
+            return ! str_contains($file, '/vendor/') && ! str_starts_with($file, 'vendor/');
+        }));
     }
 
     private function markdownHeadings($content)

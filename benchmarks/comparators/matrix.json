@@ -1,0 +1,199 @@
+{
+  "schema_version": "evolvephp.comparator.matrix.v1",
+  "common_scenarios": {
+    "application_boot": {
+      "id": "application_boot",
+      "description": "Application bootstrap and component initialization",
+      "category": "lifecycle"
+    },
+    "http_static": {
+      "id": "http_static",
+      "description": "HTTP GET request to /benchmark through the framework route path",
+      "category": "http",
+      "method": "GET",
+      "route_type": "static"
+    },
+    "http_parameterized": {
+      "id": "http_parameterized",
+      "description": "HTTP GET request to /benchmark/123 with framework route-parameter capture",
+      "category": "http",
+      "method": "GET",
+      "route_type": "parameterized"
+    },
+    "http_middleware": {
+      "id": "http_middleware",
+      "description": "HTTP GET request through five ordered framework middleware/listener layers",
+      "category": "http",
+      "method": "GET",
+      "route_type": "static",
+      "middleware_depth": 5
+    },
+    "http_not_found": {
+      "id": "http_not_found",
+      "description": "HTTP GET request to a genuinely unmatched path",
+      "category": "http",
+      "method": "GET",
+      "route_type": "not_found"
+    },
+    "http_repeated_warm": {
+      "id": "http_repeated_warm",
+      "description": "Repeated HTTP requests against a warm pre-booted application/kernel/container",
+      "category": "http",
+      "method": "GET",
+      "route_type": "static",
+      "warm": true
+    }
+  },
+  "comparators": [
+    {
+      "id": "evolvephp",
+      "name": "EvolvePHP",
+      "framework_package": "evolvephp/http",
+      "framework_version": "2.0.0-dev+9a0e741",
+      "composer_constraint": "^2.0@dev",
+      "fixture_version": 1,
+      "fixture_path": "evolvephp",
+      "fixture_bootstrap": "evolvephp/bootstrap.php",
+      "lock_path": "evolvephp/composer.lock",
+      "lock_sha256": "f792575ec5491c8d3aa171ba5f7de3b38558bfbd82b977beea45e603fd79e491",
+      "implementation_model": "pure-php",
+      "availability": "always",
+      "configuration": {
+        "model": "Evolve HTTP kernel, route matcher, routing handler and middleware dispatcher",
+        "debug": false,
+        "io": "none"
+      },
+      "scenarios": [
+        "application_boot",
+        "http_static",
+        "http_parameterized",
+        "http_middleware",
+        "http_not_found",
+        "http_repeated_warm"
+      ],
+      "notes": "EvolvePHP-only lifecycle evidence remains outside this cross-framework scenario matrix."
+    },
+    {
+      "id": "laravel",
+      "name": "Laravel",
+      "framework_package": "laravel/framework",
+      "framework_version": "13.29.0",
+      "composer_constraint": "13.29.0",
+      "fixture_version": 1,
+      "fixture_path": "laravel",
+      "fixture_bootstrap": "laravel/bootstrap.php",
+      "lock_path": "laravel/composer.lock",
+      "lock_sha256": "33b4d04706fa39dffc1d71a7d2d03f09651555afead629e31f9229adcdc86354",
+      "implementation_model": "pure-php",
+      "availability": "always",
+      "configuration": {
+        "model": "Illuminate routing dispatcher with framework router and middleware aliases",
+        "debug": false,
+        "io": "none",
+        "composer_platform_override": "--ignore-platform-req=ext-fileinfo used only while creating this lockfile on the local PHP CLI"
+      },
+      "scenarios": [
+        "application_boot",
+        "http_static",
+        "http_parameterized",
+        "http_middleware",
+        "http_not_found",
+        "http_repeated_warm"
+      ],
+      "notes": "Laravel 13.29.0 is exactly pinned as the accepted current-stable comparator version."
+    },
+    {
+      "id": "symfony",
+      "name": "Symfony",
+      "framework_package": "symfony/http-kernel",
+      "framework_version": "8.1.5",
+      "composer_constraint": "8.1.5",
+      "fixture_version": 1,
+      "fixture_path": "symfony",
+      "fixture_bootstrap": "symfony/bootstrap.php",
+      "lock_path": "symfony/composer.lock",
+      "lock_sha256": "d93fdac19b2cdd5379e5700a8146bb705c9b516c9ec9a0709dcd785be9b1e1d6",
+      "implementation_model": "pure-php",
+      "availability": "always",
+      "configuration": {
+        "model": "Symfony HttpKernel, RouterListener, RouteCollection and EventDispatcher",
+        "components": {
+          "symfony/event-dispatcher": "8.1.5",
+          "symfony/http-foundation": "8.1.5",
+          "symfony/http-kernel": "8.1.5",
+          "symfony/routing": "8.1.5"
+        },
+        "debug": false,
+        "io": "none"
+      },
+      "scenarios": [
+        "application_boot",
+        "http_static",
+        "http_parameterized",
+        "http_middleware",
+        "http_not_found",
+        "http_repeated_warm"
+      ],
+      "notes": "The Symfony comparator models the accepted Symfony 8.1 framework line through HttpKernel, RouterListener, RouteCollection and EventDispatcher."
+    },
+    {
+      "id": "slim",
+      "name": "Slim",
+      "framework_package": "slim/slim",
+      "framework_version": "4.15.2",
+      "composer_constraint": "4.15.2",
+      "fixture_version": 1,
+      "fixture_path": "slim",
+      "fixture_bootstrap": "slim/bootstrap.php",
+      "lock_path": "slim/composer.lock",
+      "lock_sha256": "87370678970fe51c62c6a4cd4e4ca7b3600b22c84a2a5b920e2b8527a2e089a7",
+      "implementation_model": "pure-php",
+      "availability": "always",
+      "configuration": {
+        "model": "Slim AppFactory application with route and error middleware",
+        "psr7": "nyholm/psr7 1.8.2",
+        "debug": false,
+        "io": "none"
+      },
+      "scenarios": [
+        "application_boot",
+        "http_static",
+        "http_parameterized",
+        "http_middleware",
+        "http_not_found",
+        "http_repeated_warm"
+      ],
+      "notes": "Slim PSR-7 dependencies are local to this comparator root."
+    },
+    {
+      "id": "phalcon",
+      "name": "Phalcon",
+      "framework_package": "ext-phalcon",
+      "framework_version": "5.20.3",
+      "expected_extension_version": "5.20.3",
+      "composer_constraint": "suggest ext-phalcon 5.20.3",
+      "fixture_version": 1,
+      "fixture_path": "phalcon",
+      "fixture_bootstrap": "phalcon/bootstrap.php",
+      "lock_path": "phalcon/composer.lock",
+      "lock_sha256": "1e6b5f4b3d70a3e0d5a74eaa55dec95bde1e1d2b33e1c64dc4a737ad8cd01562",
+      "implementation_model": "compiled-extension",
+      "availability": "conditional",
+      "availability_condition": "phalcon extension loaded",
+      "configuration": {
+        "model": "Phalcon Mvc Micro when extension is loaded; deterministic unavailable report otherwise",
+        "debug": false,
+        "io": "none"
+      },
+      "scenarios": [
+        "application_boot",
+        "http_static",
+        "http_parameterized",
+        "http_middleware",
+        "http_not_found",
+        "http_repeated_warm"
+      ],
+      "notes": "No fake timing data is emitted when the Phalcon extension is unavailable."
+    }
+  ]
+}

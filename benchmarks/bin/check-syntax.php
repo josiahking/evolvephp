@@ -8,6 +8,7 @@ $paths = [
     $benchmarkRoot . DIRECTORY_SEPARATOR . 'src',
     $benchmarkRoot . DIRECTORY_SEPARATOR . 'benchmarks',
     $benchmarkRoot . DIRECTORY_SEPARATOR . 'tests',
+    $benchmarkRoot . DIRECTORY_SEPARATOR . 'comparators',
 ];
 $failures = [];
 
@@ -16,6 +17,10 @@ foreach ($paths as $path) {
 
     foreach ($iterator as $file) {
         if (!$file instanceof SplFileInfo || $file->getExtension() !== 'php') {
+            continue;
+        }
+
+        if (in_array('vendor', explode(DIRECTORY_SEPARATOR, $file->getPathname()), true)) {
             continue;
         }
 
