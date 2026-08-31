@@ -1,0 +1,15 @@
+{
+  "name": "evolvephp/benchmark-laravel",
+  "description": "Laravel comparator fixture",
+  "type": "project",
+  "license": "BSD-3-Clause",
+  "require": {
+    "php": "^8.4",
+    "laravel/framework": "13.29.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Benchmark\\Laravel\\": "src/"
+    }
+  }
+}

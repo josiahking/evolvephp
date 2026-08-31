@@ -1,0 +1,17 @@
+{
+  "name": "evolvephp/benchmark-phalcon",
+  "description": "Phalcon comparator fixture",
+  "type": "project",
+  "license": "BSD-3-Clause",
+  "require": {
+    "php": "^8.4"
+  },
+  "suggest": {
+    "ext-phalcon": "Version 5.20.3 is required to run the available Phalcon comparator path; absence is reported as unavailable."
+  },
+  "autoload": {
+    "psr-4": {
+      "Benchmark\\Phalcon\\": "src/"
+    }
+  }
+}

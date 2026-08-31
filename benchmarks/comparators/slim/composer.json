@@ -1,0 +1,16 @@
+{
+  "name": "evolvephp/benchmark-slim",
+  "description": "Slim comparator fixture",
+  "type": "project",
+  "license": "BSD-3-Clause",
+  "require": {
+    "php": "^8.4",
+    "nyholm/psr7": "^1.8",
+    "slim/slim": "4.15.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Benchmark\\Slim\\": "src/"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "evolvephp/benchmark-evolvephp",
+  "description": "EvolvePHP comparator fixture",
+  "type": "project",
+  "license": "BSD-3-Clause",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../../../packages/*",
+      "options": {
+        "versions": {
+          "evolvephp/contracts": "2.0.x-dev",
+          "evolvephp/core": "2.0.x-dev",
+          "evolvephp/http": "2.0.x-dev",
+          "evolvephp/module": "2.0.x-dev",
+          "evolvephp/plugin": "2.0.x-dev",
+          "evolvephp/testing": "2.0.x-dev"
+        },
+        "reference": "config"
+      }
+    }
+  ],
+  "require": {
+    "php": "^8.4",
+    "evolvephp/core": "^2.0@dev",
+    "evolvephp/http": "^2.0@dev",
+    "nyholm/psr7": "^1.8"
+  },
+  "autoload": {
+    "psr-4": {
+      "Benchmark\\EvolvePHP\\": "src/"
+    }
+  }
+}
