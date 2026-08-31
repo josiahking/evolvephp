@@ -124,6 +124,34 @@ final class FixtureCorrectnessTest extends TestCase
         self::assertSame('bench.application.9', $bench->applicationServiceId());
     }
 
+    public function testHttpKernelBenchmarkPreparesKernelThroughBeforeMethods(): void
+    {
+        $bench = new \Evolve\Benchmarks\PhpBench\Http\HttpKernelBench();
+        $scenarioMethod = new \ReflectionMethod(\Evolve\Benchmarks\PhpBench\Http\HttpKernelBench::class, 'benchHttpKernelScenario');
+        $setupMethod = new \ReflectionMethod(\Evolve\Benchmarks\PhpBench\Http\HttpKernelBench::class, 'setUpKernelScenario');
+
+        self::assertNotEmpty($scenarioMethod->getAttributes('PhpBench\\Attributes\\BeforeMethods'));
+        self::assertSame(['setUpKernelScenario'], $scenarioMethod->getAttributes('PhpBench\\Attributes\\BeforeMethods')[0]->newInstance()->methods);
+        self::assertNotEmpty($setupMethod);
+
+        $bench->setUpKernelScenario(['scenario' => 'static']);
+        $bench->handlePreparedKernelRequest();
+        self::assertSame('static', $this->readScenario($bench));
+    }
+
+    public function testWarmStaticBenchmarkUsesPreparedKernelAndWarmupExecution(): void
+    {
+        $bench = new \Evolve\Benchmarks\PhpBench\Http\HttpKernelBench();
+        $warmMethod = new \ReflectionMethod(\Evolve\Benchmarks\PhpBench\Http\HttpKernelBench::class, 'benchRepeatedWarmStaticRequestsThroughSameKernel');
+
+        self::assertNotEmpty($warmMethod->getAttributes('PhpBench\\Attributes\\BeforeMethods'));
+        self::assertSame(['setUpWarmStaticScenario'], $warmMethod->getAttributes('PhpBench\\Attributes\\BeforeMethods')[0]->newInstance()->methods);
+
+        $bench->setUpWarmStaticScenario();
+        $bench->handlePreparedKernelRequest();
+        self::assertSame('static', $this->readScenario($bench));
+    }
+
     public function testFirstResolutionBenchmarkMethodsDeclareSingleRevAndZeroWarmup(): void
     {
         $appMethod = new \ReflectionMethod(\Evolve\Benchmarks\PhpBench\Core\ContainerResolutionBench::class, 'benchApplicationFirstResolution');
@@ -133,6 +161,14 @@ final class FixtureCorrectnessTest extends TestCase
         self::assertSame([0], $this->warmupFor($appMethod));
         self::assertSame([1], $this->revsFor($executionMethod));
         self::assertSame([0], $this->warmupFor($executionMethod));
+    }
+
+    private function readScenario(object $bench): string
+    {
+        $reflection = new \ReflectionProperty($bench, 'scenario');
+        $reflection->setAccessible(true);
+
+        return $reflection->getValue($bench);
     }
 
     private function revsFor(\ReflectionMethod $method): array

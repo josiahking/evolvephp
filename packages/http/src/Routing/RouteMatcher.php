@@ -33,8 +33,22 @@ final readonly class RouteMatcher
         $method = $request->getMethod();
         $path = $request->getUri()->getPath();
 
+        $candidateSegments = null;
+        $segmentsParsed = false;
+
         foreach ($this->compiledRoutes as $entry) {
-            $parameters = $entry['pattern']->match($path);
+            $pattern = $entry['pattern'];
+
+            if ($pattern->isStatic()) {
+                $parameters = $pattern->match($path);
+            } else {
+                if (!$segmentsParsed) {
+                    $candidateSegments = $this->parseCandidate($path);
+                    $segmentsParsed = true;
+                }
+
+                $parameters = $pattern->matchSegments($candidateSegments);
+            }
 
             if ($parameters === null) {
                 continue;
@@ -53,13 +67,44 @@ final readonly class RouteMatcher
     /**
      * @return list<string>
      */
+    private function parseCandidate(string $path): array
+    {
+        if ($path === '') {
+            return [];
+        }
+
+        if ($path[0] !== '/') {
+            return [];
+        }
+
+        return $path === '/' ? [] : explode('/', substr($path, 1));
+    }
+
+    /**
+     * @return list<string>
+     */
     public function allowedMethods(string $path): array
     {
         $methods = [];
         $seen = [];
+        $candidateSegments = null;
+        $segmentsParsed = false;
 
         foreach ($this->compiledRoutes as $entry) {
-            if ($entry['pattern']->match($path) === null) {
+            $pattern = $entry['pattern'];
+
+            if ($pattern->isStatic()) {
+                $matches = $pattern->match($path) !== null;
+            } else {
+                if (!$segmentsParsed) {
+                    $candidateSegments = $this->parseCandidate($path);
+                    $segmentsParsed = true;
+                }
+
+                $matches = $pattern->matchSegments($candidateSegments) !== null;
+            }
+
+            if (!$matches) {
                 continue;
             }
 
