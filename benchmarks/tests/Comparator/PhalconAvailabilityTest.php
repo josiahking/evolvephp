@@ -27,13 +27,16 @@ final class PhalconAvailabilityTest extends TestCase
 
     public function testPhalconUnavailableReturnsConsistentStructure(): void
     {
-        // If extension is not available, the structure must still be deterministic
         $availability = PhalconAvailability::detect();
 
-        if (!$availability['available']) {
-            $this->assertFalse($availability['extension_present']);
-            $this->assertSame('unavailable', $availability['status']);
+        if ($availability['available']) {
+            $this->markTestSkipped(
+                'Phalcon extension is loaded; unavailable-state assertions are not applicable.'
+            );
         }
+
+        $this->assertFalse($availability['extension_present']);
+        $this->assertSame('unavailable', $availability['status']);
     }
 
     public function testPhalconAvailabilityCanBeMarkedUnavailable(): void

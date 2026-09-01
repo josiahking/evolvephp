@@ -159,7 +159,7 @@ final class PhalconComparatorFixture implements PreparedComparatorFixture
     {
         $applicationClass = 'Phalcon\\Mvc\\Micro';
         $responseClass = 'Phalcon\\Http\\Response';
-        $notFoundHandler = static function () use ($responseClass): object {
+        $notFoundHandler = function () use ($responseClass): object {
             $response = new $responseClass();
             $response->setStatusCode(404);
             $response->setContent('phalcon:not-found');
@@ -172,7 +172,7 @@ final class PhalconComparatorFixture implements PreparedComparatorFixture
 
         if ($middlewareState !== null) {
             foreach ([1, 2, 3, 4, 5] as $index) {
-                $app->before(static function () use ($middlewareState, $index): bool {
+                $app->before(function () use ($middlewareState, $index): bool {
                     $middlewareState->order[] = $index;
 
                     return true;
@@ -180,21 +180,21 @@ final class PhalconComparatorFixture implements PreparedComparatorFixture
             }
         }
 
-        $app->get('/benchmark', static function () use ($responseClass): object {
+        $app->get('/benchmark', function () use ($responseClass): object {
             $response = new $responseClass();
             $response->setStatusCode(200);
             $response->setContent('phalcon:static');
 
             return $response;
         });
-        $app->get('/benchmark/{id}', static function (string $id) use ($responseClass): object {
+        $app->get('/benchmark/{id}', function (string $id) use ($responseClass): object {
             $response = new $responseClass();
             $response->setStatusCode(200);
             $response->setContent('phalcon:parameterized:' . $id);
 
             return $response;
         });
-        $app->get('/benchmark-middleware', static function () use ($responseClass): object {
+        $app->get('/benchmark-middleware', function () use ($responseClass): object {
             $response = new $responseClass();
             $response->setStatusCode(200);
             $response->setContent('phalcon:middleware');
