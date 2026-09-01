@@ -19,7 +19,6 @@ final class ComparatorMatrix
      */
     private function __construct(
         private readonly array $data,
-        private readonly string $baseDir = '',
     ) {}
 
     public static function fromJsonFile(string $path): self
@@ -49,7 +48,7 @@ final class ComparatorMatrix
         // Validate schema version
         if (($data['schema_version'] ?? null) !== self::SCHEMA_VERSION) {
             throw new ComparatorMatrixException(
-                'Invalid schema version. Expected: ' . self::SCHEMA_VERSION . ', Got: ' . ($data['schema_version'] ?? 'null')
+                'Invalid schema version. Expected: ' . self::SCHEMA_VERSION . ', Got: ' . ($data['schema_version'] ?? 'null'),
             );
         }
 
@@ -132,27 +131,27 @@ final class ComparatorMatrix
                 $fixturePath = $baseDir . DIRECTORY_SEPARATOR . trim((string) $comparator['fixture_path'], '/\\');
                 if (!is_dir($fixturePath)) {
                     throw new ComparatorMatrixException(
-                        "Fixture directory not found for comparator '{$id}': {$fixturePath}"
+                        "Fixture directory not found for comparator '{$id}': {$fixturePath}",
                     );
                 }
 
                 $bootstrapPath = $baseDir . DIRECTORY_SEPARATOR . trim((string) $comparator['fixture_bootstrap'], '/\\');
                 if (!is_file($bootstrapPath)) {
                     throw new ComparatorMatrixException(
-                        "Fixture bootstrap not found for comparator '{$id}': {$bootstrapPath}"
+                        "Fixture bootstrap not found for comparator '{$id}': {$bootstrapPath}",
                     );
                 }
 
                 $lockPath = $baseDir . DIRECTORY_SEPARATOR . trim((string) $comparator['lock_path'], '/\\');
                 if (!is_file($lockPath)) {
                     throw new ComparatorMatrixException(
-                        "Lockfile not found for comparator '{$id}': {$lockPath}"
+                        "Lockfile not found for comparator '{$id}': {$lockPath}",
                     );
                 }
             }
 
             // Validate scenarios
-            $scenarios = $comparator['scenarios'] ?? [];
+            $scenarios = $comparator['scenarios'];
             if (!is_array($scenarios)) {
                 throw new ComparatorMatrixException("Scenarios for comparator '{$id}' must be an array");
             }
@@ -164,7 +163,7 @@ final class ComparatorMatrix
             }
         }
 
-        return new self($data, $baseDir);
+        return new self($data);
     }
 
     /**
@@ -178,7 +177,7 @@ final class ComparatorMatrix
         // Ensure stable ordering
         usort($comparators, static fn(array $a, array $b): int => strcmp(
             (string) $a['id'],
-            (string) $b['id']
+            (string) $b['id'],
         ));
 
         foreach ($comparators as $comparator) {

@@ -49,7 +49,7 @@
       "id": "evolvephp",
       "name": "EvolvePHP",
       "framework_package": "evolvephp/http",
-      "framework_version": "2.0.0-dev+9a0e741",
+      "framework_version": "2.0.x-dev",
       "composer_constraint": "^2.0@dev",
       "fixture_version": 1,
       "fixture_path": "evolvephp",

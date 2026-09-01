@@ -76,6 +76,22 @@ Normalize an XML result:
 php benchmarks\bin\normalize-results.php --input benchmarks\results\local\phpbench.xml --output benchmarks\results\local\normalized-results.json
 ```
 
+Run the controlled comparator preflight:
+
+```powershell
+php benchmarks\bin\comparator-preflight.php
+```
+
+Run controlled comparator execution:
+
+```powershell
+php benchmarks\bin\comparator-run.php --output=benchmarks\results\local\comparator-candidate --samples=100 --warmups=5 --request-count=25
+```
+
+Each controlled comparator run requires a fresh output directory. The output path must be absent or empty before execution starts; the runner fails before writing new evidence when the path already contains files or directories.
+
+The runner performs the controlled-lane preflight before any measured worker is started. If PHP version, OPcache CLI state, JIT state, Phalcon extension version, or the required extension lane does not match, the command writes machine-readable preflight evidence and exits non-zero without writing raw or normalized timing artifacts.
+
 ## Scenarios
 
 Internal scenarios cover application boot/component preparation, service resolution for application, execution and transient lifetimes, execution orchestration with no sink versus a no-op sink, reset participant overhead, and persistent-style sequential execution evidence.
@@ -136,13 +152,27 @@ php benchmarks\bin\comparator-smoke.php
 
 The smoke command loads `benchmarks/comparators/matrix.json`, validates fixture paths and lockfiles, exercises the common scenarios, reports Phalcon unavailable when the extension is missing, and exits non-zero if an available comparator is broken. It emits no rankings and makes no performance claims.
 
+Smoke output is correctness output only. It is deliberately separate from controlled comparator execution and must not be treated as timed evidence.
+
+### Controlled Comparator Execution
+
+Controlled comparator execution uses `benchmarks/bin/comparator-run.php`. The parent runner loads the matrix, verifies preflight, selects one comparator or the full matrix, selects accepted scenarios, and launches a subprocess per measured sample. Each sample subprocess loads only the minimal worker harness and the selected comparator fixture root, executes bounded warmups, records one measured sample, and returns raw JSON to the parent runner.
+
+The runner writes raw result files, normalized result files, and `manifest.json` under the selected output directory. The manifest records the exact command for every subprocess, execution order, source SHA and dirty state, matrix SHA-256, fixture identity, comparator lock SHA-256, implementation model, execution environment identity/fingerprint, worker runtime identity, availability state, raw result path/hash, per-sample raw hashes, and normalized result path/hash.
+
+Broken available comparators produce a non-zero runner exit. Unavailable comparators, including Phalcon without the required extension, are recorded as unavailable with an explicit reason and no fabricated timing samples.
+
+The process-isolation model is subprocess per measured sample. Laravel, Symfony, Slim, Phalcon, and EvolvePHP comparator dependencies are not loaded into one long-lived measurement process. Accepted samples must report the same worker runtime identity as the accepted preflight lane before they are normalized. Comparator evidence uses the full execution environment identity for shared machine/tooling conditions and uses worker runtime identity only to prove child-process conformance.
+
+`application_boot` is intentionally cold inside each measured worker: it receives zero in-process subject warmups, so the measured boot is the first framework/application construction in that worker. Warm HTTP and repeated-warm scenarios keep the configured in-process subject warmups because their timing boundary starts after framework preparation. Any future boot discard warmups must run in separate discarded worker processes, not inside the measured worker process.
+
 ### Comparator Versions
 
 The comparator matrix records these selected versions and lockfile hashes:
 
 | Comparator | Package | Version | Constraint | Lockfile SHA-256 |
 | --- | --- | --- | --- | --- |
-| EvolvePHP | `evolvephp/http` | `2.0.0-dev+9a0e741` | `^2.0@dev` | `f792575ec5491c8d3aa171ba5f7de3b38558bfbd82b977beea45e603fd79e491` |
+| EvolvePHP | `evolvephp/http` | `2.0.x-dev` | `^2.0@dev` | `f792575ec5491c8d3aa171ba5f7de3b38558bfbd82b977beea45e603fd79e491` |
 | Laravel | `laravel/framework` | `13.29.0` | `13.29.0` | `33b4d04706fa39dffc1d71a7d2d03f09651555afead629e31f9229adcdc86354` |
 | Symfony | `symfony/http-kernel` | `8.1.5` | `8.1.5` | `d93fdac19b2cdd5379e5700a8146bb705c9b516c9ec9a0709dcd785be9b1e1d6` |
 | Slim | `slim/slim` | `4.15.2` | `4.15.2` | `87370678970fe51c62c6a4cd4e4ca7b3600b22c84a2a5b920e2b8527a2e089a7` |
@@ -154,14 +184,18 @@ The Symfony fixture represents the Symfony 8.1 framework line using `symfony/eve
 
 The matrix uses only these stable cross-framework scenario IDs:
 
-- `application_boot`: application/bootstrap setup for the selected fixture model.
-- `http_static`: `GET /benchmark`, routed through the normal framework path, HTTP 200, deterministic body.
-- `http_parameterized`: `GET /benchmark/123`, with route parameter capture proven by the response and smoke metadata.
-- `http_middleware`: `GET /benchmark-middleware`, with five ordered middleware/listener layers proven by smoke metadata.
-- `http_not_found`: `GET /benchmark-missing`, a genuinely unmatched path using the normal not-found path.
-- `http_repeated_warm`: repeated `GET /benchmark` requests against one pre-booted reusable app/kernel/container.
+- `application_boot`: application/bootstrap setup for the selected fixture model. Framework construction is inside the measured subject.
+- `http_static`: `GET /benchmark`, routed through the normal framework path, HTTP 200, deterministic body. Application/router/kernel preparation is outside the measured subject.
+- `http_parameterized`: `GET /benchmark/123`, with route parameter capture proven by the response and smoke metadata. Application/router/kernel preparation is outside the measured subject.
+- `http_middleware`: `GET /benchmark-middleware`, with five ordered middleware/listener layers proven by smoke metadata. Application/router/kernel preparation is outside the measured subject.
+- `http_not_found`: `GET /benchmark-missing`, a genuinely unmatched path using the normal not-found path. Application/router/kernel preparation is outside the measured subject.
+- `http_repeated_warm`: repeated `GET /benchmark` requests against one pre-booted reusable app/kernel/container. One prepared framework instance is reused for the configured request count.
 
 The timed workload for these scenarios must not perform database access, network calls, template rendering, filesystem I/O, session storage, external cache access, queues, or application business logic.
+
+The runner stores warmup counts and sample counts in the manifest. Percentiles in normalized output follow the schema rules: p95 requires at least 20 samples and p99 requires at least 100 samples, otherwise the percentile status is `insufficient_samples`.
+
+For `http_repeated_warm`, one raw sample records the batch duration for the configured request count. Normalized latency and throughput are reported per request through `operations_per_sample`; the raw batch durations remain in raw evidence.
 
 ### Dependency Isolation
 
@@ -182,13 +216,17 @@ benchmarks/comparators/phalcon/composer.lock
 
 Laravel, Symfony, Slim and Phalcon comparator dependencies are not installed into `benchmarks/composer.json`, any `packages/*/composer.json`, the root production dependency graph, or the application skeleton.
 
+Measurement workers do not load `benchmarks/vendor/autoload.php`. They load only minimal benchmark harness files needed by the worker and the selected comparator's own autoload root.
+
 ### Environment Identity vs Fixture Identity
 
-Execution environment identity represents shared benchmark conditions: PHP version, SAPI, operating system, CPU, memory, OPcache, JIT, loaded extensions and benchmark execution tooling. It intentionally excludes comparator lockfile hashes.
+Execution environment identity represents shared benchmark conditions: PHP version, SAPI, operating system, CPU, memory, Composer version, PHPBench version, OPcache, JIT, loaded extensions and benchmark execution tooling. It intentionally excludes comparator lockfile hashes.
 
 Fixture identity represents comparator-specific state: comparator/framework, exact version, fixture version, configuration, Composer lock hash and implementation model.
 
 Two comparators with different dependency lockfiles can share the same execution environment identity when they run under the same controlled PHP 8.4 benchmark environment.
+
+The EvolvePHP comparator framework identity uses the stable development line `2.0.x-dev`. The exact measured source SHA and dirty state are recorded separately in evidence metadata and the manifest.
 
 ### Phalcon Availability
 
@@ -199,6 +237,16 @@ Phalcon is extension-backed. The Phalcon fixture records two deterministic state
 
 Local development machines without the extension are allowed to report Phalcon unavailable. That is not performance evidence and not a fixture failure.
 
+The middleware scenario uses Phalcon Micro before handlers to represent five framework event layers before the final route handler.
+
 ### Local Comparator Results
 
 Any local comparator output is local and non-canonical. It may prove fixture correctness, availability handling, schema shape and dependency isolation, but it must not be used as an authoritative performance comparison. Controlled cross-framework measurement, normalization, publication and remediation decisions must use the documented PHP 8.4 benchmark protocol.
+
+### Candidate and Reference Evidence
+
+Candidate evidence is useful while developing or reviewing the harness. Store it under ignored local paths such as `benchmarks/results/local/comparator-candidate/`. Candidate evidence must be labelled local or candidate unless it is generated from the committed implementation reference in the controlled lane.
+
+Canonical reference evidence requires PHP exactly 8.4.25, OPcache enabled for CLI, JIT disabled, the same php.ini/configuration and extension set for all comparator processes, and ext-phalcon 5.20.3 loaded when the five-framework lane is claimed. Shared GitHub-hosted runner wall-clock timing is not authoritative comparator evidence.
+
+The public reporting policy is a non-ranking policy. Per-scenario evidence and limitations may be published, but broad claims such as fastest framework, top-three placement, composite rankings, or one framework generally beating another belong to later accepted performance-budget work.

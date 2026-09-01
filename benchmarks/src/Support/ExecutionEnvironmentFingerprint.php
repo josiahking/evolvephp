@@ -45,7 +45,7 @@ final class ExecutionEnvironmentFingerprint
     }
 
     /**
-     * @param array<string, mixed> $value
+     * @param array<mixed> $value
      */
     private static function sortRecursive(array &$value): void
     {
