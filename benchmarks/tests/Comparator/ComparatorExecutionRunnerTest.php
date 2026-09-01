@@ -331,6 +331,462 @@ PHP);
         self::assertNull($normalized['baseline_result']);
     }
 
+    public function testApplicationBootRunsOneDiscardedWorkerBeforeEveryMeasuredSampleAndExcludesDiscardedTiming(): void
+    {
+        $preflight = $this->matchedCurrentPreflight();
+        $worker = $this->writeCountingWorker((string) $preflight['worker_environment_identity']['hash']);
+
+        $runner = new ComparatorExecutionRunner(PHP_BINARY);
+        $manifest = $runner->run(
+            dirname(__DIR__, 2) . '/comparators/matrix.json',
+            $this->outputDir,
+            [
+                'comparators' => ['evolvephp'],
+                'scenarios' => ['application_boot'],
+                'samples' => 2,
+                'warmups' => 5,
+                'request_count' => 1,
+                'preflight' => $preflight,
+                'worker_path' => $worker,
+            ],
+        );
+
+        self::assertSame([
+            'discarded_worker_processes_per_measured_sample' => 1,
+            'sample_order' => 'rotating_round_robin',
+            'measured_worker_in_process_warmups' => 0,
+            'outlier_policy' => 'retain_all_measured_samples',
+            'primary_central_statistic' => 'p50',
+        ], $manifest['boot_protocol']);
+        self::assertSame('completed', $manifest['status']);
+        self::assertCount(4, $manifest['boot_worker_execution_sequence']);
+        self::assertSame(['discarded', 'measured', 'discarded', 'measured'], array_column($manifest['boot_worker_execution_sequence'], 'role'));
+        self::assertSame([true, false, true, false], array_column($manifest['boot_worker_execution_sequence'], 'excluded_from_statistics'));
+        self::assertSame([1, 1, 2, 2], array_column($manifest['boot_worker_execution_sequence'], 'sample_index'));
+        self::assertSame(['available', 'available', 'available', 'available'], array_column($manifest['boot_worker_execution_sequence'], 'availability'));
+        self::assertSame(
+            array_column($manifest['boot_worker_execution_sequence'], 'worker_environment_identity_hash'),
+            array_fill(0, 4, $preflight['worker_environment_identity']['hash']),
+        );
+
+        foreach (array_chunk($manifest['boot_worker_execution_sequence'], 2) as $pair) {
+            self::assertSame('discarded', $pair[0]['role']);
+            self::assertSame('measured', $pair[1]['role']);
+            self::assertTrue($pair[0]['excluded_from_statistics']);
+            self::assertFalse($pair[1]['excluded_from_statistics']);
+            self::assertSame($pair[0]['comparator_id'], $pair[1]['comparator_id']);
+            self::assertSame($pair[0]['sample_index'], $pair[1]['sample_index']);
+            self::assertNotSame($pair[0]['pid'], $pair[1]['pid']);
+        }
+
+        $result = $manifest['results'][0];
+        self::assertSame('application_boot', $result['scenario_id']);
+        self::assertSame(2, $result['sample_count']);
+        self::assertCount(2, $result['commands']);
+        self::assertCount(2, $result['raw_samples']);
+        self::assertCount(2, $result['discarded_worker_provenance']);
+
+        $raw = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $result['raw_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+        self::assertSame(0, $raw['warmups']);
+        self::assertSame(2, $raw['sample_count']);
+        self::assertSame([2.0, 4.0], array_map('floatval', $raw['samples']));
+        self::assertCount(2, $raw['raw_samples']);
+        self::assertCount(2, $raw['discarded_worker_provenance']);
+        self::assertSame([1.0, 3.0], array_map('floatval', array_column($raw['discarded_worker_provenance'], 'duration_microseconds')));
+        self::assertSame([true, true], array_column($raw['discarded_worker_provenance'], 'excluded_from_statistics'));
+
+        $normalized = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $result['normalized_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+        self::assertSame(2, $normalized['baseline_result']['scenarios'][0]['sample_count']);
+        self::assertSame(3.0, (float) $normalized['baseline_result']['scenarios'][0]['p50']);
+    }
+
+    public function testApplicationBootUsesDeterministicRotatingRoundRobinAcrossComparators(): void
+    {
+        $preflight = $this->matchedCurrentPreflight();
+        $worker = $this->writeCountingWorker((string) $preflight['worker_environment_identity']['hash']);
+
+        $runner = new ComparatorExecutionRunner(PHP_BINARY);
+        $manifest = $runner->run(
+            dirname(__DIR__, 2) . '/comparators/matrix.json',
+            $this->outputDir,
+            [
+                'comparators' => ['evolvephp', 'slim', 'symfony'],
+                'scenarios' => ['application_boot'],
+                'samples' => 3,
+                'warmups' => 0,
+                'request_count' => 1,
+                'preflight' => $preflight,
+                'worker_path' => $worker,
+            ],
+        );
+
+        $slots = [];
+
+        foreach (array_chunk($manifest['boot_worker_execution_sequence'], 2) as $pair) {
+            self::assertSame('discarded', $pair[0]['role']);
+            self::assertSame('measured', $pair[1]['role']);
+            self::assertTrue($pair[0]['excluded_from_statistics']);
+            self::assertFalse($pair[1]['excluded_from_statistics']);
+            self::assertSame($pair[0]['comparator_id'], $pair[1]['comparator_id']);
+            self::assertSame($pair[0]['sample_index'], $pair[1]['sample_index']);
+            $slots[] = $pair[1]['comparator_id'] . ':' . $pair[1]['sample_index'];
+        }
+
+        self::assertSame([
+            'evolvephp:1',
+            'slim:1',
+            'symfony:1',
+            'slim:2',
+            'symfony:2',
+            'evolvephp:2',
+            'symfony:3',
+            'evolvephp:3',
+            'slim:3',
+        ], $slots);
+        self::assertSame([
+            'evolvephp:application_boot',
+            'slim:application_boot',
+            'symfony:application_boot',
+        ], $manifest['execution_order']);
+    }
+
+    public function testDiscardedApplicationBootWorkerRuntimeMismatchFailsClosed(): void
+    {
+        $preflight = $this->matchedCurrentPreflight();
+        $worker = $this->writeCountingWorker(
+            (string) $preflight['worker_environment_identity']['hash'],
+            '1111111111111111111111111111111111111111111111111111111111111111',
+            [1],
+        );
+
+        $runner = new ComparatorExecutionRunner(PHP_BINARY);
+        $manifest = $runner->run(
+            dirname(__DIR__, 2) . '/comparators/matrix.json',
+            $this->outputDir,
+            [
+                'comparators' => ['evolvephp'],
+                'scenarios' => ['application_boot'],
+                'samples' => 1,
+                'warmups' => 0,
+                'request_count' => 1,
+                'preflight' => $preflight,
+                'worker_path' => $worker,
+            ],
+        );
+
+        self::assertSame('failed', $manifest['status']);
+        self::assertSame('failed', $manifest['results'][0]['availability']);
+        self::assertSame('discarded boot worker runtime identity did not match accepted preflight lane', $manifest['results'][0]['reason']);
+        self::assertSame(1, $manifest['results'][0]['exit_code']);
+        self::assertSame(0, $manifest['results'][0]['sample_count']);
+        self::assertSame([], $manifest['results'][0]['raw_samples']);
+        self::assertCount(1, $manifest['boot_worker_execution_sequence']);
+        self::assertSame('discarded', $manifest['boot_worker_execution_sequence'][0]['role']);
+        self::assertSame(0, $manifest['boot_worker_execution_sequence'][0]['exit_code']);
+        self::assertTrue($manifest['boot_worker_execution_sequence'][0]['excluded_from_statistics']);
+
+        $normalized = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['normalized_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+
+        self::assertSame('failed', $normalized['availability']);
+        self::assertNull($normalized['baseline_result']);
+    }
+
+    public function testMeasuredApplicationBootWorkerRuntimeMismatchFailsClosedWithNonZeroAggregateExitCode(): void
+    {
+        $preflight = $this->matchedCurrentPreflight();
+        $worker = $this->writeCountingWorker(
+            (string) $preflight['worker_environment_identity']['hash'],
+            '2222222222222222222222222222222222222222222222222222222222222222',
+            [2],
+        );
+
+        $runner = new ComparatorExecutionRunner(PHP_BINARY);
+        $manifest = $runner->run(
+            dirname(__DIR__, 2) . '/comparators/matrix.json',
+            $this->outputDir,
+            [
+                'comparators' => ['evolvephp'],
+                'scenarios' => ['application_boot'],
+                'samples' => 1,
+                'warmups' => 0,
+                'request_count' => 1,
+                'preflight' => $preflight,
+                'worker_path' => $worker,
+            ],
+        );
+
+        self::assertSame('failed', $manifest['status']);
+        self::assertSame('failed', $manifest['results'][0]['availability']);
+        self::assertSame('measurement worker runtime identity did not match accepted preflight lane', $manifest['results'][0]['reason']);
+        self::assertSame(1, $manifest['results'][0]['exit_code']);
+        self::assertSame(0, $manifest['results'][0]['sample_count']);
+        self::assertSame([], $manifest['results'][0]['raw_samples']);
+        self::assertCount(2, $manifest['boot_worker_execution_sequence']);
+        self::assertSame(['discarded', 'measured'], array_column($manifest['boot_worker_execution_sequence'], 'role'));
+        self::assertSame([true, false], array_column($manifest['boot_worker_execution_sequence'], 'excluded_from_statistics'));
+        self::assertSame([0, 0], array_column($manifest['boot_worker_execution_sequence'], 'exit_code'));
+
+        $normalized = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['normalized_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+
+        self::assertSame('failed', $normalized['availability']);
+        self::assertSame('measurement worker runtime identity did not match accepted preflight lane', $normalized['failure_reason']);
+        self::assertNull($normalized['baseline_result']);
+    }
+
+    public function testDiscardedApplicationBootWorkerProcessFailureStopsBeforeMeasuredWorkerAndNormalizesNoTiming(): void
+    {
+        $preflight = $this->matchedCurrentPreflight();
+        $worker = $this->writeCountingWorker(
+            (string) $preflight['worker_environment_identity']['hash'],
+            failedInvocations: [1],
+        );
+
+        $runner = new ComparatorExecutionRunner(PHP_BINARY);
+        $manifest = $runner->run(
+            dirname(__DIR__, 2) . '/comparators/matrix.json',
+            $this->outputDir,
+            [
+                'comparators' => ['evolvephp'],
+                'scenarios' => ['application_boot'],
+                'samples' => 1,
+                'warmups' => 0,
+                'request_count' => 1,
+                'preflight' => $preflight,
+                'worker_path' => $worker,
+            ],
+        );
+
+        self::assertSame('failed', $manifest['status']);
+        self::assertSame('failed', $manifest['results'][0]['availability']);
+        self::assertNotSame(0, $manifest['results'][0]['exit_code']);
+        self::assertSame(0, $manifest['results'][0]['sample_count']);
+        self::assertSame([], $manifest['results'][0]['raw_samples']);
+        self::assertCount(1, $manifest['boot_worker_execution_sequence']);
+        self::assertSame('discarded', $manifest['boot_worker_execution_sequence'][0]['role']);
+        self::assertSame(7, $manifest['boot_worker_execution_sequence'][0]['exit_code']);
+        self::assertTrue($manifest['boot_worker_execution_sequence'][0]['excluded_from_statistics']);
+
+        $raw = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['raw_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+        $normalized = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['normalized_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+
+        self::assertSame([], $raw['samples']);
+        self::assertSame([], $raw['raw_samples']);
+        self::assertSame('failed', $normalized['availability']);
+        self::assertNull($normalized['baseline_result']);
+    }
+
+    public function testLaterDiscardedApplicationBootWorkerProcessFailurePreservesEarlierMeasuredEvidence(): void
+    {
+        $preflight = $this->matchedCurrentPreflight();
+        $worker = $this->writeCountingWorker(
+            (string) $preflight['worker_environment_identity']['hash'],
+            failedInvocations: [3],
+        );
+
+        $runner = new ComparatorExecutionRunner(PHP_BINARY);
+        $manifest = $runner->run(
+            dirname(__DIR__, 2) . '/comparators/matrix.json',
+            $this->outputDir,
+            [
+                'comparators' => ['evolvephp'],
+                'scenarios' => ['application_boot'],
+                'samples' => 2,
+                'warmups' => 0,
+                'request_count' => 1,
+                'preflight' => $preflight,
+                'worker_path' => $worker,
+            ],
+        );
+
+        self::assertSame('failed', $manifest['status']);
+        self::assertSame('failed', $manifest['results'][0]['availability']);
+        self::assertNotSame(0, $manifest['results'][0]['exit_code']);
+        self::assertSame(1, $manifest['results'][0]['sample_count']);
+        self::assertCount(1, $manifest['results'][0]['raw_samples']);
+        self::assertCount(1, $manifest['results'][0]['samples_metadata']);
+        self::assertCount(1, $manifest['results'][0]['commands']);
+        self::assertCount(3, $manifest['boot_worker_execution_sequence']);
+        self::assertSame(['discarded', 'measured', 'discarded'], array_column($manifest['boot_worker_execution_sequence'], 'role'));
+        self::assertSame(7, $manifest['boot_worker_execution_sequence'][2]['exit_code']);
+        self::assertTrue($manifest['boot_worker_execution_sequence'][2]['excluded_from_statistics']);
+
+        $raw = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['raw_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+        $normalized = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['normalized_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+
+        self::assertSame([2.0], array_map('floatval', $raw['samples']));
+        self::assertSame(1, $raw['sample_count']);
+        self::assertCount(1, $raw['raw_samples']);
+        self::assertArrayHasKey('sha256', $raw['raw_samples'][0]);
+        self::assertSame(2.0, (float) $raw['raw_samples'][0]['record']['samples'][0]);
+        self::assertCount(1, $raw['samples_metadata']);
+        self::assertCount(1, $raw['commands']);
+        self::assertSame('ok', $raw['last_result']['status']);
+        self::assertSame(2, $raw['memory']['peak_bytes']);
+        self::assertSame('failed', $normalized['availability']);
+        self::assertNull($normalized['baseline_result']);
+    }
+
+    public function testLaterDiscardedApplicationBootWorkerUnavailableAfterAcceptedSampleFailsAndPreservesEvidence(): void
+    {
+        $preflight = $this->matchedCurrentPreflight();
+        $worker = $this->writeCountingWorker(
+            (string) $preflight['worker_environment_identity']['hash'],
+            unavailableInvocations: [3],
+        );
+
+        $runner = new ComparatorExecutionRunner(PHP_BINARY);
+        $manifest = $runner->run(
+            dirname(__DIR__, 2) . '/comparators/matrix.json',
+            $this->outputDir,
+            [
+                'comparators' => ['evolvephp'],
+                'scenarios' => ['application_boot'],
+                'samples' => 2,
+                'warmups' => 0,
+                'request_count' => 1,
+                'preflight' => $preflight,
+                'worker_path' => $worker,
+            ],
+        );
+
+        self::assertSame('failed', $manifest['status']);
+        self::assertSame('failed', $manifest['results'][0]['availability']);
+        self::assertSame(1, $manifest['results'][0]['exit_code']);
+        self::assertSame(1, $manifest['results'][0]['sample_count']);
+        self::assertStringContainsString('availability changed during controlled boot sampling', (string) $manifest['results'][0]['reason']);
+        self::assertCount(1, $manifest['results'][0]['raw_samples']);
+        self::assertCount(3, $manifest['boot_worker_execution_sequence']);
+        self::assertSame(['available', 'available', 'unavailable'], array_column($manifest['boot_worker_execution_sequence'], 'availability'));
+
+        $raw = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['raw_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+        $normalized = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['normalized_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+
+        self::assertSame([2.0], array_map('floatval', $raw['samples']));
+        self::assertCount(1, $raw['raw_samples']);
+        self::assertCount(1, $raw['samples_metadata']);
+        self::assertCount(1, $raw['commands']);
+        self::assertSame('failed', $normalized['availability']);
+        self::assertNull($normalized['baseline_result']);
+    }
+
+    public function testMeasuredApplicationBootWorkerUnavailableAfterAvailableDiscardFailsWithoutFabricatedTiming(): void
+    {
+        $preflight = $this->matchedCurrentPreflight();
+        $worker = $this->writeCountingWorker(
+            (string) $preflight['worker_environment_identity']['hash'],
+            unavailableInvocations: [2],
+        );
+
+        $runner = new ComparatorExecutionRunner(PHP_BINARY);
+        $manifest = $runner->run(
+            dirname(__DIR__, 2) . '/comparators/matrix.json',
+            $this->outputDir,
+            [
+                'comparators' => ['evolvephp'],
+                'scenarios' => ['application_boot'],
+                'samples' => 1,
+                'warmups' => 0,
+                'request_count' => 1,
+                'preflight' => $preflight,
+                'worker_path' => $worker,
+            ],
+        );
+
+        self::assertSame('failed', $manifest['status']);
+        self::assertSame('failed', $manifest['results'][0]['availability']);
+        self::assertSame(1, $manifest['results'][0]['exit_code']);
+        self::assertSame(0, $manifest['results'][0]['sample_count']);
+        self::assertSame([], $manifest['results'][0]['raw_samples']);
+        self::assertStringContainsString('inconsistent availability within measured boot slot', (string) $manifest['results'][0]['reason']);
+        self::assertCount(2, $manifest['boot_worker_execution_sequence']);
+        self::assertSame(['discarded', 'measured'], array_column($manifest['boot_worker_execution_sequence'], 'role'));
+        self::assertSame(['available', 'unavailable'], array_column($manifest['boot_worker_execution_sequence'], 'availability'));
+        self::assertSame([true, false], array_column($manifest['boot_worker_execution_sequence'], 'excluded_from_statistics'));
+
+        $raw = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['raw_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+        $normalized = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['normalized_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+
+        self::assertSame([], $raw['samples']);
+        self::assertSame([], $raw['raw_samples']);
+        self::assertSame([], $raw['samples_metadata']);
+        self::assertSame('failed', $normalized['availability']);
+        self::assertNull($normalized['baseline_result']);
+    }
+
+    public function testDiscardedApplicationBootWorkerUnavailableStopsBeforeMeasuredWorkerAndFabricatesNoTiming(): void
+    {
+        $preflight = $this->matchedCurrentPreflight();
+        $worker = $this->writeCountingWorker(
+            (string) $preflight['worker_environment_identity']['hash'],
+            unavailableInvocations: [1],
+        );
+
+        $runner = new ComparatorExecutionRunner(PHP_BINARY);
+        $manifest = $runner->run(
+            dirname(__DIR__, 2) . '/comparators/matrix.json',
+            $this->outputDir,
+            [
+                'comparators' => ['evolvephp'],
+                'scenarios' => ['application_boot'],
+                'samples' => 1,
+                'warmups' => 0,
+                'request_count' => 1,
+                'preflight' => $preflight,
+                'worker_path' => $worker,
+            ],
+        );
+
+        self::assertSame('completed', $manifest['status']);
+        self::assertSame('unavailable', $manifest['results'][0]['availability']);
+        self::assertSame(0, $manifest['results'][0]['exit_code']);
+        self::assertSame(0, $manifest['results'][0]['sample_count']);
+        self::assertSame([], $manifest['results'][0]['raw_samples']);
+        self::assertCount(1, $manifest['boot_worker_execution_sequence']);
+        self::assertSame('discarded', $manifest['boot_worker_execution_sequence'][0]['role']);
+        self::assertSame(0, $manifest['boot_worker_execution_sequence'][0]['exit_code']);
+        self::assertSame('unavailable', $manifest['boot_worker_execution_sequence'][0]['availability']);
+        self::assertTrue($manifest['boot_worker_execution_sequence'][0]['excluded_from_statistics']);
+
+        $raw = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['raw_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+        $normalized = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['normalized_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+
+        self::assertSame([], $raw['raw_samples']);
+        self::assertSame('unavailable', $normalized['availability']);
+        self::assertNull($normalized['baseline_result']);
+    }
+
+    public function testWarmHttpScenariosDoNotReceiveDiscardedWorkers(): void
+    {
+        $preflight = $this->matchedCurrentPreflight();
+        $worker = $this->writeCountingWorker((string) $preflight['worker_environment_identity']['hash']);
+
+        $runner = new ComparatorExecutionRunner(PHP_BINARY);
+        $manifest = $runner->run(
+            dirname(__DIR__, 2) . '/comparators/matrix.json',
+            $this->outputDir,
+            [
+                'comparators' => ['evolvephp'],
+                'scenarios' => ['http_static'],
+                'samples' => 2,
+                'warmups' => 5,
+                'request_count' => 1,
+                'preflight' => $preflight,
+                'worker_path' => $worker,
+            ],
+        );
+
+        self::assertSame([], $manifest['boot_worker_execution_sequence']);
+        self::assertSame('completed', $manifest['status']);
+        self::assertSame(2, $manifest['results'][0]['sample_count']);
+        self::assertCount(2, $manifest['results'][0]['commands']);
+        self::assertArrayNotHasKey('discarded_worker_provenance', $manifest['results'][0]);
+
+        $raw = json_decode((string) file_get_contents($this->outputDir . DIRECTORY_SEPARATOR . $manifest['results'][0]['raw_result']['path']), true, flags: JSON_THROW_ON_ERROR);
+        self::assertSame(5, $raw['warmups']);
+        self::assertCount(2, $raw['raw_samples']);
+        self::assertArrayNotHasKey('discarded_worker_provenance', $raw);
+    }
+
     public function testPrePopulatedOutputDirectoryIsRejectedBeforeNewEvidenceIsWritten(): void
     {
         file_put_contents($this->outputDir . DIRECTORY_SEPARATOR . 'stale-evidence.json', '{}');
@@ -402,6 +858,87 @@ PHP);
         sort($files);
 
         return $files;
+    }
+
+    /**
+     * @param list<int> $mismatchedInvocations
+     * @param list<int> $failedInvocations
+     * @param list<int> $unavailableInvocations
+     */
+    private function writeCountingWorker(
+        string $identityHash,
+        ?string $mismatchedIdentityHash = null,
+        array $mismatchedInvocations = [],
+        array $failedInvocations = [],
+        array $unavailableInvocations = [],
+    ): string {
+        $worker = $this->workerDir . DIRECTORY_SEPARATOR . 'counting-worker-' . bin2hex(random_bytes(4)) . '.php';
+        $state = $this->workerDir . DIRECTORY_SEPARATOR . 'counting-worker-state-' . bin2hex(random_bytes(4)) . '.txt';
+        $mismatchedIdentityHash ??= $identityHash;
+        $mismatchedInvocationsExport = var_export($mismatchedInvocations, true);
+        $failedInvocationsExport = var_export($failedInvocations, true);
+        $unavailableInvocationsExport = var_export($unavailableInvocations, true);
+
+        file_put_contents($worker, <<<PHP
+<?php
+\$options = getopt('', ['matrix::', 'comparator::', 'scenario::', 'warmups::', 'request-count::', 'sample-index::']);
+\$state = '$state';
+\$invocation = is_file(\$state) ? (int) file_get_contents(\$state) : 0;
+++ \$invocation;
+file_put_contents(\$state, (string) \$invocation);
+\$failedInvocations = $failedInvocationsExport;
+if (in_array(\$invocation, \$failedInvocations, true)) {
+    fwrite(STDERR, 'deterministic boot worker process failure');
+    exit(7);
+}
+\$mismatchedInvocations = $mismatchedInvocationsExport;
+\$unavailableInvocations = $unavailableInvocationsExport;
+\$availability = in_array(\$invocation, \$unavailableInvocations, true) ? 'unavailable' : 'available';
+\$samples = \$availability === 'available' ? [(float) \$invocation] : [];
+\$identityHash = in_array(\$invocation, \$mismatchedInvocations, true)
+    ? '$mismatchedIdentityHash'
+    : '$identityHash';
+\$scenarioId = (string) (\$options['scenario'] ?? 'application_boot');
+\$timingBoundary = \$scenarioId === 'application_boot' ? 'application_boot_constructs_framework' : 'prepared_warm_http_request';
+\$preparedCount = \$scenarioId === 'application_boot' ? 0 : 1;
+echo json_encode([
+    'schema_version' => 'evolvephp.comparator.raw-result.v1',
+    'comparator_id' => (string) (\$options['comparator'] ?? 'evolvephp'),
+    'scenario_id' => \$scenarioId,
+    'availability' => \$availability,
+    'availability_status' => \$availability,
+    'reason' => \$availability === 'unavailable' ? 'deterministic comparator unavailable' : null,
+    'timing_boundary' => \$timingBoundary,
+    'prepared_framework_instance_count' => \$preparedCount,
+    'sample_count' => count(\$samples),
+    'sample_index' => (int) (\$options['sample-index'] ?? 1),
+    'samples' => \$samples,
+    'unit' => 'microseconds',
+    'memory' => ['current_bytes' => \$invocation, 'peak_bytes' => \$invocation],
+    'warmups' => (int) (\$options['warmups'] ?? 0),
+    'request_count' => (int) (\$options['request-count'] ?? 1),
+    'operations_per_sample' => 1,
+    'worker_environment_identity' => [
+        'schema_version' => 'evolvephp.comparator.runtime-identity.v1',
+        'hash' => \$identityHash,
+    ],
+    'dependency_context' => [],
+    'process' => ['pid' => getmypid()],
+    'subject_metadata' => [
+        'scenario_id' => \$scenarioId,
+        'timing_boundary' => \$timingBoundary,
+        'prepared_framework_instance_count' => \$preparedCount,
+    ],
+    'last_result' => [
+        'status' => 'ok',
+        'framework_constructed_in_subject' => \$scenarioId === 'application_boot',
+        'framework_prepared_outside_subject' => \$scenarioId !== 'application_boot',
+        'normal_framework_path_executed' => \$scenarioId !== 'application_boot',
+    ],
+], JSON_THROW_ON_ERROR);
+PHP);
+
+        return $worker;
     }
 
     /**
