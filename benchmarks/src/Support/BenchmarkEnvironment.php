@@ -52,6 +52,7 @@ final class BenchmarkEnvironment
             'opcache' => self::opcache(),
             'jit' => self::jit(),
             'extensions' => $extensions,
+            'extension_versions' => self::extensionVersions($extensions),
             'lock' => self::lockState($repositoryRoot),
         ];
 
@@ -96,6 +97,26 @@ final class BenchmarkEnvironment
     }
 
     /**
+     * @param list<string> $extensions
+     * @return array<string, string|null>
+     */
+    private static function extensionVersions(array $extensions): array
+    {
+        $versions = [];
+
+        foreach (['phalcon'] as $extension) {
+            if (!in_array($extension, array_map('strtolower', $extensions), true)) {
+                continue;
+            }
+
+            $version = phpversion($extension);
+            $versions[$extension] = is_string($version) ? $version : null;
+        }
+
+        return $versions;
+    }
+
+    /**
      * @return array{path: string, exists: bool, hash: string|null}
      */
     private static function lockState(string $repositoryRoot): array
@@ -122,7 +143,7 @@ final class BenchmarkEnvironment
     {
         $binary = getenv('COMPOSER_BINARY') ?: null;
 
-        if ($binary !== null && $binary !== '') {
+        if ($binary !== null) {
             return self::command($repositoryRoot, [PHP_BINARY, $binary, '--version']);
         }
 
@@ -228,7 +249,7 @@ final class BenchmarkEnvironment
     }
 
     /**
-     * @param array<string, mixed> $value
+     * @param array<mixed> $value
      */
     private static function sortRecursive(array &$value): void
     {

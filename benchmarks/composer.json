@@ -49,6 +49,8 @@
     },
     "scripts": {
         "bench:local": "@php vendor/bin/phpbench run --config=phpbench.json --report=aggregate",
+        "comparator:preflight": "@php bin/comparator-preflight.php",
+        "comparator:run": "@php bin/comparator-run.php",
         "capture-environment": "@php bin/capture-environment.php",
         "smoke": "@php bin/benchmark-smoke.php",
         "syntax": "@php bin/check-syntax.php",

@@ -42,7 +42,7 @@ final class ComparatorMatrixTest extends TestCase
         $this->assertSame(
             array_keys($matrix1->comparators()),
             array_keys($matrix2->comparators()),
-            'Comparator ordering must be deterministic'
+            'Comparator ordering must be deterministic',
         );
     }
 
@@ -131,7 +131,7 @@ final class ComparatorMatrixTest extends TestCase
             $this->assertArrayHasKey(
                 $framework,
                 $comparators,
-                "Required framework '{$framework}' must be in matrix"
+                "Required framework '{$framework}' must be in matrix",
             );
         }
     }
@@ -181,9 +181,23 @@ final class ComparatorMatrixTest extends TestCase
             $version = (string) $comparator['framework_version'];
 
             $this->assertDoesNotMatchRegularExpression('/\blatest\b/i', $version, "Comparator '{$id}' must not use latest wording");
-            $this->assertDoesNotMatchRegularExpression('/\.x\b/i', $version, "Comparator '{$id}' must record an exact version");
             $this->assertDoesNotMatchRegularExpression('/\^|~|\*/', $version, "Comparator '{$id}' must not use a Composer constraint as its selected version");
+
+            if ($id !== 'evolvephp') {
+                $this->assertDoesNotMatchRegularExpression('/\.x\b/i', $version, "Comparator '{$id}' must record an exact version");
+            }
         }
+    }
+
+    public function testEvolvePhpComparatorUsesStableDevelopmentIdentityWithoutCommitSuffix(): void
+    {
+        $matrixPath = $this->fixtureDir . DIRECTORY_SEPARATOR . 'matrix.json';
+        $matrix = ComparatorMatrix::fromJsonFile($matrixPath);
+        $comparator = $matrix->comparator('evolvephp');
+
+        $this->assertIsArray($comparator);
+        $this->assertSame('2.0.x-dev', $comparator['framework_version']);
+        $this->assertDoesNotMatchRegularExpression('/\+[a-f0-9]{7,40}$/i', (string) $comparator['framework_version']);
     }
 
     public function testExternalComparatorPrincipalVersionsAreApprovedExactPins(): void
@@ -237,7 +251,7 @@ final class ComparatorMatrixTest extends TestCase
             $this->assertSame(
                 strtolower((string) $comparator['lock_sha256']),
                 hash_file('sha256', $lockPath),
-                "Comparator '{$id}' matrix lock hash must match its lockfile"
+                "Comparator '{$id}' matrix lock hash must match its lockfile",
             );
         }
     }

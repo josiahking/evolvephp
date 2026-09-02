@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Benchmark\Symfony;
 
-use Evolve\Benchmarks\Comparator\ComparatorFixture;
+use Evolve\Benchmarks\Comparator\PreparedComparatorFixture;
+use Evolve\Benchmarks\Comparator\PreparedScenario;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -23,7 +24,7 @@ use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
-final class SymfonyComparatorFixture implements ComparatorFixture
+final class SymfonyComparatorFixture implements PreparedComparatorFixture
 {
     public function id(): string
     {
@@ -37,52 +38,136 @@ final class SymfonyComparatorFixture implements ComparatorFixture
 
     public function applicationBoot(): array
     {
-        $this->createKernel();
-
-        return ['scenario_id' => 'application_boot', 'status' => 'ok'];
+        return $this->prepareScenario('application_boot')->runOnce();
     }
 
     public function httpStatic(): array
     {
-        return $this->handle($this->createKernel(), '/benchmark');
+        return $this->prepareScenario('http_static')->runOnce();
     }
 
     public function httpParameterized(string $id): array
     {
-        $result = $this->handle($this->createKernel(), '/benchmark/' . $id);
-        $result['parameters'] = ['id' => $id];
-
-        return $result;
+        return $this->prepareScenario('http_parameterized', ['id' => $id])->runOnce();
     }
 
     public function httpMiddleware(): array
     {
-        $state = (object) ['order' => []];
-        $result = $this->handle($this->createKernel($state), '/benchmark-middleware');
-        $result['middleware_order'] = $state->order;
-
-        return $result;
+        return $this->prepareScenario('http_middleware')->runOnce();
     }
 
     public function httpNotFound(): array
     {
-        return $this->handle($this->createKernel(), '/benchmark-missing');
+        return $this->prepareScenario('http_not_found')->runOnce();
     }
 
     public function httpRepeatedWarm(int $requestCount): array
     {
+        return $this->prepareScenario('http_repeated_warm', ['request_count' => $requestCount])->runOnce();
+    }
+
+    public function prepareScenario(string $scenarioId, array $options = []): PreparedScenario
+    {
+        return match ($scenarioId) {
+            'application_boot' => new PreparedScenario(
+                'application_boot',
+                'application_boot_constructs_framework',
+                0,
+                function (): array {
+                    $this->createKernel();
+
+                    return [
+                        'scenario_id' => 'application_boot',
+                        'status' => 'ok',
+                        'framework_constructed_in_subject' => true,
+                        'framework_prepared_outside_subject' => false,
+                    ];
+                },
+            ),
+            'http_static' => $this->warmHttpSubject('http_static', '/benchmark'),
+            'http_parameterized' => $this->warmHttpSubject(
+                'http_parameterized',
+                '/benchmark/' . (string) ($options['id'] ?? '123'),
+                ['parameters' => ['id' => (string) ($options['id'] ?? '123')]],
+            ),
+            'http_middleware' => $this->middlewareSubject(),
+            'http_not_found' => $this->warmHttpSubject('http_not_found', '/benchmark-missing'),
+            'http_repeated_warm' => $this->repeatedWarmSubject((int) ($options['request_count'] ?? 25)),
+            default => throw new \InvalidArgumentException("Unknown comparator scenario '{$scenarioId}'."),
+        };
+    }
+
+    /**
+     * @param array<string, mixed> $extra
+     */
+    private function warmHttpSubject(string $scenarioId, string $path, array $extra = []): PreparedScenario
+    {
         $kernel = $this->createKernel();
-        $last = null;
 
-        for ($i = 0; $i < $requestCount; ++$i) {
-            $last = $this->handle($kernel, '/benchmark');
-        }
+        return new PreparedScenario(
+            $scenarioId,
+            'prepared_warm_http_request',
+            1,
+            fn(): array => $this->withPreparedHttpMetadata($this->handle($kernel, $path) + $extra),
+        );
+    }
 
-        $last ??= [];
-        $last['request_count'] = $requestCount;
-        $last['bootstrap_count'] = 1;
+    private function middlewareSubject(): PreparedScenario
+    {
+        $state = (object) ['order' => []];
+        $kernel = $this->createKernel($state);
 
-        return $last;
+        return new PreparedScenario(
+            'http_middleware',
+            'prepared_warm_http_request',
+            1,
+            function () use ($kernel, $state): array {
+                $state->order = [];
+                $result = $this->handle($kernel, '/benchmark-middleware');
+                $result['middleware_order'] = $state->order;
+
+                return $this->withPreparedHttpMetadata($result);
+            },
+        );
+    }
+
+    private function repeatedWarmSubject(int $requestCount): PreparedScenario
+    {
+        $kernel = $this->createKernel();
+
+        return new PreparedScenario(
+            'http_repeated_warm',
+            'prepared_repeated_warm_requests',
+            1,
+            function () use ($kernel, $requestCount): array {
+                $last = null;
+
+                for ($i = 0; $i < max(1, $requestCount); ++$i) {
+                    $last = $this->handle($kernel, '/benchmark');
+                }
+
+                $last ??= [];
+                $last['request_count'] = max(1, $requestCount);
+                $last['bootstrap_count'] = 1;
+                $last['framework_constructed_in_subject'] = false;
+                $last['normal_framework_path_executed'] = true;
+                $last['prepared_framework_instance_reused'] = true;
+
+                return $last;
+            },
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $result
+     * @return array<string, mixed>
+     */
+    private function withPreparedHttpMetadata(array $result): array
+    {
+        $result['framework_constructed_in_subject'] = false;
+        $result['normal_framework_path_executed'] = true;
+
+        return $result;
     }
 
     private function createKernel(?object $middlewareState = null): HttpKernel

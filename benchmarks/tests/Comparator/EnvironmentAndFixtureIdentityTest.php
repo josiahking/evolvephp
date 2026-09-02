@@ -16,18 +16,43 @@ final class EnvironmentAndFixtureIdentityTest extends TestCase
             'schema_version' => 'evolvephp.benchmark.environment.v2',
             'runtime' => ['php_version' => '8.4.0'],
             'platform' => ['os' => 'Linux'],
+            'composer' => ['version' => 'Composer version 2.10.2'],
+            'phpbench' => ['version' => '1.7.0'],
             'opcache' => ['enabled' => true],
             'jit' => ['enabled' => false],
             'extensions' => ['json', 'pdo'],
+            'lock' => ['hash' => str_repeat('a', 64)],
         ];
 
         $environment2 = $environment1;
+        $environment2['lock']['hash'] = str_repeat('b', 64);
 
         $fp1 = ExecutionEnvironmentFingerprint::fromEnvironment($environment1);
         $fp2 = ExecutionEnvironmentFingerprint::fromEnvironment($environment2);
 
         $this->assertSame($fp1['hash'], $fp2['hash'], 'Same execution environment must produce same hash');
         $this->assertArrayNotHasKey('lock_hash', $fp1['fields'], 'Lock hash must not be in execution environment fingerprint');
+    }
+
+    public function testDifferentPlatformCpuProducesDifferentExecutionEnvironmentHash(): void
+    {
+        $environment1 = [
+            'runtime' => ['php_version' => '8.4.25', 'php_sapi' => 'cli'],
+            'platform' => ['os' => 'Linux', 'cpu_model' => 'AMD EPYC 7763', 'logical_cpu_count' => 4],
+            'composer' => ['version' => 'Composer version 2.10.2'],
+            'phpbench' => ['version' => '1.7.0'],
+            'opcache' => ['enabled' => true],
+            'jit' => ['enabled' => false],
+            'extensions' => ['Core', 'json', 'phalcon'],
+            'lock' => ['hash' => str_repeat('a', 64)],
+        ];
+        $environment2 = $environment1;
+        $environment2['platform']['cpu_model'] = 'Intel Xeon Platinum';
+
+        $this->assertNotSame(
+            ExecutionEnvironmentFingerprint::fromEnvironment($environment1)['hash'],
+            ExecutionEnvironmentFingerprint::fromEnvironment($environment2)['hash'],
+        );
     }
 
     public function testDifferentPhpVersionsProduceDifferentExecutionEnvironmentHash(): void

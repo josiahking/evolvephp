@@ -16,6 +16,9 @@ final class EvolvePhp2BenchmarkHarnessTest extends TestCase
         $this->assertFileExists($this->projectPath('benchmarks/composer.json'));
         $this->assertFileExists($this->projectPath('benchmarks/phpbench.json'));
         $this->assertFileExists($this->projectPath('benchmarks/bin/benchmark-smoke.php'));
+        $this->assertFileExists($this->projectPath('benchmarks/bin/comparator-run.php'));
+        $this->assertFileExists($this->projectPath('benchmarks/bin/comparator-worker.php'));
+        $this->assertFileExists($this->projectPath('benchmarks/bin/comparator-preflight.php'));
         $this->assertFileExists($this->projectPath('benchmarks/bin/capture-environment.php'));
         $this->assertFileExists($this->projectPath('benchmarks/bin/normalize-results.php'));
         $this->assertFileExists($this->projectPath('benchmarks/results/README.md'));
@@ -75,8 +78,42 @@ final class EvolvePhp2BenchmarkHarnessTest extends TestCase
             'Cross-framework comparison',
             'no current fastest-framework claim',
             'no current top-three performance claim',
+            'controlled comparator execution',
+            'subprocess per measured sample',
+            'worker runtime identity only to prove child-process conformance',
+            'fresh output directory',
+            'without writing raw or normalized timing artifacts',
+            'zero in-process subject warmups',
+            'operations_per_sample',
+            'per-sample raw hashes',
+            'Candidate evidence',
+            'Canonical reference evidence',
+            'Phalcon Micro before handlers',
+            'non-ranking policy',
         ] as $phrase) {
             $this->assertStringContainsString($phrase, $readme);
+        }
+    }
+
+    public function testBenchmarkPublicDocsDoNotContainInternalReviewProvenance(): void
+    {
+        foreach ([
+            'benchmarks/README.md',
+            'benchmarks/results/README.md',
+        ] as $path) {
+            $content = $this->readProjectFile($path);
+
+            foreach ([
+                '/Codex/i',
+                '/ChatGPT/i',
+                '/AI-generated/i',
+                '/assistant review/i',
+                '/credits/i',
+                '/usage limit/i',
+                '/internal gate labels/i',
+            ] as $pattern) {
+                $this->assertDoesNotMatchRegularExpression($pattern, $content, $path . ' must not expose internal review provenance.');
+            }
         }
     }
 

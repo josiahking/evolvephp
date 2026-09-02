@@ -6,6 +6,4 @@ namespace Evolve\Benchmarks\Comparator;
 
 use InvalidArgumentException;
 
-final class ComparatorMatrixException extends InvalidArgumentException
-{
-}
+final class ComparatorMatrixException extends InvalidArgumentException {}
