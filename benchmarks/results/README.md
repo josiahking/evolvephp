@@ -1,6 +1,6 @@
 # Benchmark Results
 
-Committed files in this directory describe the result protocol only.
+Committed files in this directory describe the result protocol and compact reference artifacts only.
 
 Local and disposable output belongs under ignored paths:
 
@@ -10,6 +10,15 @@ Local and disposable output belongs under ignored paths:
 - `.phpbench/`
 
 A reference baseline should be recorded only after the documented protocol is run in a controlled, low-noise PHP 8.4 environment with the matching OPcache/JIT policy and environment fingerprint.
+
+The tracked reference directory contains compact evidence summaries:
+
+```text
+results/reference/performance-summary.json
+results/reference/performance-report.md
+```
+
+These files intentionally summarize the accepted policy and public engineering report. They do not contain raw 100-sample process records, raw command streams, or disposable candidate directories.
 
 Controlled comparator execution writes this local structure when `benchmarks/bin/comparator-run.php` is used:
 
@@ -35,3 +44,21 @@ For `application_boot`, the manifest records one separate discarded application_
 The `application_boot` normalized output keeps p50 available while mean, p95, p99 and relative standard deviation remain visible as tail and noise evidence. No measured sample is removed as an outlier. The measured process is fresh and performs its first framework construction inside the measured subject; only host-level paths may have been primed by the separate discarded process.
 
 Candidate output from a dirty or uncommitted worktree is not canonical reference evidence. Canonical reference evidence must be regenerated from the exact committed implementation ref in the controlled PHP 8.4.25 lane described in the benchmark README.
+
+Performance budget validation uses `benchmarks/bin/performance-budget.php`:
+
+```powershell
+php benchmarks\bin\performance-budget.php --budget benchmarks\budgets\performance-budget.json --validate-reference
+php benchmarks\bin\performance-budget.php --budget benchmarks\budgets\performance-budget.json --candidate benchmarks\results\local\comparator-candidate
+```
+
+Budget states are:
+
+- `pass`: the scenario is within the accepted observed p50 envelope.
+- `warn`: the scenario exceeds the observed p50 envelope but is non-blocking under the current policy.
+- `fail`: a blocking warm HTTP p50 threshold was exceeded.
+- `incomparable`: required identity, protocol, availability, cleanliness, sample-count, or normalized-result evidence is absent or mismatched.
+
+Warm HTTP p50 thresholds are blocking only for controlled evidence that matches the accepted comparison identity. `application_boot` is monitor-only in this policy version because accepted calibration showed high within-run relative standard deviation and volatile tail timing.
+
+Ordinary shared GitHub-hosted CI may validate benchmark syntax, smoke behaviour, evaluator tests, and reference-policy schema. It must not run the canonical 100-sample comparator timing suite or fail on absolute wall-clock timing from the shared runner.

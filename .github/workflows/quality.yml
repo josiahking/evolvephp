@@ -53,6 +53,32 @@ jobs:
       - name: Run root policy tests
         run: php vendor/bin/phpunit --configuration phpunit.xml.dist tests/Architecture tests/Documentation
 
+  benchmark-policy:
+    name: Benchmark policy (PHP 8.4)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+
+      - name: Validate benchmark Composer manifest and lockfile
+        run: composer validate --working-dir=benchmarks --strict --check-lock
+
+      - name: Install benchmark dependencies
+        run: composer install --working-dir=benchmarks --no-interaction --no-progress --prefer-dist
+
+      - name: Run CI-safe benchmark policy checks
+        run: composer --working-dir=benchmarks ci:policy
+
   workspace-quality:
     name: Workspace quality (PHP ${{ matrix.php }})
     runs-on: ubuntu-24.04

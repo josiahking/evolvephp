@@ -1,0 +1,142 @@
+{
+  "schema_version": "evolvephp.performance-budget.v1",
+  "baseline_source_sha": "c62cecb16cb4fcdc93bfbb0188a4b63d8cf704ce",
+  "calibration": {
+    "source": "accepted controlled EvolvePHP-only regression calibration",
+    "run_count": 3,
+    "sample_count": 100,
+    "primary_metric": "p50",
+    "raw_evidence_policy": "full raw controlled evidence is retained outside this repository"
+  },
+  "canonical_runtime_policy": {
+    "php_version": "8.4.25",
+    "opcache_cli_enabled": true,
+    "jit_enabled": false
+  },
+  "warmup_policy": {
+    "warm_http_subject_warmups": 5,
+    "application_boot_measured_worker_in_process_warmups": 0,
+    "application_boot_discarded_worker_processes_per_measured_sample": 1
+  },
+  "sample_protocol": {
+    "sample_count": 100,
+    "warmups": 5,
+    "request_count": 25,
+    "process_isolation_model": "subprocess_per_measured_sample",
+    "repeated_warm_operations_per_sample": 25,
+    "boot_protocol": {
+      "discarded_worker_processes_per_measured_sample": 1,
+      "sample_order": "rotating_round_robin",
+      "measured_worker_in_process_warmups": 0,
+      "outlier_policy": "retain_all_measured_samples",
+      "primary_central_statistic": "p50"
+    }
+  },
+  "comparison_identity": {
+    "manifest_schema_version": "evolvephp.comparator.evidence-manifest.v1",
+    "comparator_result_schema_version": "evolvephp.comparator.result.v1",
+    "comparator_id": "evolvephp",
+    "execution_environment_fingerprint": "9c06a992d7f01cb7096a60b893f33a34aff7b2a86fba157c8b879d9ac55457a2",
+    "matrix_sha256": "e2219a90c660657249e7a2aac225dcf55d618a61cb7bcdd227786f4532146778",
+    "comparator_lock_sha256": "f792575ec5491c8d3aa171ba5f7de3b38558bfbd82b977beea45e603fd79e491",
+    "fixture_identity_hash": "b331add71f193a353e866d1123dd2d654a677aed87a731c1526230d098b86386"
+  },
+  "primary_metric": "p50",
+  "diagnostic_metrics": [
+    "p95",
+    "p99",
+    "mean",
+    "relative_standard_deviation_percent",
+    "throughput_per_second",
+    "memory"
+  ],
+  "memory_policy": {
+    "blocking_budget": false,
+    "reason": "accepted calibration did not establish a cross-run memory noise floor"
+  },
+  "scenarios": {
+    "application_boot": {
+      "mode": "monitor",
+      "observed_p50_microseconds": [
+        1068.25,
+        1042.4,
+        1044.05
+      ],
+      "reference_p50_microseconds": 1044.05,
+      "observed_maximum_p50_microseconds": 1068.25,
+      "cross_run_range_percent": 2.4798541826554,
+      "observation_threshold_p50_microseconds": 1148.455,
+      "diagnostic_rsd_percent": [
+        29.76929761631,
+        18.666326692293,
+        25.872643772215
+      ],
+      "policy_note": "monitor-only because accepted calibration showed high within-run RSD and volatile p99"
+    },
+    "http_static": {
+      "mode": "blocking",
+      "observed_p50_microseconds": [
+        30.9,
+        30.8,
+        30.7
+      ],
+      "reference_p50_microseconds": 30.8,
+      "observed_maximum_p50_microseconds": 30.9,
+      "cross_run_range_percent": 0.6514657980456,
+      "blocking_threshold_p50_microseconds": 32.34,
+      "policy_note": "5 percent actionable regression budget above accepted reference median p50"
+    },
+    "http_parameterized": {
+      "mode": "blocking",
+      "observed_p50_microseconds": [
+        34.4,
+        34.4,
+        34.5
+      ],
+      "reference_p50_microseconds": 34.4,
+      "observed_maximum_p50_microseconds": 34.5,
+      "cross_run_range_percent": 0.29069767441861,
+      "blocking_threshold_p50_microseconds": 36.12,
+      "policy_note": "5 percent actionable regression budget above accepted reference median p50"
+    },
+    "http_middleware": {
+      "mode": "blocking",
+      "observed_p50_microseconds": [
+        37.2,
+        37.2,
+        37.3
+      ],
+      "reference_p50_microseconds": 37.2,
+      "observed_maximum_p50_microseconds": 37.3,
+      "cross_run_range_percent": 0.26881720430106,
+      "blocking_threshold_p50_microseconds": 39.06,
+      "policy_note": "5 percent actionable regression budget above accepted reference median p50"
+    },
+    "http_not_found": {
+      "mode": "blocking",
+      "observed_p50_microseconds": [
+        23.9,
+        23.8,
+        23.8
+      ],
+      "reference_p50_microseconds": 23.8,
+      "observed_maximum_p50_microseconds": 23.9,
+      "cross_run_range_percent": 0.42016806722688,
+      "blocking_threshold_p50_microseconds": 24.99,
+      "policy_note": "5 percent actionable regression budget above accepted reference median p50"
+    },
+    "http_repeated_warm": {
+      "mode": "blocking",
+      "observed_p50_microseconds": [
+        26.662,
+        26.652,
+        26.54
+      ],
+      "reference_p50_microseconds": 26.652,
+      "observed_maximum_p50_microseconds": 26.662,
+      "cross_run_range_percent": 0.45968349660889,
+      "blocking_threshold_p50_microseconds": 27.9846,
+      "policy_note": "5 percent actionable regression budget above accepted reference median p50"
+    }
+  }
+}

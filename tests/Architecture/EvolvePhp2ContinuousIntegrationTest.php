@@ -4,9 +4,9 @@ use PHPUnit\Framework\TestCase;
 
 final class EvolvePhp2ContinuousIntegrationTest extends TestCase
 {
-    private $root;
-    private $workflowPath;
-    private $workflow;
+    private string $root;
+    private string $workflowPath;
+    private string $workflow;
 
     protected function setUp(): void
     {
@@ -15,8 +15,10 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
 
         $this->assertFileExists($this->workflowPath, 'The canonical EvolvePHP 2 quality workflow should exist.');
 
-        $this->workflow = file_get_contents($this->workflowPath);
-        $this->assertNotFalse($this->workflow, 'The canonical EvolvePHP 2 quality workflow should be readable.');
+        $workflow = file_get_contents($this->workflowPath);
+        $this->assertNotFalse($workflow, 'The canonical EvolvePHP 2 quality workflow should be readable.');
+
+        $this->workflow = $workflow;
     }
 
     public function testCanonicalWorkflowNameAndTriggersTargetOnlyEvolvePhp2(): void
@@ -44,7 +46,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
 
     public function testWorkflowUsesOnlyApprovedUbuntuRunnerAndPhpMatrix(): void
     {
-        $this->assertSame(2, preg_match_all('/^\s{4}runs-on:\s*ubuntu-24\.04\s*$/m', $this->workflow, $matches));
+        $this->assertSame(3, preg_match_all('/^\s{4}runs-on:\s*ubuntu-24\.04\s*$/m', $this->workflow, $matches));
         $this->assertDoesNotMatchPattern('/ubuntu-latest|windows-|macos-/', $this->workflow);
         $this->assertMatchesPattern('/fail-fast:\s*false/', $this->workflow);
         $this->assertMatchesPattern('/php:\s*\R\s{10}- \'8\.4\'\s*\R\s{10}- \'8\.5\'/m', $this->workflow);
@@ -57,12 +59,12 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $checkoutSha = '3d3c42e5aac5ba805825da76410c181273ba90b1';
         $setupPhpSha = 'f3e473d116dcccaddc5834248c87452386958240';
 
-        $this->assertSame(2, preg_match_all('/uses:\s*actions\/checkout@' . $checkoutSha . '\s+# v7\.0\.1/', $this->workflow, $matches));
-        $this->assertSame(2, preg_match_all('/uses:\s*shivammathur\/setup-php@' . $setupPhpSha . '\s+# 2\.37\.2/', $this->workflow, $matches));
-        $this->assertSame(4, preg_match_all('/uses:\s*[^@\s]+@[0-9a-f]{40}\s+# (?:v7\.0\.1|2\.37\.2)/', $this->workflow, $matches));
+        $this->assertSame(3, preg_match_all('/uses:\s*actions\/checkout@' . $checkoutSha . '\s+# v7\.0\.1/', $this->workflow, $matches));
+        $this->assertSame(3, preg_match_all('/uses:\s*shivammathur\/setup-php@' . $setupPhpSha . '\s+# 2\.37\.2/', $this->workflow, $matches));
+        $this->assertSame(6, preg_match_all('/uses:\s*[^@\s]+@[0-9a-f]{40}\s+# (?:v7\.0\.1|2\.37\.2)/', $this->workflow, $matches));
         $this->assertMatchesPattern('/persist-credentials:\s*false/', $this->workflow);
-        $this->assertSame(2, preg_match_all('/tools:\s*composer:v2/', $this->workflow, $matches));
-        $this->assertSame(2, preg_match_all('/coverage:\s*none/', $this->workflow, $matches));
+        $this->assertSame(3, preg_match_all('/tools:\s*composer:v2/', $this->workflow, $matches));
+        $this->assertSame(3, preg_match_all('/coverage:\s*none/', $this->workflow, $matches));
         $this->assertDoesNotMatchPattern('/actions\/checkout@(?:v[0-9]+|main)|shivammathur\/setup-php@(?:v[0-9]+|main)/', $this->workflow);
         $this->assertDoesNotMatchPattern('/uses:\s*(?!actions\/checkout@|shivammathur\/setup-php@)[^@\s]+@/', $this->workflow);
         $this->assertDoesNotMatchPattern('/@[0-9a-f]{7,39}(?:\s|$)/', $this->workflow);
@@ -87,15 +89,57 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $this->assertDoesNotMatchPattern('/phpunit.*(?:core|components|helpers|index\.php|route\.php)/i', $job);
     }
 
+    public function testBenchmarkPolicyJobRunsOnlyIsolatedBenchmarkPolicyChecksOnPhp84(): void
+    {
+        $job = $this->extractJob('benchmark-policy');
+
+        $this->assertMatchesPattern('/name:\s*Benchmark policy \(PHP 8\.4\)/', $job);
+        $this->assertMatchesPattern('/runs-on:\s*ubuntu-24\.04/', $job);
+        $this->assertMatchesPattern('/php-version:\s*\'8\.4\'/', $job);
+        $this->assertStringContainsString('uses: actions/checkout@', $this->extractStep($job, 'Checkout repository'));
+        $this->assertStringContainsString('uses: shivammathur/setup-php@', $this->extractStep($job, 'Set up PHP'));
+        $this->assertStringContainsString('composer validate --working-dir=benchmarks --strict --check-lock', $job);
+        $this->assertStringContainsString('composer install --working-dir=benchmarks --no-interaction --no-progress --prefer-dist', $job);
+        $this->assertStringContainsString('composer --working-dir=benchmarks ci:policy', $job);
+
+        foreach ([
+            '/benchmarks\/bin\/comparator-run\.php/',
+            '/comparator:run/',
+            '/100-sample|--samples(?:=|\s+)100|samples:\s*100|sample(?:s)?(?:=|\s+)100/i',
+            '/tools\/(?:release-validation|validate-release|validate-prerelease-consumers)|validate-prerelease-consumers\.php/i',
+            '/release:split:validate/',
+            '/release:skeleton:validate/',
+            '/release:consumer:validate/',
+            '/release:validate/',
+            '/composer update/',
+            '/--ignore-platform-reqs?/',
+            '/continue-on-error/',
+            '/secrets\./',
+            '/actions\/cache/',
+            '/cache:/',
+            '/deploy(?:ment)?/i',
+            '/publish/i',
+            '/upload-artifact/',
+            '/gh\s+release/i',
+        ] as $pattern) {
+            $this->assertDoesNotMatchPattern($pattern, $job);
+        }
+    }
+
     public function testPolicyCheckoutFetchesCompleteHistoryForReleaseSplitValidation(): void
     {
         $policyCheckout = $this->extractStep($this->extractJob('policy'), 'Checkout repository');
+        $benchmarkPolicyCheckout = $this->extractStep($this->extractJob('benchmark-policy'), 'Checkout repository');
         $workspaceQualityCheckout = $this->extractStep($this->extractJob('workspace-quality'), 'Checkout repository');
 
         $this->assertSame(1, substr_count($this->workflow, 'fetch-depth: 0'));
         $this->assertMatchesPattern('/persist-credentials:\s*false/', $policyCheckout);
         $this->assertMatchesPattern('/fetch-depth:\s*0/', $policyCheckout);
         $this->assertStringContainsString('composer release:split:validate', $this->extractJob('policy'));
+
+        $this->assertMatchesPattern('/persist-credentials:\s*false/', $benchmarkPolicyCheckout);
+        $this->assertDoesNotMatchPattern('/fetch-depth:\s*0/', $benchmarkPolicyCheckout);
+        $this->assertStringNotContainsString('release:split:validate', $this->extractJob('benchmark-policy'));
 
         $this->assertMatchesPattern('/persist-credentials:\s*false/', $workspaceQualityCheckout);
         $this->assertDoesNotMatchPattern('/fetch-depth:\s*0/', $workspaceQualityCheckout);
@@ -118,7 +162,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
 
     public function testWorkflowExcludesReleasePublishingSecretsCachesAndDeployments(): void
     {
-        foreach (array(
+        foreach ([
             '/secrets\./',
             '/deploy(?:ment)?/i',
             '/publish/i',
@@ -139,7 +183,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
             '/sudo\b/',
             '/--ignore-platform-reqs?/',
             '/config\.platform\.php/',
-        ) as $pattern) {
+        ] as $pattern) {
             $this->assertDoesNotMatchPattern($pattern, $this->workflow);
         }
     }
@@ -149,7 +193,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $workspaceReadme = $this->readProjectFile('DEVELOPMENT.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array(
+        foreach ([
             '/## Continuous Integration/',
             '/\.github\/workflows\/quality\.yml/',
             '/EvolvePHP 2 Quality/',
@@ -175,7 +219,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
             '/current.*(?:workspace|tooling|package foundation)|(?:workspace|tooling|package foundation).*current/i',
             '/EvolvePHP 1 runtime.*(?:not part|excluded)|(?:not part|excluded).*EvolvePHP 1 runtime/i',
             '/runtime implementation.*(?:incomplete|not complete)|(?:incomplete|not complete).*runtime implementation/i',
-        ) as $pattern) {
+        ] as $pattern) {
             $this->assertMatchesPattern($pattern, $workspaceReadme);
         }
 
@@ -188,7 +232,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $this->assertDoesNotMatchPattern('/branch protection.*active|required checks|deployment|publishing|runtime implementation.*complete|legacy EvolvePHP 1 runtime.*PHP 8\.5/i', $changelog);
     }
 
-    private function extractTopLevelBlock($heading)
+    private function extractTopLevelBlock(string $heading): string
     {
         $pattern = '/^' . preg_quote($heading, '/') . ':\s*\R(?P<block>.*?)(?=^[a-zA-Z_-]+:\s*|\z)/ms';
 
@@ -197,7 +241,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         return $matches['block'];
     }
 
-    private function extractJob($job)
+    private function extractJob(string $job): string
     {
         $jobs = $this->extractTopLevelBlock('jobs');
         $pattern = '/^\s{2}' . preg_quote($job, '/') . ':\s*\R(?P<job>.*?)(?=^\s{2}[a-zA-Z0-9_-]+:\s*|\z)/ms';
@@ -207,7 +251,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         return $matches['job'];
     }
 
-    private function extractStep($job, $stepName)
+    private function extractStep(string $job, string $stepName): string
     {
         $pattern = '/^\s{6}- name:\s*' . preg_quote($stepName, '/') . '\s*\R(?P<step>.*?)(?=^\s{6}- name:\s*|\z)/ms';
 
@@ -216,25 +260,28 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         return $matches['step'];
     }
 
-    private function projectPath($path)
+    private function projectPath(string $path): string
     {
         return $this->root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path);
     }
 
-    private function readProjectFile($path)
+    private function readProjectFile(string $path): string
     {
         $fullPath = $this->projectPath($path);
         $this->assertFileExists($fullPath, $path . ' should exist before it is read.');
 
-        return file_get_contents($fullPath);
+        $content = file_get_contents($fullPath);
+        $this->assertNotFalse($content, $path . ' should be readable.');
+
+        return $content;
     }
 
-    private function assertMatchesPattern($pattern, $content)
+    private function assertMatchesPattern(string $pattern, string $content): void
     {
         $this->assertSame(1, preg_match($pattern, $content), 'Failed asserting that content matches ' . $pattern);
     }
 
-    private function assertDoesNotMatchPattern($pattern, $content)
+    private function assertDoesNotMatchPattern(string $pattern, string $content): void
     {
         $this->assertSame(0, preg_match($pattern, $content), 'Failed asserting that content does not match ' . $pattern);
     }

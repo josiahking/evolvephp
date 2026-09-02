@@ -1,0 +1,99 @@
+{
+  "schema_version": "evolvephp.performance-reference-summary.v1",
+  "regression_baseline_source_sha": "c62cecb16cb4fcdc93bfbb0188a4b63d8cf704ce",
+  "canonical_environment_fingerprint": "9c06a992d7f01cb7096a60b893f33a34aff7b2a86fba157c8b879d9ac55457a2",
+  "calibration_protocol": {
+    "run_count": 3,
+    "sample_count": 100,
+    "php_version": "8.4.25",
+    "opcache_cli_enabled": true,
+    "jit_enabled": false,
+    "primary_metric": "p50",
+    "repeated_warm_request_count": 25,
+    "raw_evidence_note": "Full raw controlled evidence is intentionally not committed here."
+  },
+  "scenarios": {
+    "application_boot": {
+      "p50_microseconds_by_run": [
+        1068.25,
+        1042.4,
+        1044.05
+      ],
+      "reference_median_p50_microseconds": 1044.05,
+      "observed_maximum_p50_microseconds": 1068.25,
+      "observed_range_percent": 2.4798541826554,
+      "budget_classification": "monitor",
+      "observation_threshold_p50_microseconds": 1148.455,
+      "diagnostic_rsd_percent_by_run": [
+        29.76929761631,
+        18.666326692293,
+        25.872643772215
+      ]
+    },
+    "http_static": {
+      "p50_microseconds_by_run": [
+        30.9,
+        30.8,
+        30.7
+      ],
+      "reference_median_p50_microseconds": 30.8,
+      "observed_maximum_p50_microseconds": 30.9,
+      "observed_range_percent": 0.6514657980456,
+      "budget_classification": "blocking",
+      "blocking_threshold_p50_microseconds": 32.34
+    },
+    "http_parameterized": {
+      "p50_microseconds_by_run": [
+        34.4,
+        34.4,
+        34.5
+      ],
+      "reference_median_p50_microseconds": 34.4,
+      "observed_maximum_p50_microseconds": 34.5,
+      "observed_range_percent": 0.29069767441861,
+      "budget_classification": "blocking",
+      "blocking_threshold_p50_microseconds": 36.12
+    },
+    "http_middleware": {
+      "p50_microseconds_by_run": [
+        37.2,
+        37.2,
+        37.3
+      ],
+      "reference_median_p50_microseconds": 37.2,
+      "observed_maximum_p50_microseconds": 37.3,
+      "observed_range_percent": 0.26881720430106,
+      "budget_classification": "blocking",
+      "blocking_threshold_p50_microseconds": 39.06
+    },
+    "http_not_found": {
+      "p50_microseconds_by_run": [
+        23.9,
+        23.8,
+        23.8
+      ],
+      "reference_median_p50_microseconds": 23.8,
+      "observed_maximum_p50_microseconds": 23.9,
+      "observed_range_percent": 0.42016806722688,
+      "budget_classification": "blocking",
+      "blocking_threshold_p50_microseconds": 24.99
+    },
+    "http_repeated_warm": {
+      "p50_microseconds_by_run": [
+        26.662,
+        26.652,
+        26.54
+      ],
+      "reference_median_p50_microseconds": 26.652,
+      "observed_maximum_p50_microseconds": 26.662,
+      "observed_range_percent": 0.45968349660889,
+      "budget_classification": "blocking",
+      "blocking_threshold_p50_microseconds": 27.9846,
+      "operations_per_sample": 25
+    }
+  },
+  "threshold_policy": {
+    "warm_http": "pass at or below observed maximum p50, warn above observed maximum through the 5 percent threshold, fail above threshold",
+    "application_boot": "monitor-only; warn above observed maximum and continue to warn above the provisional observation boundary"
+  }
+}
