@@ -1,6 +1,6 @@
 # EvolvePHP 2 Benchmarks
 
-EvolvePHP performance work starts from measurements instead of guesses. This benchmark harness provides correctness checks, environment fingerprinting, local baseline output, and measured evidence for later optimization work.
+EvolvePHP performance work starts from measurements instead of guesses. This benchmark harness provides correctness checks, environment fingerprinting, local baseline output, measured evidence for later optimization work, and benchmark-only budget evaluation for controlled EvolvePHP evidence.
 
 This harness is benchmark infrastructure only. It does not optimize production framework code and it does not make a fastest-framework claim. There is no current fastest-framework claim and no current top-three performance claim.
 
@@ -18,7 +18,9 @@ Benchmark-only dependencies are installed inside `benchmarks/vendor/` and locked
 
 The primary comparison lane is PHP 8.4 with OPcache enabled, JIT disabled, production-like framework configuration, and no debugging or profiling extension altering timings. PHP 8.5 results may be useful, but they must not be combined with PHP 8.4 results as if they came from the same environment.
 
-one-off stopwatch results are not performance evidence. Warmup is required. Multiple iterations are required. The environment fingerprint must match before two baselines are treated as comparable. Shared GitHub-hosted runners are useful for smoke validation, but they are not authoritative sources for absolute wall-clock regression budgets. Future blocking budgets must come from a controlled or proven low-noise environment.
+one-off stopwatch results are not performance evidence. Warmup is required. Multiple iterations are required. The environment fingerprint must match before two baselines are treated as comparable. Shared GitHub-hosted runners are useful for smoke validation and benchmark policy checks, but they are not authoritative sources for absolute wall-clock regression budgets.
+
+The initial performance budget uses p50 as the blocking metric. p95, p99, mean, relative standard deviation, throughput, and memory remain diagnostic evidence. No blocking memory budget is active because the accepted calibration did not establish a cross-run memory noise floor.
 
 ## Commands
 
@@ -51,6 +53,27 @@ Run the fast benchmark smoke:
 ```powershell
 php benchmarks\bin\benchmark-smoke.php
 ```
+
+Validate the tracked performance budget and compact reference summary without running a benchmark:
+
+```powershell
+php benchmarks\bin\performance-budget.php --budget benchmarks\budgets\performance-budget.json --validate-reference
+```
+
+Evaluate a controlled EvolvePHP comparator candidate directory:
+
+```powershell
+php benchmarks\bin\performance-budget.php --budget benchmarks\budgets\performance-budget.json --candidate benchmarks\results\local\comparator-candidate
+```
+
+Budget evaluation states:
+
+- `pass`: p50 is within the accepted observed calibration envelope.
+- `warn`: p50 is outside the observed calibration envelope but not a blocking regression under the scenario policy.
+- `fail`: a blocking warm HTTP p50 threshold was exceeded.
+- `incomparable`: identity, protocol, availability, source-cleanliness, sample-count, or normalized-result requirements do not allow timing comparison.
+
+Exit code `0` means pass or non-blocking warning. Exit code `1` means a blocking regression. Exit code `2` means incomparable evidence or invalid policy/reference data.
 
 Run internal Core scenarios:
 
@@ -112,7 +135,9 @@ A result qualifies as a reference baseline only when the documented PHP 8.4 prot
 
 Baseline comparison must reject casual comparisons when the environment fingerprint differs. The normalized result schema includes scenario identifiers, sample counts, timing statistics, percentiles when enough samples exist, relative standard deviation, throughput where derivable, memory fields, environment fingerprint, source SHA, and schema version.
 
-Cross-framework comparison, optimization work, and regression budgets are intentionally outside this initial harness. They should be introduced only after baseline measurements are reproducible and the relevant comparison methodology is defined.
+Cross-framework comparison, optimization work, and regression budgets require reproducible controlled evidence and matching comparison identity. The benchmark-only budget policy lives under `benchmarks/budgets/performance-budget.json`, and the compact reference artifacts live under `benchmarks/results/reference/`.
+
+Warm HTTP p50 scenarios have blocking thresholds derived from the accepted EvolvePHP-only controlled calibration. `application_boot` is currently monitor-only because its accepted calibration showed high within-run relative standard deviation and volatile tail timing. It can warn when it exceeds the observed envelope or the provisional observation boundary, but it does not produce a blocking timing failure in this policy version.
 
 ## Cross-Framework Comparator Infrastructure
 
@@ -130,7 +155,7 @@ Install the benchmark harness explicitly:
 composer install --working-dir=benchmarks --no-interaction
 ```
 
-Install comparator fixtures only when doing framework-maintainer comparator work:
+Install comparator fixtures only when doing controlled comparator work:
 
 ```powershell
 composer install --working-dir=benchmarks/comparators/evolvephp --no-interaction
@@ -252,5 +277,14 @@ Any local comparator output is local and non-canonical. It may prove fixture cor
 Candidate evidence is useful while developing or reviewing the harness. Store it under ignored local paths such as `benchmarks/results/local/comparator-candidate/`. Candidate evidence must be labelled local or candidate unless it is generated from the committed implementation reference in the controlled lane.
 
 Canonical reference evidence requires PHP exactly 8.4.25, OPcache enabled for CLI, JIT disabled, the same php.ini/configuration and extension set for all comparator processes, and ext-phalcon 5.20.3 loaded when the five-framework lane is claimed. Shared GitHub-hosted runner wall-clock timing is not authoritative comparator evidence.
+
+The tracked reference directory contains compact, intentional artifacts:
+
+- `benchmarks/results/reference/performance-summary.json`
+- `benchmarks/results/reference/performance-report.md`
+
+Raw 100-sample process records, command streams, and disposable candidate directories remain local or externally archived. They should not be committed to the repository.
+
+The budget evaluator rejects blind timing comparisons. It requires matching execution-environment fingerprint, comparator identity, scenario identity, matrix hash, EvolvePHP comparator lock hash, fixture identity hash, sample protocol, repeated-warm operations protocol, availability state, clean candidate evidence, valid source SHA, and well-formed normalized results.
 
 The public reporting policy is a non-ranking policy. Per-scenario evidence and limitations may be published, but broad claims such as fastest framework, top-three placement, composite rankings, or one framework generally beating another belong to later accepted performance-budget work.
