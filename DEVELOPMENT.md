@@ -136,11 +136,11 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-Phase 2.10A keeps the release packages mapped explicitly in `release-packages.json`. Phase 6.4E extends that dependency-compatible map to seven packages by appending DevTools after the existing six-package order: contracts, core, module, plugin, http, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains seven packages in this order: contracts, core, module, plugin, http, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
-`release:validate` is distinct from `quality`. It is also distinct from network-dependent `supply-chain`. Package splitting is Phase 2.10B validation work, and prerelease consumer stability is validated by the Phase 2.10B consumer matrix. RFC 0003 remains authoritative for release and version policy.
+`release:validate` is distinct from `quality`. It is also distinct from network-dependent `supply-chain`. Package splitting is validated by `release:split:validate`, and prerelease consumer stability is validated by the offline consumer matrix. RFC 0003 remains authoritative for release and version policy.
 
 ### Package Split Validation
 
@@ -229,7 +229,7 @@ Dependabot alerts and Dependabot security updates are GitHub settings. `.github/
 
 ## VS Code Developer Experience
 
-VS Code is optional developer tooling, not framework runtime configuration. The repository root is the VS Code workspace; no separate `.code-workspace` file is required for this phase.
+VS Code is optional developer tooling, not framework runtime configuration. The repository root is the VS Code workspace; no separate `.code-workspace` file is required.
 
 The committed recommendations are intentionally minimal: EditorConfig for shared editor whitespace policy and Intelephense for PHP 8.4 language-analysis support. The Intelephense setting targets PHP 8.4 syntax and symbols for editor feedback, but it does not replace actual PHP 8.4+ execution.
 
@@ -338,7 +338,7 @@ packages/plugin/src
 packages/testing/src
 ```
 
-Package tests are excluded from Phase 2.5 Deptrac boundary analysis so test dependencies cannot weaken production rules. Physical package paths define layers, and package namespaces must match the package paths:
+Package tests are excluded from Deptrac boundary analysis so test dependencies cannot weaken production rules. Physical package paths define layers, and package namespaces must match the package paths:
 
 ```text
 Contracts -> packages/contracts/src/.* -> Evolve\Contracts\
@@ -378,7 +378,7 @@ PsrHttpMessage
 PsrHttpServer
 ```
 
-`PsrContainer` represents the approved PSR-11 interoperability layer used by Core and, starting in Phase 5.4, by Contracts specifically for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http.
+`PsrContainer` represents the approved PSR-11 interoperability layer used by Core and by Contracts for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http.
 
 These PSR HTTP interfaces are external interoperability standards and do not change the first-party Evolve package dependency direction. Adding `psr/http-factory` does not require a new Deptrac external namespace layer because PSR-17 factory interfaces live under `Psr\Http\Message`. Http still depends inward on Contracts and Core, while the other first-party packages do not receive direct PSR HTTP access in this foundation.
 
@@ -434,9 +434,9 @@ The root quality matrix runs PHP 8.4 and PHP 8.5. Each matrix entry validates Co
 composer quality
 ```
 
-The initial Phase 2.6 CI matrix has successfully executed. Root quality passes on PHP 8.4 and PHP 8.5, and the root policy job passes on PHP 8.4 for the current tooling and package foundation. This evidence applies to the current workspace, tooling and package foundation only.
+The current CI matrix has successfully executed. Root quality passes on PHP 8.4 and PHP 8.5, and the root policy job passes on PHP 8.4 for the current tooling and package foundation. This evidence applies to the current workspace, tooling and package foundation only.
 
-PHP 8.5 evidence for the current root quality pipeline is recorded by the Phase 2.6 CI matrix.
+PHP 8.5 evidence for the current root quality pipeline is recorded by the CI matrix.
 
 The EvolvePHP 2 runtime implementation is incomplete, so this is not a broader runtime-production compatibility claim.
 
@@ -446,7 +446,7 @@ Action dependencies are pinned by immutable full-SHA references. The reviewed re
 
 ## Compatibility Evidence
 
-EvolvePHP 2 requires PHP 8.4 as the baseline. The Phase 2.6 CI matrix has successfully executed in GitHub Actions: the current root quality pipeline passes on PHP 8.4 and PHP 8.5, and the root policy job passes on PHP 8.4.
+EvolvePHP 2 requires PHP 8.4 as the baseline. The current CI matrix has successfully executed in GitHub Actions: the current root quality pipeline passes on PHP 8.4 and PHP 8.5, and the root policy job passes on PHP 8.4.
 
 This verifies the current workspace, tooling and package foundation only. The preserved EvolvePHP 1 runtime is excluded, and the EvolvePHP 2 runtime implementation remains incomplete.
 
@@ -454,9 +454,8 @@ This verifies the current workspace, tooling and package foundation only. The pr
 
 The following work remains deferred:
 
-- committed-ref package split validation after a reviewed Phase 4.7 commit
 - package publication, tags and GitHub releases
-- Runtime framework implementation beyond the completed Phase 4 HTTP package foundation
-- Phase 5 module/plugin runtime work
+- Runtime framework implementation beyond the completed HTTP package foundation
+- full Module/Plugin runtime managers
 - broader developer tooling beyond `module:new` and `plugin:new`
-- Phase 6.4F broader Testing utilities beyond the command-output recorder
+- broader Testing utilities beyond the command-output recorder

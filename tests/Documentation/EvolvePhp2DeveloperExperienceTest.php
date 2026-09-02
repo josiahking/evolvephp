@@ -19,7 +19,7 @@ final class EvolvePhp2DeveloperExperienceTest extends TestCase
             '.vscode/settings.json',
             '.vscode/tasks.json',
         ) as $path) {
-            $this->assertFileExists($this->projectPath($path), $path . ' should be committed for the Phase 2.8 developer-experience foundation.');
+            $this->assertFileExists($this->projectPath($path), $path . ' should be committed for the developer-experience foundation.');
         }
     }
 

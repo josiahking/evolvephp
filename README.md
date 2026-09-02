@@ -2,11 +2,9 @@
 
 `2.x` is the designated EvolvePHP 2 development branch and the GitHub default branch.
 
-`master` remains the preserved EvolvePHP 1 legacy branch for historical reference and explicitly approved legacy maintenance. EvolvePHP 2 development and proposed changes must not target `master`.
+`master` remains the preserved EvolvePHP 1 legacy branch for historical reference and explicitly approved legacy maintenance. EvolvePHP 2 changes must not target `master`.
 
-EvolvePHP 2 is a separate redesign, not an in-place refactor, replacement or rewrite of the EvolvePHP 1 runtime history.
-
-Phase 4.7 promoted the EvolvePHP 2 Composer, PHPUnit, PHPStan, PHP-CS-Fixer, Deptrac, release-validation and supply-chain development root from `workspace/` to the repository root. The root project is not a release package. That root cutover does not delete `master`, does not delete history and does not change the preserved EvolvePHP 1 line.
+EvolvePHP 2 is a separate redesign, not an in-place refactor, replacement or rewrite of the EvolvePHP 1 runtime history. The repository root is the EvolvePHP 2 Composer, PHPUnit, PHPStan, PHP-CS-Fixer, Deptrac, release-validation and supply-chain development root. The root project is not a release package, and this root layout does not delete `master`, delete history or change the preserved EvolvePHP 1 line.
 
 ## Project Overview
 
@@ -21,7 +19,7 @@ EvolvePHP 2 requires PHP 8.4. The current root quality pipeline is verified by G
 - EvolvePHP 2 development branch: `2.x`
 - GitHub default branch: `2.x`
 - Legacy line: EvolvePHP 1 on `master`
-- Required `2.x` checks: `Policy (PHP 8.4)`, `Workspace quality (PHP 8.4)`, `Workspace quality (PHP 8.5)`
+- Required `2.x` checks: `Policy (PHP 8.4)`, `Workspace quality (PHP 8.4)`, `Workspace quality (PHP 8.5)`, `Benchmark policy (PHP 8.4)`
 - Runtime implementation: not yet complete
 - Release status: pre-release, not production-ready
 - Package publication: packages are not yet independently published
@@ -32,13 +30,13 @@ EvolvePHP 2 requires PHP 8.4. The current root quality pipeline is verified by G
 
 ## Branch Governance
 
-Phase 2.7B completed the external governance transition without replacing history. Repository rulesets actively protect both branch lines: `master` remains preserved, and `2.x` receives default-branch development changes.
+Repository rulesets actively protect both branch lines: `master` remains preserved, and `2.x` receives default-branch development changes.
 
 The `master` ruleset requires pull requests, blocks deletion, blocks force-pushes, keeps required approvals at zero, requires conversation resolution and has no bypass actors.
 
-The `2.x` ruleset requires pull requests, blocks deletion, blocks force-pushes, enforces required CI status checks with strict up-to-date status-check policy, keeps required approvals at zero, requires conversation resolution and has no bypass actors.
+The `2.x` ruleset requires pull requests, blocks deletion, blocks force-pushes, enforces required CI status checks with strict up-to-date status-check policy, keeps required approvals at zero, requires conversation resolution and has no bypass actors. The required checks are `Policy (PHP 8.4)`, `Workspace quality (PHP 8.4)`, `Workspace quality (PHP 8.5)` and `Benchmark policy (PHP 8.4)`.
 
-`master` has not been renamed or deleted, no branch was renamed or deleted, no `main` branch has been created, and no `1.x` branch has been created. Any stable-release branch rename or promotion remains deferred. Phase 2.7 does not replace the legacy history.
+`master` has not been renamed or deleted, no branch was renamed or deleted, no `main` branch has been created, and no `1.x` branch has been created. Any stable-release branch rename or promotion remains deferred. The legacy history is preserved.
 
 ## Requirements
 
@@ -54,7 +52,8 @@ The preserved EvolvePHP 1 line has different historical requirements. Use `maste
 evolvephp/
 |-- docs/history/    # Preserved EvolvePHP 1 historical documentation
 |-- docs/rfcs/       # Accepted EvolvePHP 2 RFCs and governance index
-|-- packages/        # Six EvolvePHP 2 package boundaries
+|-- packages/        # EvolvePHP 2 package boundaries
+|-- skeleton/        # End-user application template
 |-- tests/           # Architecture and documentation policy tests
 |-- tools/           # Root release and supply-chain validation tools
 |-- composer.json    # EvolvePHP 2 root development manifest
@@ -63,7 +62,7 @@ evolvephp/
 `-- README.md        # EvolvePHP 2 branch entry point
 ```
 
-The EvolvePHP 1 runtime files are not present in the `2.x` working tree after Phase 4.7. They remain preserved on `master` and in Git history.
+The EvolvePHP 1 runtime files are not present in the `2.x` working tree. They remain preserved on `master` and in Git history.
 
 ## Getting Started
 
@@ -83,7 +82,7 @@ Use [DEVELOPMENT.md](DEVELOPMENT.md) for detailed Composer, PHPUnit, PHPStan, PH
 
 The current EvolvePHP 2 package set is documented in [packages/README.md](packages/README.md).
 
-The package architecture uses explicit namespace ownership and inward dependency direction. Runtime contracts and framework behavior are added through approved implementation phases.
+The package architecture uses explicit namespace ownership and inward dependency direction. Runtime contracts and framework behavior are added through reviewed implementation work.
 
 ## EvolvePHP 1 History
 

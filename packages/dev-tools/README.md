@@ -18,7 +18,7 @@ PHP `^8.4`
 
 ## Generator Commands
 
-Phase 6.4E adds two public experimental command adapters:
+The package provides two public experimental command adapters:
 
 - `Evolve\DevTools\Console\ModuleNewCommand`
 - `Evolve\DevTools\Console\PluginNewCommand`

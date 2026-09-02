@@ -143,7 +143,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/## Release Validation/',
             '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
-            '/seven packages.*mapped explicitly|mapped explicitly.*seven packages|extends.*map.*seven packages/i',
+            '/seven packages.*mapped explicitly|mapped explicitly.*seven packages|map contains seven packages/i',
             '/dependency-compatible/i',
             '/package-local README/i',
             '/package-local.*licen[cs]es/i',
@@ -154,9 +154,9 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/package Composer manifests remain authoritative/i',
             '/distinct from `quality`/i',
             '/distinct from.*`supply-chain`/i',
-            '/package splitting is Phase 2\.10B/i',
+            '/package splitting.*release:split:validate|release:split:validate.*package splitting/i',
             '/remote synchronization.*Packagist.*deferred/i',
-            '/prerelease consumer stability.*2\.10B/i',
+            '/prerelease consumer stability.*offline consumer matrix|offline consumer matrix.*prerelease consumer stability/i',
             '/RFC 0003 remains authoritative/i',
         ) as $pattern) {
             $this->assertMatchesPattern($pattern, $content);

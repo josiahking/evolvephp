@@ -403,8 +403,6 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             'application CLI composition is explicit',
             'Core remains independent of HTTP',
             'Packagist create-project availability is not yet claimed',
-            'Phase 6.4E',
-            'Phase 6.4F',
             'minimum-stability: alpha',
             'prefer-stable: true',
             'Explicit root `@alpha` flags',
