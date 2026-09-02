@@ -157,8 +157,6 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
             'Core remains independent of HTTP',
             'composer release:skeleton:validate',
             'Packagist',
-            '6.4E',
-            '6.4F',
             'module:new',
             'plugin:new',
             'composer test',

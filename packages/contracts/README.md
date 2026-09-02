@@ -4,7 +4,7 @@ Foundational public contracts for EvolvePHP 2.
 
 ## Public Contracts
 
-Phase 3.4 extends the initial stable public contract surface:
+The stable public contract surface includes:
 
 - `Evolve\Contracts\Lifecycle\ApplicationLifecycle`
 - `Evolve\Contracts\Configuration\Configuration`
@@ -22,7 +22,7 @@ Configuration files, environment and dotenv loading, container access, service d
 
 ## Experimental Component Identity
 
-Phase 5.1 adds experimental component identity vocabulary shared by future Module and Plugin metadata:
+The package includes experimental component identity vocabulary shared by Module and Plugin metadata:
 
 - `Evolve\Contracts\Component\ComponentIdentifier`
 - `Evolve\Contracts\Component\ComponentType`
@@ -41,11 +41,11 @@ alnum = lowercase ASCII letter | ASCII digit
 
 The grammar allows either `side` or `side/side`, with at most one `/`. Each side is non-empty, starts and ends with lowercase ASCII alphanumeric characters, and may contain lowercase ASCII alphanumeric characters, `.`, `_` or `-` internally. Accepted input is preserved exactly; no trimming, lowercasing or normalization occurs.
 
-`ComponentType` is the experimental Module/Plugin identity vocabulary only. `ApplicationLifecycle` remains application lifecycle, and `ResetParticipant` remains execution reset. Phase 5.1 does not implement Module/Plugin lifecycle entry points; lifecycle, descriptor behavior, discovery, registration, boot, ready and shutdown behavior remain deferred.
+`ComponentType` is the experimental Module/Plugin identity vocabulary only. `ApplicationLifecycle` remains application lifecycle, and `ResetParticipant` remains execution reset. These identity value objects do not implement Module/Plugin lifecycle entry points, descriptor behavior, discovery, registration, boot, ready or shutdown behavior.
 
 ## Experimental Component Graph Declarations
 
-Phase 5.3A adds public experimental declaration vocabulary for component dependency, conflict and capability metadata:
+The package includes public experimental declaration vocabulary for component dependency, conflict and capability metadata:
 
 - `Evolve\Contracts\Component\ComponentGraphDeclaration`
 - `Evolve\Contracts\Component\ComponentGraphRelations`
@@ -71,19 +71,19 @@ capability = alnum | alnum { alnum | "." | "_" | "-" } alnum
 alnum = lowercase ASCII letter | ASCII digit
 ```
 
-Phase 5.3A does not implement dependency resolution, missing dependency errors, optional dependency activation, conflict resolution, capability-provider indexing or selection, ambiguity resolution, cycle detection, startup ordering, component versions, version constraints or Composer SemVer graph decisions. Phase 5.3B owns graph validation and resolution behavior; later Phase 5 slices own registration, lifecycle and discovery.
+These declaration contracts do not implement dependency resolution, missing dependency errors, optional dependency activation, conflict resolution, capability-provider indexing or selection, ambiguity resolution, cycle detection, startup ordering, component versions, version constraints or Composer SemVer graph decisions. Core owns graph validation and resolution behavior; registration, lifecycle and discovery are separate concerns.
 
 ## Experimental Component Service Registration
 
-Phase 5.4 adds `Evolve\Contracts\Component\Registration\ServiceDefinitionRegistrar` as a public experimental, contribution-only service-definition boundary. Components may contribute Application, Execution or Transient service definitions through the three explicit registration methods only.
+`Evolve\Contracts\Component\Registration\ServiceDefinitionRegistrar` is a public experimental, contribution-only service-definition boundary. Components may contribute Application, Execution or Transient service definitions through the three explicit registration methods only.
 
 Factories are documented as accepting zero or one active PSR-11 resolver argument. This gives Contracts deliberate external-standard access to `Psr\Container\ContainerInterface` for the public factory contract, but Contracts remains first-party-inward and is not a container implementation.
 
-Core owns the restricted registrar implementation, registration ordering, staging and atomic publication. Registration order comes from `ResolvedComponentGraph`, service definitions are staged before publication, registration failure publishes nothing, registration does not resolve or construct services, and registration does not freeze the registry. `ApplicationKernel` integration, entry-point lifecycle, boot and ready were deferred from Phase 5.4 to Phase 5.5; explicit application-controlled enablement is introduced in Phase 5.6A while discovery remains deferred.
+Core owns the restricted registrar implementation, registration ordering, staging and staged atomic publication. Registration order comes from `ResolvedComponentGraph`, service definitions are staged before publication, registration failure publishes nothing, registration does not resolve or construct services, and registration does not freeze the registry. `ApplicationKernel` integration, entry-point lifecycle, boot and ready are handled by the component lifecycle coordinator; explicit application-controlled enablement is handled by component definitions and Core bootstrap while discovery remains deferred.
 
 ## Experimental Component Lifecycle Entry Points
 
-Phase 5.5 adds `Evolve\Contracts\Component\ComponentEntryPoint` and `Evolve\Contracts\Component\ComponentBootContext` as public experimental Module/Plugin lifecycle contracts.
+`Evolve\Contracts\Component\ComponentEntryPoint` and `Evolve\Contracts\Component\ComponentBootContext` are public experimental Module/Plugin lifecycle contracts.
 
 `ComponentEntryPoint` exposes exactly four lifecycle callbacks: `register(ServiceDefinitionRegistrar $registrar): void`, `boot(ComponentBootContext $context): void`, `ready(): void` and `shutdown(): void`. Registration remains the contribution-only service-definition phase; boot runs only after registration succeeds and Core freezes the service-definition graph; ready runs only after every enabled component boots successfully; shutdown is the application-lifetime cleanup callback for successfully booted components.
 
@@ -93,11 +93,11 @@ Discovery remains deferred. These contracts do not provide runtime auto-discover
 
 ## Experimental Component Definitions
 
-Phase 5.6A adds `Evolve\Contracts\Component\ComponentDefinition` as a public experimental bridge between already-created descriptor metadata and lifecycle entry-point creation.
+`Evolve\Contracts\Component\ComponentDefinition` is a public experimental bridge between already-created descriptor metadata and lifecycle entry-point creation.
 
 A component definition exposes the component identifier, component type, exact `ComponentGraphDeclaration` object, explicit startup validation and explicit `ComponentEntryPoint` creation. Implementations are application-supplied and are prepared before Core resolves the active component graph or runs lifecycle callbacks.
 
-This contract does not define package discovery, Composer `extra` metadata, descriptor file formats, automatic installation scanning, component self-enablement, component versions, dependency version ranges or SemVer graph decisions. Those concerns remain outside Phase 5.6A.
+This contract does not define package discovery, Composer `extra` metadata, descriptor file formats, automatic installation scanning, component self-enablement, component versions, dependency version ranges or SemVer graph decisions.
 
 ## Package
 

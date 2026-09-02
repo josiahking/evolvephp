@@ -214,7 +214,7 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
             '/no initial dependency cache|dependency cache.*not/i',
             '/immutable.*full-SHA|full-SHA.*immutable/i',
             '/release comments.*SHA|SHA.*release comments/i',
-            '/Phase 2\.6 CI matrix.*successfully executed|successfully executed.*Phase 2\.6 CI matrix/i',
+            '/CI matrix.*successfully executed|successfully executed.*CI matrix/i',
             '/ quality.*passes.*PHP 8\.4.*PHP 8\.5|PHP 8\.4.*PHP 8\.5.*root quality.*passes/i',
             '/current.*(?:workspace|tooling|package foundation)|(?:workspace|tooling|package foundation).*current/i',
             '/EvolvePHP 1 runtime.*(?:not part|excluded)|(?:not part|excluded).*EvolvePHP 1 runtime/i',

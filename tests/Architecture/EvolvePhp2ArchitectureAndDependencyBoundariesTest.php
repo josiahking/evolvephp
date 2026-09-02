@@ -153,13 +153,13 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             '/deptrac\/deptrac/i',
             '/qossmic\/deptrac/i',
             '/production source directories/i',
-            '/tests? (?:are|is) excluded|excluded from Phase 2\.5/i',
+            '/tests? (?:are|is) excluded|excluded from Deptrac/i',
             '/physical package paths?/i',
             '/no production dependency on Testing/i',
             '/uncovered dependencies fail/i',
             '/no baseline|baseline.*not/i',
             '/no graph|graph.*not/i',
-            '/PHP 8\.5.*Phase 2\.6/i',
+            '/PHP 8\.5.*CI matrix|CI matrix.*PHP 8\.5/i',
         ) as $developmentPattern) {
             $this->assertMatchesPattern($developmentPattern, $developmentGuide);
         }
@@ -180,14 +180,14 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         $this->assertMatchesPattern('/no production dependency on Testing/i', $packagesReadme);
         $this->assertMatchesPattern('/DEVELOPMENT\.md/i', $packagesReadme);
         $this->assertMatchesPattern('/runtime implementation.*not yet present|not yet present.*runtime implementation/i', $packagesReadme);
-        $this->assertMatchesPattern('/Phase 4\.1.*PSR.*HTTP.*middleware/is', $packagesReadme);
+        $this->assertMatchesPattern('/PSR HTTP.*middleware|middleware.*PSR HTTP|PSR-15.*middleware/is', $packagesReadme);
         $this->assertMatchesPattern('/MiddlewarePipeline/i', $packagesReadme);
-        $this->assertMatchesPattern('/Phase 4\.2.*routing foundation/is', $packagesReadme);
+        $this->assertMatchesPattern('/route definitions.*matching|RouteCollection.*RouteMatcher/is', $packagesReadme);
         $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/i', $packagesReadme);
 
         $this->assertMatchesPattern('/PsrContainer/i', $developmentGuide);
         $this->assertMatchesPattern('/Contracts external standards.*PsrContainer|PsrContainer.*Contracts external standards/is', $developmentGuide);
-        $this->assertMatchesPattern('/Phase 5\.4.*service-definition factory contract|service-definition factory contract.*Phase 5\.4/is', $developmentGuide);
+        $this->assertMatchesPattern('/ServiceDefinitionRegistrar.*service-definition factory contract|service-definition factory contract.*ServiceDefinitionRegistrar/is', $developmentGuide);
         $this->assertMatchesPattern('/PsrHttpMessage/i', $developmentGuide);
         $this->assertMatchesPattern('/PsrHttpServer/i', $developmentGuide);
         $this->assertMatchesPattern('/PSR HTTP interfaces.*external interoperability standards|external interoperability standards.*PSR HTTP interfaces/is', $developmentGuide);
@@ -296,8 +296,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         }
 
         foreach (array('Contracts', 'Core', 'DevTools', 'Module', 'Plugin', 'Testing') as $layerName) {
-            $this->assertNotContains('PsrHttpMessage', $rulesets[$layerName], $layerName . ' must not access PSR-7 HTTP message interfaces directly in Phase 4.1.');
-            $this->assertNotContains('PsrHttpServer', $rulesets[$layerName], $layerName . ' must not access PSR-15 HTTP server interfaces directly in Phase 4.1.');
+            $this->assertNotContains('PsrHttpMessage', $rulesets[$layerName], $layerName . ' must not access PSR-7 HTTP message interfaces directly.');
+            $this->assertNotContains('PsrHttpServer', $rulesets[$layerName], $layerName . ' must not access PSR-15 HTTP server interfaces directly.');
         }
 
         return $rulesets;

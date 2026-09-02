@@ -188,30 +188,30 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/minimal Core console foundation|runtime-neutral command foundation/i', $content);
         $this->assertMatchesPattern('/CommandRunner|CommandInput|CommandOutput|CommandResult/i', $content);
         $this->assertMatchesPattern('/CliCommand/i', $content);
-        $this->assertMatchesPattern('/Phase 4\.1.*PSR.*HTTP.*middleware/is', $content);
+        $this->assertMatchesPattern('/PSR HTTP.*middleware|PSR-15.*middleware|middleware.*PSR HTTP/is', $content);
         $this->assertMatchesPattern('/MiddlewarePipeline/i', $content);
-        $this->assertMatchesPattern('/Phase 4\.2.*routing foundation/is', $content);
+        $this->assertMatchesPattern('/route definitions.*matching|RouteCollection.*RouteMatcher/is', $content);
         $this->assertMatchesPattern('/RouteCollection|RouteMatcher/i', $content);
-        $this->assertMatchesPattern('/Phase 4\.3.*routed handler dispatch/is', $content);
+        $this->assertMatchesPattern('/routed handler dispatch/is', $content);
         $this->assertMatchesPattern('/RoutingRequestHandler/i', $content);
         $this->assertMatchesPattern('/RouteNotFound|MethodNotAllowed/i', $content);
-        $this->assertMatchesPattern('/Phase 4\.4.*HTTP execution-kernel integration/is', $content);
+        $this->assertMatchesPattern('/HTTP execution-kernel integration/is', $content);
         $this->assertMatchesPattern('/HttpKernel/i', $content);
         $this->assertMatchesPattern('/ExecutionOrchestrator.*HttpRequest|HttpRequest.*ExecutionOrchestrator/is', $content);
         $this->assertMatchesPattern('/ExecutionOutcome/i', $content);
         $this->assertMatchesPattern('/RouteNotFound.*empty 404|empty 404.*RouteNotFound/is', $content);
         $this->assertMatchesPattern('/MethodNotAllowed.*empty 405|empty 405.*MethodNotAllowed/is', $content);
-        $this->assertMatchesPattern('/Phase 4\.5.*response\/error.*health foundation/is', $content);
+        $this->assertMatchesPattern('/response\/error.*health|response.*health handling/is', $content);
         $this->assertMatchesPattern('/ExecutionOutcomeResponseResolver/i', $content);
         $this->assertMatchesPattern('/LivenessHandler|ReadinessHandler/i', $content);
-        $this->assertMatchesPattern('/Phase 4\.6.*ResponseEmitter/is', $content);
+        $this->assertMatchesPattern('/ResponseEmitter/i', $content);
         $this->assertMatchesPattern('/runtime-neutral response-emission boundary|runtime-neutral response emission boundary/i', $content);
         $this->assertMatchesPattern('/response resolution.*emission|emission.*response resolution/is', $content);
         $this->assertMatchesPattern('/Runtime.*concrete transmission|concrete transmission.*Runtime/is', $content);
         $this->assertMatchesPattern('/Runtime.*quarantine.*recycle.*termination|quarantine.*recycle.*termination.*Runtime/is', $content);
         $this->assertMatchesPattern('/no concrete SAPI emitter|concrete SAPI emitter.*not/i', $content);
         $this->assertMatchesPattern('/concrete PSR-7 implementation.*not|no concrete PSR-7 implementation/i', $content);
-        $this->assertMatchesPattern('/Phase 4 HTTP package foundation.*complete|complete.*Phase 4 HTTP package foundation/i', $content);
+        $this->assertMatchesPattern('/HTTP package foundation.*complete|complete.*HTTP package foundation/i', $content);
         $this->assertMatchesPattern('/complete production runtime.*deferred|production runtime.*still.*deferred/i', $content);
         $this->assertMatchesPattern('/OpenTelemetry propagation.*deferred|trace context.*OpenTelemetry.*deferred/is', $content);
         $this->assertMatchesPattern('/Runtime adapters.*deferred|Runtime.*adapters.*deferred/i', $content);
@@ -229,7 +229,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertDoesNotMatchPattern('/' . preg_quote($probeHistory, '/') . '/i', $content);
     }
 
-    public function testContractsReadmeDocumentsPhase51ComponentIdentityFoundation(): void
+    public function testContractsReadmeDocumentsComponentIdentityFoundation(): void
     {
         $content = $this->readProjectFile('packages/contracts/README.md');
 
@@ -239,40 +239,47 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/identifier grammar/i', $content);
         $this->assertMatchesPattern('/no normalization|not normaliz/i', $content);
         $this->assertMatchesPattern('/Module.*Plugin.*identity vocabulary|Plugin.*Module.*identity vocabulary/is', $content);
-        $this->assertMatchesPattern('/lifecycle.*deferred|deferred.*lifecycle/is', $content);
-        $this->assertMatchesPattern('/descriptor.*deferred|deferred.*descriptor/is', $content);
+        $this->assertMatchesPattern(
+            '/identity value objects.*do not implement.*lifecycle entry points.*descriptor behavior.*discovery.*registration.*boot.*ready.*shutdown/is',
+            $content
+        );
     }
 
-    public function testPackageOverviewDocumentsPhase51ComponentIdentityFoundationBoundary(): void
+    public function testPackageOverviewDocumentsComponentIdentityFoundationBoundary(): void
     {
         $content = $this->readProjectFile('packages/README.md');
 
-        $this->assertMatchesPattern('/Phase 5\.1.*Component Identity Foundation/is', $content);
+        $this->assertMatchesPattern('/component identity vocabulary|shared identity vocabulary/i', $content);
         $this->assertMatchesPattern('/experimental shared identity vocabulary|shared experimental identity vocabulary/i', $content);
-        $this->assertMatchesPattern('/Module\/Plugin entry points.*not implemented|not implemented.*Module\/Plugin entry points/is', $content);
-        $this->assertMatchesPattern('/descriptors?.*deferred|deferred.*descriptors?/i', $content);
-        $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery/i', $content);
-        $this->assertMatchesPattern('/registration.*deferred|deferred.*registration/i', $content);
-        $this->assertMatchesPattern('/boot.*ready.*shutdown.*deferred|deferred.*boot.*ready.*shutdown/is', $content);
+        $this->assertMatchesPattern('/ComponentIdentifier.*ComponentType|ComponentType.*ComponentIdentifier/is', $content);
+        $this->assertMatchesPattern('/identity value objects.*do not.*descriptor.*discovery.*registration.*lifecycle|do not.*descriptor.*discovery.*registration.*lifecycle.*identity value objects/is', $content);
+        $this->assertMatchesPattern('/Module\/Plugin entry points.*implemented by separate lifecycle contracts|entry points.*separate lifecycle contracts/is', $content);
+        $this->assertMatchesPattern('/descriptors?.*separate package|separate package.*descriptors?/i', $content);
+        $this->assertMatchesPattern('/registration.*Core|Core.*registration/i', $content);
+        $this->assertMatchesPattern('/Module discovery.*deferred|discovery remains deferred/i', $content);
+        $this->assertMatchesPattern('/ComposerPluginDiscovery|packaged Plugin Composer discovery/i', $content);
     }
 
-    public function testPhase52ModuleAndPluginDescriptorFoundationIsDocumented(): void
+    public function testModuleAndPluginDescriptorFoundationIsDocumented(): void
     {
         $moduleReadme = $this->readProjectFile('packages/module/README.md');
         $pluginReadme = $this->readProjectFile('packages/plugin/README.md');
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array($moduleReadme, $pluginReadme, $packagesReadme, $changelog) as $content) {
-            $this->assertMatchesPattern('/Phase 5\.2/i', $content);
+        foreach (array($moduleReadme, $pluginReadme, $packagesReadme) as $content) {
             $this->assertMatchesPattern('/experimental/i', $content);
             $this->assertMatchesPattern('/immutable descriptor/i', $content);
             $this->assertMatchesPattern('/EvolvePHP-major compatibility validation|EvolvePHP major compatibility validation/i', $content);
-            $this->assertMatchesPattern('/graph validation.*resolution.*deferred|dependency resolution.*deferred|deferred.*dependency resolution/is', $content);
-            $this->assertMatchesPattern('/entry-point.*deferred|deferred.*entry-point|lifecycle.*deferred|deferred.*lifecycle/is', $content);
+            $this->assertMatchesPattern('/graph validation.*resolution.*Core|Core.*graph validation.*resolution|handled by Core graph resolution/is', $content);
+            $this->assertDoesNotMatchPattern('/(?:dependency resolution|graph validation).*remain deferred to Core graph resolution/i', $content);
+            $this->assertMatchesPattern('/entry-point|lifecycle/is', $content);
             $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery/is', $content);
-            $this->assertMatchesPattern('/enablement.*deferred|deferred.*enablement/is', $content);
+            $this->assertMatchesPattern('/enablement/i', $content);
         }
+
+        $this->assertMatchesPattern('/Phase 5\.2/i', $changelog);
+        $this->assertMatchesPattern('/immutable descriptor/i', $changelog);
 
         $this->assertMatchesPattern('/ModuleDescriptor/i', $moduleReadme);
         $this->assertMatchesPattern('/ComponentIdentifier/i', $moduleReadme);
@@ -291,7 +298,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/Phase 5\.2.*PluginDescriptor|PluginDescriptor.*Phase 5\.2/is', $changelog);
     }
 
-    public function testPhase53aGraphDeclarationVocabularyIsDocumentedWithoutResolutionClaims(): void
+    public function testGraphDeclarationVocabularyIsDocumentedWithoutResolutionClaims(): void
     {
         $contractsReadme = $this->readProjectFile('packages/contracts/README.md');
         $moduleReadme = $this->readProjectFile('packages/module/README.md');
@@ -299,19 +306,30 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $packagesReadme, $changelog) as $content) {
-            $this->assertMatchesPattern('/Phase 5\.3A/i', $content);
+        foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $packagesReadme) as $content) {
             $this->assertMatchesPattern('/experimental/i', $content);
             $this->assertMatchesPattern('/declaration vocabulary|graph declaration vocabulary/i', $content);
             $this->assertMatchesPattern('/required.*optional|optional.*required/is', $content);
             $this->assertMatchesPattern('/conflicts?.*declarative|declarative.*conflicts?/is', $content);
-            $this->assertMatchesPattern('/ExactlyOne|ExactlyOne/i', $content);
+            $this->assertMatchesPattern('/ExactlyOne/i', $content);
             $this->assertMatchesPattern('/OneOrMore/i', $content);
             $this->assertMatchesPattern('/provided capability identifiers?|capability identifiers?.*provided/is', $content);
             $this->assertMatchesPattern('/canonical.*order|order.*canonical/is', $content);
             $this->assertMatchesPattern('/startup-order semantics|startup order.*semantics|no startup-order/i', $content);
-            $this->assertMatchesPattern('/does not.*resolve|resolution.*deferred|resolve.*deferred/is', $content);
-            $this->assertMatchesPattern('/Phase 5\.3B/i', $content);
+            $this->assertMatchesPattern(
+                '/do(?:es)? not.*(?:resolve|implement dependency resolution)|handled by Core graph resolution|Core owns graph validation/is',
+                $content
+            );
+            $this->assertMatchesPattern('/graph validation|graph resolution|dependency resolution/i', $content);
+        }
+
+        $this->assertMatchesPattern('/Phase 5\.3A/i', $changelog);
+        $this->assertMatchesPattern('/Phase 5\.3B/i', $changelog);
+        $this->assertMatchesPattern('/ComponentGraphDeclaration|graph declaration vocabulary/i', $changelog);
+
+        foreach (array($moduleReadme, $pluginReadme) as $content) {
+            $this->assertMatchesPattern('/graph validation.*resolution.*handled by Core|handled by Core graph resolution/i', $content);
+            $this->assertDoesNotMatchPattern('/remain deferred to Core graph resolution/i', $content);
         }
 
         foreach (array($moduleReadme, $pluginReadme, $packagesReadme, $changelog) as $content) {
@@ -336,7 +354,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertSame(
             '^1.1 || ^2.0',
             $contractsManifest['require']['psr/container'] ?? null,
-            'Contracts should require PSR-11 for the Phase 5.4 public service-definition factory contract.'
+            'Contracts should require PSR-11 for the public service-definition factory contract.'
         );
         $this->assertArrayNotHasKey(
             'provide',
@@ -374,15 +392,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPhase54RestrictedRegistrationIsDocumentedWithinAcceptedBoundaries(): void
+    public function testRestrictedRegistrationIsDocumentedWithinAcceptedBoundaries(): void
     {
         $contractsReadme = $this->readProjectFile('packages/contracts/README.md');
         $coreReadme = $this->readProjectFile('packages/core/README.md');
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array($contractsReadme, $coreReadme, $packagesReadme, $changelog) as $content) {
-            $this->assertMatchesPattern('/Phase 5\.4/i', $content);
+        foreach (array($contractsReadme, $coreReadme, $packagesReadme) as $content) {
             $this->assertMatchesPattern('/ServiceDefinitionRegistrar/i', $content);
             $this->assertMatchesPattern('/experimental/i', $content);
             $this->assertMatchesPattern('/contribution-only|definition contribution/i', $content);
@@ -391,14 +408,17 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertMatchesPattern('/publish(?:es)? nothing|nothing.*publish/is', $content);
             $this->assertMatchesPattern('/does not.*resolve services|does not.*construct services|no service construction/is', $content);
             $this->assertMatchesPattern('/does not.*freeze|no automatic.*freeze/is', $content);
-            $this->assertMatchesPattern('/ApplicationKernel.*Phase 5\.5|Phase 5\.5.*ApplicationKernel/is', $content);
-            $this->assertMatchesPattern('/entry-point.*Phase 5\.5|lifecycle.*Phase 5\.5/is', $content);
+            $this->assertMatchesPattern('/ApplicationKernel/i', $content);
+            $this->assertMatchesPattern('/entry-point|lifecycle/i', $content);
             $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery/is', $content);
-            $this->assertMatchesPattern('/enablement.*Phase 5\.6A|Phase 5\.6A.*enablement/is', $content);
+            $this->assertMatchesPattern('/enablement/i', $content);
         }
+
+        $this->assertMatchesPattern('/Phase 5\.4/i', $changelog);
+        $this->assertMatchesPattern('/ServiceDefinitionRegistrar/i', $changelog);
     }
 
-    public function testPhase55ComponentLifecycleOrchestrationIsDocumentedWithinAcceptedBoundaries(): void
+    public function testComponentLifecycleOrchestrationIsDocumentedWithinAcceptedBoundaries(): void
     {
         $contractsReadme = $this->readProjectFile('packages/contracts/README.md');
         $moduleReadme = $this->readProjectFile('packages/module/README.md');
@@ -408,12 +428,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
         foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $coreReadme, $packagesReadme, $changelog) as $content) {
-            $this->assertMatchesPattern('/Phase 5\.5/i', $content);
             $this->assertMatchesPattern('/experimental/i', $content);
             $this->assertMatchesPattern('/ComponentEntryPoint/i', $content);
             $this->assertMatchesPattern('/register.*boot.*ready.*shutdown|boot.*ready.*shutdown/is', $content);
             $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery/is', $content);
-            $this->assertMatchesPattern('/enablement.*Phase 5\.6A|Phase 5\.6A.*enablement/is', $content);
+            $this->assertMatchesPattern('/enablement/i', $content);
         }
 
         $this->assertMatchesPattern('/ComponentBootContext/i', $contractsReadme);
@@ -440,16 +459,15 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertDoesNotMatchPattern('/package publication|production readiness|hot unloading|runtime auto-discovery|telemetry integration|persistent runtime certification|benchmark superiority/i', $changelog);
     }
 
-    public function testPhase53bCoreGraphResolutionIsDocumentedWithinAcceptedBoundaries(): void
+    public function testCoreGraphResolutionIsDocumentedWithinAcceptedBoundaries(): void
     {
         $coreReadme = $this->readProjectFile('packages/core/README.md');
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array($coreReadme, $packagesReadme, $changelog) as $content) {
-            $this->assertMatchesPattern('/Phase 5\.3B/i', $content);
+        foreach (array($coreReadme, $packagesReadme) as $content) {
             $this->assertMatchesPattern('/experimental/i', $content);
-            $this->assertMatchesPattern('/Core-owned graph validation|Core-owned.*graph.*resolution|graph validation.*Core-owned/is', $content);
+            $this->assertMatchesPattern('/Core-owned graph validation|Core-owned.*graph.*resolution|Core owns graph validation|graph validation.*Core owns/is', $content);
             $this->assertMatchesPattern('/ComponentGraphResolver/i', $content);
             $this->assertMatchesPattern('/ResolvedComponentGraph/i', $content);
             $this->assertMatchesPattern('/CapabilityProviderSelection/i', $content);
@@ -459,13 +477,22 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertMatchesPattern('/OneOrMore/i', $content);
             $this->assertMatchesPattern('/deterministic.*dependency-first|dependency-first.*deterministic/is', $content);
             $this->assertMatchesPattern('/cycle.*canonical|canonical.*cycle/i', $content);
-            $this->assertMatchesPattern('/registration.*deferred|deferred.*registration/is', $content);
-            $this->assertMatchesPattern('/boot.*ready.*shutdown.*deferred|deferred.*boot.*ready.*shutdown/is', $content);
-            $this->assertMatchesPattern('/discovery.*deferred|deferred.*discovery/is', $content);
-            $this->assertMatchesPattern('/enablement.*Phase 5\.6A|Phase 5\.6A.*enablement|app-controlled enablement/i', $content);
+            $this->assertMatchesPattern(
+                '/graph resolver remains separate from registration and boot|graph resolution.*separate from registration.*boot|graph validation\/resolution only/is',
+                $content
+            );
+            $this->assertMatchesPattern(
+                '/graph resolution does not itself perform registration|does not.*perform registration|graph validation\/resolution only/is',
+                $content
+            );
+            $this->assertMatchesPattern('/discovery.*separate concern|discovery remains.*deferred|deferred.*discovery/is', $content);
+            $this->assertMatchesPattern('/enablement|app-controlled enablement|application-controlled enablement/i', $content);
             $this->assertDoesNotMatchPattern('/composer\/semver/i', $content);
             $this->assertDoesNotMatchPattern('/implements?.*SemVer|SemVer.*implemented/i', $content);
         }
+
+        $this->assertMatchesPattern('/Phase 5\.3B/i', $changelog);
+        $this->assertMatchesPattern('/ComponentGraphResolver/i', $changelog);
 
         foreach (array($coreReadme, $packagesReadme) as $content) {
             $this->assertMatchesPattern('/Contracts declarations|Contracts graph declarations|consumes.*ComponentGraphDeclaration/is', $content);
@@ -473,7 +500,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    public function testPhase56aExplicitComponentBootstrapIsDocumentedWithinAcceptedBoundaries(): void
+    public function testExplicitComponentBootstrapIsDocumentedWithinAcceptedBoundaries(): void
     {
         $contractsReadme = $this->readProjectFile('packages/contracts/README.md');
         $moduleReadme = $this->readProjectFile('packages/module/README.md');
@@ -483,7 +510,6 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
         foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $coreReadme, $packagesReadme, $changelog) as $content) {
-            $this->assertMatchesPattern('/Phase 5\.6A/i', $content);
             $this->assertMatchesPattern('/experimental|pre-beta/i', $content);
             $this->assertMatchesPattern('/explicit/i', $content);
             $this->assertMatchesPattern('/Composer `extra`|Composer discovery|package scanning|automatic package scanning/i', $content);
@@ -509,18 +535,17 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertMatchesPattern('/disabled.*inert|inert.*disabled/i', $content);
             $this->assertMatchesPattern('/validat.*before.*entry-point creation|validat.*before.*creating|validate-all-before-create/i', $content);
             $this->assertMatchesPattern('/existing graph|graph resolver/i', $content);
-            $this->assertMatchesPattern('/Phase 5\.5 lifecycle coordinator|lifecycle coordinator/i', $content);
+            $this->assertMatchesPattern('/lifecycle coordinator/i', $content);
         }
     }
 
-    public function testPhase56bComposerPluginDiscoveryIsDocumentedWithinAcceptedBoundaries(): void
+    public function testComposerPluginDiscoveryIsDocumentedWithinAcceptedBoundaries(): void
     {
         $pluginReadme = $this->readProjectFile('packages/plugin/README.md');
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
         foreach (array($pluginReadme, $packagesReadme, $changelog) as $content) {
-            $this->assertMatchesPattern('/Phase 5\.6B/i', $content);
             $this->assertMatchesPattern('/ComposerPluginDiscovery/i', $content);
             $this->assertMatchesPattern('/vendor\/composer\/installed\.json|installed\.json/i', $content);
             $this->assertMatchesPattern('/extra\.evolvephp\.plugin/i', $content);
@@ -535,7 +560,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
         $this->assertMatchesPattern('/caller.*suppl.*explicit local.*installed\.json|explicit local.*installed\.json.*caller.*suppl/is', $pluginReadme);
         $this->assertMatchesPattern('/does not infer.*vendor.*project root.*current working directory.*environment configuration/is', $pluginReadme);
-        $this->assertMatchesPattern('/at most one.*Phase 5\.6B plugin/is', $pluginReadme);
+        $this->assertMatchesPattern('/at most one.*(?:discovered )?plugin/is', $pluginReadme);
         $this->assertMatchesPattern('/schema.*type.*name.*evolve_major.*entry_point/is', $pluginReadme);
         $this->assertMatchesPattern('/dependencies.*conflicts.*requires.*provides/is', $pluginReadme);
         $this->assertMatchesPattern('/required.*optional/is', $pluginReadme);
@@ -567,12 +592,12 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertArrayNotHasKey(
                 $packageName,
                 $httpManifest['require'],
-                'HTTP must not require a concrete PSR-7 implementation for Phase 4.5.'
+                'HTTP must not require a concrete PSR-7 implementation.'
             );
         }
     }
 
-    public function testHttpReadmeDocumentsPhase46ResponseEmitterAndRuntimeBoundaries(): void
+    public function testHttpReadmeDocumentsResponseEmitterAndRuntimeBoundaries(): void
     {
         $content = $this->readProjectFile('packages/http/README.md');
 

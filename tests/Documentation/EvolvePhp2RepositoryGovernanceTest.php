@@ -58,14 +58,14 @@ final class EvolvePhp2RepositoryGovernanceTest extends TestCase
         $this->assertMatchesPattern('/no `?main`? branch has been created|`?main`? branch has not been created/is', $content);
         $this->assertMatchesPattern('/no `?1\.x`? branch has been created|`?1\.x`? branch has not been created/is', $content);
         $this->assertMatchesPattern('/stable-release.*(?:rename|promotion).*deferred|deferred.*stable-release.*(?:rename|promotion)/is', $content);
-        $this->assertMatchesPattern('/Phase 2\.7.*does not replace.*legacy history|legacy history.*not.*replaced.*Phase 2\.7/is', $content);
+        $this->assertMatchesPattern('/legacy history.*preserved|preserved.*legacy history/i', $content);
     }
 
     public function testFinalGovernanceRulesetsAreDocumented()
     {
         $content = $this->readProjectFile('README.md') . "\n" . $this->readProjectFile('CHANGELOG.md');
 
-        $this->assertMatchesPattern('/Phase 2\.7B.*completed.*external governance transition|external governance transition.*completed.*Phase 2\.7B/is', $content);
+        $this->assertMatchesPattern('/repository rulesets? (?:actively )?protect.*branch lines|branch lines.*protect.*repository rulesets?/is', $content);
         $this->assertMatchesPattern('/repository rulesets? (?:are )?active|active repository rulesets?/i', $content);
         $this->assertMatchesPattern('/master.*pull request.*deletion.*force-push|master.*force-push.*deletion.*pull request/is', $content);
         $this->assertMatchesPattern('/2\.x.*pull request.*deletion.*force-push.*required CI status checks.*strict|2\.x.*strict.*required CI status checks.*force-push.*deletion.*pull request/is', $content);
@@ -75,6 +75,7 @@ final class EvolvePhp2RepositoryGovernanceTest extends TestCase
         $this->assertMatchesPattern('/Policy \(PHP 8\.4\)/', $content);
         $this->assertMatchesPattern('/Workspace quality \(PHP 8\.4\)/', $content);
         $this->assertMatchesPattern('/Workspace quality \(PHP 8\.5\)/', $content);
+        $this->assertMatchesPattern('/Benchmark policy \(PHP 8\.4\)/', $content);
         $this->assertDoesNotMatchPattern($this->staleTransitionPattern(), $content);
         $this->assertDoesNotMatchPattern('/classic branch protection|branch protection is active/i', $content);
         $this->assertDoesNotMatchPattern('/master (?:was|has been) (?:renamed|deleted|replaced)/i', $content);

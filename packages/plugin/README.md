@@ -2,44 +2,37 @@
 
 Framework plugin SDK and lifecycle support for EvolvePHP 2.
 
-## Phase 5.2 Descriptor Foundation
+## Descriptor Foundation
 
-Phase 5.2 adds the public experimental `Evolve\Plugin\PluginDescriptor` in-memory immutable descriptor and `Evolve\Plugin\PluginCompatibilityValidator`.
+The package provides the public experimental `Evolve\Plugin\PluginDescriptor` in-memory immutable descriptor and `Evolve\Plugin\PluginCompatibilityValidator`.
 
 `PluginDescriptor` reuses `Evolve\Contracts\Component\ComponentIdentifier`, preserves the exact accepted human-readable name, always reports the hard-coded Plugin type through `ComponentType::Plugin`, exposes descriptor schema version `1`, and declares an EvolvePHP major as a positive integer. Structural descriptor validity is separate from framework compatibility: positive non-2 majors are valid descriptor metadata, while `PluginCompatibilityValidator` performs explicit EvolvePHP major compatibility validation for the currently supported major `2`.
 
-Phase 5.3A extends `PluginDescriptor` with `graphDeclaration()`, returning an immutable `Evolve\Contracts\Component\ComponentGraphDeclaration` built during descriptor construction. Existing three-argument descriptor construction remains valid and creates an empty graph declaration. A caller may also supply `ComponentGraphRelations` to declare required or optional dependencies, declarative conflicts, required capabilities with `ExactlyOne` or `OneOrMore` cardinality and provided capability identifiers.
+`PluginDescriptor` exposes `graphDeclaration()`, returning an immutable `Evolve\Contracts\Component\ComponentGraphDeclaration` built during descriptor construction. Existing three-argument descriptor construction remains valid and creates an empty graph declaration. A caller may also supply `ComponentGraphRelations` to declare required or optional dependencies, declarative conflicts, required capabilities with `ExactlyOne` or `OneOrMore` cardinality and provided capability identifiers.
 
-The graph declaration is declaration vocabulary only. Relation ordering is canonical and deterministic, but declaration order has no startup-order semantics. Phase 5.3A does not resolve dependencies, activate optional dependencies, resolve conflicts, select capability providers, detect cycles, discover components, register components, order boot or introduce component versions, version constraints or SemVer graph decisions.
+The graph declaration is declaration vocabulary only. Relation ordering is canonical and deterministic, but declaration order has no startup-order semantics. It does not resolve dependencies, activate optional dependencies, resolve conflicts, select capability providers, detect cycles, discover components, register components, order boot or introduce component versions, version constraints or SemVer graph decisions. Dependency resolution and graph validation are handled by Core graph resolution.
 
-These APIs are PUBLIC EXPERIMENTAL and pre-beta.
+These APIs are PUBLIC EXPERIMENTAL and pre-beta. Descriptor loading, descriptor serialization and non-Composer discovery remain deferred.
 
-At the time of the Phase 5.2 descriptor foundation, graph validation and dependency resolution were deferred to Phase 5.3B, while registration, entry-point contracts, lifecycle and boot behavior were still deferred to later Phase 5 slices. Phase 5.5 now adds the shared entry-point interface, and Phase 5.6A adds explicit application-supplied definitions while descriptor discovery still remains deferred.
+## Entry Point
 
-## Phase 5.5 Entry Point
-
-Phase 5.5 adds the public experimental `Evolve\Plugin\Plugin` entry-point interface. `Plugin` extends `Evolve\Contracts\Component\ComponentEntryPoint` and introduces no Plugin-specific lifecycle methods.
+The package provides the public experimental `Evolve\Plugin\Plugin` entry-point interface. `Plugin` extends `Evolve\Contracts\Component\ComponentEntryPoint` and introduces no Plugin-specific lifecycle methods.
 
 An enabled plugin entry point participates in the shared component sequence: `register()` contributes service definitions through `ServiceDefinitionRegistrar`, Core freezes the service-definition graph, `boot()` receives an application-lifecycle-only `ComponentBootContext`, `ready()` runs after all enabled components boot, and `shutdown()` releases application-lifetime resources in reverse successful boot order. Deferred failure cleanup registered during `boot()` is only for that plugin's boot failure; successful plugins still clean up through normal shutdown.
 
-Deferred from this slice:
+## Explicit Definition
 
-- descriptor discovery and descriptor loading remain deferred;
-- descriptor serialization remains deferred.
-
-## Phase 5.6A Explicit Definition
-
-Phase 5.6A adds the public experimental `Evolve\Plugin\PluginDefinition`. It wraps an already-created `PluginDescriptor` and an explicit plugin entry-point class name.
+The package provides the public experimental `Evolve\Plugin\PluginDefinition`. It wraps an already-created `PluginDescriptor` and an explicit plugin entry-point class name.
 
 `PluginDefinition` preserves the descriptor's identifier, type and exact graph declaration object. Its `validate()` method runs the existing `PluginCompatibilityValidator` and checks that the configured entry-point class exists and implements `Evolve\Plugin\Plugin`. Entry-point instances are created only when Core prepares an explicitly enabled definition for lifecycle execution.
 
-Discovery, descriptor loading, Composer `extra` metadata, automatic package scanning, plugin self-enablement, descriptor serialization and version-constraint evaluation remain deferred from this slice.
+Descriptor loading, automatic package scanning, plugin self-enablement, descriptor serialization and version-constraint evaluation remain deferred.
 
-## Phase 5.6B Composer Plugin Discovery
+## Composer Plugin Discovery
 
-Phase 5.6B adds the public experimental `Evolve\Plugin\Discovery\ComposerPluginDiscovery` for packaged plugins. The caller must supply the explicit local Composer 2 `installed.json` filesystem path, for example a known `vendor/composer/installed.json` path. Discovery does not infer `vendor/`, the project root, the current working directory or environment configuration.
+The package provides the public experimental `Evolve\Plugin\Discovery\ComposerPluginDiscovery` for packaged plugins. The caller must supply the explicit local Composer 2 `installed.json` filesystem path, for example a known `vendor/composer/installed.json` path. Discovery does not infer `vendor/`, the project root, the current working directory or environment configuration.
 
-Composer metadata is recognized at `extra.evolvephp.plugin`, and one Composer package exposes at most one Phase 5.6B plugin. The Composer package name is the authoritative identifier; plugin metadata must not declare an `identifier` field. Discovery returns `PluginDefinition` instances sorted by package name, maps optional graph metadata into the existing Contracts graph declarations, and does not validate, instantiate or check entry-point classes while discovering metadata.
+Composer metadata is recognized at `extra.evolvephp.plugin`, and one Composer package exposes at most one discovered plugin. The Composer package name is the authoritative identifier; plugin metadata must not declare an `identifier` field. Discovery returns `PluginDefinition` instances sorted by package name, maps optional graph metadata into the existing Contracts graph declarations, and does not validate, instantiate or check entry-point classes while discovering metadata.
 
 Schema 1 requires `schema`, `type`, `name`, `evolve_major` and `entry_point`. The optional `graph` object may contain `dependencies`, `conflicts`, `requires` and `provides`. Dependency `kind` values are `required` and `optional`; capability `cardinality` values are `exactly_one` and `one_or_more`.
 

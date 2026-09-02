@@ -115,6 +115,52 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         }
     }
 
+    public function testCanonicalLiveDocumentationAvoidsInternalRoadmapAndPrivateAutomationWording(): void
+    {
+        foreach ($this->canonicalLiveDocumentationFiles() as $path) {
+            $content = $this->readProjectFile($path);
+
+            $this->assertDoesNotMatchPattern($this->roadmapIdentifierPattern(), $content);
+            $this->assertDoesNotMatchPattern('/\b(?:Codex|ChatGPT)\b/i', $content);
+            $this->assertDoesNotMatchPattern('/\bNotion\b.*(?:workflow|page|project|task|acceptance)|(?:workflow|page|project|task|acceptance).*?\bNotion\b/i', $content);
+            $this->assertDoesNotMatchPattern('/assistant review/i', $content);
+            $this->assertDoesNotMatchPattern('/usage limit/i', $content);
+            $this->assertDoesNotMatchPattern('/AI-generated/i', $content);
+            $this->assertDoesNotMatchPattern('/AUDIT ACCEPTED|ASSISTANT REVIEW|LOCAL \/ PRE-COMMIT|COMMITTED-REF GATE|PR MERGE GATE|FULLY ACCEPTED/i', $content);
+            $this->assertDoesNotMatchPattern('/(?:tool|assistant|automation)\s+credits?|credits?\s+(?:for|on|remaining|used by)\s+(?:tool|assistant|automation)/i', $content);
+        }
+    }
+
+    public function testCanonicalRoadmapGuardrailRecognizesInternalIdentifierForms(): void
+    {
+        foreach (array(
+            'Phase 2',
+            'Phase 5.6B',
+            'Phase 6.5B1',
+            'Phase 6.5C2',
+        ) as $roadmapIdentifier) {
+            $this->assertMatchesPattern($this->anchoredRoadmapIdentifierPattern(), $roadmapIdentifier);
+        }
+
+        foreach (array(
+            'registration phase',
+            'boot phase',
+        ) as $technicalPhrase) {
+            $this->assertDoesNotMatchPattern($this->roadmapIdentifierPattern(), $technicalPhrase);
+        }
+    }
+
+    public function testAgentsGuideIsPublicNeutralAutomationGuidance(): void
+    {
+        $content = $this->readProjectFile('AGENTS.md');
+
+        $this->assertMatchesPattern('/# Automation and Contribution Guide/i', $content);
+        $this->assertMatchesPattern('/automation tools|coding assistants/i', $content);
+        $this->assertMatchesPattern('/contributors/i', $content);
+        $this->assertMatchesPattern('/repository work/i', $content);
+        $this->assertMatchesPattern('/RED -> GREEN -> REFACTOR/', $content);
+    }
+
     public function testPackagesReadmeLinksToDevelopmentGuideAndDoesNotOwnDetailedDeptracPolicy(): void
     {
         $content = $this->readProjectFile('packages/README.md');
@@ -125,22 +171,17 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $this->assertDoesNotMatchPattern('/Before Phase 2\.3/i', $content);
     }
 
-    public function testCoreReadmeDocumentsCorrectPhase3LifecycleChronology(): void
+    public function testCoreReadmeDocumentsRuntimeFoundationCapabilities(): void
     {
         $content = $this->readProjectFile('packages/core/README.md');
 
-        $this->assertDoesNotMatchPattern(
-            '/Phase 3\.5\s+extends\s+`Evolve\\\\Core\\\\ApplicationKernel`\s+as the initial lifecycle implementation/i',
+        $this->assertMatchesPattern(
+            '/`Evolve\\\\Core\\\\ApplicationKernel`.*lifecycle implementation|lifecycle implementation.*`Evolve\\\\Core\\\\ApplicationKernel`/i',
             $content,
         );
 
         $this->assertMatchesPattern(
-            '/Phase 3\.1 introduced `Evolve\\\\Core\\\\ApplicationKernel` as the initial lifecycle implementation/i',
-            $content,
-        );
-
-        $this->assertMatchesPattern(
-            '/in Phase 3\.5, runtime-neutral execution orchestration/i',
+            '/runtime foundation.*boot-time configuration validation.*service-registry freezing.*explicit execution scopes.*runtime-neutral execution orchestration/is',
             $content,
         );
     }
@@ -230,6 +271,34 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'Plugin    -> Contracts',
             'Testing   -> Contracts, Core, Http, Module, Plugin',
         );
+    }
+
+    private function canonicalLiveDocumentationFiles()
+    {
+        return array(
+            'AGENTS.md',
+            'README.md',
+            'DEVELOPMENT.md',
+            'packages/README.md',
+            'packages/contracts/README.md',
+            'packages/core/README.md',
+            'packages/http/README.md',
+            'packages/module/README.md',
+            'packages/plugin/README.md',
+            'packages/testing/README.md',
+            'packages/dev-tools/README.md',
+            'skeleton/README.md',
+        );
+    }
+
+    private function roadmapIdentifierPattern()
+    {
+        return '/\bPhase\s+\d+(?:\.\d+[A-Z0-9]*)*\b/';
+    }
+
+    private function anchoredRoadmapIdentifierPattern()
+    {
+        return '/^\bPhase\s+\d+(?:\.\d+[A-Z0-9]*)*\b$/';
     }
 
     private function trackedReadmes()

@@ -39,7 +39,7 @@ That validation exercises Composer create-project against local prerelease packa
 
 ## Generators
 
-Phase 6.4E adds development-only module and plugin starter commands through
+Development-only module and plugin starter commands are provided through
 `evolvephp/dev-tools`. `module:new Billing` creates `app/billing` under
 `src/Modules/Billing/`, and `plugin:new Cache` creates `app/cache` under
 `src/Plugins/Cache/`. Generated files remain application-owned and are not
@@ -52,7 +52,7 @@ starter tests can run through:
 composer test
 ```
 
-Phase 6.4F provides the Testing package command-output recorder used by the
+The Testing package provides the command-output recorder used by the
 generator command tests; the skeleton keeps broader testing utilities deferred.
 
 ## Deferred

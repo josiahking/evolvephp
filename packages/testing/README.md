@@ -18,7 +18,7 @@ PHP `^8.4`
 
 ## Component Fixtures
 
-Phase 5.7 adds the first small Testing SDK surface for component-oriented tests.
+The package provides a small Testing SDK surface for component-oriented tests.
 
 The package provides two public experimental fixtures:
 
@@ -48,7 +48,7 @@ policy, discovery, developer tooling, mocks or PHPUnit assertions.
 
 ## Console Output Recorder
 
-Phase 6.4F adds `Evolve\Testing\Console\RecordingCommandOutput`, a public
+`Evolve\Testing\Console\RecordingCommandOutput` is a public
 experimental in-memory implementation of Core's `CommandOutput` contract.
 
 It starts empty, records normal lines through `lines()`, records error lines

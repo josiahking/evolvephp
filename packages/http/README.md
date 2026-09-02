@@ -23,13 +23,13 @@ This package also consumes the selected external PSR HTTP interoperability inter
 
 ## Runtime Foundation
 
-Phase 4.1 provides a deterministic PSR-15 middleware pipeline foundation through `Evolve\Http\Middleware\MiddlewarePipeline`.
+The package provides a deterministic PSR-15 middleware pipeline through `Evolve\Http\Middleware\MiddlewarePipeline`.
 
 The pipeline consumes PSR-7 `ServerRequestInterface` and `ResponseInterface` objects and implements PSR-15 `RequestHandlerInterface`. Middleware entries must implement PSR-15 `MiddlewareInterface`.
 
 Middleware runs in the order supplied at construction. For middleware `A`, middleware `B` and terminal handler `T`, execution is `A before`, `B before`, `T`, `B after`, `A after`. Middleware may short-circuit by returning a response without invoking the next handler; remaining middleware and the terminal handler are then not executed.
 
-Phase 4.2 adds the routing foundation through `Evolve\Http\Routing\Route`, `RouteCollection`, `RouteMatch` and `RouteMatcher`.
+The package provides route definitions and matching through `Evolve\Http\Routing\Route`, `RouteCollection`, `RouteMatch` and `RouteMatcher`.
 
 Routes store an exact ordered method list, a path-only template and a PSR-15 request handler instance. The handler is retained as route-definition data only; route matching does not invoke it.
 
@@ -39,13 +39,13 @@ HTTP method matching is exact and case-sensitive. Methods remain as supplied, `G
 
 `RouteMatcher` traverses routes in collection insertion order. The first route whose path template and method both match wins; static routes are not automatically prioritized over parameter routes. If a path template matches but the method does not, matching continues to later routes. `allowedMethods()` exposes path-level routing metadata by aggregating exact methods for matching templates without creating 405 responses or `Allow` headers.
 
-Phase 4.3 adds routed handler dispatch through `Evolve\Http\Routing\RoutingRequestHandler`, a PSR-15 `RequestHandlerInterface` implementation. It accepts a `RouteMatcher` and optional ordered post-match middleware. Existing `MiddlewarePipeline` instances may wrap `RoutingRequestHandler` for pre-routing/global middleware, while middleware supplied directly to `RoutingRequestHandler` runs only after a successful route match.
+The package provides routed handler dispatch through `Evolve\Http\Routing\RoutingRequestHandler`, a PSR-15 `RequestHandlerInterface` implementation. It accepts a `RouteMatcher` and optional ordered post-match middleware. Existing `MiddlewarePipeline` instances may wrap `RoutingRequestHandler` for pre-routing/global middleware, while middleware supplied directly to `RoutingRequestHandler` runs only after a successful route match.
 
 On successful matching, `RoutingRequestHandler` attaches the exact authoritative `RouteMatch` to the derived request with `RouteMatch::class` as the request attribute key, replacing any stale incoming value at that key. Route parameters remain inside `RouteMatch::parameters()` and are not injected as top-level request attributes. Dispatch then runs post-match middleware in order and terminates at the exact `Route::handler()` instance stored on the matched route.
 
 Unsuccessful routing now has typed public exception boundaries. `Evolve\Http\Exception\RouteNotFound` is thrown when no path template matches, and `Evolve\Http\Exception\MethodNotAllowed` is thrown when the path matches at least one route template but the request method does not match any route. `MethodNotAllowed::allowedMethods()` returns the exact allowed methods reported by `RouteMatcher`, preserving order and case without adding implicit `HEAD`, automatic `OPTIONS` or an `Allow` header.
 
-Phase 4.4 adds HTTP execution-kernel integration through `Evolve\Http\HttpKernel`. `HttpKernel` is the outer HTTP execution boundary: it wraps an already-composed PSR-15 `RequestHandlerInterface`, delegates every `handle()` call to the Core `ExecutionOrchestrator` as `ExecutionKind::HttpRequest` and returns the resulting `ExecutionOutcome`.
+The package provides HTTP execution-kernel integration through `Evolve\Http\HttpKernel`. `HttpKernel` is the outer HTTP execution boundary: it wraps an already-composed PSR-15 `RequestHandlerInterface`, delegates every `handle()` call to the Core `ExecutionOrchestrator` as `ExecutionKind::HttpRequest` and returns the resulting `ExecutionOutcome`.
 
 `HttpKernel` does not itself implement PSR-15 because PSR-15 handlers must return `ResponseInterface`, while the execution boundary must preserve the full `ExecutionOutcome` so callers can inspect the primary response or throwable, cleanup/reset failure, instrumentation failures and the reuse/quarantine decision. The wrapped PSR-15 handler remains inside the execution.
 
@@ -57,7 +57,7 @@ When the wrapped handler returns a response, that exact `ResponseInterface` inst
 
 Callers must inspect `ExecutionOutcome` and its reuse decision. `HttpKernel` does not emit a response, terminate a process, recycle a worker or convert failures into HTTP responses.
 
-Phase 4.5 adds the response/error and health foundation. `Evolve\Http\Response\ExecutionOutcomeResponseResolver` converts only `ExecutionKind::HttpRequest` outcomes into PSR-7 `ResponseInterface` instances after `HttpKernel` has returned its `ExecutionOutcome`. Keeping response resolution after `HttpKernel` preserves the original primary response or throwable, cleanup/reset failure, instrumentation failures and reuse/quarantine decision for callers and runtime policy.
+The package provides response/error and health handling. `Evolve\Http\Response\ExecutionOutcomeResponseResolver` converts only `ExecutionKind::HttpRequest` outcomes into PSR-7 `ResponseInterface` instances after `HttpKernel` has returned its `ExecutionOutcome`. Keeping response resolution after `HttpKernel` preserves the original primary response or throwable, cleanup/reset failure, instrumentation failures and reuse/quarantine decision for callers and runtime policy.
 
 Successful HTTP outcomes must contain a `ResponseInterface`; the resolver returns that exact response instance without cloning, wrapping, rebuilding, changing headers or consulting the response factory. Non-HTTP outcomes are rejected as programming errors. A successful HTTP outcome with a non-response primary result is also rejected as an unexpected programming error.
 
@@ -65,23 +65,23 @@ Failed HTTP outcomes use the PSR-17 `ResponseFactoryInterface` from `psr/http-fa
 
 Cleanup failures, instrumentation failures and the process reuse/quarantine state remain stored on `ExecutionOutcome` and do not change response resolution. Runtime callers must still inspect the reuse decision. `ExecutionStartFailed` can happen before an `ExecutionOutcome` exists and remains a runtime concern rather than a resolver concern.
 
-Phase 4.5 also adds explicit health-handler building blocks. `Evolve\Http\Health\LivenessHandler` is a PSR-15 handler that always returns an empty `200` response and performs no dependency checks. `Evolve\Http\Health\ReadinessCheck` is the minimal public readiness contract with `isReady(): bool`. `Evolve\Http\Health\ReadinessHandler` consumes and validates its check iterable during construction, preserves insertion order and returns an empty `200` response for zero checks or all-ready checks. The first false or throwing readiness check short-circuits later checks and returns an empty `503` response.
+The package also provides explicit health-handler building blocks. `Evolve\Http\Health\LivenessHandler` is a PSR-15 handler that always returns an empty `200` response and performs no dependency checks. `Evolve\Http\Health\ReadinessCheck` is the minimal public readiness contract with `isReady(): bool`. `Evolve\Http\Health\ReadinessHandler` consumes and validates its check iterable during construction, preserves insertion order and returns an empty `200` response for zero checks or all-ready checks. The first false or throwing readiness check short-circuits later checks and returns an empty `503` response.
 
 Health handlers are not auto-routed and no health paths or route names are reserved. Applications explicitly place `LivenessHandler` or `ReadinessHandler` in whichever route definitions they choose.
 
-Framework-created Phase 4.5 responses are intentionally empty and bodyless. Error and health responses do not expose request data, route parameters, exception messages, traces, readiness-check failure details or other sensitive runtime data. The only required protocol metadata added here is the `Allow` header for 405 responses.
+Framework-created responses are intentionally empty and bodyless. Error and health responses do not expose request data, route parameters, exception messages, traces, readiness-check failure details or other sensitive runtime data. The only required protocol metadata added here is the `Allow` header for 405 responses.
 
-Phase 4.6 adds `Evolve\Http\Response\ResponseEmitter` as the public runtime-neutral response-emission boundary. Its conceptual contract is `emit(ResponseInterface $response): void`. The emitter receives only the resolved response; it does not receive `ExecutionOutcome`, `ServerRequestInterface`, execution context, execution scope, route metadata or runtime-specific values. The caller retains the original `ExecutionOutcome` separately for cleanup, instrumentation and reuse/quarantine decisions.
+`Evolve\Http\Response\ResponseEmitter` is the public runtime-neutral response-emission boundary. Its conceptual contract is `emit(ResponseInterface $response): void`. The emitter receives only the resolved response; it does not receive `ExecutionOutcome`, `ServerRequestInterface`, execution context, execution scope, route metadata or runtime-specific values. The caller retains the original `ExecutionOutcome` separately for cleanup, instrumentation and reuse/quarantine decisions.
 
-The canonical Phase 4.6 flow is `HttpKernel` -> `ExecutionOutcome` -> `ExecutionOutcomeResponseResolver` -> `ResponseInterface` -> `ResponseEmitter`. Emission is explicit: `HttpKernel` does not auto-emit, and the resolver does not auto-emit. `ResponseEmitter` has no built-in implementation in this package. Runtime-specific implementations are deferred, including concrete SAPI, FPM, FrankenPHP and RoadRunner transmission adapters. Direct SAPI/header/output functions are not provided here; ownership of headers, body output, cookies and transmission failure policy belongs to future runtime adapters.
+The canonical flow is `HttpKernel` -> `ExecutionOutcome` -> `ExecutionOutcomeResponseResolver` -> `ResponseInterface` -> `ResponseEmitter`. Emission is explicit: `HttpKernel` does not auto-emit, and the resolver does not auto-emit. `ResponseEmitter` has no built-in implementation in this package. Runtime-specific implementations are deferred, including concrete SAPI, FPM, FrankenPHP and RoadRunner transmission adapters. Direct SAPI/header/output functions are not provided here; ownership of headers, body output, cookies and transmission failure policy belongs to future runtime adapters.
 
 Cleanup and quarantine decisions remain on `ExecutionOutcome`. Runtime decides whether and when to transmit, recycle or terminate after inspecting reuse and quarantine state. The emitter/transmission failure handling policy is deferred and is not converted into Core execution outcome state by this package.
 
-The package does not bundle a concrete PSR-7 implementation. Applications or later runtime slices must provide concrete request and response objects. Phase 4.5 requires only `ResponseFactoryInterface`; it does not use `StreamFactoryInterface`.
+The package does not bundle a concrete PSR-7 implementation. Applications or later runtime slices must provide concrete request and response objects. Response resolution requires only `ResponseFactoryInterface`; it does not use `StreamFactoryInterface`.
 
-Phase 4.6 closes the reviewed Phase 4 HTTP package foundation. HTML and JSON error rendering, problem-details DTOs, content negotiation, debug pages, automatic health routes, SAPI request creation, concrete response transmission, process termination/recycle adapters, runtime adapters, trace propagation and OpenTelemetry propagation remain deferred to later reviewed slices.
+The reviewed HTTP package foundation is complete. HTML and JSON error rendering, problem-details DTOs, content negotiation, debug pages, automatic health routes, SAPI request creation, concrete response transmission, process termination/recycle adapters, runtime adapters, trace propagation and OpenTelemetry propagation remain deferred to later reviewed work.
 
-Phase 6.4C adds `Evolve\Http\Routing\Console\RouteListCommand` as a caller-registerable console command adapter for route inspection. The command receives an explicit `RouteCollection` through constructor injection and uses the existing Core Console API, keeping the dependency direction as HTTP -> Core.
+`Evolve\Http\Routing\Console\RouteListCommand` is a caller-registerable console command adapter for route inspection. The command receives an explicit `RouteCollection` through constructor injection and uses the existing Core Console API, keeping the dependency direction as HTTP -> Core.
 
 `route:list` renders only configured route methods and paths. It preserves `RouteCollection` order, method order, method case and route path text exactly, and it does not invoke or expose route handlers. Empty collections write `No routes are configured.` to normal output.
 
