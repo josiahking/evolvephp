@@ -962,13 +962,14 @@
             "dist": {
                 "type": "path",
                 "url": "packages/dev-tools",
-                "reference": "4326d7659e1a360543196587c93a958a6dc91282"
+                "reference": "83a9b7044b991bc23fe51accba38c5d4352eb9d3"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
                 "evolvephp/core": "^2.0",
                 "evolvephp/module": "^2.0",
                 "evolvephp/plugin": "^2.0",
+                "ext-tokenizer": "*",
                 "php": "^8.4"
             },
             "type": "library",

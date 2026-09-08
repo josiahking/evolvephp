@@ -719,6 +719,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'namespace' => 'Evolve\\DevTools\\',
                 'require' => array(
                     'php' => '^8.4',
+                    'ext-tokenizer' => '*',
                     'evolvephp/contracts' => '^2.0',
                     'evolvephp/core' => '^2.0',
                     'evolvephp/module' => '^2.0',
@@ -890,6 +891,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Audit/AuditRunner.php',
                 'Audit/AuditSeverity.php',
                 'Audit/Project/ComposerProjectInspector.php',
+                'Audit/Project/Internal/PhpSourceFileFinder.php',
+                'Audit/Project/Internal/PhpSourceTokenScanner.php',
+                'Audit/Project/PhpSourceCouplingInspector.php',
                 'Console/ComponentScaffoldGenerator.php',
                 'Console/ModuleNewCommand.php',
                 'Console/PluginNewCommand.php',
