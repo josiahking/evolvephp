@@ -8,6 +8,7 @@
 
 ### Audit foundation
 
+- Added PHP source inventory and ambient-state coupling evidence inside `evolvephp/dev-tools`, including deterministic `.php` source discovery from an explicit target root, VCS and `vendor/` exclusions, native tokenizer-based lexical scanning, aggregated findings for source inventory, direct superglobal access, direct `$_SESSION` coupling, `$GLOBALS`, `global` statements, static-state declarations, static-property access and incomplete source inspection. Source Audit remains read-only and non-executing, makes no runtime incompatibility or migration-score claims, adds no AST/data-flow analysis, no CLI output, no Bridge implementation and no Core dependency on DevTools.
 - Added Phase 7.1 Evolve Audit foundation inside `evolvephp/dev-tools`, including public pre-beta experimental `AuditSeverity`, `AuditFinding`, `AuditReport`, `AuditInspector`, `AuditRunner` and `ComposerProjectInspector` APIs for read-only root `composer.json` inspection, deterministic direct dependency/framework evidence, raw root PHP constraint preservation, Composer platform PHP review evidence, malformed Composer evidence reporting and tests proving target autoload files, Composer scripts and target PHP files are not executed or modified. Audit remains development-time tooling, not Doctor, and does not add an `evolvephp/audit` package, Composer solving, lockfile/transitive analysis, JSON output, CLI commands, remediation, Bridge adapters, remote clients or compatibility claims from raw Composer constraints.
 
 ### Component foundation

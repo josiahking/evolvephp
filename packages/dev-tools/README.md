@@ -10,7 +10,7 @@ This package remains development-only.
 
 ## Requirements
 
-PHP `^8.4`
+PHP `^8.4` with `ext-tokenizer`.
 
 ## Dependencies
 
@@ -25,17 +25,26 @@ The package provides a public experimental Audit foundation under
 project root. It performs no automatic discovery. `ComposerProjectInspector`
 inspects only the target root `composer.json`; it does not scan parent
 directories, nested manifests, lock files or transitive dependency graphs.
+`PhpSourceCouplingInspector` discovers PHP source files below the explicit
+project root and tokenizes source text with PHP's native tokenizer.
 
 Audit treats the target project as data. It does not include target PHP files,
 include the target `vendor/autoload.php`, bootstrap Laravel, Symfony, CakePHP,
 Yii, EvolvePHP or custom application code, run Composer, run scripts, invoke
 shell commands, load `.env`, write caches or modify target files.
 
-The first inspector reports structured findings for root Composer evidence:
+The Composer inspector reports structured findings for root Composer evidence:
 direct runtime and development dependencies, direct framework package evidence
 for Laravel, Symfony, CakePHP, Yii and EvolvePHP, the raw root `require.php`
 constraint when present, missing PHP constraint evidence, malformed Composer
 evidence and `config.platform.php` review evidence.
+
+The PHP source inspector reports structured findings for source inventory,
+direct superglobal access, direct `$_SESSION` coupling, `$GLOBALS`, `global`
+statements, static-state declarations and static-property access. Source paths
+are reported relative to the target root with `/` separators. Findings aggregate
+deterministically sorted lexical evidence and report incomplete inspection when
+a source file cannot be read safely.
 
 Raw Composer constraints are preserved exactly as declared. Audit does not solve
 Composer SemVer constraints and does not claim PHP, package or framework
@@ -44,8 +53,10 @@ compatibility-review evidence only; it is not proof of the actual runtime PHP
 version.
 
 Current limitations: Audit has no CLI command, JSON output, remediation,
-lockfile analysis, vulnerability lookup, PHP source analysis, framework
-bootstrap analysis, route discovery, migration planning or Bridge integration.
+lockfile analysis, vulnerability lookup, AST analysis, data-flow analysis,
+framework bootstrap analysis, route discovery, migration scoring or Bridge
+integration. Lexical PHP source evidence does not prove runtime
+incompatibility, unsafe mutability or modernization feasibility.
 
 ## Generator Commands
 
