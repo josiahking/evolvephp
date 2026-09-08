@@ -884,6 +884,12 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Lifecycle/ApplicationState.php',
             ),
             'packages/dev-tools/src' => array(
+                'Audit/AuditFinding.php',
+                'Audit/AuditInspector.php',
+                'Audit/AuditReport.php',
+                'Audit/AuditRunner.php',
+                'Audit/AuditSeverity.php',
+                'Audit/Project/ComposerProjectInspector.php',
                 'Console/ComponentScaffoldGenerator.php',
                 'Console/ModuleNewCommand.php',
                 'Console/PluginNewCommand.php',
