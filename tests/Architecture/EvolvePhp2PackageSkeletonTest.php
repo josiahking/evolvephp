@@ -4,29 +4,33 @@ use PHPUnit\Framework\TestCase;
 
 final class EvolvePhp2PackageSkeletonTest extends TestCase
 {
-    public function testCorePackageExposesOnlyEvolveBinary(): void
+    public function testPackageComposerBinaryInventoryIsExplicit(): void
     {
-        self::assertFileExists(dirname(__DIR__, 2) . '/packages/core/bin/evolve');
-
-        $manifest = json_decode(
-            file_get_contents(dirname(__DIR__, 2) . '/packages/core/composer.json'),
-            true,
-            flags: JSON_THROW_ON_ERROR,
-        );
-
-        self::assertSame(['bin/evolve'], $manifest['bin'] ?? null);
-    }
-
-    public function testOnlyCorePackageExposesComposerBinary(): void
-    {
-        foreach (['contracts', 'dev-tools', 'http', 'module', 'plugin', 'testing'] as $package) {
+        foreach ([
+            'core' => ['bin/evolve'],
+            'dev-tools' => ['bin/evolve-audit'],
+            'contracts' => null,
+            'http' => null,
+            'module' => null,
+            'plugin' => null,
+            'testing' => null,
+        ] as $package => $expectedBin) {
             $manifest = json_decode(
                 file_get_contents(dirname(__DIR__, 2) . sprintf('/packages/%s/composer.json', $package)),
                 true,
                 flags: JSON_THROW_ON_ERROR,
             );
 
-            self::assertArrayNotHasKey('bin', $manifest);
+            if ($expectedBin === null) {
+                self::assertArrayNotHasKey('bin', $manifest);
+                continue;
+            }
+
+            foreach ($expectedBin as $binary) {
+                self::assertFileExists(dirname(__DIR__, 2) . sprintf('/packages/%s/%s', $package, $binary));
+            }
+
+            self::assertSame($expectedBin, $manifest['bin'] ?? null);
         }
     }
 
@@ -890,6 +894,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Audit/AuditReport.php',
                 'Audit/AuditRunner.php',
                 'Audit/AuditSeverity.php',
+                'Audit/Console/AuditCommand.php',
+                'Audit/Presentation/AuditReportRenderer.php',
                 'Audit/Project/ComposerLockInspector.php',
                 'Audit/Project/ComposerProjectInspector.php',
                 'Audit/Project/Internal/PhpSourceFileFinder.php',

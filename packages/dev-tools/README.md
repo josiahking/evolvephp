@@ -69,12 +69,38 @@ PHP, package, framework, lockfile or Bridge compatibility from raw evidence. A
 Composer platform override is reported as compatibility-review evidence only;
 it is not proof of the actual runtime PHP version.
 
-Current limitations: Audit has no CLI command, JSON output, remediation,
-vulnerability lookup, AST analysis, control-flow analysis, data-flow analysis,
-framework bootstrap analysis, route discovery, migration scoring or Bridge
-integration. Lockfile evidence is recorded dependency metadata only; it does
-not prove dependency compatibility, freshness or security status. Lexical PHP
-source evidence does not prove runtime incompatibility, persistent-worker
+Audit can be used through the standalone `evolve-audit` binary against an
+explicit existing PHP project root without migrating that project to EvolvePHP
+first:
+
+```sh
+evolve-audit <target-root>
+evolve-audit <target-root> --format=text
+evolve-audit <target-root> --format=json
+```
+
+Text output is the default. JSON output uses schema version `1` and contains
+the stable top-level shape:
+
+```json
+{
+    "schema_version": 1,
+    "findings": []
+}
+```
+
+Warning and Risk findings are review evidence and do not themselves make the
+command fail; invalid command usage and invalid target roots return usage
+errors. The tool requires its own PHP `^8.4` runtime, while the target project
+may use an older PHP version because target code is read as source text and
+metadata only.
+
+Current limitations: Audit has no remediation, vulnerability lookup, AST
+analysis, control-flow analysis, data-flow analysis, framework bootstrap
+analysis, route discovery, migration scoring, compatibility certification or
+Bridge integration. Lockfile evidence is recorded dependency metadata only; it
+does not prove dependency compatibility, freshness or security status. Lexical
+PHP source evidence does not prove runtime incompatibility, persistent-worker
 unsafety, Bridge compatibility status, unsafe mutability, modernization
 feasibility or whether a detected occurrence actually executes. Include and
 require evidence records the construct and source line only; Audit does not
