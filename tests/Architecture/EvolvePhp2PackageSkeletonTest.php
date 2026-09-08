@@ -890,6 +890,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Audit/AuditReport.php',
                 'Audit/AuditRunner.php',
                 'Audit/AuditSeverity.php',
+                'Audit/Project/ComposerLockInspector.php',
                 'Audit/Project/ComposerProjectInspector.php',
                 'Audit/Project/Internal/PhpSourceFileFinder.php',
                 'Audit/Project/Internal/PhpSourceTokenScanner.php',
