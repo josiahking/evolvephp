@@ -2,7 +2,7 @@
 
 `packages/` contains the initial EvolvePHP 2 modular-monorepo package set.
 
-The packages define Composer package identities, namespace ownership, dependency direction, lifecycle, configuration, service-container, execution-scope, runtime-neutral execution orchestration, generic Core instrumentation, minimal Core console APIs, PSR HTTP middleware and routing, response/error and health handling, explicit response emission, component identity, descriptors, graph declarations and resolution, restricted registration, lifecycle entry points, explicit component bootstrap, Composer plugin discovery, testing fixtures, development-time generators and command-output recording. Complete runtime implementation is not yet present, and the packages are not yet published.
+The packages define Composer package identities, namespace ownership, dependency direction, lifecycle, configuration, service-container, execution-scope, runtime-neutral execution orchestration, generic Core instrumentation, minimal Core console APIs, PSR HTTP middleware and routing, response/error and health handling, explicit response emission, component identity, descriptors, graph declarations and resolution, restricted registration, lifecycle entry points, explicit component bootstrap, Composer plugin discovery, testing fixtures, development-time generators, read-only project audit evidence and command-output recording. Complete runtime implementation is not yet present, and the packages are not yet published.
 
 All package manifests require PHP `^8.4`.
 
@@ -12,7 +12,7 @@ All package manifests require PHP `^8.4`.
 | --- | --- | --- |
 | `evolvephp/contracts` | `Evolve\Contracts\` | Foundational public-contract boundary, including application lifecycle, configuration, reset-participant and exception contracts, experimental shared identity vocabulary, graph declaration vocabulary, `ServiceDefinitionRegistrar`, `ComponentEntryPoint` / `ComponentBootContext` lifecycle contracts and `ComponentDefinition`. |
 | `evolvephp/core` | `Evolve\Core\` | Core orchestration boundary, including the minimal application lifecycle kernel, array-backed configuration, PSR-11-readable service container, explicit execution scopes, runtime-neutral execution outcomes, generic execution-lifecycle observation hooks, runtime-neutral command foundation, `ComponentGraphResolver`, `ResolvedComponentGraph`, consumer-scoped `CapabilityProviderSelection`, restricted registration, component lifecycle coordination and explicit `ComponentBootstrapper`. |
-| `evolvephp/dev-tools` | `Evolve\DevTools\` | Development-only generator boundary with public experimental `module:new` and `plugin:new` command adapters for application-owned module and plugin starter files. |
+| `evolvephp/dev-tools` | `Evolve\DevTools\` | Development-only tooling boundary with public experimental `module:new` and `plugin:new` command adapters plus read-only Audit APIs for root Composer evidence. |
 | `evolvephp/http` | `Evolve\Http\` | HTTP boundary with PSR HTTP interoperability, `MiddlewarePipeline`, route definitions and matching, routed handler dispatch, typed routing failures, `HttpKernel` integration with Core execution orchestration, response/error and health foundations and explicit response-emitter boundary; runtime adapters remain deferred. |
 | `evolvephp/module` | `Evolve\Module\` | Module SDK boundary with the public experimental `ModuleDescriptor`, EvolvePHP-major compatibility validation, `graphDeclaration()` projection, `Module` entry point extending `ComponentEntryPoint` and explicit `ModuleDefinition`; discovery remains deferred. |
 | `evolvephp/plugin` | `Evolve\Plugin\` | Plugin SDK boundary with the public experimental `PluginDescriptor`, EvolvePHP-major compatibility validation, `graphDeclaration()` projection, `Plugin` entry point extending `ComponentEntryPoint`, explicit `PluginDefinition` and `ComposerPluginDiscovery` for packaged plugin metadata. |
@@ -27,7 +27,7 @@ The package graph follows an inward dependency principle:
 - `contracts` is the innermost package.
 - `core`, `module` and `plugin` depend inward on `contracts`.
 - `http` depends inward on `contracts` and `core`.
-- `dev-tools` may depend on `contracts`, `core`, `module` and `plugin` for development-time generators.
+- `dev-tools` may depend on `contracts`, `core`, `module` and `plugin` for development-time generators and audit tooling.
 - `testing` may depend on the five production packages for development support.
 
 There is no production dependency on Testing.
@@ -85,6 +85,8 @@ Plugin provides packaged plugin metadata discovery through `ComposerPluginDiscov
 Testing provides concrete SDK surfaces for component tests. `ComponentDefinitionFixture` and `ComponentEntryPointFixture` are public experimental test fixtures that reuse the real component contracts while remaining simple closure-backed wrappers. The Testing package also carries independent integration acceptance coverage for explicit definitions, Composer plugin discovery, application-controlled enablement, Core bootstrap, dependency ordering, restricted registration, registry freeze, application boot, component boot, ready and reverse shutdown. These fixtures do not replace Module or Plugin definitions, lifecycle orchestration, discovery, graph resolution, developer tooling, mocks or PHPUnit assertion APIs.
 
 DevTools provides public experimental `ModuleNewCommand` and `PluginNewCommand`. The commands accept an explicit project root and one ASCII StudlyCase name token, generate application-owned module or plugin starter files with deterministic `app/...` component identifiers, refuse invalid usage and existing targets, and do not run Composer, run Git, edit Composer manifests, discover components or auto-enable generated definitions.
+
+DevTools also provides the public experimental Audit foundation. `AuditRunner` composes explicitly supplied inspectors in registration order and validates an explicit existing target root. `ComposerProjectInspector` reads only the target root `composer.json` as data, reports direct runtime/development dependencies, direct Laravel/Symfony/CakePHP/Yii/EvolvePHP package evidence, raw root PHP constraint evidence and Composer platform PHP review evidence, while avoiding framework boot, Composer execution, target autoloading, shell commands, `.env` loading, lockfile/transitive graph analysis, target writes and compatibility claims from raw Composer constraints.
 
 Testing also provides `Evolve\Testing\Console\RecordingCommandOutput`, a public experimental in-memory `CommandOutput` implementation for command tests. It records normal and error lines in order without replacing PHPUnit assertions or becoming a general CLI testing framework.
 
