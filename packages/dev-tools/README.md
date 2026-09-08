@@ -25,8 +25,10 @@ The package provides a public experimental Audit foundation under
 project root. It performs no automatic discovery. `ComposerProjectInspector`
 inspects only the target root `composer.json`; it does not scan parent
 directories, nested manifests, lock files or transitive dependency graphs.
-`PhpSourceCouplingInspector` discovers PHP source files below the explicit
-project root and tokenizes source text with PHP's native tokenizer.
+`ComposerLockInspector` inspects only the target root `composer.lock` for
+resolved lockfile evidence. `PhpSourceCouplingInspector` discovers PHP source
+files below the explicit project root and tokenizes source text with PHP's
+native tokenizer.
 
 Audit treats the target project as data. It does not include target PHP files,
 include the target `vendor/autoload.php`, bootstrap Laravel, Symfony, CakePHP,
@@ -39,6 +41,14 @@ for Laravel, Symfony, CakePHP, Yii and EvolvePHP, the raw root `require.php`
 constraint when present, missing PHP constraint evidence, malformed Composer
 evidence and `config.platform.php` review evidence.
 
+The Composer lockfile inspector reports deterministic read-only evidence for
+locked runtime and development package inventory, raw locked versions, locked
+package requirement edges, PHP, extension, library and Composer platform
+requirements, Composer-plugin package metadata and lockfile-declared abandoned
+package metadata. Runtime and development lockfile sections remain separate,
+and malformed entries produce incomplete evidence without erasing valid sibling
+package evidence.
+
 The PHP source inspector reports structured findings for source inventory,
 direct superglobal access, direct `$_SESSION` coupling, `$GLOBALS`, `global`
 statements, static-state declarations and static-property access. Source paths
@@ -46,17 +56,21 @@ are reported relative to the target root with `/` separators. Findings aggregate
 deterministically sorted lexical evidence and report incomplete inspection when
 a source file cannot be read safely.
 
-Raw Composer constraints are preserved exactly as declared. Audit does not solve
-Composer SemVer constraints and does not claim PHP, package or framework
-compatibility from raw constraints. A Composer platform override is reported as
-compatibility-review evidence only; it is not proof of the actual runtime PHP
-version.
+Raw Composer constraints and raw locked versions are preserved exactly as
+declared. Audit does not solve Composer SemVer constraints, execute Composer,
+query live vulnerability or package registries, verify lock freshness or
+content hashes, certify `composer.json` to `composer.lock` consistency, or claim
+PHP, package, framework, lockfile or Bridge compatibility from raw evidence. A
+Composer platform override is reported as compatibility-review evidence only;
+it is not proof of the actual runtime PHP version.
 
 Current limitations: Audit has no CLI command, JSON output, remediation,
-lockfile analysis, vulnerability lookup, AST analysis, data-flow analysis,
-framework bootstrap analysis, route discovery, migration scoring or Bridge
-integration. Lexical PHP source evidence does not prove runtime
-incompatibility, unsafe mutability or modernization feasibility.
+vulnerability lookup, AST analysis, data-flow analysis, framework bootstrap
+analysis, route discovery, migration scoring or Bridge integration. Lockfile
+evidence is recorded dependency metadata only; it does not prove dependency
+compatibility, freshness or security status. Lexical PHP source evidence does
+not prove runtime incompatibility, unsafe mutability or modernization
+feasibility.
 
 ## Generator Commands
 
