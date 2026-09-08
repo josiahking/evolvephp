@@ -51,10 +51,15 @@ package evidence.
 
 The PHP source inspector reports structured findings for source inventory,
 direct superglobal access, direct `$_SESSION` coupling, `$GLOBALS`, `global`
-statements, static-state declarations and static-property access. Source paths
-are reported relative to the target root with `/` separators. Findings aggregate
-deterministically sorted lexical evidence and report incomplete inspection when
-a source file cannot be read safely.
+statements, static-state declarations, static-property access and a bounded
+catalogue of runtime-call hazard review evidence. The runtime-call catalogue is
+limited to direct lexical evidence for `session_start()`, selected
+process-global mutation calls, response/output side-effect calls and constructs,
+process-lifetime callback registration, process termination, `eval` and
+include/require constructs. Source paths are reported relative to the target
+root with `/` separators. Findings aggregate deterministically sorted lexical
+evidence and report incomplete inspection when a source file cannot be read
+safely.
 
 Raw Composer constraints and raw locked versions are preserved exactly as
 declared. Audit does not solve Composer SemVer constraints, execute Composer,
@@ -65,12 +70,15 @@ Composer platform override is reported as compatibility-review evidence only;
 it is not proof of the actual runtime PHP version.
 
 Current limitations: Audit has no CLI command, JSON output, remediation,
-vulnerability lookup, AST analysis, data-flow analysis, framework bootstrap
-analysis, route discovery, migration scoring or Bridge integration. Lockfile
-evidence is recorded dependency metadata only; it does not prove dependency
-compatibility, freshness or security status. Lexical PHP source evidence does
-not prove runtime incompatibility, unsafe mutability or modernization
-feasibility.
+vulnerability lookup, AST analysis, control-flow analysis, data-flow analysis,
+framework bootstrap analysis, route discovery, migration scoring or Bridge
+integration. Lockfile evidence is recorded dependency metadata only; it does
+not prove dependency compatibility, freshness or security status. Lexical PHP
+source evidence does not prove runtime incompatibility, persistent-worker
+unsafety, Bridge compatibility status, unsafe mutability, modernization
+feasibility or whether a detected occurrence actually executes. Include and
+require evidence records the construct and source line only; Audit does not
+resolve, classify, inspect or follow included paths.
 
 ## Generator Commands
 
