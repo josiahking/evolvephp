@@ -117,6 +117,268 @@ PHP);
         ]);
     }
 
+    public function testDetectsDirectNativeSessionStartAsRiskEvidence(): void
+    {
+        $this->write('src/Session.php', <<<'PHP'
+<?php
+session_start();
+PHP);
+
+        $this->assertFinding($this->inspect(), 'php_source.native_session_start', AuditSeverity::Risk, [
+            'occurrences' => [
+                ['path' => 'src/Session.php', 'line' => 2, 'symbol' => 'session_start'],
+            ],
+            'claim' => 'direct named lexical native session_start invocation evidence only; not proof that the call executes or that session integration is unsafe',
+        ]);
+    }
+
+    public function testDetectsCaseInsensitiveAndFullyQualifiedDirectNamedRuntimeCalls(): void
+    {
+        $this->write('src/Qualified.php', <<<'PHP'
+<?php
+SETLOCALE(LC_ALL, 'C');
+\header('X-Test: yes');
+\session_start();
+PHP);
+
+        $findings = $this->inspect();
+
+        $this->assertFinding($findings, 'php_source.process_global_mutation', AuditSeverity::Risk, [
+            'occurrences' => [
+                ['path' => 'src/Qualified.php', 'line' => 2, 'symbol' => 'SETLOCALE'],
+            ],
+            'claim' => 'direct named lexical process-global mutation review evidence only; not proof that restoration is absent or that the target is persistently unsafe',
+        ]);
+        $this->assertFinding($findings, 'php_source.response_side_effect', AuditSeverity::Warning, [
+            'occurrences' => [
+                ['path' => 'src/Qualified.php', 'line' => 3, 'symbol' => '\\header'],
+            ],
+            'claim' => 'direct lexical response/output-side-effect review evidence only; not proof that a detected call violates adapter ownership',
+        ]);
+        $this->assertFinding($findings, 'php_source.native_session_start', AuditSeverity::Risk, [
+            'occurrences' => [
+                ['path' => 'src/Qualified.php', 'line' => 4, 'symbol' => '\\session_start'],
+            ],
+            'claim' => 'direct named lexical native session_start invocation evidence only; not proof that the call executes or that session integration is unsafe',
+        ]);
+    }
+
+    public function testDetectsAcceptedRuntimeHazardCatalogue(): void
+    {
+        $this->write('src/Hazards.php', <<<'PHP'
+<?php
+setlocale(LC_ALL, 'C');
+date_default_timezone_set('UTC');
+header('X-Test: yes');
+header_remove('X-Test');
+setcookie('a', 'b');
+setrawcookie('c', 'd');
+ob_start();
+ob_clean();
+ob_flush();
+ob_end_clean();
+ob_end_flush();
+ob_get_clean();
+ob_get_flush();
+ob_implicit_flush(true);
+echo 'body';
+print 'body';
+register_shutdown_function('cleanup');
+exit;
+die('done');
+eval('$a = 1;');
+include 'a.php';
+include_once 'b.php';
+require 'c.php';
+require_once 'd.php';
+PHP);
+
+        $findings = $this->inspect();
+
+        $this->assertFinding($findings, 'php_source.process_global_mutation', AuditSeverity::Risk, [
+            'occurrences' => [
+                ['path' => 'src/Hazards.php', 'line' => 2, 'symbol' => 'setlocale'],
+                ['path' => 'src/Hazards.php', 'line' => 3, 'symbol' => 'date_default_timezone_set'],
+            ],
+            'claim' => 'direct named lexical process-global mutation review evidence only; not proof that restoration is absent or that the target is persistently unsafe',
+        ]);
+        $this->assertFinding($findings, 'php_source.response_side_effect', AuditSeverity::Warning, [
+            'occurrences' => [
+                ['path' => 'src/Hazards.php', 'line' => 4, 'symbol' => 'header'],
+                ['path' => 'src/Hazards.php', 'line' => 5, 'symbol' => 'header_remove'],
+                ['path' => 'src/Hazards.php', 'line' => 6, 'symbol' => 'setcookie'],
+                ['path' => 'src/Hazards.php', 'line' => 7, 'symbol' => 'setrawcookie'],
+                ['path' => 'src/Hazards.php', 'line' => 8, 'symbol' => 'ob_start'],
+                ['path' => 'src/Hazards.php', 'line' => 9, 'symbol' => 'ob_clean'],
+                ['path' => 'src/Hazards.php', 'line' => 10, 'symbol' => 'ob_flush'],
+                ['path' => 'src/Hazards.php', 'line' => 11, 'symbol' => 'ob_end_clean'],
+                ['path' => 'src/Hazards.php', 'line' => 12, 'symbol' => 'ob_end_flush'],
+                ['path' => 'src/Hazards.php', 'line' => 13, 'symbol' => 'ob_get_clean'],
+                ['path' => 'src/Hazards.php', 'line' => 14, 'symbol' => 'ob_get_flush'],
+                ['path' => 'src/Hazards.php', 'line' => 15, 'symbol' => 'ob_implicit_flush'],
+                ['path' => 'src/Hazards.php', 'line' => 16, 'kind' => 'echo'],
+                ['path' => 'src/Hazards.php', 'line' => 17, 'kind' => 'print'],
+            ],
+            'claim' => 'direct lexical response/output-side-effect review evidence only; not proof that a detected call violates adapter ownership',
+        ]);
+        $this->assertFinding($findings, 'php_source.process_lifetime_callback', AuditSeverity::Warning, [
+            'occurrences' => [
+                ['path' => 'src/Hazards.php', 'line' => 18, 'symbol' => 'register_shutdown_function'],
+            ],
+            'claim' => 'direct named lexical process-lifetime callback registration evidence only',
+        ]);
+        $this->assertFinding($findings, 'php_source.process_termination', AuditSeverity::Risk, [
+            'occurrences' => [
+                ['path' => 'src/Hazards.php', 'line' => 19, 'kind' => 'exit'],
+                ['path' => 'src/Hazards.php', 'line' => 20, 'kind' => 'die'],
+            ],
+            'claim' => 'lexical process-termination construct evidence only',
+        ]);
+        $this->assertFinding($findings, 'php_source.eval', AuditSeverity::Risk, [
+            'occurrences' => [
+                ['path' => 'src/Hazards.php', 'line' => 21, 'kind' => 'eval'],
+            ],
+            'claim' => 'lexical eval construct evidence only',
+        ]);
+        $this->assertFinding($findings, 'php_source.include_require', AuditSeverity::Warning, [
+            'occurrences' => [
+                ['path' => 'src/Hazards.php', 'line' => 22, 'kind' => 'include'],
+                ['path' => 'src/Hazards.php', 'line' => 23, 'kind' => 'include_once'],
+                ['path' => 'src/Hazards.php', 'line' => 24, 'kind' => 'require'],
+                ['path' => 'src/Hazards.php', 'line' => 25, 'kind' => 'require_once'],
+            ],
+            'claim' => 'lexical include/require construct evidence only; included paths are not resolved or inspected',
+        ]);
+    }
+
+    public function testDoesNotInferRuntimeHazardsFromNonDirectCallsDeclarationsStringsOrFirstClassCallables(): void
+    {
+        $this->write('src/FalseRuntimeHazards.php', <<<'PHP'
+<?php
+$object->header();
+$object?->setlocale();
+Foo::header();
+Foo::session_start();
+Foo\setlocale();
+namespace\setlocale();
+function header() {}
+use function Foo\setcookie;
+$fn();
+call_user_func('header');
+call_user_func_array('setlocale', []);
+Closure::fromCallable('session_start');
+$literal = "header(";
+// session_start(
+setlocale(...);
+\header(...);
+PHP);
+
+        self::assertSame(['php_source.inventory'], $this->findingIdentifiers($this->inspect()));
+    }
+
+    public function testDoesNotInferRuntimeHazardsFromClassConstructionAttributesOrByReferenceDeclarations(): void
+    {
+        $this->write('src/ContextFalsePositives.php', <<<'PHP'
+<?php
+new header();
+new session_start();
+new setlocale();
+new \header();
+new \session_start();
+new \setlocale();
+
+#[header()]
+final class AttributeHeader {}
+
+#[session_start()]
+final class AttributeSession {}
+
+#[\header()]
+final class RootAttributeHeader {}
+
+#[\session_start()]
+final class RootAttributeSession {}
+
+function &header() {}
+function &session_start() {}
+final class Methods
+{
+    public function &header() {}
+}
+
+header('X-Test: yes');
+\header('X-Test: root');
+setlocale(...$arguments);
+setlocale(...);
+$result = $mask & header('X-Bitwise: yes');
+PHP);
+
+        $findings = $this->inspect();
+
+        self::assertSame([
+            'php_source.inventory',
+            'php_source.process_global_mutation',
+            'php_source.response_side_effect',
+        ], $this->findingIdentifiers($findings));
+        $this->assertFinding($findings, 'php_source.process_global_mutation', AuditSeverity::Risk, [
+            'occurrences' => [
+                ['path' => 'src/ContextFalsePositives.php', 'line' => 30, 'symbol' => 'setlocale'],
+            ],
+            'claim' => 'direct named lexical process-global mutation review evidence only; not proof that restoration is absent or that the target is persistently unsafe',
+        ]);
+        $this->assertFinding($findings, 'php_source.response_side_effect', AuditSeverity::Warning, [
+            'occurrences' => [
+                ['path' => 'src/ContextFalsePositives.php', 'line' => 28, 'symbol' => 'header'],
+                ['path' => 'src/ContextFalsePositives.php', 'line' => 29, 'symbol' => '\\header'],
+                ['path' => 'src/ContextFalsePositives.php', 'line' => 32, 'symbol' => 'header'],
+            ],
+            'claim' => 'direct lexical response/output-side-effect review evidence only; not proof that a detected call violates adapter ownership',
+        ]);
+    }
+
+    public function testDoesNotInferRuntimeHazardsFromSpacedByReferenceDeclarations(): void
+    {
+        $this->write('src/SpacedByReferenceDeclarations.php', <<<'PHP'
+<?php
+function & header() {}
+function &  session_start() {}
+function & /* comment */ setlocale() {}
+function &
+    header() {}
+final class Methods
+{
+    public function & header() {}
+}
+$result = $mask & header('X-Test: yes');
+PHP);
+
+        $this->assertFinding($this->inspect(), 'php_source.response_side_effect', AuditSeverity::Warning, [
+            'occurrences' => [
+                ['path' => 'src/SpacedByReferenceDeclarations.php', 'line' => 11, 'symbol' => 'header'],
+            ],
+            'claim' => 'direct lexical response/output-side-effect review evidence only; not proof that a detected call violates adapter ownership',
+        ]);
+        self::assertSame([
+            'php_source.inventory',
+            'php_source.response_side_effect',
+        ], $this->findingIdentifiers($this->inspect()));
+    }
+
+    public function testArgumentUnpackingInvocationIsNotTreatedAsFirstClassCallablePlaceholder(): void
+    {
+        $this->write('src/Unpack.php', <<<'PHP'
+<?php
+setlocale(...$arguments);
+PHP);
+
+        $this->assertFinding($this->inspect(), 'php_source.process_global_mutation', AuditSeverity::Risk, [
+            'occurrences' => [
+                ['path' => 'src/Unpack.php', 'line' => 2, 'symbol' => 'setlocale'],
+            ],
+            'claim' => 'direct named lexical process-global mutation review evidence only; not proof that restoration is absent or that the target is persistently unsafe',
+        ]);
+    }
+
     public function testDetectsStaticEvidenceWithoutStaticMethodFunctionOrConstantFalsePositives(): void
     {
         $this->write('src/StaticState.php', <<<'PHP'
@@ -180,7 +442,7 @@ PHP);
 '$GLOBALS';
 '$_ENV';
 'Foo::$state';
-echo <<<'TXT'
+$text = <<<'TXT'
 $_GET
 TXT;
 PHP);
@@ -222,10 +484,10 @@ PHP);
         $secondRoot = $this->createProjectRoot('evolvephp-source-audit-second-');
 
         try {
-            $this->writeToRoot($firstRoot, 'src/B.php', '<?php $_POST["b"];');
-            $this->writeToRoot($firstRoot, 'src/A.php', '<?php $_GET["a"];');
-            $this->writeToRoot($secondRoot, 'src/A.php', '<?php $_GET["a"];');
-            $this->writeToRoot($secondRoot, 'src/B.php', '<?php $_POST["b"];');
+            $this->writeToRoot($firstRoot, 'src/B.php', '<?php header("X-B: b");');
+            $this->writeToRoot($firstRoot, 'src/A.php', '<?php $_GET["a"]; session_start();');
+            $this->writeToRoot($secondRoot, 'src/A.php', '<?php $_GET["a"]; session_start();');
+            $this->writeToRoot($secondRoot, 'src/B.php', '<?php header("X-B: b");');
 
             $inspector = new PhpSourceCouplingInspector();
 
@@ -243,7 +505,14 @@ PHP);
     {
         $this->write('src/Trap.php', <<<'PHP'
 <?php
+header('X-Trap: bad');
+include __DIR__ . '/included-trap.php';
+eval('file_put_contents(__DIR__ . "/audit-eval-marker", "bad");');
 file_put_contents(__DIR__ . '/../audit-executed-marker', 'bad');
+PHP);
+        $this->write('src/included-trap.php', <<<'PHP'
+<?php
+file_put_contents(__DIR__ . '/../audit-included-marker', 'bad');
 PHP);
 
         $before = $this->targetInventory();
@@ -251,6 +520,8 @@ PHP);
         $after = $this->targetInventory();
 
         self::assertFileDoesNotExist($this->path('audit-executed-marker'));
+        self::assertFileDoesNotExist($this->path('audit-eval-marker'));
+        self::assertFileDoesNotExist($this->path('audit-included-marker'));
         self::assertSame($before, $after);
     }
 
@@ -270,7 +541,7 @@ PHP);
 
     public function testUnreadableSourceReportsIncompleteInventoryWithoutFalseCleanClaim(): void
     {
-        $this->write('src/Readable.php', '<?php $_GET["ok"];');
+        $this->write('src/Readable.php', '<?php $_GET["ok"]; header("X-Ok: yes");');
         $this->write('src/Unreadable.php', '<?php $_POST["unknown"];');
 
         $inspector = new PhpSourceCouplingInspector(null, static function (string $path): string|false {
@@ -301,6 +572,12 @@ PHP);
                 ['path' => 'src/Readable.php', 'line' => 1, 'symbol' => '$_GET'],
             ],
             'claim' => 'direct lexical superglobal access evidence only',
+        ]);
+        $this->assertFinding($findings, 'php_source.response_side_effect', AuditSeverity::Warning, [
+            'occurrences' => [
+                ['path' => 'src/Readable.php', 'line' => 1, 'symbol' => 'header'],
+            ],
+            'claim' => 'direct lexical response/output-side-effect review evidence only; not proof that a detected call violates adapter ownership',
         ]);
     }
 

@@ -41,6 +41,13 @@ final readonly class PhpSourceCouplingInspector implements AuditInspector
             'global_statement' => [],
             'static_state_declaration' => [],
             'static_property_access' => [],
+            'native_session_start' => [],
+            'process_global_mutation' => [],
+            'response_side_effect' => [],
+            'process_lifetime_callback' => [],
+            'process_termination' => [],
+            'eval' => [],
+            'include_require' => [],
         ];
 
         foreach ($discovery['files'] as $file) {
@@ -172,6 +179,48 @@ final readonly class PhpSourceCouplingInspector implements AuditInspector
                 'severity' => AuditSeverity::Warning,
                 'message' => 'Static property access was found and requires execution-lifetime review.',
                 'claim' => 'static property access review evidence only; not proof of unsafe mutable execution state',
+            ],
+            'native_session_start' => [
+                'identifier' => 'php_source.native_session_start',
+                'severity' => AuditSeverity::Risk,
+                'message' => 'Direct native session_start() invocation evidence was found.',
+                'claim' => 'direct named lexical native session_start invocation evidence only; not proof that the call executes or that session integration is unsafe',
+            ],
+            'process_global_mutation' => [
+                'identifier' => 'php_source.process_global_mutation',
+                'severity' => AuditSeverity::Risk,
+                'message' => 'Direct process-global mutation call evidence was found.',
+                'claim' => 'direct named lexical process-global mutation review evidence only; not proof that restoration is absent or that the target is persistently unsafe',
+            ],
+            'response_side_effect' => [
+                'identifier' => 'php_source.response_side_effect',
+                'severity' => AuditSeverity::Warning,
+                'message' => 'Direct response or output side-effect evidence was found.',
+                'claim' => 'direct lexical response/output-side-effect review evidence only; not proof that a detected call violates adapter ownership',
+            ],
+            'process_lifetime_callback' => [
+                'identifier' => 'php_source.process_lifetime_callback',
+                'severity' => AuditSeverity::Warning,
+                'message' => 'Direct process-lifetime callback registration evidence was found.',
+                'claim' => 'direct named lexical process-lifetime callback registration evidence only',
+            ],
+            'process_termination' => [
+                'identifier' => 'php_source.process_termination',
+                'severity' => AuditSeverity::Risk,
+                'message' => 'Lexical process-termination construct evidence was found.',
+                'claim' => 'lexical process-termination construct evidence only',
+            ],
+            'eval' => [
+                'identifier' => 'php_source.eval',
+                'severity' => AuditSeverity::Risk,
+                'message' => 'Lexical eval construct evidence was found.',
+                'claim' => 'lexical eval construct evidence only',
+            ],
+            'include_require' => [
+                'identifier' => 'php_source.include_require',
+                'severity' => AuditSeverity::Warning,
+                'message' => 'Lexical include/require construct evidence was found.',
+                'claim' => 'lexical include/require construct evidence only; included paths are not resolved or inspected',
             ],
         ];
     }
