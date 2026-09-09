@@ -1,0 +1,67 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Evolve\Core\Console\CommandRegistry;
+use Evolve\Core\Console\CommandRunner;
+use Evolve\Core\Console\Runtime\CliApplication;
+use Evolve\Core\Console\Runtime\StreamCommandOutput;
+use Evolve\Core\Container\ServiceRegistry;
+use Evolve\Core\Execution\ExecutionOrchestrator;
+use Evolve\DevTools\Audit\AuditRunner;
+use Evolve\DevTools\Audit\Console\AuditCommand;
+use Evolve\DevTools\Audit\Presentation\AuditReportRenderer;
+use Evolve\DevTools\Audit\Project\ComposerLockInspector;
+use Evolve\DevTools\Audit\Project\ComposerProjectInspector;
+use Evolve\DevTools\Audit\Project\PhpSourceCouplingInspector;
+
+$composerAutoloadPath = $_composer_autoload_path ?? null;
+
+$autoload = static function () use ($composerAutoloadPath): string {
+    if (
+        is_string($composerAutoloadPath)
+        && is_file($composerAutoloadPath)
+    ) {
+        return $composerAutoloadPath;
+    }
+
+    $candidates = [
+        __DIR__ . '/../vendor/autoload.php',
+        __DIR__ . '/../../../vendor/autoload.php',
+        __DIR__ . '/../../../../vendor/autoload.php',
+    ];
+
+    foreach ($candidates as $candidate) {
+        if (is_file($candidate)) {
+            return $candidate;
+        }
+    }
+
+    fwrite(STDERR, 'Unable to locate Composer autoloader.' . PHP_EOL);
+    exit(1);
+};
+
+require $autoload();
+
+$services = new ServiceRegistry();
+$services->freeze();
+
+$application = new CliApplication(new CommandRunner(
+    new CommandRegistry([
+        new AuditCommand(
+            new AuditRunner([
+                new ComposerProjectInspector(),
+                new ComposerLockInspector(),
+                new PhpSourceCouplingInspector(),
+            ]),
+            new AuditReportRenderer(),
+        ),
+    ]),
+    new ExecutionOrchestrator($services),
+));
+
+exit($application->run(
+    ['audit', ...array_slice($argv, 1)],
+    new StreamCommandOutput(STDOUT, STDERR),
+));

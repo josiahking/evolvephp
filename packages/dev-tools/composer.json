@@ -15,5 +15,8 @@
         "psr-4": {
             "Evolve\\DevTools\\": "src/"
         }
-    }
+    },
+    "bin": [
+        "bin/evolve-audit"
+    ]
 }
