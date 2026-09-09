@@ -28,7 +28,8 @@ directories, nested manifests, lock files or transitive dependency graphs.
 `ComposerLockInspector` inspects only the target root `composer.lock` for
 resolved lockfile evidence. `PhpSourceCouplingInspector` discovers PHP source
 files below the explicit project root and tokenizes source text with PHP's
-native tokenizer.
+native tokenizer. `PhpSourceStructureInspector` reports lexical namespace and
+named-declaration structure from those discovered PHP source files.
 
 Audit treats the target project as data. It does not include target PHP files,
 include the target `vendor/autoload.php`, bootstrap Laravel, Symfony, CakePHP,
@@ -40,6 +41,10 @@ direct runtime and development dependencies, direct framework package evidence
 for Laravel, Symfony, CakePHP, Yii and EvolvePHP, the raw root `require.php`
 constraint when present, missing PHP constraint evidence, malformed Composer
 evidence and `config.platform.php` review evidence.
+It also reports root `autoload` and `autoload-dev` metadata for PSR-4, PSR-0,
+classmap and files sections as raw Composer evidence. Runtime PSR-4 namespaces
+and runtime autoload files may produce modernization review signals, while
+development autoload metadata remains evidence only.
 
 The Composer lockfile inspector reports deterministic read-only evidence for
 locked runtime and development package inventory, raw locked versions, locked
@@ -60,6 +65,12 @@ include/require constructs. Source paths are reported relative to the target
 root with `/` separators. Findings aggregate deterministically sorted lexical
 evidence and report incomplete inspection when a source file cannot be read
 safely.
+
+The PHP source structure inspector reports namespace declarations and named
+classes, interfaces, traits, enums and functions using PHP's native tokenizer.
+Non-empty namespaces with named declarations may produce namespace-group review
+signals, and global named declarations or files with multiple namespace
+declarations are reported for human review.
 
 Raw Composer constraints and raw locked versions are preserved exactly as
 declared. Audit does not solve Composer SemVer constraints, execute Composer,
@@ -97,14 +108,16 @@ metadata only.
 
 Current limitations: Audit has no remediation, vulnerability lookup, AST
 analysis, control-flow analysis, data-flow analysis, framework bootstrap
-analysis, route discovery, migration scoring, compatibility certification or
-Bridge integration. Lockfile evidence is recorded dependency metadata only; it
-does not prove dependency compatibility, freshness or security status. Lexical
-PHP source evidence does not prove runtime incompatibility, persistent-worker
-unsafety, Bridge compatibility status, unsafe mutability, modernization
-feasibility or whether a detected occurrence actually executes. Include and
-require evidence records the construct and source line only; Audit does not
-resolve, classify, inspect or follow included paths.
+analysis, route discovery, data ownership discovery, migration scoring,
+automatic migration plan, compatibility certification or Bridge integration.
+Autoload mappings and namespaces are structural review hints, not proven module
+or capability boundaries. Lockfile evidence is recorded dependency metadata
+only; it does not prove dependency compatibility, freshness or security status.
+Lexical PHP source evidence does not prove runtime incompatibility,
+persistent-worker unsafety, Bridge compatibility status, unsafe mutability,
+modernization feasibility, migration readiness or whether a detected occurrence
+actually executes. Include and require evidence records the construct and source
+line only; Audit does not resolve, classify, inspect or follow included paths.
 
 ## Generator Commands
 

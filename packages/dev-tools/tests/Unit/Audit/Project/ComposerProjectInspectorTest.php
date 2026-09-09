@@ -352,6 +352,391 @@ final class ComposerProjectInspectorTest extends TestCase
         self::assertSame($before, $after);
     }
 
+    public function testComposerAutoloadEvidenceAndSignalsAreBoundedDeterministicAndSeparated(): void
+    {
+        $this->writeComposerJson([
+            'autoload-dev' => [
+                'files' => ['tests/dev-file.php'],
+                'psr-4' => [
+                    'Tests\\Support\\' => 'tests/Support/',
+                ],
+            ],
+            'autoload' => [
+                'psr-0' => [
+                    'Legacy\\' => 'legacy/',
+                ],
+                'classmap' => ['database/seeders', 'app/LegacyClass.php'],
+                'files' => ['bootstrap/helpers.php', 'bootstrap/runtime.php'],
+                'psr-4' => [
+                    'App\\Billing\\' => ['src/Billing/', 'lib/Billing/'],
+                    '' => 'fallback/',
+                    'App\\' => 'src/',
+                ],
+            ],
+        ]);
+
+        $findings = $this->inspect();
+
+        $this->assertFinding($findings, 'composer.autoload', AuditSeverity::Info, [
+            'complete' => true,
+            'runtime' => [
+                'state' => 'valid',
+                'complete' => true,
+                'psr-4' => [
+                    ['prefix' => '', 'paths' => ['fallback/'], 'state' => 'valid'],
+                    ['prefix' => 'App\\', 'paths' => ['src/'], 'state' => 'valid'],
+                    ['prefix' => 'App\\Billing\\', 'paths' => ['src/Billing/', 'lib/Billing/'], 'state' => 'valid'],
+                ],
+                'psr-0' => [
+                    ['prefix' => 'Legacy\\', 'paths' => ['legacy/'], 'state' => 'valid'],
+                ],
+                'classmap' => ['database/seeders', 'app/LegacyClass.php'],
+                'files' => ['bootstrap/helpers.php', 'bootstrap/runtime.php'],
+            ],
+            'development' => [
+                'state' => 'valid',
+                'complete' => true,
+                'psr-4' => [
+                    ['prefix' => 'Tests\\Support\\', 'paths' => ['tests/Support/'], 'state' => 'valid'],
+                ],
+                'psr-0' => [],
+                'classmap' => [],
+                'files' => ['tests/dev-file.php'],
+            ],
+            'claim' => 'raw composer autoload metadata only; target autoload is not executed',
+        ]);
+        $this->assertFinding($findings, 'modernization.autoload_signals', AuditSeverity::Warning, [
+            'complete' => true,
+            'autoload_state' => [
+                'runtime' => 'valid',
+                'development' => 'valid',
+            ],
+            'candidates' => [
+                ['kind' => 'runtime_psr4_namespace', 'prefix' => 'App\\', 'paths' => ['src/']],
+                ['kind' => 'runtime_psr4_namespace', 'prefix' => 'App\\Billing\\', 'paths' => ['src/Billing/', 'lib/Billing/']],
+            ],
+            'review_signals' => [
+                ['kind' => 'autoload_file', 'path' => 'bootstrap/helpers.php', 'signal' => 'requires migration review'],
+                ['kind' => 'autoload_file', 'path' => 'bootstrap/runtime.php', 'signal' => 'requires migration review'],
+            ],
+            'claim' => 'structural review signals only; not proof of module or capability boundaries, migration feasibility, Bridge compatibility, or that migration is blocked',
+        ]);
+    }
+
+    public function testMalformedComposerAutoloadPreservesValidSiblingEvidenceWithoutAbsenceClaims(): void
+    {
+        $this->writeComposerJson([
+            'autoload' => [
+                'psr-4' => [
+                    'App\\' => 'src/',
+                    'Broken\\' => [false],
+                ],
+                'classmap' => ['database/seeders', false],
+                'files' => 'bootstrap/helpers.php',
+            ],
+            'autoload-dev' => 'not-an-object',
+        ]);
+
+        $findings = $this->inspect();
+
+        $this->assertFinding($findings, 'composer.autoload.malformed', AuditSeverity::Risk, [
+            'fields' => [
+                ['field' => 'autoload.psr-4.Broken\\.0', 'actual' => 'boolean'],
+                ['field' => 'autoload.classmap.1', 'actual' => 'boolean'],
+                ['field' => 'autoload.files', 'actual' => 'string'],
+                ['field' => 'autoload-dev', 'actual' => 'string'],
+            ],
+        ]);
+        $this->assertFinding($findings, 'composer.autoload', AuditSeverity::Warning, [
+            'complete' => false,
+            'runtime' => [
+                'state' => 'partial',
+                'complete' => false,
+                'psr-4' => [
+                    ['prefix' => 'App\\', 'paths' => ['src/'], 'state' => 'valid'],
+                    ['prefix' => 'Broken\\', 'paths' => [], 'state' => 'partial'],
+                ],
+                'psr-0' => [],
+                'classmap' => ['database/seeders'],
+                'files' => null,
+            ],
+            'development' => [
+                'state' => 'unknown',
+                'complete' => false,
+                'psr-4' => null,
+                'psr-0' => null,
+                'classmap' => null,
+                'files' => null,
+            ],
+            'claim' => 'raw composer autoload metadata only; target autoload is not executed',
+        ]);
+        $this->assertFinding($findings, 'modernization.autoload_signals', AuditSeverity::Warning, [
+            'complete' => false,
+            'autoload_state' => [
+                'runtime' => 'partial',
+                'development' => 'unknown',
+            ],
+            'candidates' => [
+                ['kind' => 'runtime_psr4_namespace', 'prefix' => 'App\\', 'paths' => ['src/']],
+            ],
+            'review_signals' => [],
+            'claim' => 'structural review signals only; not proof of module or capability boundaries, migration feasibility, Bridge compatibility, or that migration is blocked',
+        ]);
+    }
+
+    public function testMalformedComposerClassmapAndFilesPreserveValidSiblingsAndRuntimeFileSignals(): void
+    {
+        $this->writeComposerJson([
+            'autoload' => [
+                'classmap' => ['database/seeders', false, 'app/Legacy.php'],
+                'files' => ['bootstrap/helpers.php', false, 'bootstrap/runtime.php'],
+            ],
+        ]);
+
+        $findings = $this->inspect();
+
+        $this->assertFinding($findings, 'composer.autoload.malformed', AuditSeverity::Risk, [
+            'fields' => [
+                ['field' => 'autoload.classmap.1', 'actual' => 'boolean'],
+                ['field' => 'autoload.files.1', 'actual' => 'boolean'],
+            ],
+        ]);
+        $this->assertFinding($findings, 'composer.autoload', AuditSeverity::Warning, [
+            'complete' => false,
+            'runtime' => [
+                'state' => 'partial',
+                'complete' => false,
+                'psr-4' => [],
+                'psr-0' => [],
+                'classmap' => ['database/seeders', 'app/Legacy.php'],
+                'files' => ['bootstrap/helpers.php', 'bootstrap/runtime.php'],
+            ],
+            'development' => [
+                'state' => 'absent',
+                'complete' => true,
+                'psr-4' => [],
+                'psr-0' => [],
+                'classmap' => [],
+                'files' => [],
+            ],
+            'claim' => 'raw composer autoload metadata only; target autoload is not executed',
+        ]);
+        $this->assertFinding($findings, 'modernization.autoload_signals', AuditSeverity::Warning, [
+            'complete' => false,
+            'autoload_state' => [
+                'runtime' => 'partial',
+                'development' => 'absent',
+            ],
+            'candidates' => [],
+            'review_signals' => [
+                ['kind' => 'autoload_file', 'path' => 'bootstrap/helpers.php', 'signal' => 'requires migration review'],
+                ['kind' => 'autoload_file', 'path' => 'bootstrap/runtime.php', 'signal' => 'requires migration review'],
+            ],
+            'claim' => 'structural review signals only; not proof of module or capability boundaries, migration feasibility, Bridge compatibility, or that migration is blocked',
+        ]);
+    }
+
+    public function testAutoloadModernizationSignalsAreInfoWhenOnlyNeutralAutoloadEvidenceExists(): void
+    {
+        foreach ([
+            ['autoload-dev' => ['psr-4' => ['Tests\\' => 'tests/']]],
+            ['autoload' => ['psr-0' => ['Legacy\\' => 'legacy/']]],
+            ['autoload' => ['classmap' => ['app/Legacy.php']]],
+            ['autoload' => ['psr-4' => ['' => 'fallback/']]],
+            ['autoload' => []],
+        ] as $manifest) {
+            $root = $this->createProjectRoot();
+
+            try {
+                file_put_contents($root . DIRECTORY_SEPARATOR . 'composer.json', json_encode($manifest, JSON_THROW_ON_ERROR));
+
+                $finding = $this->finding((new ComposerProjectInspector())->inspect($root), 'modernization.autoload_signals');
+
+                self::assertSame(AuditSeverity::Info, $finding->severity());
+                self::assertSame([], $finding->evidence()['candidates']);
+                self::assertSame([], $finding->evidence()['review_signals']);
+            } finally {
+                $this->removeDirectory($root);
+            }
+        }
+    }
+
+    public function testAutoloadSignalCompletenessUsesRuntimeSignalEvidenceOnly(): void
+    {
+        $this->writeComposerJson([
+            'autoload' => ['psr-4' => ['App\\' => 'src/']],
+            'autoload-dev' => 'not-an-object',
+        ]);
+
+        $findings = $this->inspect();
+
+        $this->assertFinding($findings, 'composer.autoload', AuditSeverity::Warning, [
+            'complete' => false,
+            'runtime' => [
+                'state' => 'valid',
+                'complete' => true,
+                'psr-4' => [
+                    ['prefix' => 'App\\', 'paths' => ['src/'], 'state' => 'valid'],
+                ],
+                'psr-0' => [],
+                'classmap' => [],
+                'files' => [],
+            ],
+            'development' => [
+                'state' => 'unknown',
+                'complete' => false,
+                'psr-4' => null,
+                'psr-0' => null,
+                'classmap' => null,
+                'files' => null,
+            ],
+            'claim' => 'raw composer autoload metadata only; target autoload is not executed',
+        ]);
+        $this->assertFinding($findings, 'modernization.autoload_signals', AuditSeverity::Warning, [
+            'complete' => true,
+            'autoload_state' => [
+                'runtime' => 'valid',
+                'development' => 'unknown',
+            ],
+            'candidates' => [
+                ['kind' => 'runtime_psr4_namespace', 'prefix' => 'App\\', 'paths' => ['src/']],
+            ],
+            'review_signals' => [],
+            'claim' => 'structural review signals only; not proof of module or capability boundaries, migration feasibility, Bridge compatibility, or that migration is blocked',
+        ]);
+    }
+
+    public function testMalformedRuntimeAutoloadMakesModernizationSignalsIncomplete(): void
+    {
+        $this->writeComposerJson([
+            'autoload' => [
+                'psr-4' => ['App\\' => ['src/', false]],
+            ],
+            'autoload-dev' => [
+                'psr-4' => ['Tests\\' => 'tests/'],
+            ],
+        ]);
+
+        $this->assertFinding($this->inspect(), 'modernization.autoload_signals', AuditSeverity::Info, [
+            'complete' => false,
+            'autoload_state' => [
+                'runtime' => 'partial',
+                'development' => 'valid',
+            ],
+            'candidates' => [],
+            'review_signals' => [],
+            'claim' => 'structural review signals only; not proof of module or capability boundaries, migration feasibility, Bridge compatibility, or that migration is blocked',
+        ]);
+    }
+
+    public function testMalformedPsrPathListsPreserveValidSiblingsAndDoNotProduceCandidates(): void
+    {
+        $this->writeComposerJson([
+            'autoload' => [
+                'psr-4' => [
+                    'App\\' => ['src/', false, 'legacy/'],
+                ],
+                'psr-0' => [
+                    'Legacy\\' => ['legacy/src/', false, 'legacy/lib/'],
+                ],
+            ],
+        ]);
+
+        $findings = $this->inspect();
+
+        $this->assertFinding($findings, 'composer.autoload.malformed', AuditSeverity::Risk, [
+            'fields' => [
+                ['field' => 'autoload.psr-4.App\\.1', 'actual' => 'boolean'],
+                ['field' => 'autoload.psr-0.Legacy\\.1', 'actual' => 'boolean'],
+            ],
+        ]);
+        $this->assertFinding($findings, 'composer.autoload', AuditSeverity::Warning, [
+            'complete' => false,
+            'runtime' => [
+                'state' => 'partial',
+                'complete' => false,
+                'psr-4' => [
+                    ['prefix' => 'App\\', 'paths' => ['src/', 'legacy/'], 'state' => 'partial'],
+                ],
+                'psr-0' => [
+                    ['prefix' => 'Legacy\\', 'paths' => ['legacy/src/', 'legacy/lib/'], 'state' => 'partial'],
+                ],
+                'classmap' => [],
+                'files' => [],
+            ],
+            'development' => [
+                'state' => 'absent',
+                'complete' => true,
+                'psr-4' => [],
+                'psr-0' => [],
+                'classmap' => [],
+                'files' => [],
+            ],
+            'claim' => 'raw composer autoload metadata only; target autoload is not executed',
+        ]);
+        $this->assertFinding($findings, 'modernization.autoload_signals', AuditSeverity::Info, [
+            'complete' => false,
+            'autoload_state' => [
+                'runtime' => 'partial',
+                'development' => 'absent',
+            ],
+            'candidates' => [],
+            'review_signals' => [],
+            'claim' => 'structural review signals only; not proof of module or capability boundaries, migration feasibility, Bridge compatibility, or that migration is blocked',
+        ]);
+    }
+
+    public function testAutoloadSignalCompletenessIgnoresMalformedRuntimePsr0AndClassmap(): void
+    {
+        $this->writeComposerJson([
+            'autoload' => [
+                'psr-4' => [
+                    'App\\' => 'src/',
+                ],
+                'psr-0' => 'malformed',
+                'classmap' => 'malformed',
+                'files' => [],
+            ],
+        ]);
+
+        $findings = $this->inspect();
+
+        $this->assertFinding($findings, 'composer.autoload', AuditSeverity::Warning, [
+            'complete' => false,
+            'runtime' => [
+                'state' => 'partial',
+                'complete' => false,
+                'psr-4' => [
+                    ['prefix' => 'App\\', 'paths' => ['src/'], 'state' => 'valid'],
+                ],
+                'psr-0' => [],
+                'classmap' => null,
+                'files' => [],
+            ],
+            'development' => [
+                'state' => 'absent',
+                'complete' => true,
+                'psr-4' => [],
+                'psr-0' => [],
+                'classmap' => [],
+                'files' => [],
+            ],
+            'claim' => 'raw composer autoload metadata only; target autoload is not executed',
+        ]);
+        $this->assertFinding($findings, 'modernization.autoload_signals', AuditSeverity::Warning, [
+            'complete' => true,
+            'autoload_state' => [
+                'runtime' => 'partial',
+                'development' => 'absent',
+            ],
+            'candidates' => [
+                ['kind' => 'runtime_psr4_namespace', 'prefix' => 'App\\', 'paths' => ['src/']],
+            ],
+            'review_signals' => [],
+            'claim' => 'structural review signals only; not proof of module or capability boundaries, migration feasibility, Bridge compatibility, or that migration is blocked',
+        ]);
+    }
+
     public function testEquivalentPropertyOrderingYieldsEquivalentOutput(): void
     {
         $firstRoot = $this->createProjectRoot();
@@ -361,8 +746,10 @@ final class ComposerProjectInspectorTest extends TestCase
             file_put_contents($firstRoot . DIRECTORY_SEPARATOR . 'composer.json', json_encode([
                 'require' => ['vendor/b' => '^2.0', 'php' => '^8.4', 'vendor/a' => '^1.0'],
                 'require-dev' => ['tool/b' => '^2.0', 'tool/a' => '^1.0'],
+                'autoload' => ['psr-4' => ['App\\Zeta\\' => 'src/Zeta/', 'App\\Alpha\\' => 'src/Alpha/']],
             ], JSON_THROW_ON_ERROR));
             file_put_contents($secondRoot . DIRECTORY_SEPARATOR . 'composer.json', json_encode([
+                'autoload' => ['psr-4' => ['App\\Alpha\\' => 'src/Alpha/', 'App\\Zeta\\' => 'src/Zeta/']],
                 'require-dev' => ['tool/a' => '^1.0', 'tool/b' => '^2.0'],
                 'require' => ['vendor/a' => '^1.0', 'vendor/b' => '^2.0', 'php' => '^8.4'],
             ], JSON_THROW_ON_ERROR));

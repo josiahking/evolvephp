@@ -34,6 +34,9 @@ final class AuditBinaryTest extends TestCase
         self::assertStringContainsString('[info] composer_json.present', $process['stdout']);
         self::assertStringContainsString('[warning] composer.frameworks', $process['stdout']);
         self::assertStringContainsString('[warning] composer_lock.composer_plugins', $process['stdout']);
+        self::assertStringContainsString('[info] php_source.structure', $process['stdout']);
+        self::assertStringContainsString('[warning] modernization.autoload_signals', $process['stdout']);
+        self::assertStringContainsString('[warning] modernization.source_signals', $process['stdout']);
         self::assertStringContainsString('[risk] php_source.native_session_start', $process['stdout']);
         $this->assertTargetWasNotExecuted($this->projectRoot);
         self::assertSame($before, $this->targetInventory($this->projectRoot));
@@ -53,6 +56,9 @@ final class AuditBinaryTest extends TestCase
         self::assertSame(1, count(array_keys($identifiers, 'composer_json.present', true)));
         self::assertSame(1, count(array_keys($identifiers, 'composer_lock.package_inventory', true)));
         self::assertSame(1, count(array_keys($identifiers, 'php_source.inventory', true)));
+        self::assertSame(1, count(array_keys($identifiers, 'php_source.structure', true)));
+        self::assertContains('modernization.autoload_signals', $identifiers);
+        self::assertContains('modernization.source_signals', $identifiers);
         self::assertContains('php_source.native_session_start', $identifiers);
         self::assertLessThan(
             array_search('composer_lock.package_inventory', $identifiers, true),
@@ -61,6 +67,10 @@ final class AuditBinaryTest extends TestCase
         self::assertLessThan(
             array_search('php_source.inventory', $identifiers, true),
             array_search('composer_lock.package_inventory', $identifiers, true),
+        );
+        self::assertLessThan(
+            array_search('php_source.structure', $identifiers, true),
+            array_search('php_source.inventory', $identifiers, true),
         );
         self::assertStringNotContainsString($this->projectRoot, $process['stdout']);
         self::assertStringNotContainsString(str_replace('\\', '/', $this->projectRoot), $process['stdout']);
@@ -135,6 +145,9 @@ final class AuditBinaryTest extends TestCase
                 'laravel/framework' => '^10.0',
             ],
             'autoload' => [
+                'psr-4' => [
+                    'Fixture\\Billing\\' => 'src/Billing/',
+                ],
                 'files' => ['bootstrap/autoload-trap.php'],
             ],
             'scripts' => [
@@ -157,9 +170,14 @@ final class AuditBinaryTest extends TestCase
         file_put_contents($this->path($root, 'vendor/autoload.php'), "<?php file_put_contents(__DIR__ . '/../autoload-marker', 'loaded');\n");
         file_put_contents($this->path($root, 'bootstrap/autoload-trap.php'), "<?php file_put_contents(__DIR__ . '/../autoload-files-marker', 'loaded');\n");
         file_put_contents($this->path($root, 'src/included.php'), '<?php file_put_contents(' . var_export($this->path($root, 'include-marker'), true) . ", 'loaded');\n");
+        self::assertTrue(mkdir($this->path($root, 'src/Billing'), 0777, true));
         file_put_contents(
             $this->path($root, 'src/Trap.php'),
-            "<?php\nsession_start();\ninclude __DIR__ . '/included.php';\neval(" . var_export($evalPayload, true) . ");\n",
+            "<?php\nnamespace Fixture\\Legacy;\nsession_start();\ninclude __DIR__ . '/included.php';\neval(" . var_export($evalPayload, true) . ");\n",
+        );
+        file_put_contents(
+            $this->path($root, 'src/Billing/Invoice.php'),
+            "<?php\nnamespace Fixture\\Billing;\nfinal class Invoice {}\n",
         );
     }
 
