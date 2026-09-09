@@ -15,6 +15,7 @@ use Evolve\DevTools\Audit\Presentation\AuditReportRenderer;
 use Evolve\DevTools\Audit\Project\ComposerLockInspector;
 use Evolve\DevTools\Audit\Project\ComposerProjectInspector;
 use Evolve\DevTools\Audit\Project\PhpSourceCouplingInspector;
+use Evolve\DevTools\Audit\Project\PhpSourceStructureInspector;
 
 $composerAutoloadPath = $_composer_autoload_path ?? null;
 
@@ -54,6 +55,7 @@ $application = new CliApplication(new CommandRunner(
                 new ComposerProjectInspector(),
                 new ComposerLockInspector(),
                 new PhpSourceCouplingInspector(),
+                new PhpSourceStructureInspector(),
             ]),
             new AuditReportRenderer(),
         ),

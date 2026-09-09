@@ -63,6 +63,8 @@ final readonly class ComposerProjectInspector implements AuditInspector
 
         $require = $this->dependencyMap($root, 'require');
         $requireDev = $this->dependencyMap($root, 'require-dev');
+        $autoload = $this->autoloadMap($root, 'autoload');
+        $autoloadDev = $this->autoloadMap($root, 'autoload-dev');
         $findings = [
             new AuditFinding('composer_json.present', AuditSeverity::Info, 'Root composer.json was found.', [
                 'path' => 'composer.json',
@@ -77,6 +79,14 @@ final readonly class ComposerProjectInspector implements AuditInspector
             $findings[] = $malformedFinding;
         }
 
+        $autoloadMalformed = array_merge($autoload['malformed'] ?? [], $autoloadDev['malformed'] ?? []);
+
+        if ($autoloadMalformed !== []) {
+            $findings[] = new AuditFinding('composer.autoload.malformed', AuditSeverity::Risk, 'Composer autoload metadata is malformed.', [
+                'fields' => $autoloadMalformed,
+            ]);
+        }
+
         $phpConstraintFinding = $this->phpConstraintFinding($require['php']);
 
         if ($phpConstraintFinding !== null) {
@@ -87,6 +97,11 @@ final readonly class ComposerProjectInspector implements AuditInspector
         $findings[] = $this->developmentDependenciesFinding($requireDev);
         $findings[] = $this->frameworksFinding($require, $requireDev);
 
+        if ($autoload['state'] !== 'absent' || $autoloadDev['state'] !== 'absent') {
+            $findings[] = $this->autoloadFinding($autoload, $autoloadDev);
+            $findings[] = $this->autoloadSignalsFinding($autoload, $autoloadDev);
+        }
+
         $platformFinding = $this->platformPhpFinding($root);
 
         if ($platformFinding !== null) {
@@ -94,6 +109,261 @@ final readonly class ComposerProjectInspector implements AuditInspector
         }
 
         return $findings;
+    }
+
+    /**
+     * @return array{state: 'absent'|'valid'|'partial'|'unknown', complete: bool, signal_complete: bool, psr-4: ?list<array{prefix: string, paths: ?list<string>, state: 'valid'|'partial'|'malformed'}>, psr-0: ?list<array{prefix: string, paths: ?list<string>, state: 'valid'|'partial'|'malformed'}>, classmap: ?list<string>, files: ?list<string>, malformed?: list<array{field: string, actual: string}>}
+     */
+    private function autoloadMap(\stdClass $root, string $field): array
+    {
+        if (! property_exists($root, $field)) {
+            return [
+                'state' => 'absent',
+                'complete' => true,
+                'signal_complete' => true,
+                'psr-4' => [],
+                'psr-0' => [],
+                'classmap' => [],
+                'files' => [],
+            ];
+        }
+
+        $value = $root->{$field};
+
+        if (! $value instanceof \stdClass) {
+            return [
+                'state' => 'unknown',
+                'complete' => false,
+                'signal_complete' => $field !== 'autoload' ? true : false,
+                'psr-4' => null,
+                'psr-0' => null,
+                'classmap' => null,
+                'files' => null,
+                'malformed' => [['field' => $field, 'actual' => $this->typeOf($value)]],
+            ];
+        }
+
+        $malformed = [];
+        $psr4 = $this->psrAutoloadEvidence($value, $field, 'psr-4', $malformed);
+        $psr0 = $this->psrAutoloadEvidence($value, $field, 'psr-0', $malformed);
+        $classmap = $this->orderedPathListEvidence($value, $field, 'classmap', $malformed);
+        $files = $this->orderedPathListEvidence($value, $field, 'files', $malformed);
+        $state = $malformed === [] ? 'valid' : 'partial';
+        $signalComplete = $field !== 'autoload' || $this->autoloadSignalEvidenceComplete($field, $malformed);
+
+        $result = [
+            'state' => $state,
+            'complete' => $malformed === [],
+            'signal_complete' => $signalComplete,
+            'psr-4' => $psr4,
+            'psr-0' => $psr0,
+            'classmap' => $classmap,
+            'files' => $files,
+        ];
+
+        if ($malformed !== []) {
+            $result['malformed'] = $malformed;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param list<array{field: string, actual: string}> $malformed
+     * @return list<array{prefix: string, paths: ?list<string>, state: 'valid'|'partial'|'malformed'}>
+     */
+    private function psrAutoloadEvidence(\stdClass $autoload, string $field, string $type, array &$malformed): array
+    {
+        if (! property_exists($autoload, $type)) {
+            return [];
+        }
+
+        $section = $autoload->{$type};
+
+        if (! $section instanceof \stdClass) {
+            $malformed[] = ['field' => $field . '.' . $type, 'actual' => $this->typeOf($section)];
+
+            return [];
+        }
+
+        $entries = get_object_vars($section);
+        ksort($entries, SORT_STRING);
+        $evidence = [];
+
+        foreach ($entries as $prefix => $paths) {
+            $pathList = $this->normalizePsrPathList($paths, $field . '.' . $type . '.' . $prefix, $malformed);
+
+            if ($pathList === null) {
+                $malformed[] = [
+                    'field' => $field . '.' . $type . '.' . $prefix,
+                    'actual' => is_array($paths) && array_is_list($paths) ? 'list with non-string paths' : $this->typeOf($paths),
+                ];
+                $evidence[] = ['prefix' => $prefix, 'paths' => null, 'state' => 'malformed'];
+
+                continue;
+            }
+
+            $evidence[] = ['prefix' => $prefix, 'paths' => $pathList['paths'], 'state' => $pathList['complete'] ? 'valid' : 'partial'];
+        }
+
+        return $evidence;
+    }
+
+    /**
+     * @param list<array{field: string, actual: string}> $malformed
+     * @return ?array{paths: list<string>, complete: bool}
+     */
+    private function normalizePsrPathList(mixed $paths, string $field, array &$malformed): ?array
+    {
+        if (is_string($paths)) {
+            return ['paths' => [$paths], 'complete' => true];
+        }
+
+        if (! is_array($paths) || ! array_is_list($paths)) {
+            return null;
+        }
+
+        $evidence = [];
+        $complete = true;
+
+        foreach ($paths as $index => $path) {
+            if (! is_string($path)) {
+                $malformed[] = ['field' => $field . '.' . $index, 'actual' => $this->typeOf($path)];
+                $complete = false;
+
+                continue;
+            }
+
+            $evidence[] = $path;
+        }
+
+        return ['paths' => $evidence, 'complete' => $complete];
+    }
+
+    /**
+     * @param list<array{field: string, actual: string}> $malformed
+     * @return list<string>|null
+     */
+    private function orderedPathListEvidence(\stdClass $autoload, string $field, string $type, array &$malformed): ?array
+    {
+        if (! property_exists($autoload, $type)) {
+            return [];
+        }
+
+        $paths = $autoload->{$type};
+
+        if (! is_array($paths) || ! array_is_list($paths)) {
+            $malformed[] = ['field' => $field . '.' . $type, 'actual' => $this->typeOf($paths)];
+
+            return null;
+        }
+
+        $evidence = [];
+
+        foreach ($paths as $index => $path) {
+            if (! is_string($path)) {
+                $malformed[] = ['field' => $field . '.' . $type . '.' . $index, 'actual' => $this->typeOf($path)];
+
+                continue;
+            }
+
+            $evidence[] = $path;
+        }
+
+        return $evidence;
+    }
+
+    /**
+     * @param array{state: 'absent'|'valid'|'partial'|'unknown', complete: bool, psr-4: ?list<array{prefix: string, paths: ?list<string>, state: 'valid'|'partial'|'malformed'}>, psr-0: ?list<array{prefix: string, paths: ?list<string>, state: 'valid'|'partial'|'malformed'}>, classmap: ?list<string>, files: ?list<string>} $runtime
+     * @param array{state: 'absent'|'valid'|'partial'|'unknown', complete: bool, psr-4: ?list<array{prefix: string, paths: ?list<string>, state: 'valid'|'partial'|'malformed'}>, psr-0: ?list<array{prefix: string, paths: ?list<string>, state: 'valid'|'partial'|'malformed'}>, classmap: ?list<string>, files: ?list<string>} $development
+     */
+    private function autoloadFinding(array $runtime, array $development): AuditFinding
+    {
+        $complete = $runtime['complete'] && $development['complete'];
+
+        return new AuditFinding('composer.autoload', $complete ? AuditSeverity::Info : AuditSeverity::Warning, 'Composer autoload metadata was inspected.', [
+            'complete' => $complete,
+            'runtime' => $this->autoloadSectionEvidence($runtime),
+            'development' => $this->autoloadSectionEvidence($development),
+            'claim' => 'raw composer autoload metadata only; target autoload is not executed',
+        ]);
+    }
+
+    /**
+     * @param array{state: 'absent'|'valid'|'partial'|'unknown', complete: bool, psr-4: ?list<array{prefix: string, paths: ?list<string>, state: 'valid'|'partial'|'malformed'}>, psr-0: ?list<array{prefix: string, paths: ?list<string>, state: 'valid'|'partial'|'malformed'}>, classmap: ?list<string>, files: ?list<string>} $section
+     * @return array{state: string, complete: bool, psr-4: ?list<array{prefix: string, paths: ?list<string>, state: string}>, psr-0: ?list<array{prefix: string, paths: ?list<string>, state: string}>, classmap: ?list<string>, files: ?list<string>}
+     */
+    private function autoloadSectionEvidence(array $section): array
+    {
+        return [
+            'state' => $section['state'],
+            'complete' => $section['complete'],
+            'psr-4' => $section['psr-4'],
+            'psr-0' => $section['psr-0'],
+            'classmap' => $section['classmap'],
+            'files' => $section['files'],
+        ];
+    }
+
+    /**
+     * @param array{state: 'absent'|'valid'|'partial'|'unknown', signal_complete: bool, psr-4: ?list<array{prefix: string, paths: ?list<string>, state: 'valid'|'partial'|'malformed'}>, files: ?list<string>} $runtime
+     * @param array{state: 'absent'|'valid'|'partial'|'unknown', complete: bool} $development
+     */
+    private function autoloadSignalsFinding(array $runtime, array $development): AuditFinding
+    {
+        $candidates = [];
+
+        foreach ($runtime['psr-4'] ?? [] as $mapping) {
+            if ($mapping['state'] !== 'valid' || $mapping['prefix'] === '' || $mapping['paths'] === null) {
+                continue;
+            }
+
+            $candidates[] = [
+                'kind' => 'runtime_psr4_namespace',
+                'prefix' => $mapping['prefix'],
+                'paths' => $mapping['paths'],
+            ];
+        }
+
+        $reviewSignals = [];
+
+        foreach ($runtime['files'] ?? [] as $path) {
+            $reviewSignals[] = [
+                'kind' => 'autoload_file',
+                'path' => $path,
+                'signal' => 'requires migration review',
+            ];
+        }
+
+        $hasSignals = $candidates !== [] || $reviewSignals !== [];
+
+        return new AuditFinding('modernization.autoload_signals', $hasSignals ? AuditSeverity::Warning : AuditSeverity::Info, 'Composer autoload modernization review signals were inspected.', [
+            'complete' => $runtime['signal_complete'],
+            'autoload_state' => [
+                'runtime' => $runtime['state'],
+                'development' => $development['state'],
+            ],
+            'candidates' => $candidates,
+            'review_signals' => $reviewSignals,
+            'claim' => 'structural review signals only; not proof of module or capability boundaries, migration feasibility, Bridge compatibility, or that migration is blocked',
+        ]);
+    }
+
+    /**
+     * @param list<array{field: string, actual: string}> $malformed
+     */
+    private function autoloadSignalEvidenceComplete(string $field, array $malformed): bool
+    {
+        foreach ($malformed as $evidence) {
+            if (
+                str_starts_with($evidence['field'], $field . '.psr-4')
+                || str_starts_with($evidence['field'], $field . '.files')
+            ) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
