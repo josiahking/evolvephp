@@ -6,6 +6,10 @@
 
 - Added Phase 4.7 repository cutover with root-native Composer, PHPUnit, PHPStan, PHP-CS-Fixer, Deptrac, release-validation, package split validation, supply-chain checks and developer-experience commands; removed the tracked workspace directory and EvolvePHP 1 runtime files from the 2.x working tree while preserving master and Git history. The PHP 8.4/8.5 root quality matrix now runs from the repository root; the protected `Workspace quality (PHP 8.4)` and `Workspace quality (PHP 8.5)` context names are retained for governance compatibility.
 
+### Adoption planning
+
+- Added development-time adoption planning models inside `evolvephp/dev-tools`, including public experimental declarations for one bounded capability, embedded or remote integration mode, route ownership transitions, data ownership transitions, migration/source-of-truth states, compatibility requirements, identity/security requirements, migration evidence, rollback evidence and measurable acceptance criteria. The model records maintainer decisions only: it does not generate plans from Audit, discover routes, infer ownership, score migrations, certify compatibility, certify migration readiness, implement Bridge, define protocols, provide adapters, synchronize databases, execute cutovers or execute rollbacks.
+
 ### Audit foundation
 
 - Added Composer autoload and PHP source-structure review evidence inside `evolvephp/dev-tools`, including raw root `autoload` / `autoload-dev` metadata for PSR-4, PSR-0, classmap and files sections, cautious modernization review signals for runtime PSR-4 namespace mappings, runtime autoload files, lexical namespace groups, global named declarations and files with multiple namespace declarations. The evidence is structural and lexical only: Audit does not execute target source or autoloaders, run Composer, infer module, capability, route or data ownership, perform AST/control-flow/data-flow analysis, score migrations, create migration plans, determine Bridge compatibility or claim migration readiness.

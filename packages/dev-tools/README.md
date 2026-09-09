@@ -16,6 +16,36 @@ PHP `^8.4` with `ext-tokenizer`.
 
 `evolvephp/contracts`, `evolvephp/core`, `evolvephp/module`, `evolvephp/plugin`
 
+## Adoption Planning
+
+The package provides public experimental adoption-planning models under
+`Evolve\DevTools\Adoption`.
+
+An `AdoptionPlan` records explicit maintainer migration decisions for one
+bounded capability at a time. Its `MigrationManifest` records the selected
+capability, whether the capability is intended for embedded or remote
+integration, route ownership transitions, data ownership transitions,
+migration/source-of-truth states, compatibility requirements and
+identity/security requirements. Sidecar deployment is represented as a
+deployment form of remote mode rather than a separate integration mode.
+
+Route declarations record current and target route owners. Data declarations
+record current and target stores, current and target authoritative writers,
+current and target migration states and any declared temporary synchronization.
+The ownership vocabulary prevents modelling two uncontrolled authoritative
+writers for the same data declaration.
+
+The plan records migration evidence, rollback evidence and measurable
+acceptance criteria in caller-declared order. These are declarations for
+planning and review; construction does not certify that the evidence is valid,
+rollback is possible, acceptance criteria have been met or cutover is safe.
+
+Current limitations: adoption planning has no automatic plan generation from
+Audit, route discovery, ownership inference, migration scoring, compatibility
+certification, migration-readiness certification, Bridge implementation, Bridge
+protocol, adapter, database synchronization, cutover execution or rollback
+execution.
+
 ## Audit Foundation
 
 The package provides a public experimental Audit foundation under
