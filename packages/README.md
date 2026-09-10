@@ -2,7 +2,7 @@
 
 `packages/` contains the initial EvolvePHP 2 modular-monorepo package set.
 
-The packages define Composer package identities, namespace ownership, dependency direction, lifecycle, configuration, service-container, execution-scope, runtime-neutral execution orchestration, generic Core instrumentation, minimal Core console APIs, PSR HTTP middleware and routing, response/error and health handling, explicit response emission, component identity, descriptors, graph declarations and resolution, restricted registration, lifecycle entry points, explicit component bootstrap, Composer plugin discovery, testing fixtures, development-time generators, read-only project audit evidence, adoption-planning declarations and command-output recording. Complete runtime implementation is not yet present, and the packages are not yet published.
+The packages define Composer package identities, namespace ownership, dependency direction, lifecycle, configuration, service-container, execution-scope, runtime-neutral execution orchestration, generic Core instrumentation, minimal Core console APIs, generic transport-neutral Bridge request/context/response/error contracts, PSR HTTP middleware and routing, response/error and health handling, explicit response emission, component identity, descriptors, graph declarations and resolution, restricted registration, lifecycle entry points, explicit component bootstrap, Composer plugin discovery, testing fixtures, development-time generators, read-only project audit evidence, adoption-planning declarations and command-output recording. Complete runtime implementation is not yet present, and the packages are not yet published.
 
 All package manifests require PHP `^8.4`.
 
@@ -11,6 +11,7 @@ All package manifests require PHP `^8.4`.
 | Package | Namespace | Responsibility |
 | --- | --- | --- |
 | `evolvephp/contracts` | `Evolve\Contracts\` | Foundational public-contract boundary, including application lifecycle, configuration, reset-participant and exception contracts, experimental shared identity vocabulary, graph declaration vocabulary, `ServiceDefinitionRegistrar`, `ComponentEntryPoint` / `ComponentBootContext` lifecycle contracts and `ComponentDefinition`. |
+| `evolvephp/bridge-contracts` | `Evolve\Bridge\Contracts\` | Public experimental generic Bridge contract boundary with transport-neutral context, request, response and error value objects for explicit host/Evolve translation. |
 | `evolvephp/core` | `Evolve\Core\` | Core orchestration boundary, including the minimal application lifecycle kernel, array-backed configuration, PSR-11-readable service container, explicit execution scopes, runtime-neutral execution outcomes, generic execution-lifecycle observation hooks, runtime-neutral command foundation, `ComponentGraphResolver`, `ResolvedComponentGraph`, consumer-scoped `CapabilityProviderSelection`, restricted registration, component lifecycle coordination and explicit `ComponentBootstrapper`. |
 | `evolvephp/dev-tools` | `Evolve\DevTools\` | Development-only tooling boundary with public experimental `module:new` and `plugin:new` command adapters, read-only Audit APIs and the standalone `evolve-audit` binary for root Composer, resolved lockfile, PHP source coupling and lexical source-structure evidence, plus adoption-planning models for explicit migration declarations. |
 | `evolvephp/http` | `Evolve\Http\` | HTTP boundary with PSR HTTP interoperability, `MiddlewarePipeline`, route definitions and matching, routed handler dispatch, typed routing failures, `HttpKernel` integration with Core execution orchestration, response/error and health foundations and explicit response-emitter boundary; runtime adapters remain deferred. |
@@ -25,6 +26,7 @@ The arrows in dependency diagrams represent dependency direction, not lifecycle 
 The package graph follows an inward dependency principle:
 
 - `contracts` is the innermost package.
+- `bridge-contracts` depends inward on `contracts` and remains independent of Core, HTTP and host frameworks.
 - `core`, `module` and `plugin` depend inward on `contracts`.
 - `http` depends inward on `contracts` and `core`.
 - `dev-tools` may depend on `contracts`, `core`, `module` and `plugin` for development-time generators and audit tooling.
@@ -32,7 +34,7 @@ The package graph follows an inward dependency principle:
 
 There is no production dependency on Testing.
 
-No optional package families are present here. Insight, Observe, OpenTelemetry, Bridge, Runtime, Deploy and other optional packages remain deferred to later approved work. Runtime adapters are deferred; Core does not contain `runtime-cli`.
+Bridge Contracts is present as an optional outward package. Insight, Observe, OpenTelemetry, host-specific Bridge adapters, Runtime, Deploy and other optional packages remain deferred to later approved work. Runtime adapters are deferred; Core does not contain `runtime-cli`.
 
 ## Current Capabilities And Limits
 
@@ -49,6 +51,8 @@ Core provides a runtime-neutral `ExecutionOrchestrator` foundation for one seque
 Core provides generic execution-lifecycle observation hooks for the implemented orchestration boundary. Observation is optional, observations contain only safe structured execution facts, sink failure is reported separately as instrumentation failure and instrumentation cannot retry, abort, replace results, suppress cleanup or change reuse/quarantine decisions.
 
 Core provides a minimal Core console foundation for command selection and dispatch. `CommandRunner` resolves a command from an immutable `CommandRegistry` and executes it through `ExecutionOrchestrator` as an `ExecutionKind::CliCommand` execution. `CommandInput` stores raw ordered token data only, `CommandOutput` remains runtime-neutral, and `CommandResult` carries exit-status semantics without turning non-zero statuses into framework throwables.
+
+Bridge Contracts contains public experimental generic Bridge values for request translation boundaries. `BridgeContext` preserves explicit request, correlation, optional principal, tenant, locale and timezone identifiers without normalization. `BridgeRequest` carries an operation, the exact `BridgeContext` and recursively transport-neutral application payload data. `BridgeResponse` exposes explicit success and failure construction paths, including successful null results, and `BridgeError` / `BridgeErrorKind` carry transport-neutral failure vocabulary without HTTP status codes, exception classes, stack traces or host-framework objects. This is not a PSR-7 or PSR-15 adapter, not the remote HTTP/JSON protocol, not a Laravel or Symfony adapter, not an embedded execution implementation and not a remote client or server.
 
 HTTP contains PSR HTTP interoperability and a deterministic middleware pipeline foundation. `MiddlewarePipeline` implements PSR-15 `RequestHandlerInterface`, accepts ordered PSR-15 middleware, consumes PSR-7 request/response interfaces and preserves middleware ordering, short-circuiting, replacement requests and throwable propagation.
 
@@ -92,6 +96,6 @@ DevTools provides public experimental adoption-planning models for one bounded c
 
 Testing also provides `Evolve\Testing\Console\RecordingCommandOutput`, a public experimental in-memory `CommandOutput` implementation for command tests. It records normal and error lines in order without replacing PHPUnit assertions or becoming a general CLI testing framework.
 
-EvolvePHP 2 does not yet provide full module/plugin runtime managers, descriptor serialization, component versions, dependency version ranges, Composer semantic-version constraint evaluation, runtime CLI adapters beyond the explicit skeleton shell, Symfony Console integration, broad Doctor checks, generator discovery, automatic component enablement, Bridge, Insight, Observe, telemetry storage/export, persistent-worker concurrency guarantees or production-ready framework runtime behavior. DevTools does not add automatic discovery, application bootstrapping, route generation, Composer mutation, package publication, Bridge protocols, adapters, migration execution, database synchronization, cutover execution, rollback execution or readiness certification. Testing does not add a general testing framework.
+EvolvePHP 2 does not yet provide full module/plugin runtime managers, descriptor serialization, component versions, dependency version ranges, Composer semantic-version constraint evaluation, runtime CLI adapters beyond the explicit skeleton shell, Symfony Console integration, broad Doctor checks, generator discovery, automatic component enablement, Bridge adapters, remote Bridge protocols, Insight, Observe, telemetry storage/export, persistent-worker concurrency guarantees or production-ready framework runtime behavior. DevTools does not add automatic discovery, application bootstrapping, route generation, Composer mutation, package publishing, Bridge protocols, adapters, migration execution, database synchronization, cutover execution, rollback execution or readiness certification. Testing does not add a general testing framework.
 
 The EvolvePHP 2 repository root resolves and validates these local packages. See [../DEVELOPMENT.md](../DEVELOPMENT.md) for setup, testing, quality commands, lockfile, static-analysis, coding-standard and architecture-boundary policy.

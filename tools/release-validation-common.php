@@ -644,12 +644,13 @@ function loadReleasePackages(string $root): array
         releaseValidationFail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 7) {
-        releaseValidationFail('release-packages.json must contain exactly seven package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 8) {
+        releaseValidationFail('release-packages.json must contain exactly eight package entries.');
     }
 
     $expected = array(
         array('name' => 'evolvephp/contracts', 'directory' => 'packages/contracts'),
+        array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
         array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
         array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
         array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
@@ -691,7 +692,7 @@ function loadReleasePackages(string $root): array
     }
 
     if ($packages !== $expected) {
-        releaseValidationFail('release-packages.json must use the canonical Phase 2.10A package order.');
+        releaseValidationFail('release-packages.json must use the canonical release package order.');
     }
 
     return $packages;

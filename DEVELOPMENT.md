@@ -27,6 +27,7 @@ packages/*
 The root maps each initial package explicitly to `2.0.x-dev` inside the path repository:
 
 - `evolvephp/contracts`
+- `evolvephp/bridge-contracts`
 - `evolvephp/core`
 - `evolvephp/dev-tools`
 - `evolvephp/http`
@@ -78,6 +79,7 @@ Run individual package suites:
 
 ```bash
 composer test:contracts
+composer test:bridge-contracts
 composer test:core
 composer test:dev-tools
 composer test:http
@@ -136,7 +138,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains seven packages in this order: contracts, core, module, plugin, http, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains eight packages in this order: contracts, bridge-contracts, core, module, plugin, http, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -274,6 +276,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | Suite | Test directory |
 | --- | --- |
 | `contracts` | `packages/contracts/tests` |
+| `bridge-contracts` | `packages/bridge-contracts/tests` |
 | `core` | `packages/core/tests` |
 | `dev-tools` | `packages/dev-tools/tests` |
 | `http` | `packages/http/tests` |
@@ -293,11 +296,13 @@ The distributable PHPStan configuration lives at:
 phpstan.neon.dist
 ```
 
-The initial PHPStan level is `6`. PHPStan analyzes all seven package `src` and `tests` directories:
+The initial PHPStan level is `6`. PHPStan analyzes all eight package `src` and `tests` directories:
 
 ```text
 packages/contracts/src
 packages/contracts/tests
+packages/bridge-contracts/src
+packages/bridge-contracts/tests
 packages/core/src
 packages/core/tests
 packages/dev-tools/src
@@ -330,6 +335,7 @@ Deptrac analyzes production source directories only:
 
 ```text
 packages/contracts/src
+packages/bridge-contracts/src
 packages/core/src
 packages/dev-tools/src
 packages/http/src
@@ -342,6 +348,7 @@ Package tests are excluded from Deptrac boundary analysis so test dependencies c
 
 ```text
 Contracts -> packages/contracts/src/.* -> Evolve\Contracts\
+BridgeContracts -> packages/bridge-contracts/src/.* -> Evolve\Bridge\Contracts\
 Core      -> packages/core/src/.*      -> Evolve\Core\
 DevTools  -> packages/dev-tools/src/.* -> Evolve\DevTools\
 Http      -> packages/http/src/.*      -> Evolve\Http\
@@ -354,6 +361,7 @@ The accepted dependency matrix is:
 
 ```text
 Contracts -> none
+BridgeContracts -> Contracts
 Core      -> Contracts
 DevTools  -> Contracts, Core, Module, Plugin
 Http      -> Contracts, Core
@@ -362,7 +370,7 @@ Plugin    -> Contracts
 Testing   -> Contracts, Core, Http, Module, Plugin
 ```
 
-There is no production dependency on Testing. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on all five production packages.
+There is no production dependency on Testing. BridgeContracts is an optional outward package and may depend only on Contracts. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on BridgeContracts.
 
 The root also models deliberate external standard layers:
 
@@ -394,7 +402,7 @@ PHP-CS-Fixer is the root coding-standard engine. The distributable configuration
 
 The project style is based on PHP-FIG PER Coding Style 3.0 through PHP-CS-Fixer's `@PER-CS3x0` rule set. The floating `@PER-CS` alias is not used. The project explicitly enables alphabetical `ordered_imports` and `no_unused_imports`.
 
-PHP-CS-Fixer checks the seven package `src` and `tests` directories plus the committed skeleton PHP config/bootstrap files. The extensionless skeleton executable is protected by syntax and create-project validation rather than distorting the Finder. The root architecture tests, root documentation tests, RFCs, `vendor/` and generated caches are excluded.
+PHP-CS-Fixer checks the eight package `src` and `tests` directories plus the committed skeleton PHP config/bootstrap files. The extensionless skeleton executable is protected by syntax and create-project validation rather than distorting the Finder. The root architecture tests, root documentation tests, RFCs, `vendor/` and generated caches are excluded.
 
 Risky rules are disabled. The `declare_strict_types` fixer is not enabled; strict-types policy for EvolvePHP 2 package PHP files is enforced by architecture tests.
 

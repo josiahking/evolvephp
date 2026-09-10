@@ -12,6 +12,7 @@ return static function (DeptracConfig $config): void {
     $config
         ->paths(
             'packages/contracts/src',
+            'packages/bridge-contracts/src',
             'packages/core/src',
             'packages/dev-tools/src',
             'packages/http/src',
@@ -23,6 +24,9 @@ return static function (DeptracConfig $config): void {
         ->layers(
             $contracts = Layer::withName('Contracts')->collectors(
                 DirectoryConfig::create('packages/contracts/src/.*'),
+            ),
+            $bridgeContracts = Layer::withName('BridgeContracts')->collectors(
+                DirectoryConfig::create('packages/bridge-contracts/src/.*'),
             ),
             $psrContainer = Layer::withName('PsrContainer')->collectors(
                 ClassLikeConfig::create('^Psr\\Container\\.*'),
@@ -54,6 +58,7 @@ return static function (DeptracConfig $config): void {
         )
         ->rulesets(
             Ruleset::forLayer($contracts)->accesses($psrContainer),
+            Ruleset::forLayer($bridgeContracts)->accesses($contracts),
             Ruleset::forLayer($psrContainer),
             Ruleset::forLayer($psrHttpMessage),
             Ruleset::forLayer($psrHttpServer),

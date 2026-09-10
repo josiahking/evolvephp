@@ -82,6 +82,7 @@ function expectedPackages(): array
 {
     return array(
         'evolvephp/contracts' => array('name' => 'evolvephp/contracts', 'directory' => 'packages/contracts'),
+        'evolvephp/bridge-contracts' => array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
         'evolvephp/core' => array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
         'evolvephp/module' => array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
         'evolvephp/plugin' => array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
@@ -98,6 +99,7 @@ function expectedNamespaces(): array
 {
     return array(
         'evolvephp/contracts' => 'Evolve\\Contracts\\',
+        'evolvephp/bridge-contracts' => 'Evolve\\Bridge\\Contracts\\',
         'evolvephp/core' => 'Evolve\\Core\\',
         'evolvephp/dev-tools' => 'Evolve\\DevTools\\',
         'evolvephp/module' => 'Evolve\\Module\\',
@@ -114,6 +116,7 @@ function expectedGraph(): array
 {
     return array(
         'evolvephp/contracts' => array(),
+        'evolvephp/bridge-contracts' => array('evolvephp/contracts'),
         'evolvephp/core' => array('evolvephp/contracts'),
         'evolvephp/module' => array('evolvephp/contracts'),
         'evolvephp/plugin' => array('evolvephp/contracts'),
@@ -143,8 +146,8 @@ function validateMap(string $root): array
         fail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 7) {
-        fail('release-packages.json must contain exactly seven package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 8) {
+        fail('release-packages.json must contain exactly eight package entries.');
     }
 
     $expectedPackages = array_values(expectedPackages());
@@ -208,7 +211,7 @@ function validateMap(string $root): array
     }
 
     if ($packages !== $expectedPackages) {
-        fail('release-packages.json must use the canonical Phase 2.10A package order.');
+        fail('release-packages.json must use the canonical release package order.');
     }
 
     validatePackageManifestCoverage($root, $packages);
@@ -377,7 +380,7 @@ function validateExactGraph(array $graph): void
         sort($dependencies);
 
         if ($actual !== $dependencies) {
-            fail($package . ' internal dependency graph does not match Phase 2.10A policy.');
+            fail($package . ' internal dependency graph does not match the accepted release package dependency graph.');
         }
     }
 }
@@ -496,7 +499,7 @@ function validateReadme(array $package, string $readmePath): void
         fail($package['name'] . ' README.md must state that independent publication has not begun yet.');
     }
 
-    if (preg_match('/github\.com\/josiahking\/evolvephp[-\/](?:contracts|core|dev-tools|http|module|plugin|testing)/i', $content) === 1) {
+    if (preg_match('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|contracts|core|dev-tools|http|module|plugin|testing)/i', $content) === 1) {
         fail($package['name'] . ' README.md must not claim a split repository URL.');
     }
 

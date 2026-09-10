@@ -6,6 +6,10 @@
 
 - Added Phase 4.7 repository cutover with root-native Composer, PHPUnit, PHPStan, PHP-CS-Fixer, Deptrac, release-validation, package split validation, supply-chain checks and developer-experience commands; removed the tracked workspace directory and EvolvePHP 1 runtime files from the 2.x working tree while preserving master and Git history. The PHP 8.4/8.5 root quality matrix now runs from the repository root; the protected `Workspace quality (PHP 8.4)` and `Workspace quality (PHP 8.5)` context names are retained for governance compatibility.
 
+### Bridge contracts
+
+- Added `evolvephp/bridge-contracts` as a public experimental transport-neutral Bridge contract package for context, request, response and error boundaries. The package depends only on `evolvephp/contracts`, remains independent of Core, HTTP, Laravel, Symfony and PSR HTTP types, and does not provide adapters, an embedded execution implementation, a remote client/server, an HTTP/JSON protocol, compatibility certification or public release.
+
 ### Adoption planning
 
 - Added development-time adoption planning models inside `evolvephp/dev-tools`, including public experimental declarations for one bounded capability, embedded or remote integration mode, route ownership transitions, data ownership transitions, migration/source-of-truth states, compatibility requirements, identity/security requirements, migration evidence, rollback evidence and measurable acceptance criteria. The model records maintainer decisions only: it does not generate plans from Audit, discover routes, infer ownership, score migrations, certify compatibility, certify migration readiness, implement Bridge, define protocols, provide adapters, synchronize databases, execute cutovers or execute rollbacks.

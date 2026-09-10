@@ -129,12 +129,15 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
         $packageDirectories = array_column($map['packages'], 'directory');
         $deptrac = $this->readProjectFile('deptrac.php');
         $coreManifest = $this->readJsonFile('packages/core/composer.json');
+        $skeletonManifest = $this->readJsonFile('skeleton/composer.json');
 
-        $this->assertCount(7, $map['packages']);
+        $this->assertCount(8, $map['packages']);
         $this->assertNotContains('evolvephp/skeleton', $packageNames);
         $this->assertNotContains('skeleton', $packageDirectories);
         $this->assertStringNotContainsString('skeleton', $deptrac);
         $this->assertArrayNotHasKey('evolvephp/http', $coreManifest['require']);
+        $this->assertArrayNotHasKey('evolvephp/bridge-contracts', $skeletonManifest['require']);
+        $this->assertArrayNotHasKey('evolvephp/bridge-contracts', $skeletonManifest['require-dev']);
     }
 
     public function testSkeletonReadmeDocumentsAcceptedBoundariesWithoutPublicationClaims(): void

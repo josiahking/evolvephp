@@ -20,6 +20,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
         $this->assertSame(
             array(
                 array('name' => 'evolvephp/contracts', 'directory' => 'packages/contracts'),
+                array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
                 array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
@@ -58,7 +59,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             $this->assertStringContainsString('BSD-3-Clause', $content);
             $this->assertStringContainsString('`LICENSE.md`', $content);
             $this->assertDoesNotMatchPattern('/composer require/i', $content);
-            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:contracts|core|dev-tools|http|module|plugin|testing)/i', $content);
+            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|contracts|core|dev-tools|http|module|plugin|testing)/i', $content);
         }
     }
 
@@ -143,7 +144,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/## Release Validation/',
             '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
-            '/seven packages.*mapped explicitly|mapped explicitly.*seven packages|map contains seven packages/i',
+            '/eight packages.*mapped explicitly|mapped explicitly.*eight packages|map contains eight packages/i',
             '/dependency-compatible/i',
             '/package-local README/i',
             '/package-local.*licen[cs]es/i',
@@ -183,6 +184,13 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'human' => 'EvolvePHP Contracts',
                 'responsibility' => 'Foundational public contracts for EvolvePHP 2.',
                 'dependencies' => 'None.',
+            ),
+            array(
+                'name' => 'evolvephp/bridge-contracts',
+                'directory' => 'packages/bridge-contracts',
+                'human' => 'EvolvePHP Bridge Contracts',
+                'responsibility' => 'Generic transport-neutral Bridge contracts for EvolvePHP 2.',
+                'dependencies' => '`evolvephp/contracts`',
             ),
             array(
                 'name' => 'evolvephp/core',

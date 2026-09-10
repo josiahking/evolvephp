@@ -6,6 +6,10 @@
             "directory": "packages/contracts"
         },
         {
+            "name": "evolvephp/bridge-contracts",
+            "directory": "packages/bridge-contracts"
+        },
+        {
             "name": "evolvephp/core",
             "directory": "packages/core"
         },
