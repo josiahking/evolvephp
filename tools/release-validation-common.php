@@ -30,8 +30,8 @@ final class ReleaseValidationProcessRunner
     public function __construct(
         private readonly int $timeoutSeconds = self::DEFAULT_TIMEOUT_SECONDS,
     ) {
-        if ($timeoutSeconds < 1) {
-            throw new ReleaseValidationFailure('Process timeout must be at least 1 second.');
+        if ($timeoutSeconds < 0) {
+            throw new ReleaseValidationFailure('Process timeout must not be negative.');
         }
     }
 
@@ -88,12 +88,12 @@ final class ReleaseValidationProcessRunner
 
         fclose($pipes[0]);
 
-        $deadline = microtime(true) + $this->timeoutSeconds;
+        $deadline = $this->timeoutSeconds > 0 ? microtime(true) + $this->timeoutSeconds : null;
         $lastStatus = proc_get_status($process);
 
         try {
             while ($lastStatus['running']) {
-                if (microtime(true) >= $deadline) {
+                if ($deadline !== null && microtime(true) >= $deadline) {
                     $this->terminateProcess($process, $lastStatus['pid']);
                     $exitCode = proc_close($process);
                     $stdout = $this->readProcessOutputFile($stdoutPath);
