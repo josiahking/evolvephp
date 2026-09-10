@@ -26,6 +26,10 @@
             "directory": "packages/http"
         },
         {
+            "name": "evolvephp/bridge-psr",
+            "directory": "packages/bridge-psr"
+        },
+        {
             "name": "evolvephp/testing",
             "directory": "packages/testing"
         },

@@ -30,8 +30,8 @@ final class ReleaseValidationProcessRunner
     public function __construct(
         private readonly int $timeoutSeconds = self::DEFAULT_TIMEOUT_SECONDS,
     ) {
-        if ($timeoutSeconds < 1) {
-            throw new ReleaseValidationFailure('Process timeout must be at least 1 second.');
+        if ($timeoutSeconds < 0) {
+            throw new ReleaseValidationFailure('Process timeout must not be negative.');
         }
     }
 
@@ -88,12 +88,12 @@ final class ReleaseValidationProcessRunner
 
         fclose($pipes[0]);
 
-        $deadline = microtime(true) + $this->timeoutSeconds;
+        $deadline = $this->timeoutSeconds > 0 ? microtime(true) + $this->timeoutSeconds : null;
         $lastStatus = proc_get_status($process);
 
         try {
             while ($lastStatus['running']) {
-                if (microtime(true) >= $deadline) {
+                if ($deadline !== null && microtime(true) >= $deadline) {
                     $this->terminateProcess($process, $lastStatus['pid']);
                     $exitCode = proc_close($process);
                     $stdout = $this->readProcessOutputFile($stdoutPath);
@@ -644,8 +644,8 @@ function loadReleasePackages(string $root): array
         releaseValidationFail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 8) {
-        releaseValidationFail('release-packages.json must contain exactly eight package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 9) {
+        releaseValidationFail('release-packages.json must contain exactly nine package entries.');
     }
 
     $expected = array(
@@ -655,6 +655,7 @@ function loadReleasePackages(string $root): array
         array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
         array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
         array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
+        array('name' => 'evolvephp/bridge-psr', 'directory' => 'packages/bridge-psr'),
         array('name' => 'evolvephp/testing', 'directory' => 'packages/testing'),
         array('name' => 'evolvephp/dev-tools', 'directory' => 'packages/dev-tools'),
     );

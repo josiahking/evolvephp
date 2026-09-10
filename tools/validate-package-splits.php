@@ -15,7 +15,7 @@ final class PackageSplitValidator
 
     public function __construct()
     {
-        $this->runner = new ReleaseValidationProcessRunner();
+        $this->runner = new ReleaseValidationProcessRunner(0);
     }
 
     /**

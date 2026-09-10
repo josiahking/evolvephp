@@ -25,6 +25,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
                 array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
+                array('name' => 'evolvephp/bridge-psr', 'directory' => 'packages/bridge-psr'),
                 array('name' => 'evolvephp/testing', 'directory' => 'packages/testing'),
                 array('name' => 'evolvephp/dev-tools', 'directory' => 'packages/dev-tools'),
             ),
@@ -59,7 +60,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             $this->assertStringContainsString('BSD-3-Clause', $content);
             $this->assertStringContainsString('`LICENSE.md`', $content);
             $this->assertDoesNotMatchPattern('/composer require/i', $content);
-            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|contracts|core|dev-tools|http|module|plugin|testing)/i', $content);
+            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|contracts|core|dev-tools|http|module|plugin|testing)/i', $content);
         }
     }
 
@@ -144,7 +145,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/## Release Validation/',
             '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
-            '/eight packages.*mapped explicitly|mapped explicitly.*eight packages|map contains eight packages/i',
+            '/nine packages.*mapped explicitly|mapped explicitly.*nine packages|map contains nine packages/i',
             '/dependency-compatible/i',
             '/package-local README/i',
             '/package-local.*licen[cs]es/i',
@@ -226,6 +227,13 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'human' => 'EvolvePHP HTTP',
                 'responsibility' => 'HTTP lifecycle, routing and middleware foundations for EvolvePHP 2.',
                 'dependencies' => '`evolvephp/contracts`, `evolvephp/core`',
+            ),
+            array(
+                'name' => 'evolvephp/bridge-psr',
+                'directory' => 'packages/bridge-psr',
+                'human' => 'EvolvePHP Bridge PSR',
+                'responsibility' => 'Same-process PSR HTTP Bridge adapter foundation for EvolvePHP 2.',
+                'dependencies' => '`evolvephp/bridge-contracts`, `evolvephp/core`, `evolvephp/http` and `psr/http-message`',
             ),
             array(
                 'name' => 'evolvephp/testing',

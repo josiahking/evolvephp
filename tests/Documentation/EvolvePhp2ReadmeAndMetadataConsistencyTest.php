@@ -22,6 +22,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'docs/rfcs/README.md',
                 'packages/README.md',
                 'packages/bridge-contracts/README.md',
+                'packages/bridge-psr/README.md',
                 'packages/contracts/README.md',
                 'packages/core/README.md',
                 'packages/dev-tools/README.md',
@@ -101,7 +102,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             $this->assertStringContainsString('composer ' . $script, $content);
         }
 
-        foreach (array('test:contracts', 'test:bridge-contracts', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertStringContainsString('composer ' . $script, $content);
         }
     }
@@ -265,6 +266,8 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
     {
         return array(
             'Contracts -> none',
+            'BridgeContracts -> Contracts',
+            'BridgePsr -> BridgeContracts, Core, Http',
             'Core      -> Contracts',
             'DevTools  -> Contracts, Core, Module, Plugin',
             'Http      -> Contracts, Core',
@@ -282,6 +285,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'DEVELOPMENT.md',
             'packages/README.md',
             'packages/bridge-contracts/README.md',
+            'packages/bridge-psr/README.md',
             'packages/contracts/README.md',
             'packages/core/README.md',
             'packages/http/README.md',

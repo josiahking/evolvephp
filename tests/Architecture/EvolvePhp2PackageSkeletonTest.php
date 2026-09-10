@@ -11,6 +11,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'dev-tools' => ['bin/evolve-audit'],
             'contracts' => null,
             'bridge-contracts' => null,
+            'bridge-psr' => null,
             'http' => null,
             'module' => null,
             'plugin' => null,
@@ -161,6 +162,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
         $this->assertFileDoesNotExist($this->projectPath('packages/contracts/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/bridge-contracts/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/bridge-psr/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/core/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/dev-tools/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/http/src/.gitkeep'));
@@ -718,6 +720,20 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
             ),
             array(
+                'manifest' => 'packages/bridge-psr/composer.json',
+                'src' => 'packages/bridge-psr/src',
+                'name' => 'evolvephp/bridge-psr',
+                'description' => 'Same-process PSR HTTP Bridge adapter foundation for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Bridge\\Psr\\',
+                'require' => array(
+                    'php' => '^8.4',
+                    'evolvephp/bridge-contracts' => '^2.0',
+                    'evolvephp/core' => '^2.0',
+                    'evolvephp/http' => '^2.0',
+                    'psr/http-message' => '^1.1 || ^2.0',
+                ),
+            ),
+            array(
                 'manifest' => 'packages/core/composer.json',
                 'src' => 'packages/core/src',
                 'name' => 'evolvephp/core',
@@ -823,6 +839,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'BridgeRequest.php',
                 'BridgeResponse.php',
                 'Internal/TransportValueValidator.php',
+            ),
+            'packages/bridge-psr/src' => array(
+                'EmbeddedBridgeAdapter.php',
+                'EmbeddedBridgeResult.php',
             ),
             'packages/core/src' => array(
                 'ApplicationKernel.php',

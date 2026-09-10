@@ -81,6 +81,28 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertSame('', $result->stderr);
     }
 
+    public function testSharedProcessRunnerAcceptsDisabledTimeoutForLongRunningSplitOperations(): void
+    {
+        require_once $this->path('tools/release-validation-common.php');
+
+        $runner = new ReleaseValidationProcessRunner(0);
+        $result = $runner->run(array(PHP_BINARY, '-r', "fwrite(STDOUT, 'ok');"), null, array(), 'disabled timeout fixture');
+
+        $this->assertSame(0, $result->exitCode);
+        $this->assertSame('ok', $result->stdout);
+        $this->assertSame('', $result->stderr);
+    }
+
+    public function testSharedProcessRunnerRejectsNegativeTimeout(): void
+    {
+        require_once $this->path('tools/release-validation-common.php');
+
+        $this->expectException(ReleaseValidationFailure::class);
+        $this->expectExceptionMessage('Process timeout must not be negative.');
+
+        new ReleaseValidationProcessRunner(-1);
+    }
+
     public function testTemporaryDirectoryCleanupRemovesValidatorOwnedPath(): void
     {
         require_once $this->path('tools/release-validation-common.php');
@@ -169,6 +191,19 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 
         $this->assertStringNotContainsString('2.0.0-alpha.1', $content);
         $this->assertStringNotContainsString('git tag', $content);
+    }
+
+    public function testOnlySplitValidatorDisablesInternalProcessRunnerTimeout(): void
+    {
+        $splitContent = $this->readProjectFile('tools/validate-package-splits.php');
+        $consumerContent = $this->readProjectFile('tools/validate-prerelease-consumers.php');
+        $skeletonContent = $this->readProjectFile('tools/validate-skeleton-project.php');
+
+        $this->assertStringContainsString('new ReleaseValidationProcessRunner(0)', $splitContent);
+        $this->assertDoesNotMatchRegularExpression('/new\s+ReleaseValidationProcessRunner\s*\(\s*0\s*\)/', $consumerContent);
+        $this->assertDoesNotMatchRegularExpression('/new\s+ReleaseValidationProcessRunner\s*\(\s*0\s*\)/', $skeletonContent);
+        $this->assertStringContainsString('new ReleaseValidationProcessRunner()', $consumerContent);
+        $this->assertStringContainsString('new ReleaseValidationProcessRunner()', $skeletonContent);
     }
 
     public function testConsumerValidatorDocumentsOfflinePrereleaseAndStableMatrix(): void
@@ -450,7 +485,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $map = $this->readJsonFile('release-packages.json');
 
         $this->assertSame(1, $map['version']);
-        $this->assertCount(8, $map['packages']);
+        $this->assertCount(9, $map['packages']);
 
         return $map['packages'];
     }
