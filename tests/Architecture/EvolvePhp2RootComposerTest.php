@@ -66,6 +66,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
 
         $expectedRequireDev = array(
             'deptrac/deptrac' => '^4.7',
+            'evolvephp/bridge-contracts' => '^2.0@dev',
             'evolvephp/dev-tools' => '^2.0@dev',
             'evolvephp/testing' => '^2.0@dev',
             'friendsofphp/php-cs-fixer' => '^3.95',
@@ -119,6 +120,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'style:fix' => '@php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --diff --verbose',
             'supply-chain' => array('@security:audit', '@licenses:check'),
             'test' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist',
+            'test:bridge-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-contracts',
             'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
             'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
@@ -184,7 +186,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         }
     }
 
-    public function testReleaseMapContainsOnlyTheSevenReleasePackages(): void
+    public function testReleaseMapContainsOnlyTheEightReleasePackages(): void
     {
         $map = $this->readJsonFile('release-packages.json');
 
@@ -192,6 +194,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         $this->assertSame(
             array(
                 array('name' => 'evolvephp/contracts', 'directory' => 'packages/contracts'),
+                array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
                 array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
@@ -220,6 +223,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
     {
         return array(
             'evolvephp/contracts',
+            'evolvephp/bridge-contracts',
             'evolvephp/core',
             'evolvephp/dev-tools',
             'evolvephp/http',

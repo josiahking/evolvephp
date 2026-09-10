@@ -6,6 +6,8 @@ $finder = (new PhpCsFixer\Finder())
     ->in([
         'packages/contracts/src',
         'packages/contracts/tests',
+        'packages/bridge-contracts/src',
+        'packages/bridge-contracts/tests',
         'packages/core/src',
         'packages/core/tests',
         'packages/dev-tools/src',

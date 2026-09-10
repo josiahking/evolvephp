@@ -10,6 +10,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'core' => ['bin/evolve'],
             'dev-tools' => ['bin/evolve-audit'],
             'contracts' => null,
+            'bridge-contracts' => null,
             'http' => null,
             'module' => null,
             'plugin' => null,
@@ -159,6 +160,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
 
         $this->assertFileDoesNotExist($this->projectPath('packages/contracts/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/bridge-contracts/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/core/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/dev-tools/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/http/src/.gitkeep'));
@@ -708,6 +710,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'psr/container' => '^1.1 || ^2.0'),
             ),
             array(
+                'manifest' => 'packages/bridge-contracts/composer.json',
+                'src' => 'packages/bridge-contracts/src',
+                'name' => 'evolvephp/bridge-contracts',
+                'description' => 'Generic transport-neutral Bridge contracts for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Bridge\\Contracts\\',
+                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
+            ),
+            array(
                 'manifest' => 'packages/core/composer.json',
                 'src' => 'packages/core/src',
                 'name' => 'evolvephp/core',
@@ -805,6 +815,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/LifecycleException.php',
                 'Execution/ResetParticipant.php',
                 'Lifecycle/ApplicationLifecycle.php',
+            ),
+            'packages/bridge-contracts/src' => array(
+                'BridgeContext.php',
+                'BridgeError.php',
+                'BridgeErrorKind.php',
+                'BridgeRequest.php',
+                'BridgeResponse.php',
+                'Internal/TransportValueValidator.php',
             ),
             'packages/core/src' => array(
                 'ApplicationKernel.php',
