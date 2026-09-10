@@ -129,7 +129,6 @@ final class EmbeddedBridgeAdapterTest extends TestCase
         self::assertFalse($result->error()->isRetryable());
 
         foreach ((new ReflectionClass($result))->getProperties() as $property) {
-            $property->setAccessible(true);
             self::assertNotSame($resetFailure, $property->getValue($result));
         }
     }
