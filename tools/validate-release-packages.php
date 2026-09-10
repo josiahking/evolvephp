@@ -87,6 +87,7 @@ function expectedPackages(): array
         'evolvephp/module' => array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
         'evolvephp/plugin' => array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
         'evolvephp/http' => array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
+        'evolvephp/bridge-psr' => array('name' => 'evolvephp/bridge-psr', 'directory' => 'packages/bridge-psr'),
         'evolvephp/testing' => array('name' => 'evolvephp/testing', 'directory' => 'packages/testing'),
         'evolvephp/dev-tools' => array('name' => 'evolvephp/dev-tools', 'directory' => 'packages/dev-tools'),
     );
@@ -100,6 +101,7 @@ function expectedNamespaces(): array
     return array(
         'evolvephp/contracts' => 'Evolve\\Contracts\\',
         'evolvephp/bridge-contracts' => 'Evolve\\Bridge\\Contracts\\',
+        'evolvephp/bridge-psr' => 'Evolve\\Bridge\\Psr\\',
         'evolvephp/core' => 'Evolve\\Core\\',
         'evolvephp/dev-tools' => 'Evolve\\DevTools\\',
         'evolvephp/module' => 'Evolve\\Module\\',
@@ -117,6 +119,7 @@ function expectedGraph(): array
     return array(
         'evolvephp/contracts' => array(),
         'evolvephp/bridge-contracts' => array('evolvephp/contracts'),
+        'evolvephp/bridge-psr' => array('evolvephp/bridge-contracts', 'evolvephp/core', 'evolvephp/http'),
         'evolvephp/core' => array('evolvephp/contracts'),
         'evolvephp/module' => array('evolvephp/contracts'),
         'evolvephp/plugin' => array('evolvephp/contracts'),
@@ -146,8 +149,8 @@ function validateMap(string $root): array
         fail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 8) {
-        fail('release-packages.json must contain exactly eight package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 9) {
+        fail('release-packages.json must contain exactly nine package entries.');
     }
 
     $expectedPackages = array_values(expectedPackages());
@@ -499,7 +502,7 @@ function validateReadme(array $package, string $readmePath): void
         fail($package['name'] . ' README.md must state that independent publication has not begun yet.');
     }
 
-    if (preg_match('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|contracts|core|dev-tools|http|module|plugin|testing)/i', $content) === 1) {
+    if (preg_match('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|contracts|core|dev-tools|http|module|plugin|testing)/i', $content) === 1) {
         fail($package['name'] . ' README.md must not claim a split repository URL.');
     }
 

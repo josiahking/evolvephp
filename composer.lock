@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "aace0da21aeaed3116ae061c7e403b63",
+    "content-hash": "ba19a126bb64f869e0b5599b284964ae",
     "packages": [
         {
             "name": "evolvephp/contracts",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/contracts",
-                "reference": "42c104df55bc92cbe7b0c6d5f0eef85e0df94e72"
+                "reference": "3de249c69d51f1afe59b9814d27702fe21cb0cc7"
             },
             "require": {
                 "php": "^8.4",
@@ -38,7 +38,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "0ad36805c51d6968cddf6a9c3ebd559a9a7dd3e0"
+                "reference": "31e3949c2b7d2e498db949c4af5aa03a3e21ff2a"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -71,7 +71,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/http",
-                "reference": "0eca4315f32d8d888d011dd59e089293e7d9fc05"
+                "reference": "2871fe695a600ca88de1f579810c8f0f0e4a255a"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -102,7 +102,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/module",
-                "reference": "9985fca396d2cb10d2047f33434c7723eb080eb6"
+                "reference": "ec78f3d1c6e605edd6537fe95b8994963e070c05"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -128,7 +128,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/plugin",
-                "reference": "cc9f1147f1b93744e010535fb4110c61d3406ef4"
+                "reference": "3365ad97d491d1d14c3fefd9d192d26518e59b39"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -962,7 +962,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-contracts",
-                "reference": "5cf5ee68ce46d811b8f7890bdc0e908583518f71"
+                "reference": "2be053d619c0c9a445bc90ff348f9e57f75ea7cc"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -983,12 +983,41 @@
             }
         },
         {
+            "name": "evolvephp/bridge-psr",
+            "version": "2.0.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "packages/bridge-psr",
+                "reference": "fb19c1bd82e4744e0fa140d6bcb4885b41225f9f"
+            },
+            "require": {
+                "evolvephp/bridge-contracts": "^2.0",
+                "evolvephp/core": "^2.0",
+                "evolvephp/http": "^2.0",
+                "php": "^8.4",
+                "psr/http-message": "^1.1 || ^2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\Bridge\\Psr\\": "src/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Same-process PSR HTTP Bridge adapter foundation for EvolvePHP 2.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
             "name": "evolvephp/dev-tools",
             "version": "2.0.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/dev-tools",
-                "reference": "62863a6ea5e8e7d0456f801fa0c8c40f983633a1"
+                "reference": "03a2a77a964e472661aa02a6e8f478de26085d0d"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1021,7 +1050,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/testing",
-                "reference": "7bb4d9ec7a4bc2502c016a6a26243a44f6b455c7"
+                "reference": "0d94818c0f21edb92ac2d94c41352f1539db7d7b"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -6057,6 +6086,7 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "evolvephp/bridge-contracts": 20,
+        "evolvephp/bridge-psr": 20,
         "evolvephp/contracts": 20,
         "evolvephp/core": 20,
         "evolvephp/dev-tools": 20,

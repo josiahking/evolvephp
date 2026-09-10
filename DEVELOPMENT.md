@@ -28,6 +28,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 
 - `evolvephp/contracts`
 - `evolvephp/bridge-contracts`
+- `evolvephp/bridge-psr`
 - `evolvephp/core`
 - `evolvephp/dev-tools`
 - `evolvephp/http`
@@ -80,6 +81,7 @@ Run individual package suites:
 ```bash
 composer test:contracts
 composer test:bridge-contracts
+composer test:bridge-psr
 composer test:core
 composer test:dev-tools
 composer test:http
@@ -138,7 +140,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains eight packages in this order: contracts, bridge-contracts, core, module, plugin, http, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains nine packages in this order: contracts, bridge-contracts, core, module, plugin, http, bridge-psr, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -277,6 +279,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | --- | --- |
 | `contracts` | `packages/contracts/tests` |
 | `bridge-contracts` | `packages/bridge-contracts/tests` |
+| `bridge-psr` | `packages/bridge-psr/tests` |
 | `core` | `packages/core/tests` |
 | `dev-tools` | `packages/dev-tools/tests` |
 | `http` | `packages/http/tests` |
@@ -296,13 +299,15 @@ The distributable PHPStan configuration lives at:
 phpstan.neon.dist
 ```
 
-The initial PHPStan level is `6`. PHPStan analyzes all eight package `src` and `tests` directories:
+The initial PHPStan level is `6`. PHPStan analyzes all nine package `src` and `tests` directories:
 
 ```text
 packages/contracts/src
 packages/contracts/tests
 packages/bridge-contracts/src
 packages/bridge-contracts/tests
+packages/bridge-psr/src
+packages/bridge-psr/tests
 packages/core/src
 packages/core/tests
 packages/dev-tools/src
@@ -336,6 +341,7 @@ Deptrac analyzes production source directories only:
 ```text
 packages/contracts/src
 packages/bridge-contracts/src
+packages/bridge-psr/src
 packages/core/src
 packages/dev-tools/src
 packages/http/src
@@ -349,6 +355,7 @@ Package tests are excluded from Deptrac boundary analysis so test dependencies c
 ```text
 Contracts -> packages/contracts/src/.* -> Evolve\Contracts\
 BridgeContracts -> packages/bridge-contracts/src/.* -> Evolve\Bridge\Contracts\
+BridgePsr -> packages/bridge-psr/src/.* -> Evolve\Bridge\Psr\
 Core      -> packages/core/src/.*      -> Evolve\Core\
 DevTools  -> packages/dev-tools/src/.* -> Evolve\DevTools\
 Http      -> packages/http/src/.*      -> Evolve\Http\
@@ -362,6 +369,7 @@ The accepted dependency matrix is:
 ```text
 Contracts -> none
 BridgeContracts -> Contracts
+BridgePsr -> BridgeContracts, Core, Http
 Core      -> Contracts
 DevTools  -> Contracts, Core, Module, Plugin
 Http      -> Contracts, Core
@@ -370,7 +378,7 @@ Plugin    -> Contracts
 Testing   -> Contracts, Core, Http, Module, Plugin
 ```
 
-There is no production dependency on Testing. BridgeContracts is an optional outward package and may depend only on Contracts. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on BridgeContracts.
+There is no production dependency on Testing. BridgeContracts is an optional outward package and may depend only on Contracts. BridgePsr is an optional outward package and may depend on BridgeContracts, Core, Http and PSR HTTP message interfaces. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on BridgeContracts or BridgePsr.
 
 The root also models deliberate external standard layers:
 
@@ -384,9 +392,12 @@ PsrContainer
 Http external standards
 PsrHttpMessage
 PsrHttpServer
+
+BridgePsr external standards
+PsrHttpMessage
 ```
 
-`PsrContainer` represents the approved PSR-11 interoperability layer used by Core and by Contracts for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http.
+`PsrContainer` represents the approved PSR-11 interoperability layer used by Core and by Contracts for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`, and by BridgePsr for caller-owned PSR request input and resolved PSR response output. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http.
 
 These PSR HTTP interfaces are external interoperability standards and do not change the first-party Evolve package dependency direction. Adding `psr/http-factory` does not require a new Deptrac external namespace layer because PSR-17 factory interfaces live under `Psr\Http\Message`. Http still depends inward on Contracts and Core, while the other first-party packages do not receive direct PSR HTTP access in this foundation.
 
@@ -402,7 +413,7 @@ PHP-CS-Fixer is the root coding-standard engine. The distributable configuration
 
 The project style is based on PHP-FIG PER Coding Style 3.0 through PHP-CS-Fixer's `@PER-CS3x0` rule set. The floating `@PER-CS` alias is not used. The project explicitly enables alphabetical `ordered_imports` and `no_unused_imports`.
 
-PHP-CS-Fixer checks the eight package `src` and `tests` directories plus the committed skeleton PHP config/bootstrap files. The extensionless skeleton executable is protected by syntax and create-project validation rather than distorting the Finder. The root architecture tests, root documentation tests, RFCs, `vendor/` and generated caches are excluded.
+PHP-CS-Fixer checks the nine package `src` and `tests` directories plus the committed skeleton PHP config/bootstrap files. The extensionless skeleton executable is protected by syntax and create-project validation rather than distorting the Finder. The root architecture tests, root documentation tests, RFCs, `vendor/` and generated caches are excluded.
 
 Risky rules are disabled. The `declare_strict_types` fixer is not enabled; strict-types policy for EvolvePHP 2 package PHP files is enforced by architecture tests.
 

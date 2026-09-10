@@ -108,7 +108,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         );
         $this->assertSame($this->expectedRulesets(), $this->deptracRulesets($content));
 
-        foreach (array('packages/contracts/tests', 'packages/bridge-contracts/tests', 'packages/core/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
+        foreach (array('packages/contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/core/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
             $this->assertStringNotContainsString($testPath, $content);
         }
 
@@ -167,6 +167,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         foreach (array(
             'Contracts -> none',
             'Core      -> Contracts',
+            'BridgePsr -> BridgeContracts, Core, Http',
             'DevTools  -> Contracts, Core, Module, Plugin',
             'Http      -> Contracts, Core',
             'Module    -> Contracts',
@@ -203,6 +204,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         return array(
             'Contracts' => 'packages/contracts/src/.*',
             'BridgeContracts' => 'packages/bridge-contracts/src/.*',
+            'BridgePsr' => 'packages/bridge-psr/src/.*',
             'Core' => 'packages/core/src/.*',
             'DevTools' => 'packages/dev-tools/src/.*',
             'Http' => 'packages/http/src/.*',
@@ -217,6 +219,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         return array(
             'Contracts' => array('PsrContainer'),
             'BridgeContracts' => array('Contracts'),
+            'BridgePsr' => array('BridgeContracts', 'Core', 'Http', 'PsrHttpMessage'),
             'PsrContainer' => array(),
             'PsrHttpMessage' => array(),
             'PsrHttpServer' => array(),
@@ -262,6 +265,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         $variablesByLayer = array(
             'contracts' => 'Contracts',
             'bridgeContracts' => 'BridgeContracts',
+            'bridgePsr' => 'BridgePsr',
             'psrContainer' => 'PsrContainer',
             'psrHttpMessage' => 'PsrHttpMessage',
             'psrHttpServer' => 'PsrHttpServer',
@@ -280,7 +284,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|bridgeContracts|psrContainer|psrHttpMessage|psrHttpServer|core|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|bridgeContracts|bridgePsr|psrContainer|psrHttpMessage|psrHttpServer|core|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
@@ -290,11 +294,11 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $rulesets[$layerName] = $accesses;
         }
 
-        foreach (array('Contracts', 'BridgeContracts', 'PsrContainer', 'PsrHttpMessage', 'PsrHttpServer', 'Core', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
+        foreach (array('Contracts', 'BridgeContracts', 'BridgePsr', 'PsrContainer', 'PsrHttpMessage', 'PsrHttpServer', 'Core', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
             $this->assertNotContains('Testing', $rulesets[$productionLayer], $productionLayer . ' must not access Testing.');
         }
 
-        foreach (array('BridgeContracts', 'DevTools', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
+        foreach (array('BridgeContracts', 'BridgePsr', 'DevTools', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
             $this->assertNotContains('PsrContainer', $rulesets[$layerName], $layerName . ' must not access PsrContainer directly without an approved boundary.');
         }
 
@@ -311,6 +315,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         return array(
             'packages/contracts/src' => 'Evolve\\Contracts\\',
             'packages/bridge-contracts/src' => 'Evolve\\Bridge\\Contracts\\',
+            'packages/bridge-psr/src' => 'Evolve\\Bridge\\Psr\\',
             'packages/core/src' => 'Evolve\\Core\\',
             'packages/dev-tools/src' => 'Evolve\\DevTools\\',
             'packages/http/src' => 'Evolve\\Http\\',
@@ -325,6 +330,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         return array(
             'packages/contracts/composer.json',
             'packages/bridge-contracts/composer.json',
+            'packages/bridge-psr/composer.json',
             'packages/core/composer.json',
             'packages/dev-tools/composer.json',
             'packages/http/composer.json',

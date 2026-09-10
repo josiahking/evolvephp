@@ -1,0 +1,18 @@
+{
+    "name": "evolvephp/bridge-psr",
+    "description": "Same-process PSR HTTP Bridge adapter foundation for EvolvePHP 2.",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "require": {
+        "php": "^8.4",
+        "evolvephp/bridge-contracts": "^2.0",
+        "evolvephp/core": "^2.0",
+        "evolvephp/http": "^2.0",
+        "psr/http-message": "^1.1 || ^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evolve\\Bridge\\Psr\\": "src/"
+        }
+    }
+}

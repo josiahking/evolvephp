@@ -33,6 +33,7 @@
                 "versions": {
                     "evolvephp/contracts": "2.0.x-dev",
                     "evolvephp/bridge-contracts": "2.0.x-dev",
+                    "evolvephp/bridge-psr": "2.0.x-dev",
                     "evolvephp/core": "2.0.x-dev",
                     "evolvephp/dev-tools": "2.0.x-dev",
                     "evolvephp/http": "2.0.x-dev",
@@ -55,6 +56,7 @@
     "require-dev": {
         "deptrac/deptrac": "^4.7",
         "evolvephp/bridge-contracts": "^2.0@dev",
+        "evolvephp/bridge-psr": "^2.0@dev",
         "evolvephp/dev-tools": "^2.0@dev",
         "evolvephp/testing": "^2.0@dev",
         "friendsofphp/php-cs-fixer": "^3.95",
@@ -85,6 +87,7 @@
         ],
         "test": "@php vendor/bin/phpunit --configuration phpunit.xml.dist",
         "test:bridge-contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-contracts",
+        "test:bridge-psr": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-psr",
         "test:contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts",
         "test:core": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core",
         "test:dev-tools": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools",
