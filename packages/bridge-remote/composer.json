@@ -7,6 +7,7 @@
         "php": "^8.4",
         "evolvephp/bridge-contracts": "^2.0",
         "evolvephp/bridge-psr": "^2.0",
+        "psr/http-client": "^1.0",
         "psr/http-factory": "^1.0",
         "psr/http-message": "^1.1 || ^2.0",
         "psr/http-server-handler": "^1.0"

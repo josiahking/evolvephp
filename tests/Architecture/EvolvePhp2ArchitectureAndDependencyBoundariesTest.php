@@ -102,6 +102,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             array(
                 'PsrContainer' => '^Psr\\\\Container\\\\.*',
                 'PsrHttpMessage' => '^Psr\\\\Http\\\\Message\\\\.*',
+                'PsrHttpClient' => '^Psr\\\\Http\\\\Client\\\\.*',
                 'PsrHttpServer' => '^Psr\\\\Http\\\\Server\\\\.*',
             ),
             $this->deptracExternalClassLikeLayers($content)
@@ -180,7 +181,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         $this->assertMatchesPattern('/depend inward|inward dependency/i', $packagesReadme);
         $this->assertMatchesPattern('/no production dependency on Testing/i', $packagesReadme);
         $this->assertMatchesPattern('/DEVELOPMENT\.md/i', $packagesReadme);
-        $this->assertMatchesPattern('/runtime implementation.*not yet present|not yet present.*runtime implementation/i', $packagesReadme);
+        $this->assertMatchesPattern('/runtime adapters.*remain deferred|remain deferred.*runtime adapters/i', $packagesReadme);
         $this->assertMatchesPattern('/PSR HTTP.*middleware|middleware.*PSR HTTP|PSR-15.*middleware/is', $packagesReadme);
         $this->assertMatchesPattern('/MiddlewarePipeline/i', $packagesReadme);
         $this->assertMatchesPattern('/route definitions.*matching|RouteCollection.*RouteMatcher/is', $packagesReadme);
@@ -190,6 +191,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         $this->assertMatchesPattern('/Contracts external standards.*PsrContainer|PsrContainer.*Contracts external standards/is', $developmentGuide);
         $this->assertMatchesPattern('/ServiceDefinitionRegistrar.*service-definition factory contract|service-definition factory contract.*ServiceDefinitionRegistrar/is', $developmentGuide);
         $this->assertMatchesPattern('/PsrHttpMessage/i', $developmentGuide);
+        $this->assertMatchesPattern('/PsrHttpClient/i', $developmentGuide);
         $this->assertMatchesPattern('/PsrHttpServer/i', $developmentGuide);
         $this->assertMatchesPattern('/PSR HTTP interfaces.*external interoperability standards|external interoperability standards.*PSR HTTP interfaces/is', $developmentGuide);
 
@@ -221,9 +223,10 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'Contracts' => array('PsrContainer'),
             'BridgeContracts' => array('Contracts'),
             'BridgePsr' => array('BridgeContracts', 'Core', 'Http', 'PsrHttpMessage'),
-            'BridgeRemote' => array('BridgeContracts', 'BridgePsr', 'PsrHttpMessage', 'PsrHttpServer'),
+            'BridgeRemote' => array('BridgeContracts', 'BridgePsr', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer'),
             'PsrContainer' => array(),
             'PsrHttpMessage' => array(),
+            'PsrHttpClient' => array(),
             'PsrHttpServer' => array(),
             'Core' => array('Contracts', 'PsrContainer'),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
@@ -271,6 +274,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'bridgeRemote' => 'BridgeRemote',
             'psrContainer' => 'PsrContainer',
             'psrHttpMessage' => 'PsrHttpMessage',
+            'psrHttpClient' => 'PsrHttpClient',
             'psrHttpServer' => 'PsrHttpServer',
             'core' => 'Core',
             'devTools' => 'DevTools',
@@ -287,7 +291,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|bridgeContracts|bridgePsr|bridgeRemote|psrContainer|psrHttpMessage|psrHttpServer|core|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|bridgeContracts|bridgePsr|bridgeRemote|psrContainer|psrHttpMessage|psrHttpClient|psrHttpServer|core|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
@@ -297,7 +301,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $rulesets[$layerName] = $accesses;
         }
 
-        foreach (array('Contracts', 'BridgeContracts', 'BridgePsr', 'BridgeRemote', 'PsrContainer', 'PsrHttpMessage', 'PsrHttpServer', 'Core', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
+        foreach (array('Contracts', 'BridgeContracts', 'BridgePsr', 'BridgeRemote', 'PsrContainer', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'Core', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
             $this->assertNotContains('Testing', $rulesets[$productionLayer], $productionLayer . ' must not access Testing.');
         }
 
@@ -307,6 +311,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
 
         foreach (array('Contracts', 'BridgeContracts', 'Core', 'DevTools', 'Module', 'Plugin', 'Testing') as $layerName) {
             $this->assertNotContains('PsrHttpMessage', $rulesets[$layerName], $layerName . ' must not access PSR-7 HTTP message interfaces directly.');
+            $this->assertNotContains('PsrHttpClient', $rulesets[$layerName], $layerName . ' must not access PSR-18 HTTP client interfaces directly.');
             $this->assertNotContains('PsrHttpServer', $rulesets[$layerName], $layerName . ' must not access PSR-15 HTTP server interfaces directly.');
         }
 

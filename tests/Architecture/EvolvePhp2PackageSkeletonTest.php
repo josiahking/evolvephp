@@ -182,7 +182,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
         $this->assertMatchesPattern('/# EvolvePHP 2 Packages/i', $content);
         $this->assertMatchesPattern('/skeleton|foundation|boundar/i', $content);
-        $this->assertMatchesPattern('/complete runtime (?:framework )?implementation is not yet present/i', $content);
+        $this->assertMatchesPattern('/runtime adapters remain deferred/i', $content);
         $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/i', $content);
         $this->assertMatchesPattern('/PHP `?\^8\.4`?/i', $content);
         $this->assertMatchesPattern('/arrows.*dependency direction.*not lifecycle invocation/i', $content);
@@ -745,6 +745,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                     'php' => '^8.4',
                     'evolvephp/bridge-contracts' => '^2.0',
                     'evolvephp/bridge-psr' => '^2.0',
+                    'psr/http-client' => '^1.0',
                     'psr/http-factory' => '^1.0',
                     'psr/http-message' => '^1.1 || ^2.0',
                     'psr/http-server-handler' => '^1.0',
@@ -863,6 +864,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             ),
             'packages/bridge-remote/src' => array(
                 'RemoteBridgeAuthenticator.php',
+                'RemoteBridgeClient.php',
+                'RemoteBridgeClientAuthenticator.php',
+                'RemoteBridgeClientResult.php',
                 'RemoteBridgeCodec.php',
                 'RemoteBridgeInvocation.php',
                 'RemoteBridgeProtocol.php',

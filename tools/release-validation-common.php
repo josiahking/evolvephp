@@ -412,7 +412,58 @@ function readJsonFile(string $path, string $label)
  */
 function loadLockedRuntimePackageRepositoryPackages(string $root): array
 {
-    return loadLockedPackageRepositoryPackages($root);
+    $lockedPackages = lockedPackageRepositoryPackagesByName($root, true);
+    $packageNames = array();
+    $queue = array();
+
+    foreach (loadReleasePackages($root) as $package) {
+        $packageManifest = readJsonFile(joinPaths($root, $package['directory'] . '/composer.json'), $package['name'] . ' composer.json');
+
+        if (!isset($packageManifest['require']) || !is_array($packageManifest['require'])) {
+            releaseValidationFail($package['name'] . ' composer.json require must be an object.');
+        }
+
+        foreach (array_keys($packageManifest['require']) as $packageName) {
+            if (is_string($packageName) && isReleaseExternalPackageName($packageName)) {
+                $queue[] = $packageName;
+            }
+        }
+    }
+
+    while ($queue !== array()) {
+        $packageName = array_shift($queue);
+
+        if (!is_string($packageName) || isset($packageNames[$packageName])) {
+            continue;
+        }
+
+        if (!isset($lockedPackages[$packageName])) {
+            releaseValidationFail('Release package runtime dependency is missing from composer.lock: ' . $packageName);
+        }
+
+        $packageNames[$packageName] = true;
+        $requires = $lockedPackages[$packageName]['require'] ?? array();
+
+        if (!is_array($requires)) {
+            releaseValidationFail('composer.lock package ' . $packageName . ' require field must be an object.');
+        }
+
+        foreach (array_keys($requires) as $requiredPackageName) {
+            if (is_string($requiredPackageName) && isReleaseExternalPackageName($requiredPackageName)) {
+                $queue[] = $requiredPackageName;
+            }
+        }
+    }
+
+    $selected = array();
+
+    foreach (array_keys($packageNames) as $packageName) {
+        $selected[$packageName] = $lockedPackages[$packageName];
+    }
+
+    ksort($selected);
+
+    return array_values($selected);
 }
 
 /**
@@ -604,6 +655,11 @@ function lockedPackageRepositoryPackagesByName(string $root, bool $includeDev = 
 }
 
 function isSkeletonExternalPackageName(string $name): bool
+{
+    return !str_starts_with($name, 'evolvephp/') && !isPlatformPackageName($name);
+}
+
+function isReleaseExternalPackageName(string $name): bool
 {
     return !str_starts_with($name, 'evolvephp/') && !isPlatformPackageName($name);
 }

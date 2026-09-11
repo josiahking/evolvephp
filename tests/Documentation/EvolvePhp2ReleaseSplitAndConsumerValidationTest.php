@@ -246,15 +246,16 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $fixtures = loadLockedRuntimePackageRepositoryPackages($this->root);
         $lock = $this->readJsonFile('composer.lock');
         $runtimePackages = $this->lockedPackagesByName($lock['packages']);
-        $devPackageNames = array_keys($this->lockedPackagesByName($lock['packages-dev']));
-        $runtimePackageNames = array_keys($runtimePackages);
-        $devOnlyPackageNames = array_diff($devPackageNames, $runtimePackageNames);
+        $devPackages = $this->lockedPackagesByName($lock['packages-dev']);
+        $lockedPackages = array_merge($runtimePackages, $devPackages);
         $fixtureNames = array_column($fixtures, 'name');
         $sortedFixtureNames = $fixtureNames;
 
         sort($sortedFixtureNames);
 
         $this->assertSame($sortedFixtureNames, $fixtureNames, 'Offline runtime package metadata must be sorted deterministically.');
+        $this->assertArrayHasKey('psr/http-client', $devPackages, 'The PSR-18 interface package exercises runtime closure metadata resolved from packages-dev.');
+        $this->assertContains('psr/http-client', $fixtureNames, 'PSR-18 must be available to offline consumers because bridge-remote requires it at runtime.');
 
         foreach ($this->directExternalRuntimeRequirements() as $packageName) {
             $this->assertContains($packageName, $fixtureNames, $packageName . ' must be available to offline consumers.');
@@ -267,16 +268,16 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             $this->assertNotSame('', $fixture['version']);
             $this->assertFalse(str_starts_with($fixture['name'], 'evolvephp/'), $fixture['name'] . ' must not be supplied from lockfile metadata.');
             $this->assertFalse($this->isPlatformRequirement($fixture['name']), $fixture['name'] . ' must not be supplied as a package repository entry.');
-            $this->assertArrayHasKey($fixture['name'], $runtimePackages, $fixture['name'] . ' must come from composer.lock packages.');
-            $this->assertSame($runtimePackages[$fixture['name']]['version'], $fixture['version'], $fixture['name'] . ' must keep the locked runtime version.');
+            $this->assertArrayHasKey($fixture['name'], $lockedPackages, $fixture['name'] . ' must come from composer.lock packages or packages-dev.');
+            $this->assertSame($lockedPackages[$fixture['name']]['version'], $fixture['version'], $fixture['name'] . ' must keep the locked version.');
             $this->assertTrue(
                 isset($fixture['source']) || isset($fixture['dist']),
                 $fixture['name'] . ' must contain source or dist metadata for the offline package repository.'
             );
         }
 
-        foreach ($devOnlyPackageNames as $packageName) {
-            $this->assertNotContains($packageName, $fixtureNames, $packageName . ' must not come from composer.lock packages-dev.');
+        foreach (array('deptrac/deptrac', 'friendsofphp/php-cs-fixer', 'phpstan/phpstan') as $packageName) {
+            $this->assertNotContains($packageName, $fixtureNames, $packageName . ' must not be exposed unless it is in a release-package runtime dependency closure.');
         }
 
         $content = $this->readProjectFile('tools/validate-prerelease-consumers.php');
