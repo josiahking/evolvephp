@@ -240,8 +240,8 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'name' => 'evolvephp/bridge-remote',
                 'directory' => 'packages/bridge-remote',
                 'human' => 'EvolvePHP Bridge Remote',
-                'responsibility' => 'Remote HTTP JSON Bridge protocol and PSR-15 server endpoint for EvolvePHP 2.',
-                'dependencies' => '`evolvephp/bridge-contracts`, `evolvephp/bridge-psr`, `psr/http-message`, `psr/http-factory` and `psr/http-server-handler`',
+                'responsibility' => 'Remote HTTP JSON Bridge protocol, PSR-18 host client and PSR-15 server endpoint for EvolvePHP 2.',
+                'dependencies' => '`evolvephp/bridge-contracts`, `evolvephp/bridge-psr`, `psr/http-client`, `psr/http-message`, `psr/http-factory` and `psr/http-server-handler`',
             ),
             array(
                 'name' => 'evolvephp/testing',

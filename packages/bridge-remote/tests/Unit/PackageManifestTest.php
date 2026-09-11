@@ -27,6 +27,7 @@ final class PackageManifestTest extends TestCase
         self::assertSame('^8.4', $manifest['require']['php']);
         self::assertSame('^2.0', $manifest['require']['evolvephp/bridge-contracts']);
         self::assertSame('^2.0', $manifest['require']['evolvephp/bridge-psr']);
+        self::assertSame('^1.0', $manifest['require']['psr/http-client']);
         self::assertSame('^1.0', $manifest['require']['psr/http-factory']);
         self::assertSame('^1.1 || ^2.0', $manifest['require']['psr/http-message']);
         self::assertSame('^1.0', $manifest['require']['psr/http-server-handler']);
@@ -42,10 +43,14 @@ final class PackageManifestTest extends TestCase
             'symfony/http-foundation',
             'symfony/http-kernel',
             'psr/http-server-middleware',
+            'guzzlehttp/guzzle',
             'guzzlehttp/psr7',
+            'php-http/httplug',
             'laminas/laminas-diactoros',
             'nyholm/psr7',
             'slim/psr7',
+            'symfony/http-client',
+            'symfony/http-client-contracts',
             'symfony/psr-http-message-bridge',
         ] as $forbiddenDependency) {
             self::assertArrayNotHasKey($forbiddenDependency, $manifest['require']);

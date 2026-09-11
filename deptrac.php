@@ -42,6 +42,9 @@ return static function (DeptracConfig $config): void {
             $psrHttpMessage = Layer::withName('PsrHttpMessage')->collectors(
                 ClassLikeConfig::create('^Psr\\Http\\Message\\.*'),
             ),
+            $psrHttpClient = Layer::withName('PsrHttpClient')->collectors(
+                ClassLikeConfig::create('^Psr\\Http\\Client\\.*'),
+            ),
             $psrHttpServer = Layer::withName('PsrHttpServer')->collectors(
                 ClassLikeConfig::create('^Psr\\Http\\Server\\.*'),
             ),
@@ -68,9 +71,10 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($contracts)->accesses($psrContainer),
             Ruleset::forLayer($bridgeContracts)->accesses($contracts),
             Ruleset::forLayer($bridgePsr)->accesses($bridgeContracts, $core, $http, $psrHttpMessage),
-            Ruleset::forLayer($bridgeRemote)->accesses($bridgeContracts, $bridgePsr, $psrHttpMessage, $psrHttpServer),
+            Ruleset::forLayer($bridgeRemote)->accesses($bridgeContracts, $bridgePsr, $psrHttpMessage, $psrHttpClient, $psrHttpServer),
             Ruleset::forLayer($psrContainer),
             Ruleset::forLayer($psrHttpMessage),
+            Ruleset::forLayer($psrHttpClient),
             Ruleset::forLayer($psrHttpServer),
             Ruleset::forLayer($core)->accesses($contracts, $psrContainer),
             Ruleset::forLayer($devTools)->accesses($contracts, $core, $module, $plugin),

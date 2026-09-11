@@ -16,6 +16,7 @@
 
 ### Bridge Remote
 
+- Added the experimental host-side `RemoteBridgeClient` foundation for invoking the existing remote HTTP JSON Bridge endpoint through PSR-18 and PSR-17 interfaces. The client uses the existing invocation/result codec, validates a trusted configured endpoint, applies mandatory caller-supplied authentication headers with reserved-header protection, enforces protocol body limits, separates received protocol results from local client failures, treats network/no-response failures as uncertain outcomes and leaves concrete HTTP transport, timeout, redirect, retry, fallback, supervision and sidecar lifecycle policy to host configuration.
 - Added `evolvephp/bridge-remote` as a public experimental remote HTTP JSON Bridge protocol and PSR-15 server endpoint. The package provides versioned deterministic JSON invocation/result encoding, bounded validation, explicit header allowlisting, mandatory injected authentication/authorization, PSR-17 delegated request construction through the existing embedded PSR Bridge adapter, safe Bridge error mapping and distinct outer protocol versus delegated application status; it does not provide a concrete PSR-7 implementation, credential scheme, automatic route registration, retries, fallback, streaming, binary payloads, idempotency persistence, deduplication or distributed-transaction behavior.
 
 ### Adoption planning
