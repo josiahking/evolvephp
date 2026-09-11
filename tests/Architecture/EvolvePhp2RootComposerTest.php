@@ -68,6 +68,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'deptrac/deptrac' => '^4.7',
             'evolvephp/bridge-contracts' => '^2.0@dev',
             'evolvephp/bridge-psr' => '^2.0@dev',
+            'evolvephp/bridge-remote' => '^2.0@dev',
             'evolvephp/dev-tools' => '^2.0@dev',
             'evolvephp/testing' => '^2.0@dev',
             'friendsofphp/php-cs-fixer' => '^3.95',
@@ -123,6 +124,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist',
             'test:bridge-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-contracts',
             'test:bridge-psr' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-psr',
+            'test:bridge-remote' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-remote',
             'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
             'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
@@ -188,7 +190,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         }
     }
 
-    public function testReleaseMapContainsOnlyTheNineReleasePackages(): void
+    public function testReleaseMapContainsOnlyTheTenReleasePackages(): void
     {
         $map = $this->readJsonFile('release-packages.json');
 
@@ -202,6 +204,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
                 array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
                 array('name' => 'evolvephp/bridge-psr', 'directory' => 'packages/bridge-psr'),
+                array('name' => 'evolvephp/bridge-remote', 'directory' => 'packages/bridge-remote'),
                 array('name' => 'evolvephp/testing', 'directory' => 'packages/testing'),
                 array('name' => 'evolvephp/dev-tools', 'directory' => 'packages/dev-tools'),
             ),
@@ -228,6 +231,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/contracts',
             'evolvephp/bridge-contracts',
             'evolvephp/bridge-psr',
+            'evolvephp/bridge-remote',
             'evolvephp/core',
             'evolvephp/dev-tools',
             'evolvephp/http',

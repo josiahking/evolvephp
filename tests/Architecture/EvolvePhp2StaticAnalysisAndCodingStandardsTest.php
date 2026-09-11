@@ -241,7 +241,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
     {
         $paths = array();
 
-        foreach (array('contracts', 'bridge-contracts', 'bridge-psr', 'core', 'dev-tools', 'http', 'module', 'plugin', 'testing') as $package) {
+        foreach (array('contracts', 'bridge-contracts', 'bridge-psr', 'bridge-remote', 'core', 'dev-tools', 'http', 'module', 'plugin', 'testing') as $package) {
             $paths[] = 'packages/' . $package . '/src';
             $paths[] = 'packages/' . $package . '/tests';
         }
@@ -255,6 +255,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
             'packages/contracts/composer.json',
             'packages/bridge-contracts/composer.json',
             'packages/bridge-psr/composer.json',
+            'packages/bridge-remote/composer.json',
             'packages/core/composer.json',
             'packages/dev-tools/composer.json',
             'packages/http/composer.json',
@@ -270,6 +271,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
             'packages/contracts/src',
             'packages/bridge-contracts/src',
             'packages/bridge-psr/src',
+            'packages/bridge-remote/src',
             'packages/core/src',
             'packages/dev-tools/src',
             'packages/http/src',

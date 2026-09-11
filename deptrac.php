@@ -14,6 +14,7 @@ return static function (DeptracConfig $config): void {
             'packages/contracts/src',
             'packages/bridge-contracts/src',
             'packages/bridge-psr/src',
+            'packages/bridge-remote/src',
             'packages/core/src',
             'packages/dev-tools/src',
             'packages/http/src',
@@ -31,6 +32,9 @@ return static function (DeptracConfig $config): void {
             ),
             $bridgePsr = Layer::withName('BridgePsr')->collectors(
                 DirectoryConfig::create('packages/bridge-psr/src/.*'),
+            ),
+            $bridgeRemote = Layer::withName('BridgeRemote')->collectors(
+                DirectoryConfig::create('packages/bridge-remote/src/.*'),
             ),
             $psrContainer = Layer::withName('PsrContainer')->collectors(
                 ClassLikeConfig::create('^Psr\\Container\\.*'),
@@ -64,6 +68,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($contracts)->accesses($psrContainer),
             Ruleset::forLayer($bridgeContracts)->accesses($contracts),
             Ruleset::forLayer($bridgePsr)->accesses($bridgeContracts, $core, $http, $psrHttpMessage),
+            Ruleset::forLayer($bridgeRemote)->accesses($bridgeContracts, $bridgePsr, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($psrContainer),
             Ruleset::forLayer($psrHttpMessage),
             Ruleset::forLayer($psrHttpServer),

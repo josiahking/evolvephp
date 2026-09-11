@@ -14,6 +14,10 @@
 
 - Added `evolvephp/bridge-psr` as a public experimental same-process PSR HTTP Bridge adapter foundation. The package composes the existing readiness abstraction, `HttpKernel` and `ExecutionOutcomeResponseResolver`, returns resolved PSR responses without emission, preserves cleanup/quarantine state through a safe `EmbeddedBridgeResult`, keeps Core and HTTP independent of Bridge, and does not provide Laravel, Symfony, PSR-15, remote protocol, route cutover, retry, process recycling or concrete PSR-7 implementation.
 
+### Bridge Remote
+
+- Added `evolvephp/bridge-remote` as a public experimental remote HTTP JSON Bridge protocol and PSR-15 server endpoint. The package provides versioned deterministic JSON invocation/result encoding, bounded validation, explicit header allowlisting, mandatory injected authentication/authorization, PSR-17 delegated request construction through the existing embedded PSR Bridge adapter, safe Bridge error mapping and distinct outer protocol versus delegated application status; it does not provide a concrete PSR-7 implementation, credential scheme, automatic route registration, retries, fallback, streaming, binary payloads, idempotency persistence, deduplication or distributed-transaction behavior.
+
 ### Adoption planning
 
 - Added development-time adoption planning models inside `evolvephp/dev-tools`, including public experimental declarations for one bounded capability, embedded or remote integration mode, route ownership transitions, data ownership transitions, migration/source-of-truth states, compatibility requirements, identity/security requirements, migration evidence, rollback evidence and measurable acceptance criteria. The model records maintainer decisions only: it does not generate plans from Audit, discover routes, infer ownership, score migrations, certify compatibility, certify migration readiness, implement Bridge, define protocols, provide adapters, synchronize databases, execute cutovers or execute rollbacks.
