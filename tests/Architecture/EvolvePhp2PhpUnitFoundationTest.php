@@ -20,6 +20,8 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/bridge-contracts']);
         $this->assertArrayHasKey('evolvephp/bridge-psr', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/bridge-psr']);
+        $this->assertArrayHasKey('evolvephp/bridge-remote', $manifest['require-dev']);
+        $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/bridge-remote']);
         $this->assertArrayHasKey('evolvephp/dev-tools', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/dev-tools']);
         $this->assertArrayHasKey('evolvephp/testing', $manifest['require-dev']);
@@ -45,7 +47,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         }
     }
 
-    public function testRootPhpUnitConfigurationDefinesNinePackageSuites(): void
+    public function testRootPhpUnitConfigurationDefinesTenPackageSuites(): void
     {
         $path = $this->projectPath('phpunit.xml.dist');
 
@@ -117,6 +119,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/test:contracts/i', $content);
         $this->assertMatchesPattern('/test:bridge-contracts/i', $content);
         $this->assertMatchesPattern('/test:bridge-psr/i', $content);
+        $this->assertMatchesPattern('/test:bridge-remote/i', $content);
         $this->assertMatchesPattern('/test:core/i', $content);
         $this->assertMatchesPattern('/test:dev-tools/i', $content);
         $this->assertMatchesPattern('/test:http/i', $content);
@@ -141,7 +144,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $developmentGuide);
         $this->assertMatchesPattern('/PHPUnit 13.*root|root.*PHPUnit 13/i', $developmentGuide);
 
-        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $developmentGuide);
         }
 
@@ -182,6 +185,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
                 'tests' => 'packages/bridge-psr/tests',
                 'smokeTest' => 'packages/bridge-psr/tests/Unit/PackageManifestTest.php',
             ),
+            'bridge-remote' => array(
+                'tests' => 'packages/bridge-remote/tests',
+                'smokeTest' => 'packages/bridge-remote/tests/Unit/PackageManifestTest.php',
+            ),
             'core' => array(
                 'tests' => 'packages/core/tests',
                 'smokeTest' => 'packages/core/tests/Unit/PackageManifestTest.php',
@@ -215,6 +222,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist',
             'test:bridge-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-contracts',
             'test:bridge-psr' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-psr',
+            'test:bridge-remote' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-remote',
             'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
             'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
@@ -231,6 +239,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'evolvephp/contracts',
             'evolvephp/bridge-contracts',
             'evolvephp/bridge-psr',
+            'evolvephp/bridge-remote',
             'evolvephp/core',
             'evolvephp/dev-tools',
             'evolvephp/http',

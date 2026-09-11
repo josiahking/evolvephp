@@ -30,6 +30,10 @@
             "directory": "packages/bridge-psr"
         },
         {
+            "name": "evolvephp/bridge-remote",
+            "directory": "packages/bridge-remote"
+        },
+        {
             "name": "evolvephp/testing",
             "directory": "packages/testing"
         },

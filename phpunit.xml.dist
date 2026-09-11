@@ -20,6 +20,9 @@
         <testsuite name="bridge-psr">
             <directory suffix="Test.php">packages/bridge-psr/tests</directory>
         </testsuite>
+        <testsuite name="bridge-remote">
+            <directory suffix="Test.php">packages/bridge-remote/tests</directory>
+        </testsuite>
         <testsuite name="core">
             <directory suffix="Test.php">packages/core/tests</directory>
         </testsuite>
@@ -44,6 +47,7 @@
             <directory suffix=".php">packages/contracts/src</directory>
             <directory suffix=".php">packages/bridge-contracts/src</directory>
             <directory suffix=".php">packages/bridge-psr/src</directory>
+            <directory suffix=".php">packages/bridge-remote/src</directory>
             <directory suffix=".php">packages/core/src</directory>
             <directory suffix=".php">packages/dev-tools/src</directory>
             <directory suffix=".php">packages/http/src</directory>
