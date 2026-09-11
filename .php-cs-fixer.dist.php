@@ -10,6 +10,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/bridge-contracts/tests',
         'packages/bridge-psr/src',
         'packages/bridge-psr/tests',
+        'packages/bridge-laravel/src',
+        'packages/bridge-laravel/tests',
         'packages/bridge-remote/src',
         'packages/bridge-remote/tests',
         'packages/core/src',

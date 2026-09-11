@@ -12,6 +12,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'contracts' => null,
             'bridge-contracts' => null,
             'bridge-psr' => null,
+            'bridge-laravel' => null,
             'bridge-remote' => null,
             'http' => null,
             'module' => null,
@@ -162,9 +163,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
 
         $this->assertFileDoesNotExist($this->projectPath('packages/contracts/src/.gitkeep'));
-        $this->assertFileDoesNotExist($this->projectPath('packages/bridge-contracts/src/.gitkeep'));
-        $this->assertFileDoesNotExist($this->projectPath('packages/bridge-psr/src/.gitkeep'));
-        $this->assertFileDoesNotExist($this->projectPath('packages/bridge-remote/src/.gitkeep'));
+            $this->assertFileDoesNotExist($this->projectPath('packages/bridge-contracts/src/.gitkeep'));
+            $this->assertFileDoesNotExist($this->projectPath('packages/bridge-psr/src/.gitkeep'));
+            $this->assertFileDoesNotExist($this->projectPath('packages/bridge-laravel/src/.gitkeep'));
+            $this->assertFileDoesNotExist($this->projectPath('packages/bridge-remote/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/core/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/dev-tools/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/http/src/.gitkeep'));
@@ -736,6 +738,22 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 ),
             ),
             array(
+                'manifest' => 'packages/bridge-laravel/composer.json',
+                'src' => 'packages/bridge-laravel/src',
+                'name' => 'evolvephp/bridge-laravel',
+                'description' => 'Laravel host Bridge adapter for embedded EvolvePHP 2 delegation.',
+                'namespace' => 'Evolve\\Bridge\\Laravel\\',
+                'require' => array(
+                    'php' => '^8.4',
+                    'evolvephp/bridge-contracts' => '^2.0',
+                    'evolvephp/bridge-psr' => '^2.0',
+                    'illuminate/contracts' => '^13.0',
+                    'illuminate/http' => '^13.0',
+                    'psr/http-factory' => '^1.0',
+                    'psr/http-message' => '^1.1 || ^2.0',
+                ),
+            ),
+            array(
                 'manifest' => 'packages/bridge-remote/composer.json',
                 'src' => 'packages/bridge-remote/src',
                 'name' => 'evolvephp/bridge-remote',
@@ -861,6 +879,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'packages/bridge-psr/src' => array(
                 'EmbeddedBridgeAdapter.php',
                 'EmbeddedBridgeResult.php',
+            ),
+            'packages/bridge-laravel/src' => array(
+                'LaravelBridgeAdapter.php',
+                'LaravelBridgeContextFactory.php',
+                'LaravelBridgeResult.php',
             ),
             'packages/bridge-remote/src' => array(
                 'RemoteBridgeAuthenticator.php',

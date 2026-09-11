@@ -29,6 +29,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/contracts`
 - `evolvephp/bridge-contracts`
 - `evolvephp/bridge-psr`
+- `evolvephp/bridge-laravel`
 - `evolvephp/bridge-remote`
 - `evolvephp/core`
 - `evolvephp/dev-tools`
@@ -83,6 +84,7 @@ Run individual package suites:
 composer test:contracts
 composer test:bridge-contracts
 composer test:bridge-psr
+composer test:bridge-laravel
 composer test:bridge-remote
 composer test:core
 composer test:dev-tools
@@ -142,7 +144,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains ten packages in this order: contracts, bridge-contracts, core, module, plugin, http, bridge-psr, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains eleven packages in this order: contracts, bridge-contracts, core, module, plugin, http, bridge-psr, bridge-laravel, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -282,6 +284,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `contracts` | `packages/contracts/tests` |
 | `bridge-contracts` | `packages/bridge-contracts/tests` |
 | `bridge-psr` | `packages/bridge-psr/tests` |
+| `bridge-laravel` | `packages/bridge-laravel/tests` |
 | `bridge-remote` | `packages/bridge-remote/tests` |
 | `core` | `packages/core/tests` |
 | `dev-tools` | `packages/dev-tools/tests` |
@@ -302,7 +305,7 @@ The distributable PHPStan configuration lives at:
 phpstan.neon.dist
 ```
 
-The initial PHPStan level is `6`. PHPStan analyzes all ten package `src` and `tests` directories:
+The initial PHPStan level is `6`. PHPStan analyzes all eleven package `src` and `tests` directories:
 
 ```text
 packages/contracts/src
@@ -311,6 +314,8 @@ packages/bridge-contracts/src
 packages/bridge-contracts/tests
 packages/bridge-psr/src
 packages/bridge-psr/tests
+packages/bridge-laravel/src
+packages/bridge-laravel/tests
 packages/bridge-remote/src
 packages/bridge-remote/tests
 packages/core/src
@@ -362,6 +367,7 @@ Package tests are excluded from Deptrac boundary analysis so test dependencies c
 Contracts -> packages/contracts/src/.* -> Evolve\Contracts\
 BridgeContracts -> packages/bridge-contracts/src/.* -> Evolve\Bridge\Contracts\
 BridgePsr -> packages/bridge-psr/src/.* -> Evolve\Bridge\Psr\
+BridgeLaravel -> packages/bridge-laravel/src/.* -> Evolve\Bridge\Laravel\
 BridgeRemote -> packages/bridge-remote/src/.* -> Evolve\Bridge\Remote\
 Core      -> packages/core/src/.*      -> Evolve\Core\
 DevTools  -> packages/dev-tools/src/.* -> Evolve\DevTools\
@@ -377,6 +383,7 @@ The accepted dependency matrix is:
 Contracts -> none
 BridgeContracts -> Contracts
 BridgePsr -> BridgeContracts, Core, Http
+BridgeLaravel -> BridgeContracts, BridgePsr, PsrHttpMessage, LaravelHost
 BridgeRemote -> BridgeContracts, BridgePsr
 Core      -> Contracts
 DevTools  -> Contracts, Core, Module, Plugin
@@ -386,7 +393,7 @@ Plugin    -> Contracts
 Testing   -> Contracts, Core, Http, Module, Plugin
 ```
 
-There is no production dependency on Testing. BridgeContracts is an optional outward package and may depend only on Contracts. BridgePsr is an optional outward package and may depend on BridgeContracts, Core, Http and PSR HTTP message interfaces. BridgeRemote is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message and factory interfaces, PSR-18 HTTP client interfaces and PSR HTTP server-handler interfaces. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on BridgeContracts, BridgePsr or BridgeRemote.
+There is no production dependency on Testing. BridgeContracts is an optional outward package and may depend only on Contracts. BridgePsr is an optional outward package and may depend on BridgeContracts, Core, Http and PSR HTTP message interfaces. BridgeLaravel is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow LaravelHost layer. BridgeRemote is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message and factory interfaces, PSR-18 HTTP client interfaces and PSR HTTP server-handler interfaces. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on BridgeContracts, BridgePsr, BridgeLaravel or BridgeRemote.
 
 The root also models deliberate external standard layers:
 
@@ -404,15 +411,19 @@ PsrHttpServer
 BridgePsr external standards
 PsrHttpMessage
 
+BridgeLaravel external standards
+PsrHttpMessage
+LaravelHost
+
 BridgeRemote external standards
 PsrHttpMessage
 PsrHttpClient
 PsrHttpServer
 ```
 
-`PsrContainer` represents the approved PSR-11 interoperability layer used by Core and by Contracts for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`, by BridgePsr for caller-owned PSR request input and resolved PSR response output, and by BridgeRemote for outer and delegated PSR requests/responses plus PSR-17 factories. `PsrHttpClient` represents the approved PSR-18 `Psr\Http\Client` namespace used only by BridgeRemote for host-side remote invocation transport. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http and the BridgeRemote endpoint.
+`PsrContainer` represents the approved PSR-11 interoperability layer used by Core and by Contracts for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`, by BridgePsr for caller-owned PSR request input and resolved PSR response output, by BridgeLaravel for caller-owned PSR request construction and delegated PSR response translation, and by BridgeRemote for outer and delegated PSR requests/responses plus PSR-17 factories. `LaravelHost` represents the narrow Illuminate HTTP and authentication-contract layer used only by BridgeLaravel for host request and principal translation. `PsrHttpClient` represents the approved PSR-18 `Psr\Http\Client` namespace used only by BridgeRemote for host-side remote invocation transport. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http and the BridgeRemote endpoint.
 
-These PSR HTTP interfaces are external interoperability standards and do not change the first-party Evolve package dependency direction. Adding `psr/http-factory` does not require a new Deptrac external namespace layer because PSR-17 factory interfaces live under `Psr\Http\Message`. PSR-18 is tracked as its own external namespace because the client interfaces live under `Psr\Http\Client`. Http still depends inward on Contracts and Core, while BridgeRemote uses PSR HTTP interfaces only at the optional remote Bridge boundary.
+These PSR HTTP interfaces are external interoperability standards and do not change the first-party Evolve package dependency direction. Adding `psr/http-factory` does not require a new Deptrac external namespace layer because PSR-17 factory interfaces live under `Psr\Http\Message`. PSR-18 is tracked as its own external namespace because the client interfaces live under `Psr\Http\Client`. Http still depends inward on Contracts and Core, while BridgeLaravel and BridgeRemote use their approved external layers only at optional Bridge boundaries.
 
 Uncovered dependencies fail. No baseline or skipped violations are allowed. No graph is generated. New external dependency treatment requires deliberate architecture review.
 
