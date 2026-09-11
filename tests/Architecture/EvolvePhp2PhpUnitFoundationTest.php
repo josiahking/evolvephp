@@ -20,6 +20,8 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/bridge-contracts']);
         $this->assertArrayHasKey('evolvephp/bridge-psr', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/bridge-psr']);
+        $this->assertArrayHasKey('evolvephp/bridge-laravel', $manifest['require-dev']);
+        $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/bridge-laravel']);
         $this->assertArrayHasKey('evolvephp/bridge-remote', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/bridge-remote']);
         $this->assertArrayHasKey('evolvephp/dev-tools', $manifest['require-dev']);
@@ -47,7 +49,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         }
     }
 
-    public function testRootPhpUnitConfigurationDefinesTenPackageSuites(): void
+    public function testRootPhpUnitConfigurationDefinesElevenPackageSuites(): void
     {
         $path = $this->projectPath('phpunit.xml.dist');
 
@@ -119,6 +121,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/test:contracts/i', $content);
         $this->assertMatchesPattern('/test:bridge-contracts/i', $content);
         $this->assertMatchesPattern('/test:bridge-psr/i', $content);
+        $this->assertMatchesPattern('/test:bridge-laravel/i', $content);
         $this->assertMatchesPattern('/test:bridge-remote/i', $content);
         $this->assertMatchesPattern('/test:core/i', $content);
         $this->assertMatchesPattern('/test:dev-tools/i', $content);
@@ -144,7 +147,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $developmentGuide);
         $this->assertMatchesPattern('/PHPUnit 13.*root|root.*PHPUnit 13/i', $developmentGuide);
 
-        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $developmentGuide);
         }
 
@@ -185,6 +188,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
                 'tests' => 'packages/bridge-psr/tests',
                 'smokeTest' => 'packages/bridge-psr/tests/Unit/PackageManifestTest.php',
             ),
+            'bridge-laravel' => array(
+                'tests' => 'packages/bridge-laravel/tests',
+                'smokeTest' => 'packages/bridge-laravel/tests/Unit/PackageManifestTest.php',
+            ),
             'bridge-remote' => array(
                 'tests' => 'packages/bridge-remote/tests',
                 'smokeTest' => 'packages/bridge-remote/tests/Unit/PackageManifestTest.php',
@@ -221,6 +228,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         return array(
             'test' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist',
             'test:bridge-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-contracts',
+            'test:bridge-laravel' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-laravel',
             'test:bridge-psr' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-psr',
             'test:bridge-remote' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-remote',
             'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
@@ -238,6 +246,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         return array(
             'evolvephp/contracts',
             'evolvephp/bridge-contracts',
+            'evolvephp/bridge-laravel',
             'evolvephp/bridge-psr',
             'evolvephp/bridge-remote',
             'evolvephp/core',

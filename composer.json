@@ -33,6 +33,7 @@
                 "versions": {
                     "evolvephp/contracts": "2.0.x-dev",
                     "evolvephp/bridge-contracts": "2.0.x-dev",
+                    "evolvephp/bridge-laravel": "2.0.x-dev",
                     "evolvephp/bridge-psr": "2.0.x-dev",
                     "evolvephp/bridge-remote": "2.0.x-dev",
                     "evolvephp/core": "2.0.x-dev",
@@ -57,6 +58,7 @@
     "require-dev": {
         "deptrac/deptrac": "^4.7",
         "evolvephp/bridge-contracts": "^2.0@dev",
+        "evolvephp/bridge-laravel": "^2.0@dev",
         "evolvephp/bridge-psr": "^2.0@dev",
         "evolvephp/bridge-remote": "^2.0@dev",
         "evolvephp/dev-tools": "^2.0@dev",
@@ -89,6 +91,7 @@
         ],
         "test": "@php vendor/bin/phpunit --configuration phpunit.xml.dist",
         "test:bridge-contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-contracts",
+        "test:bridge-laravel": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-laravel",
         "test:bridge-psr": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-psr",
         "test:bridge-remote": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-remote",
         "test:contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts",

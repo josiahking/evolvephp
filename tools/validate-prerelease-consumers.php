@@ -55,6 +55,7 @@ final class PrereleaseConsumerValidator
             $results[] = $this->runExpectedFailureCase($temp, $composer, 'Full-graph case E', $alphaRepositories, $lockedRuntimePackages, array(
                 'evolvephp/bridge-contracts' => '^2.0@alpha',
                 'evolvephp/bridge-psr' => '^2.0@alpha',
+                'evolvephp/bridge-laravel' => '^2.0@alpha',
                 'evolvephp/bridge-remote' => '^2.0@alpha',
                 'evolvephp/dev-tools' => '^2.0@alpha',
                 'evolvephp/testing' => '^2.0@alpha',
@@ -62,6 +63,7 @@ final class PrereleaseConsumerValidator
             $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case F', $alphaRepositories, $lockedRuntimePackages, array(
                 'evolvephp/bridge-contracts' => '^2.0',
                 'evolvephp/bridge-psr' => '^2.0',
+                'evolvephp/bridge-laravel' => '^2.0',
                 'evolvephp/bridge-remote' => '^2.0',
                 'evolvephp/dev-tools' => '^2.0',
                 'evolvephp/testing' => '^2.0',
@@ -70,6 +72,7 @@ final class PrereleaseConsumerValidator
             $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Stable case H', $stableRepositories, $lockedRuntimePackages, array(
                 'evolvephp/bridge-contracts' => '^2.0',
                 'evolvephp/bridge-psr' => '^2.0',
+                'evolvephp/bridge-laravel' => '^2.0',
                 'evolvephp/bridge-remote' => '^2.0',
                 'evolvephp/dev-tools' => '^2.0',
                 'evolvephp/testing' => '^2.0',

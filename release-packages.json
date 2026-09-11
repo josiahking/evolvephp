@@ -30,6 +30,10 @@
             "directory": "packages/bridge-psr"
         },
         {
+            "name": "evolvephp/bridge-laravel",
+            "directory": "packages/bridge-laravel"
+        },
+        {
             "name": "evolvephp/bridge-remote",
             "directory": "packages/bridge-remote"
         },
