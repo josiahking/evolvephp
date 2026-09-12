@@ -14,6 +14,8 @@ EvolvePHP 1 legacy support applies to the preserved `master` line. `master` rema
 
 EvolvePHP 2 development is separate from EvolvePHP 1. EvolvePHP 2 reports and proposed changes target `2.x`; development changes for EvolvePHP 2 belong to `2.x`. New EvolvePHP 2 feature development does not target `master`. EvolvePHP 2 remains under development and is not production-ready until a reviewed release says so.
 
+EvolvePHP 2 Alpha support is best-effort pre-release support, not an LTS promise, production SLA or commercial support commitment. Experimental APIs may change before stable release. The framework baseline is PHP 8.4, with current official framework CI evidence on PHP 8.4 and PHP 8.5. Legacy PHP 7.4 support is limited to the isolated legacy remote compatibility client for remote protocol compatibility only; it does not mean PHP 7.4 can run EvolvePHP Core or embedded Bridge. Security reporting remains governed by `SECURITY.md`.
+
 ## What maintainers may support
 
 Maintainers may reasonably support:
