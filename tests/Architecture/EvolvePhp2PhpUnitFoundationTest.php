@@ -24,6 +24,8 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/bridge-laravel']);
         $this->assertArrayHasKey('evolvephp/bridge-remote', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/bridge-remote']);
+        $this->assertArrayHasKey('evolvephp/bridge-symfony', $manifest['require-dev']);
+        $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/bridge-symfony']);
         $this->assertArrayHasKey('evolvephp/dev-tools', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/dev-tools']);
         $this->assertArrayHasKey('evolvephp/testing', $manifest['require-dev']);
@@ -49,7 +51,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         }
     }
 
-    public function testRootPhpUnitConfigurationDefinesElevenPackageSuites(): void
+    public function testRootPhpUnitConfigurationDefinesTwelvePackageSuites(): void
     {
         $path = $this->projectPath('phpunit.xml.dist');
 
@@ -123,6 +125,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/test:bridge-psr/i', $content);
         $this->assertMatchesPattern('/test:bridge-laravel/i', $content);
         $this->assertMatchesPattern('/test:bridge-remote/i', $content);
+        $this->assertMatchesPattern('/test:bridge-symfony/i', $content);
         $this->assertMatchesPattern('/test:core/i', $content);
         $this->assertMatchesPattern('/test:dev-tools/i', $content);
         $this->assertMatchesPattern('/test:http/i', $content);
@@ -147,7 +150,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $developmentGuide);
         $this->assertMatchesPattern('/PHPUnit 13.*root|root.*PHPUnit 13/i', $developmentGuide);
 
-        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $developmentGuide);
         }
 
@@ -192,6 +195,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
                 'tests' => 'packages/bridge-laravel/tests',
                 'smokeTest' => 'packages/bridge-laravel/tests/Unit/PackageManifestTest.php',
             ),
+            'bridge-symfony' => array(
+                'tests' => 'packages/bridge-symfony/tests',
+                'smokeTest' => 'packages/bridge-symfony/tests/Unit/PackageManifestTest.php',
+            ),
             'bridge-remote' => array(
                 'tests' => 'packages/bridge-remote/tests',
                 'smokeTest' => 'packages/bridge-remote/tests/Unit/PackageManifestTest.php',
@@ -231,6 +238,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test:bridge-laravel' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-laravel',
             'test:bridge-psr' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-psr',
             'test:bridge-remote' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-remote',
+            'test:bridge-symfony' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-symfony',
             'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
             'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
@@ -249,6 +257,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'evolvephp/bridge-laravel',
             'evolvephp/bridge-psr',
             'evolvephp/bridge-remote',
+            'evolvephp/bridge-symfony',
             'evolvephp/core',
             'evolvephp/dev-tools',
             'evolvephp/http',

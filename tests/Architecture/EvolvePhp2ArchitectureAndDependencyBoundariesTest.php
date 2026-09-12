@@ -101,6 +101,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         $this->assertSame(
             array(
                 'LaravelHost' => '^Illuminate\\\\(Contracts\\\\Auth|Http)\\\\.*',
+                'SymfonyHost' => '^Symfony\\\\Component\\\\(HttpFoundation|Security\\\\Core)\\\\.*',
                 'PsrContainer' => '^Psr\\\\Container\\\\.*',
                 'PsrHttpMessage' => '^Psr\\\\Http\\\\Message\\\\.*',
                 'PsrHttpClient' => '^Psr\\\\Http\\\\Client\\\\.*',
@@ -110,7 +111,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         );
         $this->assertSame($this->expectedRulesets(), $this->deptracRulesets($content));
 
-        foreach (array('packages/contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
+        foreach (array('packages/contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
             $this->assertStringNotContainsString($testPath, $content);
         }
 
@@ -209,6 +210,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'BridgeContracts' => 'packages/bridge-contracts/src/.*',
             'BridgePsr' => 'packages/bridge-psr/src/.*',
             'BridgeLaravel' => 'packages/bridge-laravel/src/.*',
+            'BridgeSymfony' => 'packages/bridge-symfony/src/.*',
             'BridgeRemote' => 'packages/bridge-remote/src/.*',
             'Core' => 'packages/core/src/.*',
             'DevTools' => 'packages/dev-tools/src/.*',
@@ -226,8 +228,10 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'BridgeContracts' => array('Contracts'),
             'BridgePsr' => array('BridgeContracts', 'Core', 'Http', 'PsrHttpMessage'),
             'BridgeLaravel' => array('BridgeContracts', 'BridgePsr', 'PsrHttpMessage', 'LaravelHost'),
+            'BridgeSymfony' => array('BridgeContracts', 'BridgePsr', 'PsrHttpMessage', 'SymfonyHost'),
             'BridgeRemote' => array('BridgeContracts', 'BridgePsr', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer'),
             'LaravelHost' => array(),
+            'SymfonyHost' => array(),
             'PsrContainer' => array(),
             'PsrHttpMessage' => array(),
             'PsrHttpClient' => array(),
@@ -276,8 +280,10 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'bridgeContracts' => 'BridgeContracts',
             'bridgePsr' => 'BridgePsr',
             'bridgeLaravel' => 'BridgeLaravel',
+            'bridgeSymfony' => 'BridgeSymfony',
             'bridgeRemote' => 'BridgeRemote',
             'laravelHost' => 'LaravelHost',
+            'symfonyHost' => 'SymfonyHost',
             'psrContainer' => 'PsrContainer',
             'psrHttpMessage' => 'PsrHttpMessage',
             'psrHttpClient' => 'PsrHttpClient',
@@ -297,7 +303,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|bridgeContracts|bridgePsr|bridgeLaravel|bridgeRemote|psrContainer|psrHttpMessage|psrHttpClient|psrHttpServer|laravelHost|core|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrHttpMessage|psrHttpClient|psrHttpServer|laravelHost|symfonyHost|core|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
@@ -307,11 +313,11 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $rulesets[$layerName] = $accesses;
         }
 
-        foreach (array('Contracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeRemote', 'PsrContainer', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'LaravelHost', 'Core', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
+        foreach (array('Contracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'PsrContainer', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'LaravelHost', 'SymfonyHost', 'Core', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
             $this->assertNotContains('Testing', $rulesets[$productionLayer], $productionLayer . ' must not access Testing.');
         }
 
-        foreach (array('BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeRemote', 'DevTools', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
+        foreach (array('BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'DevTools', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
             $this->assertNotContains('PsrContainer', $rulesets[$layerName], $layerName . ' must not access PsrContainer directly without an approved boundary.');
         }
 
@@ -331,6 +337,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/bridge-contracts/src' => 'Evolve\\Bridge\\Contracts\\',
             'packages/bridge-psr/src' => 'Evolve\\Bridge\\Psr\\',
             'packages/bridge-laravel/src' => 'Evolve\\Bridge\\Laravel\\',
+            'packages/bridge-symfony/src' => 'Evolve\\Bridge\\Symfony\\',
             'packages/bridge-remote/src' => 'Evolve\\Bridge\\Remote\\',
             'packages/core/src' => 'Evolve\\Core\\',
             'packages/dev-tools/src' => 'Evolve\\DevTools\\',
@@ -348,6 +355,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/bridge-contracts/composer.json',
             'packages/bridge-psr/composer.json',
             'packages/bridge-laravel/composer.json',
+            'packages/bridge-symfony/composer.json',
             'packages/bridge-remote/composer.json',
             'packages/core/composer.json',
             'packages/dev-tools/composer.json',

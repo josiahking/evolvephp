@@ -1,0 +1,20 @@
+{
+    "name": "evolvephp/bridge-symfony",
+    "description": "Symfony host Bridge adapter for embedded EvolvePHP 2 delegation.",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "require": {
+        "php": "^8.4",
+        "evolvephp/bridge-contracts": "^2.0",
+        "evolvephp/bridge-psr": "^2.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^1.1 || ^2.0",
+        "symfony/http-foundation": "^8.1",
+        "symfony/security-core": "^8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evolve\\Bridge\\Symfony\\": "src/"
+        }
+    }
+}

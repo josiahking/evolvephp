@@ -486,7 +486,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $map = $this->readJsonFile('release-packages.json');
 
         $this->assertSame(1, $map['version']);
-        $this->assertCount(11, $map['packages']);
+        $this->assertCount(12, $map['packages']);
 
         return $map['packages'];
     }

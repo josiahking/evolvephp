@@ -131,7 +131,7 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
         $coreManifest = $this->readJsonFile('packages/core/composer.json');
         $skeletonManifest = $this->readJsonFile('skeleton/composer.json');
 
-        $this->assertCount(11, $map['packages']);
+        $this->assertCount(12, $map['packages']);
         $this->assertNotContains('evolvephp/skeleton', $packageNames);
         $this->assertNotContains('skeleton', $packageDirectories);
         $this->assertStringNotContainsString('skeleton', $deptrac);
@@ -142,6 +142,8 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
         $this->assertArrayNotHasKey('evolvephp/bridge-psr', $skeletonManifest['require-dev']);
         $this->assertArrayNotHasKey('evolvephp/bridge-laravel', $skeletonManifest['require']);
         $this->assertArrayNotHasKey('evolvephp/bridge-laravel', $skeletonManifest['require-dev']);
+        $this->assertArrayNotHasKey('evolvephp/bridge-symfony', $skeletonManifest['require']);
+        $this->assertArrayNotHasKey('evolvephp/bridge-symfony', $skeletonManifest['require-dev']);
         $this->assertArrayNotHasKey('evolvephp/bridge-remote', $skeletonManifest['require']);
         $this->assertArrayNotHasKey('evolvephp/bridge-remote', $skeletonManifest['require-dev']);
     }

@@ -27,6 +27,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
                 array('name' => 'evolvephp/bridge-psr', 'directory' => 'packages/bridge-psr'),
                 array('name' => 'evolvephp/bridge-laravel', 'directory' => 'packages/bridge-laravel'),
+                array('name' => 'evolvephp/bridge-symfony', 'directory' => 'packages/bridge-symfony'),
                 array('name' => 'evolvephp/bridge-remote', 'directory' => 'packages/bridge-remote'),
                 array('name' => 'evolvephp/testing', 'directory' => 'packages/testing'),
                 array('name' => 'evolvephp/dev-tools', 'directory' => 'packages/dev-tools'),
@@ -62,7 +63,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             $this->assertStringContainsString('BSD-3-Clause', $content);
             $this->assertStringContainsString('`LICENSE.md`', $content);
             $this->assertDoesNotMatchPattern('/composer require/i', $content);
-            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|bridge-remote|contracts|core|dev-tools|http|module|plugin|testing)/i', $content);
+            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|bridge-remote|bridge-symfony|contracts|core|dev-tools|http|module|plugin|testing)/i', $content);
         }
     }
 
@@ -147,7 +148,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/## Release Validation/',
             '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
-            '/eleven packages.*mapped explicitly|mapped explicitly.*eleven packages|map contains eleven packages/i',
+            '/twelve packages.*mapped explicitly|mapped explicitly.*twelve packages|map contains twelve packages/i',
             '/dependency-compatible/i',
             '/package-local README/i',
             '/package-local.*licen[cs]es/i',
@@ -243,6 +244,13 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'human' => 'EvolvePHP Bridge Laravel',
                 'responsibility' => 'Laravel host Bridge adapter for embedded EvolvePHP 2 delegation.',
                 'dependencies' => '`evolvephp/bridge-contracts`, `evolvephp/bridge-psr`, `illuminate/contracts`, `illuminate/http`, `psr/http-factory` and `psr/http-message`',
+            ),
+            array(
+                'name' => 'evolvephp/bridge-symfony',
+                'directory' => 'packages/bridge-symfony',
+                'human' => 'EvolvePHP Bridge Symfony',
+                'responsibility' => 'Symfony host Bridge adapter for embedded EvolvePHP 2 delegation.',
+                'dependencies' => '`evolvephp/bridge-contracts`, `evolvephp/bridge-psr`, `psr/http-factory`, `psr/http-message`, `symfony/http-foundation` and `symfony/security-core`',
             ),
             array(
                 'name' => 'evolvephp/bridge-remote',

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "53abb66c4909670a0d9b5b3b7a9524dc",
+    "content-hash": "05133712cd88afcde2d5dd76b7a4e272",
     "packages": [
         {
             "name": "evolvephp/contracts",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/contracts",
-                "reference": "0b1f32409ea4ec44b61b19dc1dad30647b9a4e2d"
+                "reference": "c0124b979585f02568d23318c32e6bc595c2d3f8"
             },
             "require": {
                 "php": "^8.4",
@@ -38,7 +38,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "e02d1a6a3e5430ff10e4caeb10bd6be02402a269"
+                "reference": "2010adac98fdd0e6dbc8c3016fc6184c4ff1824c"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -71,7 +71,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/http",
-                "reference": "08747a9febdf660172d14317fc0e1d5d18289ed8"
+                "reference": "d21eb8327838bccfd8c00b6ba21b2ca0493ac682"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -102,7 +102,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/module",
-                "reference": "6f66dc13b9439aa3ba443d1b91300aa34e205e8a"
+                "reference": "3e588badac0bb331462e07fb8e83098ea9ce5f61"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -128,7 +128,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/plugin",
-                "reference": "a66e8a3c362302ed01a41c7447a26d4ef37e4b55"
+                "reference": "b97e31786f7637b2132c1b0a5e591cabda35d9de"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1126,7 +1126,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-contracts",
-                "reference": "6806bb6bb5129460d39dbf78b513da141b527c81"
+                "reference": "943a7f060bf3da6557296e4cf0bb466349b0a908"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1152,7 +1152,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-laravel",
-                "reference": "d34a83b497bcfcc6f9ec69b78571c97045b0afb1"
+                "reference": "dbf40f95fe14f3e532e1da158f3bca2da2d38fc0"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1183,7 +1183,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-psr",
-                "reference": "6e1bb9826d2a7f69a835cee0845c02a39d65ef3b"
+                "reference": "55e20212bf46789be0b82aa4ebc74ca51d5ca3fb"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1212,7 +1212,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-remote",
-                "reference": "988e1995b266822cf3fa0768bec7b7f0ce5dfaab"
+                "reference": "9ac1bd281698d37f3a572eace0915a24f0fbbb55"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1238,12 +1238,43 @@
             }
         },
         {
+            "name": "evolvephp/bridge-symfony",
+            "version": "2.0.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "packages/bridge-symfony",
+                "reference": "4f80307bbfe23df93bd2d8524e5eebcd6764799f"
+            },
+            "require": {
+                "evolvephp/bridge-contracts": "^2.0",
+                "evolvephp/bridge-psr": "^2.0",
+                "php": "^8.4",
+                "psr/http-factory": "^1.0",
+                "psr/http-message": "^1.1 || ^2.0",
+                "symfony/http-foundation": "^8.1",
+                "symfony/security-core": "^8.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\Bridge\\Symfony\\": "src/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Symfony host Bridge adapter for embedded EvolvePHP 2 delegation.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
             "name": "evolvephp/dev-tools",
             "version": "2.0.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/dev-tools",
-                "reference": "d10ffc71e9411b91ee908911bced20171407e1b6"
+                "reference": "80c60bbcda7814d4c105c2d14a315c8bdaf5c684"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1276,7 +1307,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/testing",
-                "reference": "1bf2bb76f326c7c44a8ff8846e5258d0733c4595"
+                "reference": "b44e5a84ce7fa82905ef20760a58ea58b0141b2a"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -6743,6 +6774,79 @@
             "time": "2026-05-29T05:06:50+00:00"
         },
         {
+            "name": "symfony/password-hasher",
+            "version": "v8.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/password-hasher.git",
+                "reference": "6934d16beaa4677f2c4584229fff1b51099dd7af"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/password-hasher/zipball/6934d16beaa4677f2c4584229fff1b51099dd7af",
+                "reference": "6934d16beaa4677f2c4584229fff1b51099dd7af",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.4.1"
+            },
+            "require-dev": {
+                "symfony/console": "^7.4|^8.0",
+                "symfony/security-core": "^7.4|^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\PasswordHasher\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Robin Chalas",
+                    "email": "robin.chalas@gmail.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides password hashing utilities",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "hashing",
+                "password"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/password-hasher/tree/v8.1.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-05-29T05:06:50+00:00"
+        },
+        {
             "name": "symfony/polyfill-ctype",
             "version": "v1.37.0",
             "source": {
@@ -7801,17 +7905,100 @@
             "time": "2026-05-29T05:06:50+00:00"
         },
         {
-            "name": "symfony/service-contracts",
-            "version": "v3.7.1",
+            "name": "symfony/security-core",
+            "version": "v8.1.6",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/service-contracts.git",
-                "reference": "c0a284bab1ed8aa0417e3d69250ab437739563a0"
+                "url": "https://github.com/symfony/security-core.git",
+                "reference": "efa0b10f82504d5710db3b53e234607a8ccbd2a1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/c0a284bab1ed8aa0417e3d69250ab437739563a0",
-                "reference": "c0a284bab1ed8aa0417e3d69250ab437739563a0",
+                "url": "https://api.github.com/repos/symfony/security-core/zipball/efa0b10f82504d5710db3b53e234607a8ccbd2a1",
+                "reference": "efa0b10f82504d5710db3b53e234607a8ccbd2a1",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.4.1",
+                "symfony/event-dispatcher-contracts": "^2.5|^3",
+                "symfony/password-hasher": "^7.4|^8.0",
+                "symfony/service-contracts": "^2.5|^3"
+            },
+            "require-dev": {
+                "psr/cache": "^1.0|^2.0|^3.0",
+                "psr/container": "^1.1|^2.0",
+                "psr/log": "^1|^2|^3",
+                "symfony/cache": "^7.4|^8.0",
+                "symfony/dependency-injection": "^7.4|^8.0",
+                "symfony/event-dispatcher": "^7.4|^8.0",
+                "symfony/expression-language": "^7.4|^8.0",
+                "symfony/http-foundation": "^7.4|^8.0",
+                "symfony/ldap": "^7.4|^8.0",
+                "symfony/property-access": "^7.4|^8.0",
+                "symfony/string": "^7.4|^8.0",
+                "symfony/translation": "^7.4|^8.0",
+                "symfony/validator": "^7.4|^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Security\\Core\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Security Component - Core Library",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/security-core/tree/v8.1.6"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-08-30T01:03:44+00:00"
+        },
+        {
+            "name": "symfony/service-contracts",
+            "version": "v3.7.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/service-contracts.git",
+                "reference": "15e6a07ec2a2c75ceb1b21dd98105ee8456d2257"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/15e6a07ec2a2c75ceb1b21dd98105ee8456d2257",
+                "reference": "15e6a07ec2a2c75ceb1b21dd98105ee8456d2257",
                 "shasum": ""
             },
             "require": {
@@ -7865,7 +8052,7 @@
                 "standards"
             ],
             "support": {
-                "source": "https://github.com/symfony/service-contracts/tree/v3.7.1"
+                "source": "https://github.com/symfony/service-contracts/tree/v3.7.3"
             },
             "funding": [
                 {
@@ -7885,7 +8072,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-16T09:55:08+00:00"
+            "time": "2026-07-27T15:39:01+00:00"
         },
         {
             "name": "symfony/stopwatch",
@@ -8596,6 +8783,7 @@
         "evolvephp/bridge-laravel": 20,
         "evolvephp/bridge-psr": 20,
         "evolvephp/bridge-remote": 20,
+        "evolvephp/bridge-symfony": 20,
         "evolvephp/contracts": 20,
         "evolvephp/core": 20,
         "evolvephp/dev-tools": 20,
