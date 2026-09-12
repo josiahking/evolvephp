@@ -1,0 +1,61 @@
+{
+    "scenario": "modernization-cutover",
+    "capability": "billing.invoice-summary",
+    "operation": "billing.invoice-summary",
+    "method": "POST",
+    "target": "/evolve/billing/invoice-summary",
+    "headers": {
+        "accept": [
+            "application/json"
+        ],
+        "content-type": [
+            "application/json"
+        ],
+        "traceparent": [
+            "00-11111111111111111111111111111111-2222222222222222-01"
+        ],
+        "x-host-only-state": [
+            "must-not-forward"
+        ]
+    },
+    "body": "{\"invoice_ids\":[\"INV-1001\",\"INV-1002\"],\"amounts\":[1250,3750],\"currency\":\"USD\"}",
+    "payload": {
+        "invoice_ids": [
+            "INV-1001",
+            "INV-1002"
+        ],
+        "amounts": [
+            1250,
+            3750
+        ],
+        "currency": "USD"
+    },
+    "request_id": "modernization-cutover-request-1",
+    "correlation_id": "modernization-cutover-correlation-1",
+    "caller_id": "legacy-billing-host",
+    "principal_id": "principal-123",
+    "tenant_id": "tenant-456",
+    "locale": "en_US",
+    "timezone": "UTC",
+    "deadline": "2999-01-01T00:00:00+00:00",
+    "idempotency_key": "billing.invoice-summary:modernization-cutover-request-1",
+    "trace": {
+        "traceparent": "00-11111111111111111111111111111111-2222222222222222-01"
+    },
+    "expected_result": {
+        "capability": "billing.invoice-summary",
+        "invoice_count": 2,
+        "total_amount": 5000,
+        "currency": "USD",
+        "principal_id": "principal-123",
+        "tenant_id": "tenant-456"
+    },
+    "expected_application": {
+        "status": 200,
+        "headers": {
+            "content-type": [
+                "application/json"
+            ]
+        }
+    }
+}
