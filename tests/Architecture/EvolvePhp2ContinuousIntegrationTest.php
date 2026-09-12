@@ -59,12 +59,12 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $checkoutSha = '3d3c42e5aac5ba805825da76410c181273ba90b1';
         $setupPhpSha = 'f3e473d116dcccaddc5834248c87452386958240';
 
-        $this->assertSame(3, preg_match_all('/uses:\s*actions\/checkout@' . $checkoutSha . '\s+# v7\.0\.1/', $this->workflow, $matches));
-        $this->assertSame(3, preg_match_all('/uses:\s*shivammathur\/setup-php@' . $setupPhpSha . '\s+# 2\.37\.2/', $this->workflow, $matches));
-        $this->assertSame(6, preg_match_all('/uses:\s*[^@\s]+@[0-9a-f]{40}\s+# (?:v7\.0\.1|2\.37\.2)/', $this->workflow, $matches));
+        $this->assertSame(4, preg_match_all('/uses:\s*actions\/checkout@' . $checkoutSha . '\s+# v7\.0\.1/', $this->workflow, $matches));
+        $this->assertSame(4, preg_match_all('/uses:\s*shivammathur\/setup-php@' . $setupPhpSha . '\s+# 2\.37\.2/', $this->workflow, $matches));
+        $this->assertSame(8, preg_match_all('/uses:\s*[^@\s]+@[0-9a-f]{40}\s+# (?:v7\.0\.1|2\.37\.2)/', $this->workflow, $matches));
         $this->assertMatchesPattern('/persist-credentials:\s*false/', $this->workflow);
-        $this->assertSame(3, preg_match_all('/tools:\s*composer:v2/', $this->workflow, $matches));
-        $this->assertSame(3, preg_match_all('/coverage:\s*none/', $this->workflow, $matches));
+        $this->assertSame(4, preg_match_all('/tools:\s*composer:v2/', $this->workflow, $matches));
+        $this->assertSame(4, preg_match_all('/coverage:\s*none/', $this->workflow, $matches));
         $this->assertDoesNotMatchPattern('/actions\/checkout@(?:v[0-9]+|main)|shivammathur\/setup-php@(?:v[0-9]+|main)/', $this->workflow);
         $this->assertDoesNotMatchPattern('/uses:\s*(?!actions\/checkout@|shivammathur\/setup-php@)[^@\s]+@/', $this->workflow);
         $this->assertDoesNotMatchPattern('/@[0-9a-f]{7,39}(?:\s|$)/', $this->workflow);
