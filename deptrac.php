@@ -15,6 +15,7 @@ return static function (DeptracConfig $config): void {
             'packages/bridge-contracts/src',
             'packages/bridge-psr/src',
             'packages/bridge-laravel/src',
+            'packages/bridge-symfony/src',
             'packages/bridge-remote/src',
             'packages/core/src',
             'packages/dev-tools/src',
@@ -37,11 +38,17 @@ return static function (DeptracConfig $config): void {
             $bridgeLaravel = Layer::withName('BridgeLaravel')->collectors(
                 DirectoryConfig::create('packages/bridge-laravel/src/.*'),
             ),
+            $bridgeSymfony = Layer::withName('BridgeSymfony')->collectors(
+                DirectoryConfig::create('packages/bridge-symfony/src/.*'),
+            ),
             $bridgeRemote = Layer::withName('BridgeRemote')->collectors(
                 DirectoryConfig::create('packages/bridge-remote/src/.*'),
             ),
             $laravelHost = Layer::withName('LaravelHost')->collectors(
                 ClassLikeConfig::create('^Illuminate\\(Contracts\\Auth|Http)\\.*'),
+            ),
+            $symfonyHost = Layer::withName('SymfonyHost')->collectors(
+                ClassLikeConfig::create('^Symfony\\Component\\(HttpFoundation|Security\\Core)\\.*'),
             ),
             $psrContainer = Layer::withName('PsrContainer')->collectors(
                 ClassLikeConfig::create('^Psr\\Container\\.*'),
@@ -79,8 +86,10 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($bridgeContracts)->accesses($contracts),
             Ruleset::forLayer($bridgePsr)->accesses($bridgeContracts, $core, $http, $psrHttpMessage),
             Ruleset::forLayer($bridgeLaravel)->accesses($bridgeContracts, $bridgePsr, $psrHttpMessage, $laravelHost),
+            Ruleset::forLayer($bridgeSymfony)->accesses($bridgeContracts, $bridgePsr, $psrHttpMessage, $symfonyHost),
             Ruleset::forLayer($bridgeRemote)->accesses($bridgeContracts, $bridgePsr, $psrHttpMessage, $psrHttpClient, $psrHttpServer),
             Ruleset::forLayer($laravelHost),
+            Ruleset::forLayer($symfonyHost),
             Ruleset::forLayer($psrContainer),
             Ruleset::forLayer($psrHttpMessage),
             Ruleset::forLayer($psrHttpClient),

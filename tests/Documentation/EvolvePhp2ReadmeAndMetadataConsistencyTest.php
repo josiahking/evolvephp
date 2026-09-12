@@ -25,6 +25,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'packages/bridge-laravel/README.md',
                 'packages/bridge-psr/README.md',
                 'packages/bridge-remote/README.md',
+                'packages/bridge-symfony/README.md',
                 'packages/contracts/README.md',
                 'packages/core/README.md',
                 'packages/dev-tools/README.md',
@@ -104,7 +105,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             $this->assertStringContainsString('composer ' . $script, $content);
         }
 
-        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertStringContainsString('composer ' . $script, $content);
         }
     }
@@ -271,6 +272,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'BridgeContracts -> Contracts',
             'BridgePsr -> BridgeContracts, Core, Http',
             'BridgeLaravel -> BridgeContracts, BridgePsr, PsrHttpMessage, LaravelHost',
+            'BridgeSymfony -> BridgeContracts, BridgePsr, PsrHttpMessage, SymfonyHost',
             'Core      -> Contracts',
             'DevTools  -> Contracts, Core, Module, Plugin',
             'Http      -> Contracts, Core',
@@ -291,6 +293,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'packages/bridge-laravel/README.md',
             'packages/bridge-psr/README.md',
             'packages/bridge-remote/README.md',
+            'packages/bridge-symfony/README.md',
             'packages/contracts/README.md',
             'packages/core/README.md',
             'packages/http/README.md',

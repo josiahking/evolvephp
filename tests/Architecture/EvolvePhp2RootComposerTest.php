@@ -70,6 +70,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/bridge-laravel' => '^2.0@dev',
             'evolvephp/bridge-psr' => '^2.0@dev',
             'evolvephp/bridge-remote' => '^2.0@dev',
+            'evolvephp/bridge-symfony' => '^2.0@dev',
             'evolvephp/dev-tools' => '^2.0@dev',
             'evolvephp/testing' => '^2.0@dev',
             'friendsofphp/php-cs-fixer' => '^3.95',
@@ -127,6 +128,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test:bridge-laravel' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-laravel',
             'test:bridge-psr' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-psr',
             'test:bridge-remote' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-remote',
+            'test:bridge-symfony' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-symfony',
             'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
             'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
@@ -192,7 +194,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         }
     }
 
-    public function testReleaseMapContainsOnlyTheElevenReleasePackages(): void
+    public function testReleaseMapContainsOnlyTheTwelveReleasePackages(): void
     {
         $map = $this->readJsonFile('release-packages.json');
 
@@ -207,6 +209,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
                 array('name' => 'evolvephp/bridge-psr', 'directory' => 'packages/bridge-psr'),
                 array('name' => 'evolvephp/bridge-laravel', 'directory' => 'packages/bridge-laravel'),
+                array('name' => 'evolvephp/bridge-symfony', 'directory' => 'packages/bridge-symfony'),
                 array('name' => 'evolvephp/bridge-remote', 'directory' => 'packages/bridge-remote'),
                 array('name' => 'evolvephp/testing', 'directory' => 'packages/testing'),
                 array('name' => 'evolvephp/dev-tools', 'directory' => 'packages/dev-tools'),
@@ -236,6 +239,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/bridge-laravel',
             'evolvephp/bridge-psr',
             'evolvephp/bridge-remote',
+            'evolvephp/bridge-symfony',
             'evolvephp/core',
             'evolvephp/dev-tools',
             'evolvephp/http',

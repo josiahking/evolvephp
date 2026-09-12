@@ -34,6 +34,10 @@
             "directory": "packages/bridge-laravel"
         },
         {
+            "name": "evolvephp/bridge-symfony",
+            "directory": "packages/bridge-symfony"
+        },
+        {
             "name": "evolvephp/bridge-remote",
             "directory": "packages/bridge-remote"
         },
