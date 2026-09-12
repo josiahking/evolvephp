@@ -1,0 +1,7 @@
+parameters:
+    level: 6
+    phpVersion: 70400
+    paths:
+        - src
+    tmpDir: ../../.phpstan-cache/legacy-http-client
+    treatPhpDocTypesAsCertain: false

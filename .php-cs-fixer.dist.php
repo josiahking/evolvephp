@@ -28,6 +28,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/plugin/tests',
         'packages/testing/src',
         'packages/testing/tests',
+        'compat/legacy-http-client/src',
+        'compat/legacy-http-client/tests',
         'skeleton/bootstrap',
         'skeleton/config',
     ]);
@@ -38,6 +40,9 @@ return (new PhpCsFixer\Config())
         'ordered_imports' => [
             'imports_order' => ['class', 'function', 'const'],
             'sort_algorithm' => 'alpha',
+        ],
+        'trailing_comma_in_multiline' => [
+            'elements' => ['arguments', 'arrays', 'match'],
         ],
         'no_unused_imports' => true,
     ])

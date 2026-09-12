@@ -6,6 +6,14 @@ The packages define Composer package identities, namespace ownership, dependency
 
 All package manifests require PHP `^8.4`.
 
+## Legacy Remote Compatibility Artifact
+
+EvolvePHP 2 packages continue to require PHP `^8.4`. `compat/legacy-http-client` is a separate isolated remote compatibility artifact for legacy applications whose initial official legacy runtime evidence is PHP 7.4.
+
+The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 12-package release map.
+
+The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge endpoint. It does not enable embedded or same-process EvolvePHP on PHP 7, lower Core or package requirements, share sessions or cookies, provide automatic retries or fallback routing, or perform modernization cutover or data migration.
+
 ## Package Map
 
 | Package | Namespace | Responsibility |

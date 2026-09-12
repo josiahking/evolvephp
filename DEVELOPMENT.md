@@ -96,6 +96,24 @@ composer test:plugin
 composer test:testing
 ```
 
+Run the isolated legacy Remote Bridge compatibility client tests:
+
+```bash
+php compat/legacy-http-client/tests/run.php
+```
+
+Validate the isolated legacy Remote Bridge compatibility client manifest:
+
+```bash
+composer validate --working-dir=compat/legacy-http-client --strict
+```
+
+Run static analysis for the PHP 7.4 compatibility source using the root-installed PHPStan binary:
+
+```bash
+php vendor/bin/phpstan analyse --configuration compat/legacy-http-client/phpstan.neon.dist --memory-limit=1G --no-progress
+```
+
 Run static analysis:
 
 ```bash
