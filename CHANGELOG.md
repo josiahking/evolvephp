@@ -30,6 +30,7 @@
 
 ### Adoption planning
 
+- Added cross-host modernization acceptance coverage demonstrating consistent `billing.invoice-summary` delegation through Laravel, Symfony and legacy remote Bridge paths, with explicit Audit evidence, parity checks, cutover ownership declarations, rollback evidence and legacy retirement state declarations.
 - Added development-time adoption planning models inside `evolvephp/dev-tools`, including public experimental declarations for one bounded capability, embedded or remote integration mode, route ownership transitions, data ownership transitions, migration/source-of-truth states, compatibility requirements, identity/security requirements, migration evidence, rollback evidence and measurable acceptance criteria. The model records maintainer decisions only: it does not generate plans from Audit, discover routes, infer ownership, score migrations, certify compatibility, certify migration readiness, implement Bridge, define protocols, provide adapters, synchronize databases, execute cutovers or execute rollbacks.
 
 ### Audit foundation

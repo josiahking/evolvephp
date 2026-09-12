@@ -80,6 +80,16 @@ function fixture(): array
     return $data;
 }
 
+function modernizationFixture(): array
+{
+    $json = file_get_contents(__DIR__ . '/fixtures/modernization-cutover.json');
+    ok(is_string($json), 'Modernization cutover fixture must be readable.');
+    $data = json_decode($json, true);
+    ok(is_array($data), 'Modernization cutover fixture must decode.');
+
+    return $data;
+}
+
 function fixtureInvocation(): LegacyRemoteInvocation
 {
     return new LegacyRemoteInvocation(
@@ -333,6 +343,50 @@ test('cURL transport exposes safe configuration policy', function (): void {
     same(7500, $options['request_timeout_ms']);
 });
 
+test('modernization cutover vector encodes and consumes canonical application result', function (): void {
+    $fixture = modernizationFixture();
+    $transport = new ModernizationCutoverTransport($fixture);
+    $client = new LegacyRemoteClient('https://bridge.example.test/evolve-remote', $transport, new NullAuthenticator());
+    $result = $client->invoke(new LegacyRemoteInvocation(
+        $fixture['operation'],
+        $fixture['method'],
+        $fixture['target'],
+        $fixture['headers'],
+        $fixture['body'],
+        $fixture['payload'],
+        $fixture['request_id'],
+        $fixture['correlation_id'],
+        $fixture['caller_id'],
+        $fixture['principal_id'],
+        $fixture['tenant_id'],
+        $fixture['locale'],
+        $fixture['timezone'],
+        $fixture['deadline'],
+        $fixture['idempotency_key'],
+        $fixture['trace'],
+    ));
+
+    ok($result->received());
+    same('application', $result->outcome());
+    same($fixture['request_id'], $result->requestIdentifier());
+    same($fixture['correlation_id'], $result->correlationIdentifier());
+    same($fixture['expected_application']['status'], $result->applicationStatus());
+    same($fixture['expected_application']['headers'], $result->applicationHeaders());
+    same($fixture['expected_result'], json_decode($result->applicationBody(), true));
+    same(1, $transport->calls);
+    same('POST', $transport->method);
+    same('https://bridge.example.test/evolve-remote', $transport->endpoint);
+    same(LegacyRemoteProtocol::MEDIA_TYPE, $transport->headers['content-type'][0]);
+    same($fixture['request_id'], $transport->headers['x-request-id'][0]);
+    same($fixture['correlation_id'], $transport->headers['x-correlation-id'][0]);
+    same($fixture['idempotency_key'], $transport->headers['x-idempotency-key'][0]);
+    same($fixture['operation'], $transport->encoded['operation']);
+    same($fixture['payload']['invoice_ids'], $transport->encoded['payload']['invoice_ids']);
+    same($fixture['payload']['amounts'], $transport->encoded['payload']['amounts']);
+    same($fixture['payload']['currency'], $transport->encoded['payload']['currency']);
+    same($fixture['headers'], $transport->encoded['headers']);
+});
+
 final class NullAuthenticator implements LegacyRemoteClientAuthenticator
 {
     public function authenticationHeaders(LegacyRemoteInvocation $invocation): array
@@ -418,6 +472,62 @@ final class ThrowingTransport implements LegacyRemoteTransport
         ++$this->calls;
 
         throw new RuntimeException('network state unknown');
+    }
+}
+
+final class ModernizationCutoverTransport implements LegacyRemoteTransport
+{
+    public $calls = 0;
+    public $method;
+    public $endpoint;
+    public $headers = [];
+    public $encoded = [];
+    private $fixture;
+
+    public function __construct(array $fixture)
+    {
+        $this->fixture = $fixture;
+    }
+
+    public function send(string $method, string $endpoint, array $headers, string $body, float $connectTimeoutSeconds, float $requestTimeoutSeconds): LegacyRemoteTransportResponse
+    {
+        ++$this->calls;
+        $this->method = $method;
+        $this->endpoint = $endpoint;
+        $this->headers = $headers;
+        $decoded = json_decode($body, true);
+        ok(is_array($decoded), 'Modernization cutover request must decode.');
+        $this->encoded = $decoded;
+
+        same($this->fixture['operation'], $decoded['operation']);
+        same($this->fixture['method'], $decoded['method']);
+        same($this->fixture['target'], $decoded['target']);
+        same($this->fixture['request_id'], $decoded['request_id']);
+        same($this->fixture['correlation_id'], $decoded['correlation_id']);
+        same($this->fixture['caller_id'], $decoded['caller_id']);
+        same($this->fixture['principal_id'], $decoded['principal_id']);
+        same($this->fixture['tenant_id'], $decoded['tenant_id']);
+
+        return new LegacyRemoteTransportResponse(
+            200,
+            ['content-type' => [LegacyRemoteProtocol::MEDIA_TYPE]],
+            json_encode([
+                'application' => [
+                    'body' => json_encode($this->fixture['expected_result']),
+                    'headers' => $this->fixture['expected_application']['headers'],
+                    'status' => $this->fixture['expected_application']['status'],
+                ],
+                'bridge_error' => null,
+                'correlation_id' => $this->fixture['correlation_id'],
+                'outcome' => 'application',
+                'outer_status' => 200,
+                'protocol' => LegacyRemoteProtocol::MEDIA_TYPE,
+                'requires_quarantine' => false,
+                'request_id' => $this->fixture['request_id'],
+                'reusable' => true,
+                'version' => LegacyRemoteProtocol::VERSION,
+            ]),
+        );
     }
 }
 
