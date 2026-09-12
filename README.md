@@ -10,7 +10,7 @@ EvolvePHP 2 is a separate redesign, not an in-place refactor, replacement or rew
 
 EvolvePHP is a modernization-first PHP framework project for building modular applications and evolving existing PHP systems without a full rewrite.
 
-The current EvolvePHP 2 repository contains package boundaries, root Composer setup and root quality-tooling foundations. EvolvePHP 2 is under development and not production-ready. Runtime framework implementation is not yet complete, framework development is pre-release, and the packages are not yet published.
+The current EvolvePHP 2 repository contains package boundaries, runtime-neutral foundations, HTTP foundations, Bridge foundations, developer tooling and root quality-tooling foundations. EvolvePHP 2 is under development and not production-ready. Runtime framework implementation is not yet complete, framework development is pre-release, and the packages are not yet published.
 
 EvolvePHP 2 requires PHP 8.4. The current root quality pipeline is verified by GitHub Actions on PHP 8.4 and PHP 8.5 for the current root, tooling and package foundation.
 
@@ -66,6 +66,8 @@ The EvolvePHP 1 runtime files are not present in the `2.x` working tree. They re
 
 ## Getting Started
 
+The repository-root clone setup below is for contributor and framework development. It is not the public application installation flow for new Evolve applications.
+
 ```bash
 git clone https://github.com/josiahking/evolvephp.git
 cd evolvephp
@@ -76,7 +78,17 @@ composer quality
 
 The normal clone path starts on `2.x` because it is the GitHub default branch. For an older local checkout, verify the branch with `git branch --show-current` and run `git switch 2.x` only when the checkout is not already on `2.x`.
 
-Use [DEVELOPMENT.md](DEVELOPMENT.md) for detailed Composer, PHPUnit, PHPStan, PHP-CS-Fixer, Deptrac, supply-chain, release-validation and developer-experience commands.
+Use [DEVELOPMENT.md](DEVELOPMENT.md) for detailed Composer, PHPUnit, PHPStan, PHP-CS-Fixer, Deptrac, supply-chain, release-validation and developer-experience commands. See [CONTRIBUTING.md](CONTRIBUTING.md) for newcomer-facing contribution guidance.
+
+## Alpha Documentation
+
+- [Alpha getting started](docs/alpha/getting-started.md)
+- [Application foundations](docs/alpha/application-foundations.md)
+- [Modernization and Bridge](docs/alpha/modernization-and-bridge.md)
+- [Status and limitations](docs/alpha/status-and-limitations.md)
+- [Draft 2.0.0-alpha.1 release notes](docs/releases/2.0.0-alpha.1.md)
+
+These guides describe the current source-preview state. Public application installation through published packages is not claimed yet.
 
 ## Package Architecture
 

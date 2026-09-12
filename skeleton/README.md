@@ -4,6 +4,8 @@
 
 The skeleton uses the application namespace `App\` with the PSR-4 mapping `App\ => src/`. The initial `src/` directory is intentionally empty so later generator work has an authoritative target layout.
 
+For current Alpha onboarding, see [Alpha getting started](../docs/alpha/getting-started.md) and [Application foundations](../docs/alpha/application-foundations.md). Those guides describe the skeleton as the accepted application template while package publication and public create-project installation remain unclaimed.
+
 ## CLI
 
 Application CLI composition is explicit and owned by the skeleton. The skeleton shell uses the public experimental Core runtime APIs `CliApplication` and `StreamCommandOutput`, then composes `CommandRegistry`, `CommandRunner`, `ServiceRegistry` and `ExecutionOrchestrator` directly. Core remains independent of HTTP.
