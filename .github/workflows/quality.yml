@@ -125,28 +125,25 @@ jobs:
 
     steps:
       - name: Checkout repository
-        run: |
-          git init .
-          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
-          git fetch --depth=1 origin "${GITHUB_SHA}"
-          git checkout --detach FETCH_HEAD
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - name: Build PHP 7.4 legacy client runtime
-        run: |
-          docker build --build-arg PHP_VERSION="${LEGACY_REMOTE_CLIENT_PHP}" -t evolvephp-legacy-client-php:${LEGACY_REMOTE_CLIENT_PHP} - <<'DOCKERFILE'
-          ARG PHP_VERSION
-          FROM php:${PHP_VERSION}-cli
-          RUN apt-get update \
-              && apt-get install -y --no-install-recommends libcurl4-openssl-dev pkg-config \
-              && docker-php-ext-install curl \
-              && rm -rf /var/lib/apt/lists/*
-          DOCKERFILE
+      - name: Set up PHP 7.4 legacy client runtime
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ env.LEGACY_REMOTE_CLIENT_PHP }}
+          extensions: curl
+          tools: composer:v2
+          coverage: none
+        env:
+          fail-fast: true
 
       - name: Validate legacy remote client Composer manifest
-        run: docker run --rm -v "${PWD}:/workspace" -w /workspace composer:2 validate --working-dir=compat/legacy-http-client --strict
+        run: composer validate --working-dir=compat/legacy-http-client --strict
 
       - name: Verify PHP 7.4 legacy client runtime
-        run: docker run --rm -v "${PWD}:/workspace" -w /workspace evolvephp-legacy-client-php:${LEGACY_REMOTE_CLIENT_PHP} php -r 'if (PHP_VERSION_ID < 70400 || PHP_VERSION_ID >= 80000 || !extension_loaded("json") || !extension_loaded("curl")) { fwrite(STDERR, "Legacy client runtime must be PHP 7.4 with json and curl enabled.\n"); exit(1); }'
+        run: php -r 'if (PHP_VERSION_ID < 70400 || PHP_VERSION_ID >= 80000 || !extension_loaded("json") || !extension_loaded("curl")) { fwrite(STDERR, "Legacy client runtime must be PHP 7.4 with json and curl enabled.\n"); exit(1); }'
 
       - name: Run legacy remote client tests
-        run: docker run --rm -v "${PWD}:/workspace" -w /workspace evolvephp-legacy-client-php:${LEGACY_REMOTE_CLIENT_PHP} php compat/legacy-http-client/tests/run.php
+        run: php compat/legacy-http-client/tests/run.php
