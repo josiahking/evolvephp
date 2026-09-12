@@ -19,6 +19,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'README.md',
                 'benchmarks/README.md',
                 'benchmarks/results/README.md',
+                'compat/legacy-http-client/README.md',
                 'docs/rfcs/README.md',
                 'packages/README.md',
                 'packages/bridge-contracts/README.md',

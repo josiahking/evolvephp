@@ -1,0 +1,16 @@
+{
+    "name": "evolvephp/legacy-http-client",
+    "description": "PHP 7.4-compatible Remote Bridge protocol v1 HTTP client for legacy applications.",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "ext-json": "*",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evolve\\Bridge\\LegacyHttp\\": "src/"
+        }
+    }
+}

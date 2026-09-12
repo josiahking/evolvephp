@@ -1,0 +1,78 @@
+{
+    "request": {
+        "body": "{\"name\":\"Ada\"}",
+        "caller_id": "legacy-app",
+        "correlation_id": "correlation-1",
+        "deadline": "2999-01-01T00:00:00+00:00",
+        "headers": {
+            "accept": [
+                "application/json"
+            ],
+            "traceparent": [
+                "00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01"
+            ]
+        },
+        "idempotency_key": "idem-1",
+        "locale": "en_GB",
+        "method": "POST",
+        "operation": "legacy.submit",
+        "payload": {
+            "active": true,
+            "items": [
+                {
+                    "id": 1
+                },
+                {
+                    "id": 2
+                }
+            ]
+        },
+        "principal_id": "user-1",
+        "protocol": "application/vnd.evolve.bridge.remote.v1+json",
+        "request_id": "request-1",
+        "target": "/delegated",
+        "tenant_id": "tenant-1",
+        "timezone": "UTC",
+        "trace": {
+            "span": "span-1"
+        },
+        "version": 1
+    },
+    "application_response": {
+        "application": {
+            "body": "{\"ok\":true}",
+            "headers": {
+                "content-type": [
+                    "application/json"
+                ]
+            },
+            "status": 202
+        },
+        "bridge_error": null,
+        "correlation_id": "correlation-1",
+        "outcome": "application",
+        "outer_status": 200,
+        "protocol": "application/vnd.evolve.bridge.remote.v1+json",
+        "requires_quarantine": false,
+        "request_id": "request-1",
+        "reusable": true,
+        "version": 1
+    },
+    "bridge_error_response": {
+        "application": null,
+        "bridge_error": {
+            "code": "remote_bridge_invalid_request",
+            "kind": "protocol",
+            "message": "Remote Bridge request is invalid.",
+            "retryable": false
+        },
+        "correlation_id": "correlation-1",
+        "outcome": "bridge_error",
+        "outer_status": 400,
+        "protocol": "application/vnd.evolve.bridge.remote.v1+json",
+        "requires_quarantine": false,
+        "request_id": "request-1",
+        "reusable": true,
+        "version": 1
+    }
+}
