@@ -29,6 +29,8 @@ final class EvolvePhp2AlphaDocumentationCheckpointTest extends TestCase
         }
 
         $this->assertStringContainsString('CONTRIBUTING.md', $content);
+        $this->assertStringContainsString('2.0.0-alpha.1 release notes', $content);
+        $this->assertDoesNotMatchPattern('/Draft\s+2\.0\.0-alpha\.1\s+release notes/i', $content);
     }
 
     public function testContributingGuideDocumentsPublicContributionBoundaries(): void
@@ -172,18 +174,28 @@ final class EvolvePhp2AlphaDocumentationCheckpointTest extends TestCase
         $this->assertMatchesPattern('/no production support SLA|production support SLA.*not/i', $content);
     }
 
-    public function testDraftReleaseNoteIsNotReleasedAndAvoidsFinalPublicationClaims(): void
+    public function testAlphaReleaseNoteIsReleasedAndAvoidsUnsupportedPublicationClaims(): void
     {
         $content = $this->readProjectFile('docs/releases/2.0.0-alpha.1.md');
 
-        $this->assertMatchesPattern('/DRAFT.*NOT RELEASED|NOT RELEASED.*DRAFT/is', substr($content, 0, 300));
+        $this->assertStringContainsString('Version: `2.0.0-alpha.1`', $content);
+        $this->assertStringContainsString('Stage: Alpha', $content);
+        $this->assertStringContainsString('Release date: `2026-09-13`', $content);
+        $this->assertStringContainsString('Tag: `2.0.0-alpha.1`', $content);
+        $this->assertDoesNotMatchPattern('/DRAFT.*NOT RELEASED|NOT RELEASED.*DRAFT/is', substr($content, 0, 300));
 
         foreach (array(
             '/PHP 8\.4/i',
             '/PHP 8\.4.*PHP 8\.5|PHP 8\.5.*PHP 8\.4/is',
+            '/PHP 7\.4.*legacy.*client|legacy.*client.*PHP 7\.4/is',
+            '/does not lower.*PHP 8\.4|PHP 8\.4.*does not lower/is',
             '/experimental|Alpha/i',
             '/not yet independently published|packages.*not.*published/is',
             '/not production-ready|no production-readiness claim/i',
+            '/concrete.*web.*runtime.*incomplete|SAPI.*not.*supplied|production web bootstrap.*not.*supplied/is',
+            '/Audit.*does not.*certify.*migration readiness|does not.*certify.*migration readiness.*Audit/is',
+            '/Adoption planning.*does not.*cutover|cutover.*rollback.*Adoption planning/is',
+            '/Remote Bridge.*does not.*shared sessions|Remote Bridge.*automatic retries|Remote Bridge.*distributed transactions/is',
         ) as $pattern) {
             $this->assertMatchesPattern($pattern, $content);
         }
@@ -191,7 +203,6 @@ final class EvolvePhp2AlphaDocumentationCheckpointTest extends TestCase
         $this->assertDoesNotMatchPattern('/GitHub release/i', $content);
         $this->assertDoesNotMatchPattern('/Packagist.*available|available.*Packagist/i', $content);
         $this->assertDoesNotMatchPattern('/final tagged commit|tagged commit.*[0-9a-f]{7,40}/i', $content);
-        $this->assertDoesNotMatchPattern('/Released on|Release date:/i', $content);
     }
 
     public function testSupportAndChangelogContainAlphaPublicBoundaries(): void
@@ -208,7 +219,9 @@ final class EvolvePhp2AlphaDocumentationCheckpointTest extends TestCase
         $this->assertMatchesPattern('/SECURITY\.md/i', $support);
 
         $this->assertMatchesPattern('/Alpha documentation/i', $changelog);
-        $this->assertDoesNotMatchPattern('/##\s+2\.0\.0-alpha\.1/i', $changelog);
+        $this->assertMatchesPattern('/##\s+Unreleased\s+##\s+2\.0\.0-alpha\.1\s+-\s+2026-09-13/is', $changelog);
+        $this->assertSame(1, preg_match_all('/^##\s+2\.0\.0-alpha\.1\s+-\s+2026-09-13\s*$/m', $changelog));
+        $this->assertMatchesPattern('/##\s+2\.0\.0-alpha\.1\s+-\s+2026-09-13.*Alpha documentation/is', $changelog);
     }
 
     public function testPublicAlphaDocumentationAvoidsInternalWorkflowTerms(): void

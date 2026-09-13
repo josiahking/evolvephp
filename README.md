@@ -86,7 +86,7 @@ Use [DEVELOPMENT.md](DEVELOPMENT.md) for detailed Composer, PHPUnit, PHPStan, PH
 - [Application foundations](docs/alpha/application-foundations.md)
 - [Modernization and Bridge](docs/alpha/modernization-and-bridge.md)
 - [Status and limitations](docs/alpha/status-and-limitations.md)
-- [Draft 2.0.0-alpha.1 release notes](docs/releases/2.0.0-alpha.1.md)
+- [2.0.0-alpha.1 release notes](docs/releases/2.0.0-alpha.1.md)
 
 These guides describe the current source-preview state. Public application installation through published packages is not claimed yet.
 
