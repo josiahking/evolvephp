@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.0.0-alpha.1 - 2026-09-13
+
 ### Documentation
 
 - Added the public Alpha documentation set for source-preview onboarding, application foundations, modernization and Bridge boundaries, current limitations and draft release-note preparation.
