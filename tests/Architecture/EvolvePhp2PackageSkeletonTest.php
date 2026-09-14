@@ -15,6 +15,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'bridge-laravel' => null,
             'bridge-symfony' => null,
             'bridge-remote' => null,
+            'insight' => null,
             'http' => null,
             'module' => null,
             'plugin' => null,
@@ -170,6 +171,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertFileDoesNotExist($this->projectPath('packages/bridge-symfony/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/bridge-remote/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/core/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/insight/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/dev-tools/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/http/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/module/src/.gitkeep'));
@@ -229,7 +231,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/complete production runtime.*deferred|production runtime.*still.*deferred/i', $content);
         $this->assertMatchesPattern('/OpenTelemetry propagation.*deferred|trace context.*OpenTelemetry.*deferred/is', $content);
         $this->assertMatchesPattern('/Runtime adapters.*deferred|Runtime.*adapters.*deferred/i', $content);
-        $this->assertMatchesPattern('/Insight.*Observe.*OpenTelemetry.*deferred/is', $content);
+        $this->assertMatchesPattern('/Insight.*diagnostic-batch foundation|diagnostic-batch foundation.*Insight/is', $content);
+        $this->assertMatchesPattern('/Observe.*OpenTelemetry.*deferred|OpenTelemetry.*Observe.*deferred/is', $content);
 
         foreach ($this->packages() as $package) {
             $this->assertStringContainsString($package['name'], $content);
@@ -796,6 +799,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0', 'psr/container' => '^1.1 || ^2.0'),
             ),
             array(
+                'manifest' => 'packages/insight/composer.json',
+                'src' => 'packages/insight/src',
+                'name' => 'evolvephp/insight',
+                'description' => 'Diagnostic batch collection foundation for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Insight\\',
+                'require' => array('php' => '^8.4', 'evolvephp/core' => '^2.0'),
+            ),
+            array(
                 'manifest' => 'packages/dev-tools/composer.json',
                 'src' => 'packages/dev-tools/src',
                 'name' => 'evolvephp/dev-tools',
@@ -1000,6 +1011,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Instrumentation/ObservationSink.php',
                 'Instrumentation/ObservationType.php',
                 'Lifecycle/ApplicationState.php',
+            ),
+            'packages/insight/src' => array(
+                'DiagnosticBatch.php',
+                'DiagnosticBatchCollector.php',
+                'DiagnosticBatchSink.php',
             ),
             'packages/dev-tools/src' => array(
                 'Adoption/AdoptionPlan.php',
