@@ -234,6 +234,22 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/\\b(?:curl|gh|git push|remote add|config --global)\\b/i', $content);
     }
 
+    public function testConsumerValidatorClonesDisposableTaggedRepositoriesWithoutInheritedTags(): void
+    {
+        $content = $this->readProjectFile('tools/validate-prerelease-consumers.php');
+
+        $this->assertSame(
+            1,
+            preg_match(
+                '/private function createTaggedRepositories.*?git\', \'clone\', \'--no-hardlinks\', \'--no-tags\', \$splitRoot, \$repository.*?git\', \'-C\', \$repository, \'tag\', \$tag/s',
+                $content
+            ),
+            'Disposable tagged repositories must clone split roots without source tags before creating synthetic fixture tags.'
+        );
+        $this->assertDoesNotMatchRegularExpression('/\\b(?:git push|remote add|config --global)\\b/i', $content);
+        $this->assertDoesNotMatchRegularExpression('/\\b(?:shell_exec|exec|passthru|system)\\s*\\(/', $content);
+    }
+
     public function testConsumerValidatorUsesLockedRuntimePackagesForOfflineThirdPartyResolution(): void
     {
         require_once $this->path('tools/release-validation-common.php');

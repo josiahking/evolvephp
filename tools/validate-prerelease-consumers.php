@@ -129,7 +129,7 @@ final class PrereleaseConsumerValidator
         foreach ($splitRoots as $packageName => $splitRoot) {
             $repository = joinPaths($repositoryRoot, packageSlug($packageName));
 
-            $this->runner->mustRun(array('git', 'clone', '--no-hardlinks', $splitRoot, $repository));
+            $this->runner->mustRun(array('git', 'clone', '--no-hardlinks', '--no-tags', $splitRoot, $repository));
             $this->runner->mustRun(array('git', '-C', $repository, 'tag', $tag));
             $this->runner->mustRun(array('git', '-C', $repository, 'tag', '--list', $tag));
 
