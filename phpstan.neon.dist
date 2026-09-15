@@ -18,6 +18,8 @@ parameters:
         - packages/bridge-remote/tests
         - packages/core/src
         - packages/core/tests
+        - packages/insight/src
+        - packages/insight/tests
         - packages/dev-tools/src
         - packages/dev-tools/tests
         - packages/http/src

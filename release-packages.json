@@ -14,6 +14,10 @@
             "directory": "packages/core"
         },
         {
+            "name": "evolvephp/insight",
+            "directory": "packages/insight"
+        },
+        {
             "name": "evolvephp/module",
             "directory": "packages/module"
         },

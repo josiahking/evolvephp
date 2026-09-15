@@ -33,6 +33,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/bridge-symfony`
 - `evolvephp/bridge-remote`
 - `evolvephp/core`
+- `evolvephp/insight`
 - `evolvephp/dev-tools`
 - `evolvephp/http`
 - `evolvephp/module`
@@ -89,6 +90,7 @@ composer test:bridge-laravel
 composer test:bridge-symfony
 composer test:bridge-remote
 composer test:core
+composer test:insight
 composer test:dev-tools
 composer test:http
 composer test:module
@@ -164,7 +166,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twelve packages in this order: contracts, bridge-contracts, core, module, plugin, http, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains thirteen packages in this order: contracts, bridge-contracts, core, insight, module, plugin, http, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -308,6 +310,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `bridge-symfony` | `packages/bridge-symfony/tests` |
 | `bridge-remote` | `packages/bridge-remote/tests` |
 | `core` | `packages/core/tests` |
+| `insight` | `packages/insight/tests` |
 | `dev-tools` | `packages/dev-tools/tests` |
 | `http` | `packages/http/tests` |
 | `module` | `packages/module/tests` |
@@ -326,7 +329,7 @@ The distributable PHPStan configuration lives at:
 phpstan.neon.dist
 ```
 
-The initial PHPStan level is `6`. PHPStan analyzes all twelve package `src` and `tests` directories:
+The initial PHPStan level is `6`. PHPStan analyzes all thirteen package `src` and `tests` directories:
 
 ```text
 packages/contracts/src
@@ -343,6 +346,8 @@ packages/bridge-remote/src
 packages/bridge-remote/tests
 packages/core/src
 packages/core/tests
+packages/insight/src
+packages/insight/tests
 packages/dev-tools/src
 packages/dev-tools/tests
 packages/http/src
@@ -379,6 +384,7 @@ packages/bridge-laravel/src
 packages/bridge-symfony/src
 packages/bridge-remote/src
 packages/core/src
+packages/insight/src
 packages/dev-tools/src
 packages/http/src
 packages/module/src
@@ -396,6 +402,7 @@ BridgeLaravel -> packages/bridge-laravel/src/.* -> Evolve\Bridge\Laravel\
 BridgeSymfony -> packages/bridge-symfony/src/.* -> Evolve\Bridge\Symfony\
 BridgeRemote -> packages/bridge-remote/src/.* -> Evolve\Bridge\Remote\
 Core      -> packages/core/src/.*      -> Evolve\Core\
+Insight   -> packages/insight/src/.*   -> Evolve\Insight\
 DevTools  -> packages/dev-tools/src/.* -> Evolve\DevTools\
 Http      -> packages/http/src/.*      -> Evolve\Http\
 Module    -> packages/module/src/.*    -> Evolve\Module\
@@ -413,6 +420,7 @@ BridgeLaravel -> BridgeContracts, BridgePsr, PsrHttpMessage, LaravelHost
 BridgeSymfony -> BridgeContracts, BridgePsr, PsrHttpMessage, SymfonyHost
 BridgeRemote -> BridgeContracts, BridgePsr, PsrHttpMessage, PsrHttpClient, PsrHttpServer
 Core      -> Contracts
+Insight   -> Core
 DevTools  -> Contracts, Core, Module, Plugin
 Http      -> Contracts, Core
 Module    -> Contracts
@@ -420,7 +428,7 @@ Plugin    -> Contracts
 Testing   -> Contracts, Core, Http, Module, Plugin
 ```
 
-There is no production dependency on Testing. BridgeContracts is an optional outward package and may depend only on Contracts. BridgePsr is an optional outward package and may depend on BridgeContracts, Core, Http and PSR HTTP message interfaces. BridgeLaravel is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow LaravelHost layer. BridgeSymfony is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow SymfonyHost layer. BridgeRemote is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message and factory interfaces, PSR-18 HTTP client interfaces and PSR HTTP server-handler interfaces. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on BridgeContracts, BridgePsr, BridgeLaravel, BridgeSymfony or BridgeRemote.
+There is no production dependency on Testing. BridgeContracts is an optional outward package and may depend only on Contracts. BridgePsr is an optional outward package and may depend on BridgeContracts, Core, Http and PSR HTTP message interfaces. BridgeLaravel is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow LaravelHost layer. BridgeSymfony is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow SymfonyHost layer. BridgeRemote is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message and factory interfaces, PSR-18 HTTP client interfaces and PSR HTTP server-handler interfaces. Insight is an optional outward package and may depend on Core. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on BridgeContracts, BridgePsr, BridgeLaravel, BridgeSymfony or BridgeRemote.
 
 The root also models deliberate external standard layers:
 
@@ -430,6 +438,9 @@ PsrContainer
 
 Core external standards
 PsrContainer
+
+Insight external standards
+none
 
 Http external standards
 PsrHttpMessage
@@ -468,7 +479,7 @@ PHP-CS-Fixer is the root coding-standard engine. The distributable configuration
 
 The project style is based on PHP-FIG PER Coding Style 3.0 through PHP-CS-Fixer's `@PER-CS3x0` rule set. The floating `@PER-CS` alias is not used. The project explicitly enables alphabetical `ordered_imports` and `no_unused_imports`.
 
-PHP-CS-Fixer checks the twelve package `src` and `tests` directories plus the committed skeleton PHP config/bootstrap files. The extensionless skeleton executable is protected by syntax and create-project validation rather than distorting the Finder. The root architecture tests, root documentation tests, RFCs, `vendor/` and generated caches are excluded.
+PHP-CS-Fixer checks the thirteen package `src` and `tests` directories plus the committed skeleton PHP config/bootstrap files. The extensionless skeleton executable is protected by syntax and create-project validation rather than distorting the Finder. The root architecture tests, root documentation tests, RFCs, `vendor/` and generated caches are excluded.
 
 Risky rules are disabled. The `declare_strict_types` fixer is not enabled; strict-types policy for EvolvePHP 2 package PHP files is enforced by architecture tests.
 

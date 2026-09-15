@@ -28,6 +28,8 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/bridge-symfony']);
         $this->assertArrayHasKey('evolvephp/dev-tools', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/dev-tools']);
+        $this->assertArrayHasKey('evolvephp/insight', $manifest['require-dev']);
+        $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/insight']);
         $this->assertArrayHasKey('evolvephp/testing', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/testing']);
         $this->assertArrayHasKey('phpunit/phpunit', $manifest['require-dev']);
@@ -51,7 +53,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         }
     }
 
-    public function testRootPhpUnitConfigurationDefinesTwelvePackageSuites(): void
+    public function testRootPhpUnitConfigurationDefinesThirteenPackageSuites(): void
     {
         $path = $this->projectPath('phpunit.xml.dist');
 
@@ -129,6 +131,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/test:core/i', $content);
         $this->assertMatchesPattern('/test:dev-tools/i', $content);
         $this->assertMatchesPattern('/test:http/i', $content);
+        $this->assertMatchesPattern('/test:insight/i', $content);
         $this->assertMatchesPattern('/test:module/i', $content);
         $this->assertMatchesPattern('/test:plugin/i', $content);
         $this->assertMatchesPattern('/test:testing/i', $content);
@@ -150,7 +153,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $developmentGuide);
         $this->assertMatchesPattern('/PHPUnit 13.*root|root.*PHPUnit 13/i', $developmentGuide);
 
-        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:insight', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $developmentGuide);
         }
 
@@ -207,6 +210,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
                 'tests' => 'packages/core/tests',
                 'smokeTest' => 'packages/core/tests/Unit/PackageManifestTest.php',
             ),
+            'insight' => array(
+                'tests' => 'packages/insight/tests',
+                'smokeTest' => 'packages/insight/tests/Unit/PackageManifestTest.php',
+            ),
             'dev-tools' => array(
                 'tests' => 'packages/dev-tools/tests',
                 'smokeTest' => 'packages/dev-tools/tests/Unit/PackageManifestTest.php',
@@ -243,6 +250,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
             'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
             'test:http' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http',
+            'test:insight' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite insight',
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
             'test:plugin' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin',
             'test:testing' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing',
@@ -261,6 +269,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'evolvephp/core',
             'evolvephp/dev-tools',
             'evolvephp/http',
+            'evolvephp/insight',
             'evolvephp/module',
             'evolvephp/plugin',
             'evolvephp/testing',

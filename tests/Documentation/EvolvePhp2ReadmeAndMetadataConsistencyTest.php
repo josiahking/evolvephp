@@ -31,6 +31,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'packages/core/README.md',
                 'packages/dev-tools/README.md',
                 'packages/http/README.md',
+                'packages/insight/README.md',
                 'packages/module/README.md',
                 'packages/plugin/README.md',
                 'packages/testing/README.md',
@@ -106,7 +107,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             $this->assertStringContainsString('composer ' . $script, $content);
         }
 
-        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:insight', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertStringContainsString('composer ' . $script, $content);
         }
     }
@@ -275,6 +276,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'BridgeLaravel -> BridgeContracts, BridgePsr, PsrHttpMessage, LaravelHost',
             'BridgeSymfony -> BridgeContracts, BridgePsr, PsrHttpMessage, SymfonyHost',
             'Core      -> Contracts',
+            'Insight   -> Core',
             'DevTools  -> Contracts, Core, Module, Plugin',
             'Http      -> Contracts, Core',
             'Module    -> Contracts',
@@ -297,6 +299,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'packages/bridge-symfony/README.md',
             'packages/contracts/README.md',
             'packages/core/README.md',
+            'packages/insight/README.md',
             'packages/http/README.md',
             'packages/module/README.md',
             'packages/plugin/README.md',
