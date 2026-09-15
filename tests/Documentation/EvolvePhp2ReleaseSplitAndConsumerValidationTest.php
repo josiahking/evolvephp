@@ -288,6 +288,25 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertStringContainsString("'COMPOSER_DISABLE_NETWORK' => '1'", $content);
     }
 
+    public function testSharedReleasePackageLoaderAcceptsCanonicalThirteenPackageMap(): void
+    {
+        require_once $this->path('tools/release-validation-common.php');
+
+        $packages = loadReleasePackages($this->root);
+        $map = $this->readJsonFile('release-packages.json');
+        $packageNames = array_column($packages, 'name');
+        $coreIndex = array_search('evolvephp/core', $packageNames, true);
+
+        $this->assertIsInt($coreIndex);
+        $this->assertCount(13, $packages);
+        $this->assertContains('evolvephp/insight', $packageNames);
+        $this->assertSame(
+            array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
+            $packages[$coreIndex + 1]
+        );
+        $this->assertSame($map['packages'], $packages);
+    }
+
     public function testSkeletonValidatorUsesMinimalLockedOfflineVendorClosure(): void
     {
         require_once $this->path('tools/release-validation-common.php');
@@ -486,7 +505,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $map = $this->readJsonFile('release-packages.json');
 
         $this->assertSame(1, $map['version']);
-        $this->assertCount(12, $map['packages']);
+        $this->assertCount(13, $map['packages']);
 
         return $map['packages'];
     }

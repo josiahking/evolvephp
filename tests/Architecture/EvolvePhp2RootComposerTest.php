@@ -72,6 +72,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/bridge-remote' => '^2.0@dev',
             'evolvephp/bridge-symfony' => '^2.0@dev',
             'evolvephp/dev-tools' => '^2.0@dev',
+            'evolvephp/insight' => '^2.0@dev',
             'evolvephp/testing' => '^2.0@dev',
             'friendsofphp/php-cs-fixer' => '^3.95',
             'phpstan/phpstan' => '^2.2',
@@ -133,6 +134,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
             'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
             'test:http' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http',
+            'test:insight' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite insight',
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
             'test:plugin' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin',
             'test:testing' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing',
@@ -194,7 +196,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         }
     }
 
-    public function testReleaseMapContainsOnlyTheTwelveReleasePackages(): void
+    public function testReleaseMapContainsOnlyTheThirteenReleasePackages(): void
     {
         $map = $this->readJsonFile('release-packages.json');
 
@@ -204,6 +206,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/contracts', 'directory' => 'packages/contracts'),
                 array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
+                array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
                 array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
                 array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
@@ -243,6 +246,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/core',
             'evolvephp/dev-tools',
             'evolvephp/http',
+            'evolvephp/insight',
             'evolvephp/module',
             'evolvephp/plugin',
             'evolvephp/testing',
