@@ -219,7 +219,7 @@ final class EvolvePhp2AlphaDocumentationCheckpointTest extends TestCase
         $this->assertMatchesPattern('/SECURITY\.md/i', $support);
 
         $this->assertMatchesPattern('/Alpha documentation/i', $changelog);
-        $this->assertMatchesPattern('/##\s+Unreleased\s+##\s+2\.0\.0-alpha\.1\s+-\s+2026-09-13/is', $changelog);
+        $this->assertMatchesPattern('/##\s+Unreleased\b.*?##\s+2\.0\.0-alpha\.1\s+-\s+2026-09-13/is', $changelog);
         $this->assertSame(1, preg_match_all('/^##\s+2\.0\.0-alpha\.1\s+-\s+2026-09-13\s*$/m', $changelog));
         $this->assertMatchesPattern('/##\s+2\.0\.0-alpha\.1\s+-\s+2026-09-13.*Alpha documentation/is', $changelog);
     }

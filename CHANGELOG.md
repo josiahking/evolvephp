@@ -4,7 +4,7 @@
 
 ### Insight
 
-- Added `evolvephp/insight` as a public experimental diagnostic-batch collection foundation. The package consumes Core execution observations through the existing observation sink boundary, collects immutable bounded per-execution batches and keeps persistence, retention, redaction, dashboards, watchers, OpenTelemetry, Evolve Observe, runtime wiring and independent publishing deferred.
+- Added `evolvephp/insight` as a public experimental diagnostic-batch collection foundation. The package consumes Core execution observations through the existing observation sink boundary, collects immutable bounded per-execution batches and keeps persistence, retention, redaction, dashboards, watchers, OpenTelemetry, Evolve Observe, runtime wiring and independent package release deferred.
 
 ### Repository
 
