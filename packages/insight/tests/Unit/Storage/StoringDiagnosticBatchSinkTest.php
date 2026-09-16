@@ -26,7 +26,7 @@ final class StoringDiagnosticBatchSinkTest extends TestCase
 
     public function testItProjectsThenStoresOneFinalizedBatch(): void
     {
-        $store = new InMemoryDiagnosticBatchStore();
+        $store = new InMemoryDiagnosticBatchStore(10);
         $sink = new StoringDiagnosticBatchSink(new DiagnosticBatchProjector(), $store);
         $identifier = ExecutionIdentifier::generate();
         $batch = new DiagnosticBatch(
@@ -56,7 +56,7 @@ final class StoringDiagnosticBatchSinkTest extends TestCase
 
     public function testProjectorStoreCollaborationDoesNotMutateOriginalBatch(): void
     {
-        $store = new InMemoryDiagnosticBatchStore();
+        $store = new InMemoryDiagnosticBatchStore(10);
         $sink = new StoringDiagnosticBatchSink(new DiagnosticBatchProjector(), $store);
         $identifier = ExecutionIdentifier::generate();
         $observation = new Observation(ObservationType::ExecutionCompleted, $identifier, ExecutionKind::QueueMessage);
