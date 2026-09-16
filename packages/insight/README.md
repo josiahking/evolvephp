@@ -23,14 +23,16 @@ Current bounded behavior:
 Current storage behavior:
 
 - `DiagnosticBatchStore` defines minimal save, exact execution-identifier lookup and newest-first bounded reads
-- `InMemoryDiagnosticBatchStore` keeps snapshots in insertion order and returns newest batches first
-- `SqliteDiagnosticBatchStore` provides an optional persistent local-development adapter for caller-supplied SQLite `PDO` connections
+- `InMemoryDiagnosticBatchStore` keeps snapshots in insertion order, requires an explicit positive stored-batch count and prunes oldest retained snapshots first
+- `SqliteDiagnosticBatchStore` provides an optional persistent local-development adapter for caller-supplied SQLite `PDO` connections, requires an explicit positive stored-batch count and prunes by SQLite sequence order
 - `DiagnosticBatchSnapshotCodec` stores snapshots as a versioned primitive JSON payload and rejects malformed, unsupported or unexpected persisted data during reads
 - duplicate execution identifiers are rejected and never replace the original snapshot
 - `StoringDiagnosticBatchSink` projects accepted batches and saves the detached snapshot through a configured store
 - storage remains optional and unwired; installing Insight does not create storage automatically
 
-The in-memory store is unbounded and suitable only for tests or short-lived local development. The SQLite store creates its diagnostic table only when explicitly constructed with a SQLite `PDO`; it does not discover a default path, read application database configuration or automatically use application storage. SQLite reads use deterministic insertion-order sequence values for newest-first results, not diagnostic timestamps. Corrupt stored payloads are not decoded during construction, but the affected `find()` or `latest()` read fails explicitly. Neither store provides retention, pruning or eviction.
+Both first-party stores use explicit count-bounded retention. Callers configure a positive maximum stored-batch count, and successful unique saves leave no more than that many retained diagnostic batch snapshots. Pruning is deterministic oldest-first insertion order; SQLite uses its monotonic sequence column as the insertion-order authority. Duplicate execution identifiers are rejected before pruning, so a duplicate save at capacity does not evict or mutate retained snapshots. Time-based retention is not provided.
+
+The SQLite store creates its diagnostic table only when explicitly constructed with a SQLite `PDO`; it does not discover a default path, read application database configuration or automatically use application storage. SQLite reads use deterministic insertion-order sequence values for newest-first results, not diagnostic timestamps. Corrupt stored payloads are not decoded during construction, but the affected `find()` or `latest()` read fails explicitly.
 
 `pdo_sqlite` is a runtime requirement only for applications that explicitly use `SqliteDiagnosticBatchStore`; it is not required for installing or using the non-SQLite Insight functionality.
 
@@ -50,7 +52,7 @@ https://github.com/josiahking/evolvephp
 
 ## Current Limitations
 
-This package does not provide retention, pruning, redaction, rich diagnostic capture, filtering, sampling, dashboards, watchers, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, application database integration or production-ready diagnostics.
+This package does not provide time-based retention, redaction, rich diagnostic capture, filtering, sampling, dashboards, watchers, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, application database integration or production-ready diagnostics.
 
 ## Licence
 

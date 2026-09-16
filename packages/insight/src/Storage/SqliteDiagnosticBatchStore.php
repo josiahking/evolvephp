@@ -10,10 +10,17 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore
 
     private DiagnosticBatchSnapshotCodec $codec;
 
-    public function __construct(private \PDO $pdo, ?DiagnosticBatchSnapshotCodec $codec = null)
-    {
+    public function __construct(
+        private \PDO $pdo,
+        private int $maximumStoredBatchCount,
+        ?DiagnosticBatchSnapshotCodec $codec = null,
+    ) {
         if ($this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME) !== 'sqlite') {
             throw new \InvalidArgumentException('Sqlite diagnostic batch store requires a SQLite PDO connection.');
+        }
+
+        if ($this->maximumStoredBatchCount <= 0) {
+            throw new \InvalidArgumentException('Maximum stored diagnostic batch count must be positive.');
         }
 
         $this->codec = $codec ?? new DiagnosticBatchSnapshotCodec();
@@ -28,12 +35,16 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore
             throw new \LogicException('Diagnostic batch snapshot already exists for execution identifier.');
         }
 
+        $payload = $this->codec->encode($snapshot);
+
+        $this->pruneOldestSnapshotsForIncomingSave();
+
         $statement = $this->prepare(
             'INSERT INTO ' . self::TABLE . ' (execution_identifier, snapshot_payload) VALUES (:execution_identifier, :snapshot_payload)'
         );
         $this->execute($statement, array(
             'execution_identifier' => $identifier,
-            'snapshot_payload' => $this->codec->encode($snapshot),
+            'snapshot_payload' => $payload,
         ));
     }
 
@@ -99,6 +110,38 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore
         $this->execute($statement, array('execution_identifier' => $identifier));
 
         return $statement->fetchColumn() !== false;
+    }
+
+    private function pruneOldestSnapshotsForIncomingSave(): void
+    {
+        $storedBatchCount = $this->storedBatchCount();
+
+        if ($storedBatchCount < $this->maximumStoredBatchCount) {
+            return;
+        }
+
+        $deleteCount = $storedBatchCount - $this->maximumStoredBatchCount + 1;
+        $statement = $this->prepare(
+            'DELETE FROM ' . self::TABLE . '
+                WHERE sequence IN (
+                    SELECT sequence FROM ' . self::TABLE . '
+                    ORDER BY sequence ASC
+                    LIMIT :delete_count
+                )'
+        );
+        $statement->bindValue('delete_count', $deleteCount, \PDO::PARAM_INT);
+
+        if (!$statement->execute()) {
+            throw new \RuntimeException('Failed to execute SQLite diagnostic batch store statement.');
+        }
+    }
+
+    private function storedBatchCount(): int
+    {
+        $statement = $this->prepare('SELECT COUNT(*) FROM ' . self::TABLE);
+        $this->execute($statement, array());
+
+        return (int) $statement->fetchColumn();
     }
 
     /**

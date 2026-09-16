@@ -16,6 +16,13 @@ final class InMemoryDiagnosticBatchStore implements DiagnosticBatchStore
      */
     private array $insertionOrder = array();
 
+    public function __construct(private int $maximumStoredBatchCount)
+    {
+        if ($this->maximumStoredBatchCount <= 0) {
+            throw new \InvalidArgumentException('Maximum stored diagnostic batch count must be positive.');
+        }
+    }
+
     public function save(DiagnosticBatchSnapshot $snapshot): void
     {
         $identifier = $snapshot->executionIdentifier();
@@ -23,6 +30,8 @@ final class InMemoryDiagnosticBatchStore implements DiagnosticBatchStore
         if (isset($this->snapshotsByIdentifier[$identifier])) {
             throw new \LogicException('Diagnostic batch snapshot already exists for execution identifier.');
         }
+
+        $this->pruneOldestSnapshotsForIncomingSave();
 
         $this->snapshotsByIdentifier[$identifier] = $snapshot;
         $this->insertionOrder[] = $identifier;
@@ -45,5 +54,18 @@ final class InMemoryDiagnosticBatchStore implements DiagnosticBatchStore
             fn (string $identifier): DiagnosticBatchSnapshot => $this->snapshotsByIdentifier[$identifier],
             $identifiers,
         );
+    }
+
+    private function pruneOldestSnapshotsForIncomingSave(): void
+    {
+        while (count($this->insertionOrder) >= $this->maximumStoredBatchCount) {
+            $oldestIdentifier = array_shift($this->insertionOrder);
+
+            if ($oldestIdentifier === null) {
+                return;
+            }
+
+            unset($this->snapshotsByIdentifier[$oldestIdentifier]);
+        }
     }
 }
