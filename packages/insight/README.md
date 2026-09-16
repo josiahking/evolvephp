@@ -10,6 +10,8 @@ Evolve Insight consumes safe Core execution observations and collects them into 
 
 Insight also provides a storage-neutral projection boundary for finalized diagnostic batches. `DiagnosticBatchProjector` detaches a `DiagnosticBatch` into a primitive-only `DiagnosticBatchSnapshot` made of string-backed execution identity, execution kind, ordered `DiagnosticObservationSnapshot` values and the dropped observation count. Snapshots do not retain Core `Observation`, execution identifier, request, response, container, throwable or execution-scope objects.
 
+Insight includes a detached diagnostic capture-policy foundation for future rich diagnostic sources. `DiagnosticEntry` and `DiagnosticAttribute` represent bounded primitive-only diagnostic data: execution identifier value, diagnostic category, diagnostic name and ordered attributes whose values are limited to `string`, `int`, `float`, `bool` or `null`. Attribute names, entry identifiers, categories, names and string values are bounded, and non-finite floats, arrays, objects, resources and callables are not accepted.
+
 Current bounded behavior:
 
 - collection starts only after Core reports an execution start
@@ -36,6 +38,19 @@ The SQLite store creates its diagnostic table only when explicitly constructed w
 
 `pdo_sqlite` is a runtime requirement only for applications that explicitly use `SqliteDiagnosticBatchStore`; it is not required for installing or using the non-SQLite Insight functionality.
 
+Current capture-policy behavior:
+
+- `DiagnosticDataClassification` provides explicit machine-readable classifications for public operational metadata, internal operational metadata, personal data, authentication data, secret data, business-sensitive payloads and regulated data
+- `DiagnosticCapturePolicy` accepts public and internal operational metadata by default; personal, business-sensitive and regulated data are excluded unless explicitly enabled by application code
+- secret and authentication data are never deliberately accepted raw
+- `DefaultDiagnosticRedactor` deterministically suppresses secret and authentication attributes, and replaces common sensitive operational machine names such as authorization, password, cookies, tokens, API keys, secrets and session identifiers with `[REDACTED]`
+- `DiagnosticCaptureFilter` supports exact category and diagnostic-name disabling for volume control only
+- `DeterministicDiagnosticSampler` supports integer percentage sampling from 0 to 100 using a stable hash of the execution identifier
+- sampling controls diagnostic volume only; it is not authorization, authentication, security enforcement, redaction, legal retention or an error-retention guarantee
+- accepted attributes keep their original order, use first-accepted-wins duplicate-name handling and are capped by a deterministic retained-attribute limit
+
+The capture-policy foundation does not add rich HTTP, database, cache, log, event, queue or other watchers. Capture entries are not integrated into diagnostic batches, storage snapshots, SQLite payloads or automatic runtime wiring.
+
 ## Requirements
 
 PHP `^8.4`
@@ -52,7 +67,7 @@ https://github.com/josiahking/evolvephp
 
 ## Current Limitations
 
-This package does not provide time-based retention, redaction, rich diagnostic capture, filtering, sampling, dashboards, watchers, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, application database integration or production-ready diagnostics.
+This package does not provide time-based retention, rich HTTP/database/cache/log/event/queue diagnostic watchers, dashboards, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, application database integration, production telemetry export or production-ready diagnostics.
 
 ## Licence
 

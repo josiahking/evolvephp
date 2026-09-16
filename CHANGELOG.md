@@ -4,10 +4,11 @@
 
 ### Insight
 
-- Added `evolvephp/insight` as a public experimental diagnostic-batch collection foundation. The package consumes Core execution observations through the existing observation sink boundary, collects immutable bounded per-execution batches and keeps redaction, dashboards, watchers, OpenTelemetry, Evolve Observe, runtime wiring and independent package release deferred.
+- Added `evolvephp/insight` as a public experimental diagnostic-batch collection foundation. The package consumes Core execution observations through the existing observation sink boundary, collects immutable bounded per-execution batches and keeps dashboards, watchers, OpenTelemetry, Evolve Observe, runtime wiring and independent package release deferred.
 - Added storage-neutral Insight batch snapshots, projection from finalized diagnostic batches, a minimal diagnostic batch store contract, an in-memory store for tests and short-lived local development, and a sink adapter that projects and stores accepted batches while keeping runtime wiring deferred.
 - Added a versioned primitive diagnostic batch snapshot codec and an optional SQLite diagnostic batch store for explicit local-development persistence through caller-supplied SQLite `PDO` connections, while keeping application database integration deferred.
 - Added explicit count-bounded retention to the first-party Insight diagnostic batch stores, with deterministic oldest-first pruning for in-memory and SQLite storage.
+- Added a diagnostic capture-policy foundation with primitive-only entries, explicit data classifications, deterministic redaction, exact category/name filtering and deterministic execution-level sampling, while keeping rich watchers, runtime wiring and storage integration deferred.
 
 ### Repository
 
