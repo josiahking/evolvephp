@@ -24,11 +24,15 @@ Current storage behavior:
 
 - `DiagnosticBatchStore` defines minimal save, exact execution-identifier lookup and newest-first bounded reads
 - `InMemoryDiagnosticBatchStore` keeps snapshots in insertion order and returns newest batches first
+- `SqliteDiagnosticBatchStore` provides an optional persistent local-development adapter for caller-supplied SQLite `PDO` connections
+- `DiagnosticBatchSnapshotCodec` stores snapshots as a versioned primitive JSON payload and rejects malformed, unsupported or unexpected persisted data during reads
 - duplicate execution identifiers are rejected and never replace the original snapshot
 - `StoringDiagnosticBatchSink` projects accepted batches and saves the detached snapshot through a configured store
 - storage remains optional and unwired; installing Insight does not create storage automatically
 
-The in-memory store is unbounded and suitable only for tests or short-lived local development. It is not a persistent runtime store.
+The in-memory store is unbounded and suitable only for tests or short-lived local development. The SQLite store creates its diagnostic table only when explicitly constructed with a SQLite `PDO`; it does not discover a default path, read application database configuration or automatically use application storage. SQLite reads use deterministic insertion-order sequence values for newest-first results, not diagnostic timestamps. Corrupt stored payloads are not decoded during construction, but the affected `find()` or `latest()` read fails explicitly. Neither store provides retention, pruning or eviction.
+
+`pdo_sqlite` is a runtime requirement only for applications that explicitly use `SqliteDiagnosticBatchStore`; it is not required for installing or using the non-SQLite Insight functionality.
 
 ## Requirements
 
@@ -46,7 +50,7 @@ https://github.com/josiahking/evolvephp
 
 ## Current Limitations
 
-This package does not provide filesystem or database persistence, retention, pruning, redaction, rich diagnostic capture, filtering, sampling, dashboards, watchers, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, persistent storage adapters or production-ready diagnostics.
+This package does not provide retention, pruning, redaction, rich diagnostic capture, filtering, sampling, dashboards, watchers, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, application database integration or production-ready diagnostics.
 
 ## Licence
 
