@@ -4,7 +4,7 @@ require_once __DIR__ . '/release-validation-common.php';
 
 /**
  * This validator intentionally exercises:
- * supported options: --root=, --ref=, --composer=.
+ * supported options: --root=, --ref=, --composer=, --changed-from=.
  * git subtree split, first split, second split, deterministic: yes,
  * tree equality: yes, inventory equality: yes, composer validate --strict: pass,
  * history commits:, Source repository state preserved.
@@ -19,9 +19,9 @@ final class PackageSplitValidator
     }
 
     /**
-     * @return list<array<string, string|int>>
+     * @return array{mode: string, reason: string, source: string, changedFrom: string|null, packages: list<array{name: string, directory: string}>, results: list<array<string, string|int>>}
      */
-    public function validate(string $root, string $ref, ?string $composer): array
+    public function validate(string $root, string $ref, ?string $composer, ?string $changedFrom = null): array
     {
         $packages = loadReleasePackages($root);
         $sourceState = captureSourceState($this->runner, $root);
@@ -29,6 +29,20 @@ final class PackageSplitValidator
 
         try {
             $sourceSha = trim($this->runner->mustRun(array('git', '-C', $root, 'rev-parse', $ref))->stdout);
+            $baseSha = null;
+            $decision = array(
+                'mode' => 'full',
+                'reason' => 'No --changed-from supplied; validating the complete release-package map.',
+                'packages' => $packages,
+            );
+
+            if ($changedFrom !== null) {
+                $baseSha = resolvePackageSplitChangedFrom($this->runner, $root, $changedFrom, $sourceSha);
+                $changedPaths = packageSplitChangedPaths($this->runner, $root, $baseSha, $sourceSha);
+                $decision = decidePackageSplitValidationScope($packages, $changedPaths);
+            }
+
+            $selectedPackages = $decision['packages'];
             $clone = $temp->child('monorepo');
 
             $this->runner->mustRun(array('git', 'clone', '--no-hardlinks', $root, $clone));
@@ -36,13 +50,20 @@ final class PackageSplitValidator
 
             $results = array();
 
-            foreach ($packages as $package) {
+            foreach ($selectedPackages as $package) {
                 $results[] = $this->validatePackage($temp, $clone, $sourceSha, $package, $composer);
             }
 
             assertSourceStatePreserved($this->runner, $root, $sourceState);
 
-            return $results;
+            return array(
+                'mode' => $decision['mode'],
+                'reason' => $decision['reason'],
+                'source' => $sourceSha,
+                'changedFrom' => $baseSha,
+                'packages' => $selectedPackages,
+                'results' => $results,
+            );
         } finally {
             $temp->cleanup();
         }
@@ -150,15 +171,228 @@ final class PackageSplitValidator
     }
 }
 
-try {
-    $options = parseReleaseValidationArguments($argv);
+/**
+ * @param list<array{name: string, directory: string}> $packages
+ * @param list<string> $changedPaths
+ * @return array{mode: string, reason: string, packages: list<array{name: string, directory: string}>}
+ */
+function decidePackageSplitValidationScope(array $packages, array $changedPaths): array
+{
+    foreach ($changedPaths as $path) {
+        if (packageSplitPathForcesFullValidation($path)) {
+            return array(
+                'mode' => 'full',
+                'reason' => 'Full validation required because ' . normalizeRelativePath($path) . ' can affect release package interpretation.',
+                'packages' => $packages,
+            );
+        }
+
+        if (packageSplitPathMatchesMappedPackage($packages, $path) || packageSplitPathIsSafeDocumentation($path)) {
+            continue;
+        }
+
+        return array(
+            'mode' => 'full',
+            'reason' => 'Full validation required because ' . normalizeRelativePath($path) . ' has ambiguous release-package impact.',
+            'packages' => $packages,
+        );
+    }
+
+    return array(
+        'mode' => 'targeted',
+        'reason' => 'Targeted committed-ref validation selected affected release packages from changed paths.',
+        'packages' => selectPackageSplitPackagesForChangedPaths($packages, $changedPaths),
+    );
+}
+
+function packageSplitPathForcesFullValidation(string $path): bool
+{
+    $path = normalizeRelativePath($path);
+
+    if (in_array($path, array(
+        'release-packages.json',
+        'composer.json',
+        'composer.lock',
+        'tools/validate-package-splits.php',
+        'tools/release-validation-common.php',
+        '.github/workflows/quality.yml',
+        'deptrac.php',
+        'phpstan.neon.dist',
+        'phpunit.xml.dist',
+        '.php-cs-fixer.dist.php',
+    ), true)) {
+        return true;
+    }
+
+    if (preg_match('#^packages/[^/]+/composer\.json$#', $path) === 1) {
+        return true;
+    }
+
+    if (preg_match('#^tools/(?:validate-release-packages|validate-prerelease-consumers|validate-skeleton-project)\.php$#', $path) === 1) {
+        return true;
+    }
+
+    if (preg_match('#^\.github/workflows/[^/]+\.ya?ml$#', $path) === 1 && str_contains($path, 'release')) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * @param list<array{name: string, directory: string}> $packages
+ */
+function packageSplitPathMatchesMappedPackage(array $packages, string $path): bool
+{
+    $path = normalizeRelativePath($path);
+
+    foreach ($packages as $package) {
+        $directory = rtrim(normalizeRelativePath($package['directory']), '/');
+
+        if ($path === $directory || str_starts_with($path, $directory . '/')) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function packageSplitPathIsSafeDocumentation(string $path): bool
+{
+    $path = normalizeRelativePath($path);
+
+    if (in_array($path, array('README.md', 'CHANGELOG.md', 'DEVELOPMENT.md'), true)) {
+        return true;
+    }
+
+    if (!str_starts_with($path, 'docs/')) {
+        return false;
+    }
+
+    if (str_contains($path, '/../')) {
+        return false;
+    }
+
+    return str_ends_with($path, '.md');
+}
+
+/**
+ * @param list<array{name: string, directory: string}> $packages
+ * @param list<string> $changedPaths
+ * @return list<array{name: string, directory: string}>
+ */
+function selectPackageSplitPackagesForChangedPaths(array $packages, array $changedPaths): array
+{
+    $changedPathSet = array();
+
+    foreach ($changedPaths as $path) {
+        $changedPathSet[normalizeRelativePath($path)] = true;
+    }
+
+    $selected = array();
+
+    foreach ($packages as $package) {
+        $directory = rtrim(normalizeRelativePath($package['directory']), '/');
+
+        foreach (array_keys($changedPathSet) as $path) {
+            if ($path === $directory || str_starts_with($path, $directory . '/')) {
+                $selected[] = $package;
+                break;
+            }
+        }
+    }
+
+    return $selected;
+}
+
+/**
+ * @return list<string>
+ */
+function packageSplitChangedPaths(ReleaseValidationProcessRunner $runner, string $root, string $changedFrom, string $ref): array
+{
+    return parsePackageSplitChangedPathOutput($runner->mustRun(array(
+        'git',
+        '-C',
+        $root,
+        'diff',
+        '--name-only',
+        '-z',
+        '--no-renames',
+        $changedFrom,
+        $ref,
+        '--',
+    ))->stdout);
+}
+
+/**
+ * @return list<string>
+ */
+function parsePackageSplitChangedPathOutput(string $output): array
+{
+    if ($output === '') {
+        return array();
+    }
+
+    $paths = explode("\0", $output);
+
+    if ($paths !== array() && $paths[count($paths) - 1] === '') {
+        array_pop($paths);
+    }
+
+    return array_values($paths);
+}
+
+function resolvePackageSplitChangedFrom(ReleaseValidationProcessRunner $runner, string $root, string $changedFrom, string $ref): string
+{
+    if ($changedFrom === '') {
+        releaseValidationFail('--changed-from must not be empty.');
+    }
+
+    try {
+        $base = trim($runner->mustRun(array('git', '-C', $root, 'rev-parse', $changedFrom . '^{commit}'))->stdout);
+    } catch (ReleaseValidationFailure) {
+        releaseValidationFail('--changed-from must resolve to a Git commit.');
+    }
+
+    try {
+        $target = trim($runner->mustRun(array('git', '-C', $root, 'rev-parse', $ref . '^{commit}'))->stdout);
+    } catch (ReleaseValidationFailure) {
+        releaseValidationFail('--ref must resolve to a Git commit.');
+    }
+
+    $ancestor = $runner->run(array('git', '-C', $root, 'merge-base', '--is-ancestor', $base, $target));
+
+    if ($ancestor->exitCode !== 0) {
+        releaseValidationFail('--changed-from must be an ancestor of --ref.');
+    }
+
+    return $base;
+}
+
+/**
+ * @param list<string> $argv
+ */
+function runPackageSplitValidator(array $argv): int
+{
+    $options = parseReleaseValidationArguments($argv, true, array('changed-from'));
     $validator = new PackageSplitValidator();
-    $results = $validator->validate($options['root'], $options['ref'], $options['composer']);
-    $source = trim((new ReleaseValidationProcessRunner())->mustRun(array('git', '-C', $options['root'], 'rev-parse', $options['ref']))->stdout);
+    $validation = $validator->validate($options['root'], $options['ref'], $options['composer'], $options['changed-from'] ?? null);
+    $results = $validation['results'];
 
     echo 'EvolvePHP package split validation passed.' . PHP_EOL;
-    echo 'Source: ' . $source . PHP_EOL;
+    echo 'Source: ' . $validation['source'] . PHP_EOL;
+    echo 'Mode: ' . $validation['mode'] . PHP_EOL;
+
+    if ($validation['changedFrom'] !== null) {
+        echo 'Changed from: ' . $validation['changedFrom'] . PHP_EOL;
+    }
+
+    echo 'Selection: ' . $validation['reason'] . PHP_EOL;
     echo 'Packages: ' . count($results) . PHP_EOL . PHP_EOL;
+
+    if ($results === array()) {
+        echo 'No affected release packages require local split validation.' . PHP_EOL;
+    }
 
     foreach ($results as $result) {
         echo $result['name'] . PHP_EOL;
@@ -173,8 +407,14 @@ try {
     }
 
     echo 'Source repository state preserved.' . PHP_EOL;
-    exit(0);
-} catch (ReleaseValidationFailure $failure) {
-    fwrite(STDERR, 'EvolvePHP package split validation failed: ' . $failure->getMessage() . PHP_EOL);
-    exit(1);
+    return 0;
+}
+
+if (realpath((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) === __FILE__) {
+    try {
+        exit(runPackageSplitValidator($argv));
+    } catch (ReleaseValidationFailure $failure) {
+        fwrite(STDERR, 'EvolvePHP package split validation failed: ' . $failure->getMessage() . PHP_EOL);
+        exit(1);
+    }
 }

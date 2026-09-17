@@ -176,6 +176,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             '--root=',
             '--ref=',
             '--composer=',
+            '--changed-from=',
             'git subtree split',
             'first split',
             'second split',
@@ -191,6 +192,292 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 
         $this->assertStringNotContainsString('2.0.0-alpha.1', $content);
         $this->assertStringNotContainsString('git tag', $content);
+    }
+
+    public function testSplitValidatorSelectsTargetedPackagesFromChangedPaths(): void
+    {
+        require_once $this->path('tools/validate-package-splits.php');
+
+        $packages = loadReleasePackages($this->root);
+
+        $this->assertSame(
+            array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/insight'),
+            array_column(selectPackageSplitPackagesForChangedPaths(
+                $packages,
+                array(
+                    'packages/insight/src/Capture/DeterministicDiagnosticSampler.php',
+                    'packages/core/src/ApplicationKernel.php',
+                    'packages/contracts/src/ServiceIdentifier.php',
+                )
+            ), 'name'),
+            'Targeted selection must preserve canonical release-package order.'
+        );
+
+        $this->assertSame(
+            array('evolvephp/core', 'evolvephp/insight'),
+            array_column(selectPackageSplitPackagesForChangedPaths(
+                $packages,
+                array(
+                    'packages/core/src/OldLocation.php',
+                    'packages/insight/src/NewLocation.php',
+                )
+            ), 'name'),
+            'A cross-package move must select both exposed package roots.'
+        );
+
+        $this->assertSame(
+            array(),
+            selectPackageSplitPackagesForChangedPaths(
+                $packages,
+                array(
+                    'packages/core-extra/README.md',
+                    'docs/local-notes.md',
+                    'README.md',
+                )
+            ),
+            'Package-directory matching must respect exact directory boundaries and allow zero selected packages.'
+        );
+    }
+
+    public function testSplitValidatorDiscoversNulDelimitedChangedPathsWithSpecialCharacters(): void
+    {
+        require_once $this->path('tools/validate-package-splits.php');
+
+        $runner = new ReleaseValidationProcessRunner();
+        $temporary = createTemporaryDirectory('evolvephp-special-paths-');
+        $fixture = $temporary->path;
+
+        try {
+            $this->initializeGitFixture($runner, $fixture);
+            $this->writeFixtureFile($fixture, 'README.md', "base\n");
+
+            $runner->mustRun(array('git', 'add', 'README.md'), $fixture);
+            $runner->mustRun(array('git', 'commit', '-m', 'Base'), $fixture);
+            $base = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD'), $fixture)->stdout);
+
+            $paths = array(
+                'packages/insight/src/Capture/brackets [safe] #1.txt',
+                'packages/insight/src/Capture/special name.txt',
+                'packages/insight/src/Capture/unicode-cafe-' . json_decode('"\u00e9"', true) . '.txt',
+            );
+
+            foreach ($paths as $path) {
+                $this->writeFixtureFile($fixture, $path, "changed\n");
+            }
+
+            $runner->mustRun(array('git', 'add', 'packages/insight/src/Capture'), $fixture);
+            $runner->mustRun(array('git', 'commit', '-m', 'Special paths'), $fixture);
+            $head = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD'), $fixture)->stdout);
+            $before = captureSourceState($runner, $fixture);
+
+            $changedPaths = packageSplitChangedPaths($runner, $fixture, $base, $head);
+
+            $this->assertSame($paths, $changedPaths);
+            $this->assertSame($before, captureSourceState($runner, $fixture), 'Changed-path discovery must not mutate HEAD, refs, tags, index or worktree.');
+            $this->assertSame(
+                array('evolvephp/insight'),
+                array_column(selectPackageSplitPackagesForChangedPaths(loadReleasePackages($this->root), $changedPaths), 'name')
+            );
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testSplitValidatorDiscoversCrossPackageMovesWithoutRenameCollapse(): void
+    {
+        require_once $this->path('tools/validate-package-splits.php');
+
+        $runner = new ReleaseValidationProcessRunner();
+        $temporary = createTemporaryDirectory('evolvephp-move-paths-');
+        $fixture = $temporary->path;
+
+        try {
+            $this->initializeGitFixture($runner, $fixture);
+            $this->writeFixtureFile($fixture, 'packages/core/src/Moved.php', "<?php\n");
+
+            $runner->mustRun(array('git', 'add', 'packages/core/src/Moved.php'), $fixture);
+            $runner->mustRun(array('git', 'commit', '-m', 'Base'), $fixture);
+            $base = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD'), $fixture)->stdout);
+
+            $this->writeFixtureFile($fixture, 'packages/insight/src/Moved.php', "<?php\n");
+            $runner->mustRun(array('git', 'rm', 'packages/core/src/Moved.php'), $fixture);
+            $runner->mustRun(array('git', 'add', 'packages/insight/src/Moved.php'), $fixture);
+            $runner->mustRun(array('git', 'commit', '-m', 'Move across packages'), $fixture);
+            $head = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD'), $fixture)->stdout);
+
+            $changedPaths = packageSplitChangedPaths($runner, $fixture, $base, $head);
+
+            $this->assertSame(
+                array('packages/core/src/Moved.php', 'packages/insight/src/Moved.php'),
+                $changedPaths
+            );
+            $this->assertSame(
+                array('evolvephp/core', 'evolvephp/insight'),
+                array_column(selectPackageSplitPackagesForChangedPaths(loadReleasePackages($this->root), $changedPaths), 'name')
+            );
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testSplitValidatorParsesNulDelimitedPathOutputWithoutTrimmingBytes(): void
+    {
+        require_once $this->path('tools/validate-package-splits.php');
+
+        $paths = parsePackageSplitChangedPathOutput(" leading.txt\0trailing.txt \0tab\tpath.txt\0\0");
+
+        $this->assertSame(array(' leading.txt', 'trailing.txt ', "tab\tpath.txt", ''), $paths);
+    }
+
+    public function testSplitValidatorFailsSafeToFullValidationForReleaseSensitivePaths(): void
+    {
+        require_once $this->path('tools/validate-package-splits.php');
+
+        foreach (array(
+            'release-packages.json',
+            'tools/validate-package-splits.php',
+            'tools/release-validation-common.php',
+            'composer.json',
+            '.github/workflows/quality.yml',
+            'packages/core/composer.json',
+            'deptrac.php',
+            'phpstan.neon.dist',
+            'phpunit.xml.dist',
+            'tools/local-helper.php',
+            'packages/core-extra/README.md',
+            'config/release-helper.php',
+        ) as $path) {
+            $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array($path));
+
+            $this->assertSame('full', $decision['mode'], $path . ' must force full validation.');
+            $this->assertSame(13, count($decision['packages']), $path . ' must keep the complete package map.');
+        }
+
+        $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array('docs/release-notes.md', 'README.md'));
+
+        $this->assertSame('targeted', $decision['mode']);
+        $this->assertSame(array(), $decision['packages']);
+    }
+
+    public function testSplitValidatorClassifiesCommittedDocumentationChangesConservatively(): void
+    {
+        require_once $this->path('tools/validate-package-splits.php');
+
+        $packages = loadReleasePackages($this->root);
+
+        $documentationOnly = $this->classifyCommittedFixturePaths(array(
+            'docs/release-notes.md' => "notes\n",
+            'docs/guides/local-validation.md' => "guide\n",
+        ));
+
+        $this->assertSame('targeted', $documentationOnly['mode']);
+        $this->assertSame(array(), $documentationOnly['packages']);
+
+        foreach (array(
+            array(
+                'paths' => array('docs/release-helper.php' => "<?php\n"),
+                'label' => 'docs/release-helper.php',
+            ),
+            array(
+                'paths' => array('docs/local-validation.neon' => "parameters:\n"),
+                'label' => 'docs/local-validation.neon',
+            ),
+            array(
+                'paths' => array(
+                    'docs/release-notes.md' => "notes\n",
+                    'docs/release-helper.php' => "<?php\n",
+                ),
+                'label' => 'mixed safe documentation and helper',
+            ),
+        ) as $case) {
+            $decision = $this->classifyCommittedFixturePaths($case['paths']);
+
+            $this->assertSame('full', $decision['mode'], $case['label'] . ' must force full validation.');
+            $this->assertSame($packages, $decision['packages'], $case['label'] . ' must preserve the complete canonical package map.');
+        }
+    }
+
+    public function testSplitValidatorValidatesChangedFromRefsAndRejectsBadComparisons(): void
+    {
+        require_once $this->path('tools/validate-package-splits.php');
+
+        $runner = new ReleaseValidationProcessRunner();
+        $temporary = createTemporaryDirectory('evolvephp-changed-from-contract-test-');
+
+        try {
+            $runner->mustRun(array('git', 'init'), $temporary->path);
+            $runner->mustRun(array('git', 'config', 'user.name', 'EvolvePHP Test'), $temporary->path);
+            $runner->mustRun(array('git', 'config', 'user.email', 'evolvephp-test@example.com'), $temporary->path);
+
+            file_put_contents($temporary->child('README.md'), "base\n");
+            $runner->mustRun(array('git', 'add', 'README.md'), $temporary->path);
+            $runner->mustRun(array('git', 'commit', '-m', 'Base'), $temporary->path);
+            $base = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD'), $temporary->path)->stdout);
+
+            file_put_contents($temporary->child('README.md'), "main\n");
+            $runner->mustRun(array('git', 'commit', '-am', 'Main'), $temporary->path);
+            $head = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD'), $temporary->path)->stdout);
+
+            $runner->mustRun(array('git', 'checkout', '-b', 'side', $base), $temporary->path);
+            file_put_contents($temporary->child('README.md'), "side\n");
+            $runner->mustRun(array('git', 'commit', '-am', 'Side'), $temporary->path);
+            $side = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD'), $temporary->path)->stdout);
+            $runner->mustRun(array('git', 'checkout', '--detach', $head), $temporary->path);
+
+            $this->assertSame($base, resolvePackageSplitChangedFrom($runner, $temporary->path, $base, $head));
+
+            foreach (array(
+                array('', '--changed-from must not be empty.'),
+                array('missing-ref', '--changed-from must resolve to a Git commit.'),
+                array($side, '--changed-from must be an ancestor of --ref.'),
+            ) as $case) {
+                try {
+                    resolvePackageSplitChangedFrom($runner, $temporary->path, $case[0], $head);
+                    $this->fail($case[0] . ' should be rejected.');
+                } catch (ReleaseValidationFailure $failure) {
+                    $this->assertStringContainsString($case[1], $failure->getMessage());
+                }
+            }
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testChangedFromArgumentIsOnlyAcceptedBySplitValidatorContract(): void
+    {
+        require_once $this->path('tools/release-validation-common.php');
+
+        $splitOptions = parseReleaseValidationArguments(
+            array('validate-package-splits.php', '--root=' . $this->root, '--ref=HEAD', '--composer=composer', '--changed-from=HEAD~1'),
+            true,
+            array('changed-from')
+        );
+
+        $this->assertSame('HEAD~1', $splitOptions['changed-from']);
+
+        foreach (array(
+            array('validate-prerelease-consumers.php', true),
+            array('validate-skeleton-project.php', false),
+        ) as $case) {
+            try {
+                parseReleaseValidationArguments(array($case[0], '--changed-from=HEAD~1'), $case[1]);
+                $this->fail($case[0] . ' should not accept --changed-from.');
+            } catch (ReleaseValidationFailure $failure) {
+                $this->assertStringContainsString('Unknown CLI option: --changed-from=HEAD~1', $failure->getMessage());
+            }
+        }
+    }
+
+    public function testTargetedSplitModeUsesCommittedPathsNoRenamesAndExistingValidationLoop(): void
+    {
+        $content = $this->readProjectFile('tools/validate-package-splits.php');
+
+        $this->assertStringContainsString("'diff'", $content);
+        $this->assertStringContainsString("'--name-only'", $content);
+        $this->assertStringContainsString("'--no-renames'", $content);
+        $this->assertStringContainsString("'-z'", $content);
+        $this->assertMatchesRegularExpression('/foreach\s*\(\s*\$selectedPackages\s+as\s+\$package\s*\).*?\$this->validatePackage/s', $content);
+        $this->assertStringContainsString('assertSourceStatePreserved($this->runner, $root, $sourceState);', $content);
     }
 
     public function testOnlySplitValidatorDisablesInternalProcessRunnerTimeout(): void
@@ -514,6 +801,55 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertIsArray($decoded, $path . ' must decode to an array.');
 
         return $decoded;
+    }
+
+    private function initializeGitFixture($runner, $path)
+    {
+        $runner->mustRun(array('git', 'init'), $path);
+        $runner->mustRun(array('git', 'config', 'user.name', 'EvolvePHP Test'), $path);
+        $runner->mustRun(array('git', 'config', 'user.email', 'evolvephp-test@example.com'), $path);
+        $runner->mustRun(array('git', 'config', 'core.quotepath', 'false'), $path);
+    }
+
+    private function writeFixtureFile($root, $relativePath, $contents)
+    {
+        $path = $root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+        $directory = dirname($path);
+
+        if (!is_dir($directory)) {
+            $this->assertTrue(mkdir($directory, 0777, true), 'Fixture directory must be created: ' . $relativePath);
+        }
+
+        $this->assertIsInt(file_put_contents($path, $contents), 'Fixture file must be writable: ' . $relativePath);
+    }
+
+    private function classifyCommittedFixturePaths($paths)
+    {
+        $runner = new ReleaseValidationProcessRunner();
+        $temporary = createTemporaryDirectory('evolvephp-doc-classification-');
+        $fixture = $temporary->path;
+
+        try {
+            $this->initializeGitFixture($runner, $fixture);
+            $this->writeFixtureFile($fixture, 'README.md', "base\n");
+
+            $runner->mustRun(array('git', 'add', 'README.md'), $fixture);
+            $runner->mustRun(array('git', 'commit', '-m', 'Base'), $fixture);
+            $base = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD'), $fixture)->stdout);
+
+            foreach ($paths as $path => $contents) {
+                $this->writeFixtureFile($fixture, $path, $contents);
+            }
+
+            $runner->mustRun(array('git', 'add', '.'), $fixture);
+            $runner->mustRun(array('git', 'commit', '-m', 'Changed paths'), $fixture);
+            $head = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD'), $fixture)->stdout);
+            $changedPaths = packageSplitChangedPaths($runner, $fixture, $base, $head);
+
+            return decidePackageSplitValidationScope(loadReleasePackages($this->root), $changedPaths);
+        } finally {
+            $temporary->cleanup();
+        }
     }
 
     private function releasePackages()

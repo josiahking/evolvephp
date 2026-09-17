@@ -310,9 +310,10 @@ function repositoryRootDefault(): string
 }
 
 /**
- * @return array{root: string, ref: string, composer: string|null}
+ * @param list<string> $allowedExtraOptions
+ * @return array<string, string|null>
  */
-function parseReleaseValidationArguments(array $argv, bool $allowRef = true): array
+function parseReleaseValidationArguments(array $argv, bool $allowRef = true, array $allowedExtraOptions = array()): array
 {
     $options = array(
         'root' => repositoryRootDefault(),
@@ -361,6 +362,11 @@ function parseReleaseValidationArguments(array $argv, bool $allowRef = true): ar
             }
 
             $options['composer'] = $composer;
+            continue;
+        }
+
+        if (in_array('changed-from', $allowedExtraOptions, true) && str_starts_with($argument, '--changed-from=')) {
+            $options['changed-from'] = substr($argument, strlen('--changed-from='));
             continue;
         }
 
