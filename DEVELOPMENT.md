@@ -174,13 +174,25 @@ No package is being published by this command. No remote repositories are contac
 
 ### Package Split Validation
 
-Run deterministic package split validation:
+Run full deterministic package split validation:
 
 ```bash
 composer release:split:validate
 ```
 
-`release:split:validate` reads `release-packages.json`, creates a disposable local clone with `--no-hardlinks`, runs every mapped `git subtree` split twice, validates repeated split SHA equality, validates exact subtree/root tree equality, validates exact inventory equality, validates generated split-root Composer manifests, and confirms package-specific Git history is retained. It creates no remote repository, pushes nothing, creates no source tags, works only on committed Git history/ref and runs in Policy PHP 8.4 CI.
+`release:split:validate` reads `release-packages.json`, creates a disposable local clone with `--no-hardlinks`, runs every mapped `git subtree` split twice, validates repeated split SHA equality, validates exact subtree/root tree equality, validates exact inventory equality, validates generated split-root Composer manifests, and confirms package-specific Git history is retained. It creates no remote repository, pushes nothing, creates no source tags, works only on committed Git history/ref and runs in Policy PHP 8.4 CI. With no extra options, this command always validates the complete release-package map and remains the required mode for CI and release preparation.
+
+For ordinary local committed-ref checks, the validator also accepts an explicit comparison base:
+
+```bash
+php tools/validate-package-splits.php --ref=<implementation-sha> --changed-from=<base-sha> --composer=<composer.phar>
+```
+
+Targeted mode compares committed Git paths between `--changed-from` and `--ref`, selects affected release packages from `release-packages.json` in canonical map order, and sends every selected package through the same deterministic split validation path used by full mode. Package directory matching is boundary-aware: a change under `packages/core/...` selects `evolvephp/core`, while an unrelated path such as `packages/core-extra/...` does not.
+
+The targeted validator fails safe to full validation when the comparison includes paths that can affect release package interpretation or split semantics, including `release-packages.json`, split/release validation tooling, root Composer command wiring, GitHub release-validation workflow wiring, first-party package `composer.json` manifests, package/dependency-boundary configuration and shared release/package-publication infrastructure. Unclassified infrastructure paths also force full validation unless they are exact mapped package paths or explicitly safe documentation paths. Ordinary repository documentation-only changes do not force full mode by themselves.
+
+A targeted comparison can select zero release packages. In that case the validator reports that no affected release packages require local split validation, still checks source repository state preservation, and exits successfully.
 
 ### Prerelease Consumer Validation
 

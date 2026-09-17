@@ -13,6 +13,7 @@
 ### Repository
 
 - Added Insight as the thirteenth normal release package in the repository package map, root test suite, static-analysis paths and architecture-boundary configuration.
+- Added targeted committed-ref package split validation for local development, with safe automatic fallback to full deterministic validation when release-sensitive package metadata, validator tooling, manifests or boundary configuration changes.
 
 ## 2.0.0-alpha.1 - 2026-09-13
 
