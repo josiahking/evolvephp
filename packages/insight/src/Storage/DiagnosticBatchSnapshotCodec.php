@@ -6,9 +6,9 @@ namespace Evolve\Insight\Storage;
 
 final class DiagnosticBatchSnapshotCodec
 {
-    private const int VERSION = 1;
+    private const int VERSION = 2;
 
-    private const array PAYLOAD_KEYS = array(
+    private const array VERSION_ONE_PAYLOAD_KEYS = array(
         'version',
         'execution_identifier',
         'execution_kind',
@@ -16,11 +16,32 @@ final class DiagnosticBatchSnapshotCodec
         'dropped_observation_count',
     );
 
+    private const array VERSION_TWO_PAYLOAD_KEYS = array(
+        'version',
+        'execution_identifier',
+        'execution_kind',
+        'observations',
+        'dropped_observation_count',
+        'diagnostic_entries',
+        'dropped_diagnostic_entry_count',
+    );
+
     private const array OBSERVATION_KEYS = array(
         'type',
         'outcome',
         'error_type',
         'reuse_decision',
+    );
+
+    private const array DIAGNOSTIC_ENTRY_KEYS = array(
+        'category',
+        'name',
+        'attributes',
+    );
+
+    private const array DIAGNOSTIC_ATTRIBUTE_KEYS = array(
+        'name',
+        'value',
     );
 
     private const array EXECUTION_KINDS = array(
@@ -64,8 +85,13 @@ final class DiagnosticBatchSnapshotCodec
                     $snapshot->observations(),
                 ),
                 'dropped_observation_count' => $snapshot->droppedObservationCount(),
+                'diagnostic_entries' => array_map(
+                    fn (DiagnosticEntrySnapshot $entry): array => $this->encodeEntry($entry),
+                    $snapshot->diagnosticEntries(),
+                ),
+                'dropped_diagnostic_entry_count' => $snapshot->droppedDiagnosticEntryCount(),
             ),
-            JSON_THROW_ON_ERROR,
+            JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION,
         );
     }
 
@@ -94,6 +120,32 @@ final class DiagnosticBatchSnapshotCodec
         );
     }
 
+    /**
+     * @return array{category: string, name: string, attributes: list<array{name: string, value: string|int|float|bool|null}>}
+     */
+    private function encodeEntry(DiagnosticEntrySnapshot $entry): array
+    {
+        return array(
+            'category' => $entry->category(),
+            'name' => $entry->name(),
+            'attributes' => array_map(
+                fn (DiagnosticEntryAttributeSnapshot $attribute): array => $this->encodeAttribute($attribute),
+                $entry->attributes(),
+            ),
+        );
+    }
+
+    /**
+     * @return array{name: string, value: string|int|float|bool|null}
+     */
+    private function encodeAttribute(DiagnosticEntryAttributeSnapshot $attribute): array
+    {
+        return array(
+            'name' => $attribute->name(),
+            'value' => $attribute->value(),
+        );
+    }
+
     public function decode(string $payload): DiagnosticBatchSnapshot
     {
         try {
@@ -106,9 +158,68 @@ final class DiagnosticBatchSnapshotCodec
             throw new \InvalidArgumentException('Diagnostic batch snapshot payload must be a JSON object.');
         }
 
-        $this->requireKeys($decoded, self::PAYLOAD_KEYS, 'Diagnostic batch snapshot payload');
+        if (!array_key_exists('version', $decoded)) {
+            throw new \InvalidArgumentException('Diagnostic batch snapshot payload has an invalid schema.');
+        }
 
-        if ($decoded['version'] !== self::VERSION) {
+        if ($decoded['version'] === 1) {
+            return $this->decodeVersionOne($decoded);
+        }
+
+        if ($decoded['version'] === self::VERSION) {
+            return $this->decodeVersionTwo($decoded);
+        }
+
+        throw new \InvalidArgumentException('Diagnostic batch snapshot payload version is not supported.');
+    }
+
+    /**
+     * @param array<mixed> $decoded
+     */
+    private function decodeVersionOne(array $decoded): DiagnosticBatchSnapshot
+    {
+        $this->requireKeys($decoded, self::VERSION_ONE_PAYLOAD_KEYS, 'Diagnostic batch snapshot payload');
+
+        return $this->decodeSnapshot(
+            $decoded,
+            array(),
+            0,
+        );
+    }
+
+    /**
+     * @param array<mixed> $decoded
+     */
+    private function decodeVersionTwo(array $decoded): DiagnosticBatchSnapshot
+    {
+        $this->requireKeys($decoded, self::VERSION_TWO_PAYLOAD_KEYS, 'Diagnostic batch snapshot payload');
+
+        if (!is_array($decoded['diagnostic_entries']) || !array_is_list($decoded['diagnostic_entries'])) {
+            throw new \InvalidArgumentException('Diagnostic batch snapshot diagnostic entries must be a list.');
+        }
+
+        $droppedDiagnosticEntryCount = $decoded['dropped_diagnostic_entry_count'];
+        if (!is_int($droppedDiagnosticEntryCount)) {
+            throw new \InvalidArgumentException('Dropped diagnostic entry count must be an integer.');
+        }
+
+        return $this->decodeSnapshot(
+            $decoded,
+            array_map(
+                fn (mixed $entry): DiagnosticEntrySnapshot => $this->decodeEntry($entry),
+                $decoded['diagnostic_entries'],
+            ),
+            $droppedDiagnosticEntryCount,
+        );
+    }
+
+    /**
+     * @param array<mixed> $decoded
+     * @param list<DiagnosticEntrySnapshot> $diagnosticEntries
+     */
+    private function decodeSnapshot(array $decoded, array $diagnosticEntries, int $droppedDiagnosticEntryCount): DiagnosticBatchSnapshot
+    {
+        if (!is_int($decoded['version'])) {
             throw new \InvalidArgumentException('Diagnostic batch snapshot payload version is not supported.');
         }
 
@@ -133,6 +244,8 @@ final class DiagnosticBatchSnapshotCodec
                 $decoded['observations'],
             ),
             $droppedObservationCount,
+            $diagnosticEntries,
+            $droppedDiagnosticEntryCount,
         );
     }
 
@@ -162,6 +275,47 @@ final class DiagnosticBatchSnapshotCodec
             $outcome,
             $this->requireNullableString($observation['error_type'], 'Observation error type'),
             $reuseDecision,
+        );
+    }
+
+    private function decodeEntry(mixed $entry): DiagnosticEntrySnapshot
+    {
+        if (!is_array($entry) || array_is_list($entry)) {
+            throw new \InvalidArgumentException('Diagnostic entry snapshot payload must be a JSON object.');
+        }
+
+        $this->requireKeys($entry, self::DIAGNOSTIC_ENTRY_KEYS, 'Diagnostic entry snapshot payload');
+
+        if (!is_array($entry['attributes']) || !array_is_list($entry['attributes'])) {
+            throw new \InvalidArgumentException('Diagnostic entry snapshot attributes must be a list.');
+        }
+
+        return new DiagnosticEntrySnapshot(
+            $this->requireString($entry['category'], 'Diagnostic entry category'),
+            $this->requireString($entry['name'], 'Diagnostic entry name'),
+            array_map(
+                fn (mixed $attribute): DiagnosticEntryAttributeSnapshot => $this->decodeAttribute($attribute),
+                $entry['attributes'],
+            ),
+        );
+    }
+
+    private function decodeAttribute(mixed $attribute): DiagnosticEntryAttributeSnapshot
+    {
+        if (!is_array($attribute) || array_is_list($attribute)) {
+            throw new \InvalidArgumentException('Diagnostic entry attribute snapshot payload must be a JSON object.');
+        }
+
+        $this->requireKeys($attribute, self::DIAGNOSTIC_ATTRIBUTE_KEYS, 'Diagnostic entry attribute snapshot payload');
+
+        $value = $attribute['value'];
+        if (!is_string($value) && !is_int($value) && !is_float($value) && !is_bool($value) && $value !== null) {
+            throw new \InvalidArgumentException('Diagnostic entry attribute value must be primitive.');
+        }
+
+        return new DiagnosticEntryAttributeSnapshot(
+            $this->requireString($attribute['name'], 'Diagnostic entry attribute name'),
+            $value,
         );
     }
 

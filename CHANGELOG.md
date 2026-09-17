@@ -9,6 +9,7 @@
 - Added a versioned primitive diagnostic batch snapshot codec and an optional SQLite diagnostic batch store for explicit local-development persistence through caller-supplied SQLite `PDO` connections, while keeping application database integration deferred.
 - Added explicit count-bounded retention to the first-party Insight diagnostic batch stores, with deterministic oldest-first pruning for in-memory and SQLite storage.
 - Added a diagnostic capture-policy foundation with primitive-only entries, explicit data classifications, deterministic redaction, exact category/name filtering and deterministic execution-level sampling, while keeping rich watchers, runtime wiring and storage integration deferred.
+- Added an explicit Insight diagnostic pipeline composition boundary that applies capture policy to candidate diagnostic entries, associates accepted entries with the active Core execution batch, projects detached primitive snapshots and persists through caller-supplied stores.
 
 ### Repository
 

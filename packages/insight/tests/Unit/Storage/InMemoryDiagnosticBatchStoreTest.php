@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Evolve\Insight\Tests\Unit\Storage;
 
 use Evolve\Insight\Storage\DiagnosticBatchSnapshot;
+use Evolve\Insight\Storage\DiagnosticEntryAttributeSnapshot;
+use Evolve\Insight\Storage\DiagnosticEntrySnapshot;
 use Evolve\Insight\Storage\InMemoryDiagnosticBatchStore;
 use PHPUnit\Framework\TestCase;
 
@@ -175,6 +177,33 @@ final class InMemoryDiagnosticBatchStoreTest extends TestCase
         self::assertSame($first, $store->find('execution-1'));
         self::assertSame($second, $store->find('execution-2'));
         self::assertSame(array($second, $first), $store->latest(10));
+    }
+
+    public function testRichDiagnosticSnapshotUsesExistingFindLatestAndRetentionSemantics(): void
+    {
+        $store = new InMemoryDiagnosticBatchStore(1);
+        $rich = new DiagnosticBatchSnapshot(
+            'execution-1',
+            'http-request',
+            array(),
+            0,
+            array(new DiagnosticEntrySnapshot(
+                'database',
+                'query',
+                array(new DiagnosticEntryAttributeSnapshot('statement', 'select-user')),
+            )),
+            1,
+        );
+        $newer = $this->snapshot('execution-2');
+
+        $store->save($rich);
+        self::assertSame($rich, $store->find('execution-1'));
+        self::assertSame(array($rich), $store->latest(10));
+
+        $store->save($newer);
+
+        self::assertNull($store->find('execution-1'));
+        self::assertSame(array($newer), $store->latest(10));
     }
 
     private function snapshot(string $identifier, string $kind = 'http-request'): DiagnosticBatchSnapshot

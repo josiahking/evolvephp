@@ -8,6 +8,12 @@ use Evolve\Core\Execution\ExecutionIdentifier;
 use Evolve\Core\Execution\ExecutionKind;
 use Evolve\Core\Instrumentation\Observation;
 use Evolve\Core\Instrumentation\ObservationType;
+use Evolve\Insight\Capture\DeterministicDiagnosticSampler;
+use Evolve\Insight\Capture\DiagnosticAttribute;
+use Evolve\Insight\Capture\DiagnosticCaptureFilter;
+use Evolve\Insight\Capture\DiagnosticCapturePolicy;
+use Evolve\Insight\Capture\DiagnosticDataClassification;
+use Evolve\Insight\Capture\DiagnosticEntry;
 use Evolve\Insight\DiagnosticBatch;
 use Evolve\Insight\DiagnosticBatchCollector;
 use Evolve\Insight\DiagnosticBatchSink;
@@ -21,6 +27,14 @@ final class DiagnosticBatchCollectorTest extends TestCase
         $this->expectExceptionMessage('Maximum retained observation count must be positive.');
 
         new DiagnosticBatchCollector(new RecordingBatchSink(), 0);
+    }
+
+    public function testItRejectsNonPositiveMaximumRetainedDiagnosticEntryCounts(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Maximum retained diagnostic entry count must be positive.');
+
+        new DiagnosticBatchCollector(new RecordingBatchSink(), 3, maximumRetainedDiagnosticEntryCount: 0);
     }
 
     public function testUnknownObservationsAreIgnored(): void
@@ -263,6 +277,129 @@ final class DiagnosticBatchCollectorTest extends TestCase
         self::assertSame(1, $sink->attempts);
     }
 
+    public function testAcceptedDiagnosticEntryIsAssociatedWithActiveExecution(): void
+    {
+        $sink = new RecordingBatchSink();
+        $collector = new DiagnosticBatchCollector($sink, 5);
+        $identifier = ExecutionIdentifier::generate();
+
+        $collector->observe($this->observation(ObservationType::ExecutionStarted, $identifier));
+        $collector->capture($this->entry($identifier, 'database', 'query', array(
+            new DiagnosticAttribute('statement_name', DiagnosticDataClassification::PublicOperationalMetadata, 'select-user'),
+        )));
+        $collector->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
+
+        self::assertCount(1, $sink->batches[0]->diagnosticEntries());
+        self::assertSame('database', $sink->batches[0]->diagnosticEntries()[0]->category());
+        self::assertSame('select-user', $sink->batches[0]->diagnosticEntries()[0]->attributes()[0]->value());
+    }
+
+    public function testPolicyRejectedUnknownAndFinalizedDiagnosticEntriesAreNotRetained(): void
+    {
+        $sink = new RecordingBatchSink();
+        $collector = new DiagnosticBatchCollector(
+            $sink,
+            5,
+            new DiagnosticCapturePolicy(filter: new DiagnosticCaptureFilter(disabledNames: array('ignored'))),
+        );
+        $identifier = ExecutionIdentifier::generate();
+
+        $collector->capture($this->entry($identifier, 'database', 'unknown'));
+        $collector->observe($this->observation(ObservationType::ExecutionStarted, $identifier));
+        $collector->capture($this->entry($identifier, 'database', 'ignored'));
+        $collector->capture($this->entry($identifier, 'database', 'accepted'));
+        $collector->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
+        $collector->capture($this->entry($identifier, 'database', 'finalized'));
+
+        self::assertSame(array('accepted'), $this->entryNames($sink->batches[0]));
+        self::assertSame(0, $sink->batches[0]->droppedDiagnosticEntryCount());
+    }
+
+    public function testInterleavedDiagnosticEntriesNeverMergeAndPreserveOrder(): void
+    {
+        $sink = new RecordingBatchSink();
+        $collector = new DiagnosticBatchCollector($sink, 5, maximumRetainedDiagnosticEntryCount: 3);
+        $first = ExecutionIdentifier::generate();
+        $second = ExecutionIdentifier::generate();
+
+        $collector->observe($this->observation(ObservationType::ExecutionStarted, $first));
+        $collector->capture($this->entry($first, 'http', 'first-1'));
+        $collector->observe($this->observation(ObservationType::ExecutionStarted, $second, ExecutionKind::QueueMessage));
+        $collector->capture($this->entry($second, 'queue', 'second-1'));
+        $collector->capture($this->entry($first, 'http', 'first-2'));
+        $collector->observe($this->observation(ObservationType::ExecutionCompleted, $first));
+        $collector->observe($this->observation(ObservationType::ExecutionCompleted, $second, ExecutionKind::QueueMessage));
+
+        self::assertSame($first, $sink->batches[0]->identifier());
+        self::assertSame(array('first-1', 'first-2'), $this->entryNames($sink->batches[0]));
+        self::assertSame($second, $sink->batches[1]->identifier());
+        self::assertSame(array('second-1'), $this->entryNames($sink->batches[1]));
+    }
+
+    public function testDiagnosticEntryBoundDroppedCountAndExecutionIsolationAreExact(): void
+    {
+        $sink = new RecordingBatchSink();
+        $collector = new DiagnosticBatchCollector($sink, 5, maximumRetainedDiagnosticEntryCount: 2);
+        $first = ExecutionIdentifier::generate();
+        $second = ExecutionIdentifier::generate();
+
+        $collector->observe($this->observation(ObservationType::ExecutionStarted, $first));
+        $collector->capture($this->entry($first, 'database', 'first-1'));
+        $collector->capture($this->entry($first, 'database', 'first-2'));
+        $collector->capture($this->entry($first, 'database', 'first-3'));
+        $collector->observe($this->observation(ObservationType::ExecutionStarted, $second, ExecutionKind::CliCommand));
+        $collector->capture($this->entry($second, 'cli', 'second-1'));
+        $collector->observe($this->observation(ObservationType::ExecutionCompleted, $second, ExecutionKind::CliCommand));
+        $collector->observe($this->observation(ObservationType::ExecutionCompleted, $first));
+
+        self::assertSame(array('second-1'), $this->entryNames($sink->batches[0]));
+        self::assertSame(0, $sink->batches[0]->droppedDiagnosticEntryCount());
+        self::assertSame(array('first-1', 'first-2'), $this->entryNames($sink->batches[1]));
+        self::assertSame(1, $sink->batches[1]->droppedDiagnosticEntryCount());
+    }
+
+    public function testPolicyRejectionIsNotCountedAsCapacityDrop(): void
+    {
+        $sink = new RecordingBatchSink();
+        $collector = new DiagnosticBatchCollector(
+            $sink,
+            5,
+            new DiagnosticCapturePolicy(sampler: new DeterministicDiagnosticSampler(0)),
+            1,
+        );
+        $identifier = ExecutionIdentifier::generate();
+
+        $collector->observe($this->observation(ObservationType::ExecutionStarted, $identifier));
+        $collector->capture($this->entry($identifier, 'database', 'sampled-out'));
+        $collector->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
+
+        self::assertSame(array(), $sink->batches[0]->diagnosticEntries());
+        self::assertSame(0, $sink->batches[0]->droppedDiagnosticEntryCount());
+    }
+
+    public function testThrowingSinkCannotRetainOrResurrectDiagnosticEntryState(): void
+    {
+        $sink = new ThrowingBatchSink(new \RuntimeException('sink failed'));
+        $collector = new DiagnosticBatchCollector($sink, 5, maximumRetainedDiagnosticEntryCount: 2);
+        $identifier = ExecutionIdentifier::generate();
+
+        $collector->observe($this->observation(ObservationType::ExecutionStarted, $identifier));
+        $collector->capture($this->entry($identifier, 'database', 'before-failure'));
+
+        try {
+            $collector->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
+            self::fail('Expected sink throwable to propagate.');
+        } catch (\RuntimeException $exception) {
+            self::assertSame('sink failed', $exception->getMessage());
+        }
+
+        $collector->capture($this->entry($identifier, 'database', 'after-failure'));
+        $collector->observe($this->observation(ObservationType::ExecutionStarted, $identifier));
+        $collector->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
+
+        self::assertSame(1, $sink->attempts);
+    }
+
     /**
      * @return list<ObservationType>
      */
@@ -277,6 +414,33 @@ final class DiagnosticBatchCollectorTest extends TestCase
         ExecutionKind $kind = ExecutionKind::HttpRequest,
     ): Observation {
         return new Observation($type, $identifier ?? ExecutionIdentifier::generate(), $kind);
+    }
+
+    /**
+     * @param list<DiagnosticAttribute>|null $attributes
+     */
+    private function entry(
+        ExecutionIdentifier $identifier,
+        string $category,
+        string $name,
+        ?array $attributes = null,
+    ): DiagnosticEntry {
+        return new DiagnosticEntry(
+            $identifier->value(),
+            $category,
+            $name,
+            $attributes ?? array(
+                new DiagnosticAttribute('name', DiagnosticDataClassification::PublicOperationalMetadata, $name),
+            ),
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function entryNames(DiagnosticBatch $batch): array
+    {
+        return array_map(static fn (DiagnosticEntry $entry): string => $entry->name(), $batch->diagnosticEntries());
     }
 }
 
