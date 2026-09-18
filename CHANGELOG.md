@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Core
+
+- Added explicit multi-consumer Core execution observations. Applications can configure no sink, one sink or an ordered list of generic observation sinks; Core invokes every sink in declaration order, isolates consumer failures and reports every safe instrumentation failure on the execution outcome.
+- Added generic execution-context attachment contracts for caller-owned external context lifecycles. Successful attachments detach before execution-scope close, attachment-establishment failures remain non-fatal instrumentation failures, and attachment-detach failures are treated as execution-isolation cleanup failures that require quarantine while preserving the primary handler result or throwable.
+
 ### Insight
 
 - Added `evolvephp/insight` as a public experimental diagnostic-batch collection foundation. The package consumes Core execution observations through the existing observation sink boundary, collects immutable bounded per-execution batches and keeps dashboards, watchers, OpenTelemetry, Evolve Observe, runtime wiring and independent package release deferred.
