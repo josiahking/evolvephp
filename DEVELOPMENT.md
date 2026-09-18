@@ -98,9 +98,11 @@ composer test:plugin
 composer test:testing
 ```
 
-Insight diagnostic observation watchers are composed explicitly through `DiagnosticPipeline`. Installing Insight does not discover watchers, mutate Core instrumentation, read environment variables or create global watcher registration. Watcher candidates must keep the triggering Core execution identifier and enter the existing collector capture path so filtering, redaction, deterministic sampling and bounded dropped-entry accounting remain centralized.
+Insight diagnostic observation watchers are composed explicitly through `DiagnosticPipeline`. Installing Insight does not discover watchers, mutate Core instrumentation, read environment variables or create global watcher registration. Watcher candidates must keep the triggering Core execution identifier and enter the existing collector capture path so filtering, sensitive-name redaction, deterministic sampling and bounded dropped-entry accounting happen before detached persistence.
 
-Insight diagnostic reads use `DiagnosticBatchReader` and `DiagnosticQueryService`, not additional methods on `DiagnosticBatchStore`. Applications must supply a `DiagnosticAccessPolicy`; Insight does not install a default policy, routes, UI, dashboard rendering, authentication, users or roles. Query support is limited to bounded cursor pagination and exact persisted execution-kind/category/name filters over detached snapshots.
+Insight diagnostic reads use `DiagnosticBatchReader` and `DiagnosticQueryService`, not additional methods on `DiagnosticBatchStore`. `DiagnosticBatchStore` remains the save/find/latest persistence boundary; `DiagnosticBatchReader` owns exact detail lookup and bounded cursor queries over detached snapshots. Applications must supply a `DiagnosticAccessPolicy`; Insight does not install a default policy, routes, UI, dashboard rendering, authentication, users or roles. Query support is limited to bounded cursor pagination and exact persisted execution-kind/category/name filters over detached snapshots.
+
+First-party stores use count-bounded retention. The in-memory store is suitable for tests and short-lived local development, while the SQLite store uses caller-supplied `PDO` local-development persistence. Local Insight diagnostics are not production observability export, OpenTelemetry or Evolve Observe. Sensitive operational machine names such as token, access-token, API-key, session and set-cookie fields are redacted before accepted diagnostic values are persisted.
 
 Run the isolated legacy Remote Bridge compatibility client tests:
 

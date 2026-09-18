@@ -23,6 +23,10 @@ final class PackageManifestTest extends TestCase
 
         self::assertSame('evolvephp/insight', $manifest['name']);
         self::assertSame(
+            'Local diagnostic capture, persistence, query and access-policy foundation for EvolvePHP 2.',
+            $manifest['description'],
+        );
+        self::assertSame(
             ['Evolve\\Insight\\' => 'src/'],
             $manifest['autoload']['psr-4'],
         );
