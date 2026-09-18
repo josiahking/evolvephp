@@ -1035,6 +1035,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Storage/InMemoryDiagnosticBatchStore.php',
                 'Storage/SqliteDiagnosticBatchStore.php',
                 'Storage/StoringDiagnosticBatchSink.php',
+                'Watcher/ExecutionLifecycleDiagnosticWatcher.php',
+                'Watcher/ObservationDiagnosticWatcher.php',
             ),
             'packages/dev-tools/src' => array(
                 'Adoption/AdoptionPlan.php',
