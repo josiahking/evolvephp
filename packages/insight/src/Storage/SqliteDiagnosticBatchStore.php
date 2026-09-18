@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Evolve\Insight\Storage;
 
-final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore
+use Evolve\Insight\Query\DiagnosticBatchPage;
+use Evolve\Insight\Query\DiagnosticBatchQuery;
+use Evolve\Insight\Query\DiagnosticBatchReader;
+use Evolve\Insight\Query\DiagnosticBatchSummary;
+
+final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore, DiagnosticBatchReader
 {
     private const string TABLE = 'insight_diagnostic_batches';
 
@@ -87,6 +92,58 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore
         return $snapshots;
     }
 
+    public function query(DiagnosticBatchQuery $query): DiagnosticBatchPage
+    {
+        $cursorSequence = null;
+
+        if ($query->cursor() !== null) {
+            $cursorSequence = $this->sequenceForCursor($query->cursor());
+        }
+
+        $sql = 'SELECT execution_identifier, snapshot_payload FROM ' . self::TABLE;
+
+        if ($cursorSequence !== null) {
+            $sql .= ' WHERE sequence < :cursor_sequence';
+        }
+
+        $sql .= ' ORDER BY sequence DESC';
+
+        $statement = $this->prepare($sql);
+
+        if ($cursorSequence !== null) {
+            $statement->bindValue('cursor_sequence', $cursorSequence, \PDO::PARAM_INT);
+        }
+
+        if (!$statement->execute()) {
+            throw new \RuntimeException('Failed to read diagnostic batch query results.');
+        }
+
+        $items = array();
+        $hasOlderMatch = false;
+
+        while (($row = $statement->fetch(\PDO::FETCH_ASSOC)) !== false) {
+            $snapshot = $this->decodeRow($row);
+
+            if (!$this->matchesQuery($snapshot, $query)) {
+                continue;
+            }
+
+            if (count($items) < $query->pageSize()) {
+                $items[] = DiagnosticBatchSummary::fromSnapshot($snapshot);
+
+                continue;
+            }
+
+            $hasOlderMatch = true;
+            break;
+        }
+
+        return new DiagnosticBatchPage(
+            $items,
+            $hasOlderMatch && $items !== array() ? $items[array_key_last($items)]->executionIdentifier() : null,
+        );
+    }
+
     private function createSchema(): void
     {
         $this->exec(
@@ -144,6 +201,22 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore
         return (int) $statement->fetchColumn();
     }
 
+    private function sequenceForCursor(string $cursor): int
+    {
+        $statement = $this->prepare(
+            'SELECT sequence FROM ' . self::TABLE . ' WHERE execution_identifier = :execution_identifier'
+        );
+        $this->execute($statement, array('execution_identifier' => $cursor));
+
+        $sequence = $statement->fetchColumn();
+
+        if ($sequence === false) {
+            throw new \InvalidArgumentException('Diagnostic query cursor does not reference a retained batch.');
+        }
+
+        return (int) $sequence;
+    }
+
     /**
      * @param array<string, mixed> $row
      */
@@ -188,5 +261,30 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore
         if (!$statement->execute($parameters)) {
             throw new \RuntimeException('Failed to execute SQLite diagnostic batch store statement.');
         }
+    }
+
+    private function matchesQuery(DiagnosticBatchSnapshot $snapshot, DiagnosticBatchQuery $query): bool
+    {
+        if ($query->executionKind() !== null && $snapshot->executionKind() !== $query->executionKind()) {
+            return false;
+        }
+
+        if ($query->diagnosticCategory() === null && $query->diagnosticName() === null) {
+            return true;
+        }
+
+        foreach ($snapshot->diagnosticEntries() as $entry) {
+            if ($query->diagnosticCategory() !== null && $entry->category() !== $query->diagnosticCategory()) {
+                continue;
+            }
+
+            if ($query->diagnosticName() !== null && $entry->name() !== $query->diagnosticName()) {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }

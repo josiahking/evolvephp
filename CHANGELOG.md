@@ -11,6 +11,7 @@
 - Added a diagnostic capture-policy foundation with primitive-only entries, explicit data classifications, deterministic redaction, exact category/name filtering and deterministic execution-level sampling, while keeping rich watchers, runtime wiring and storage integration deferred.
 - Added an explicit Insight diagnostic pipeline composition boundary that applies capture policy to candidate diagnostic entries, associates accepted entries with the active Core execution batch, projects detached primitive snapshots and persists through caller-supplied stores.
 - Added an explicit Insight observation watcher extension point for existing Core execution observations, plus first-party abnormal execution/runtime diagnostics for failed handlers, failed scope closes and quarantine-required observations while preserving capture policy, redaction, filtering, sampling and execution-batch bounds.
+- Added a storage-neutral Insight read/query foundation with detached batch summaries, exact detail lookup, deterministic bounded cursor pagination, exact persisted-field filters and an explicit application-supplied access policy, while keeping routes, UI, dashboard rendering, authentication, user/role handling and timestamp/range queries deferred.
 
 ### Repository
 

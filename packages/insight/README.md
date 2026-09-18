@@ -50,6 +50,7 @@ These diagnostics use bounded primitive operational attributes already present o
 Current storage behavior:
 
 - `DiagnosticBatchStore` defines minimal save, exact execution-identifier lookup and newest-first bounded reads
+- `DiagnosticBatchReader` defines the separate read/query boundary for exact detail lookup and bounded cursor queries without adding query methods to the persistence contract
 - `InMemoryDiagnosticBatchStore` keeps snapshots in insertion order, requires an explicit positive stored-batch count and prunes oldest retained snapshots first
 - `SqliteDiagnosticBatchStore` provides an optional persistent local-development adapter for caller-supplied SQLite `PDO` connections, requires an explicit positive stored-batch count and prunes by SQLite sequence order
 - `DiagnosticBatchSnapshotCodec` stores snapshots as a versioned primitive JSON payload, writes the current expanded schema with diagnostic entries, continues to read legacy observation-only version 1 payloads, and rejects malformed, unsupported or unexpected persisted data during reads
@@ -62,6 +63,19 @@ Both first-party stores use explicit count-bounded retention. Callers configure 
 The SQLite store creates its diagnostic table only when explicitly constructed with a SQLite `PDO`; it does not discover a default path, read application database configuration or automatically use application storage. SQLite reads use deterministic insertion-order sequence values for newest-first results, not diagnostic timestamps. Corrupt stored payloads are not decoded during construction, but the affected `find()` or `latest()` read fails explicitly.
 
 `pdo_sqlite` is a runtime requirement only for applications that explicitly use `SqliteDiagnosticBatchStore`; it is not required for installing or using the non-SQLite Insight functionality.
+
+Current query and access behavior:
+
+- `DiagnosticBatchQuery` supports a page size from 1 to 100, an optional exclusive cursor and optional exact filters for persisted execution kind, diagnostic category and diagnostic name
+- cursors are execution identifiers from the final item of the previous page, and the next page starts strictly older than that retained batch
+- unknown or pruned cursors fail closed instead of restarting from newest or returning a misleading empty page
+- query results are newest-first according to the store's insertion authority: in-memory insertion order or SQLite sequence
+- `DiagnosticBatchPage` contains detached `DiagnosticBatchSummary` items and a next cursor only when another older matching result exists
+- summaries expose only execution identifier, execution kind, retained observation count, retained diagnostic-entry count and dropped counts
+- category and name filters are exact, and when both are supplied they must match the same diagnostic entry snapshot
+- exact detail lookup returns the detached persisted `DiagnosticBatchSnapshot`
+- `DiagnosticQueryService` requires an application-supplied `DiagnosticAccessPolicy` before list or detail reads and performs authorization before delegating to storage
+- Insight does not provide a default access policy, discover users, define roles, authenticate requests, inspect sessions, infer localhost or automatically allow development access
 
 Current capture-policy behavior:
 
@@ -92,7 +106,7 @@ https://github.com/josiahking/evolvephp
 
 ## Current Limitations
 
-This package does not provide time-based retention, rich HTTP/database/cache/log/event/queue/plugin/module/service-resolution/worker-memory/tenant diagnostic watchers, dashboards, query/read APIs, routes, UI, access controls, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, application database integration, production telemetry export or production-ready diagnostics. The current scope-close and quarantine diagnostics are generic runtime signals only; they do not prove a specific request-scope leak, tenant leak or memory leak.
+This package does not provide time-based retention, timestamp or range queries, rich HTTP/database/cache/log/event/queue/plugin/module/service-resolution/worker-memory/tenant diagnostic watchers, native dashboards, routes, UI rendering, authentication, user or role management, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, application database integration, production telemetry export or production-ready diagnostics. The current scope-close and quarantine diagnostics are generic runtime signals only; they do not prove a specific request-scope leak, tenant leak or memory leak.
 
 ## Licence
 
