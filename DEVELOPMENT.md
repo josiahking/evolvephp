@@ -98,6 +98,8 @@ composer test:plugin
 composer test:testing
 ```
 
+Insight diagnostic observation watchers are composed explicitly through `DiagnosticPipeline`. Installing Insight does not discover watchers, mutate Core instrumentation, read environment variables or create global watcher registration. Watcher candidates must keep the triggering Core execution identifier and enter the existing collector capture path so filtering, redaction, deterministic sampling and bounded dropped-entry accounting remain centralized.
+
 Run the isolated legacy Remote Bridge compatibility client tests:
 
 ```bash

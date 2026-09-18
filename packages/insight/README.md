@@ -27,6 +27,26 @@ Current bounded behavior:
 - completed executions are forgotten before the finalized batch is handed to the configured sink
 - sink failures propagate to the existing Core instrumentation boundary
 
+Current watcher behavior:
+
+- `ObservationDiagnosticWatcher` is an explicit extension point for deriving candidate diagnostic entries from one existing Core `Observation`
+- `DiagnosticPipeline` accepts zero or more configured observation watchers and validates them during composition
+- watcher registration is caller-owned; Insight does not discover watchers, mutate Core state, read environment configuration or install global/static runtime registration
+- watcher order is preserved, and each watcher's produced-entry order is preserved
+- `ExecutionStarted` observations open the execution batch before watcher candidates are captured
+- `ExecutionCompleted` watcher candidates are captured before the completion observation finalizes and forgets the execution
+- watcher-produced entries must carry the exact triggering execution identifier value and are rejected before capture when they do not
+- watcher candidates flow through the same `DiagnosticBatchCollector::capture()` path as explicitly submitted diagnostic entries, including filtering, redaction, sampling, retained-entry bounds and dropped-entry accounting
+- watcher failures during completion still allow the collector to observe completion and finalize the execution before the failure is rethrown through the normal observation sink call path
+
+Current first-party abnormal diagnostics:
+
+- failed `HandlerCompleted` observations produce `evolve.execution` / `handler-failed`
+- failed `ScopeCloseCompleted` observations produce `evolve.runtime` / `scope-close-failed`
+- `QuarantineRequired` observations produce `evolve.runtime` / `quarantine-required`
+
+These diagnostics use bounded primitive operational attributes already present on the triggering observation, including execution kind, error type when available and normalized process-reuse decision when available. They do not include exception messages, stack traces, request or response values, route parameters, headers, cookies, payloads, containers, scopes, service instances, tenant identifiers, timestamps, durations or arbitrary application values.
+
 Current storage behavior:
 
 - `DiagnosticBatchStore` defines minimal save, exact execution-identifier lookup and newest-first bounded reads
@@ -54,7 +74,7 @@ Current capture-policy behavior:
 - sampling controls diagnostic volume only; it is not authorization, authentication, security enforcement, redaction, legal retention or an error-retention guarantee
 - accepted attributes keep their original order, use first-accepted-wins duplicate-name handling and are capped by a deterministic retained-attribute limit
 
-The capture-policy foundation does not add rich HTTP, database, cache, log, event, queue or other watchers. Candidate capture entries can be submitted explicitly to `DiagnosticBatchCollector` or `DiagnosticPipeline`. Policy-accepted entries become part of the same finalized execution batch as Core observations, are projected into detached diagnostic-entry snapshots and can persist through the configured projector, snapshot codec and store. This integration remains opt-in and does not add automatic runtime wiring.
+The capture-policy foundation does not add rich HTTP, database, cache, log, event, queue or other watchers. Candidate capture entries can be submitted explicitly to `DiagnosticBatchCollector` or `DiagnosticPipeline`, and configured observation watchers can derive candidates from existing Core execution observations. Policy-accepted entries become part of the same finalized execution batch as Core observations, are projected into detached diagnostic-entry snapshots and can persist through the configured projector, snapshot codec and store. This integration remains opt-in and does not add automatic runtime wiring.
 
 ## Requirements
 
@@ -72,7 +92,7 @@ https://github.com/josiahking/evolvephp
 
 ## Current Limitations
 
-This package does not provide time-based retention, rich HTTP/database/cache/log/event/queue diagnostic watchers, dashboards, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, application database integration, production telemetry export or production-ready diagnostics.
+This package does not provide time-based retention, rich HTTP/database/cache/log/event/queue/plugin/module/service-resolution/worker-memory/tenant diagnostic watchers, dashboards, query/read APIs, routes, UI, access controls, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, application database integration, production telemetry export or production-ready diagnostics. The current scope-close and quarantine diagnostics are generic runtime signals only; they do not prove a specific request-scope leak, tenant leak or memory leak.
 
 ## Licence
 
