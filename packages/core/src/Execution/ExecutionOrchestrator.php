@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Evolve\Core\Execution;
 
 use Evolve\Core\Container\ServiceRegistry;
+use Evolve\Core\Exception\ExecutionCleanupFailed;
 use Evolve\Core\Exception\ExecutionStartFailed;
 use Evolve\Core\Instrumentation\InstrumentationFailure;
 use Evolve\Core\Instrumentation\Observation;
@@ -12,6 +13,7 @@ use Evolve\Core\Instrumentation\ObservationDispatcher;
 use Evolve\Core\Instrumentation\ObservationOutcome;
 use Evolve\Core\Instrumentation\ObservationSink;
 use Evolve\Core\Instrumentation\ObservationType;
+use InvalidArgumentException;
 use Throwable;
 
 final class ExecutionOrchestrator
@@ -20,9 +22,22 @@ final class ExecutionOrchestrator
 
     private ObservationDispatcher $observations;
 
-    public function __construct(private ServiceRegistry $services, ?ObservationSink $observationSink = null)
-    {
+    /**
+     * @var list<ExecutionContextAttacher>
+     */
+    private array $executionContextAttachers;
+
+    /**
+     * @param ObservationSink|array<array-key, ObservationSink>|null $observationSink
+     * @param array<array-key, mixed> $executionContextAttachers
+     */
+    public function __construct(
+        private ServiceRegistry $services,
+        ObservationSink|array|null $observationSink = null,
+        array $executionContextAttachers = [],
+    ) {
         $this->observations = new ObservationDispatcher($observationSink);
+        $this->executionContextAttachers = $this->normalizeExecutionContextAttachers($executionContextAttachers);
     }
 
     /**
@@ -47,6 +62,18 @@ final class ExecutionOrchestrator
         $primaryThrowable = null;
         $cleanupThrowable = null;
         $instrumentationFailures = [];
+        $attachments = [];
+
+        foreach ($this->executionContextAttachers as $attacher) {
+            try {
+                $attachments[] = $attacher->attach($context);
+            } catch (Throwable $exception) {
+                $instrumentationFailures[] = InstrumentationFailure::fromThrowable(
+                    ObservationType::ExecutionStarted,
+                    $exception,
+                );
+            }
+        }
 
         $this->observe($instrumentationFailures, new Observation(
             ObservationType::ExecutionStarted,
@@ -74,10 +101,31 @@ final class ExecutionOrchestrator
             $kind,
         ));
 
+        $cleanupFailures = [];
+
+        for ($index = count($attachments) - 1; $index >= 0; --$index) {
+            try {
+                $attachments[$index]->detach();
+            } catch (Throwable $exception) {
+                $cleanupFailures[] = $exception;
+            }
+        }
+
         try {
             $scope->close();
         } catch (Throwable $exception) {
-            $cleanupThrowable = $exception;
+            if ($cleanupFailures === []) {
+                $cleanupThrowable = $exception;
+            } else {
+                $cleanupFailures[] = $exception;
+            }
+        }
+
+        if ($cleanupFailures !== []) {
+            $cleanupThrowable = new ExecutionCleanupFailed($cleanupFailures);
+        }
+
+        if ($cleanupThrowable !== null) {
             $this->quarantined = true;
         }
 
@@ -124,10 +172,36 @@ final class ExecutionOrchestrator
      */
     private function observe(array &$instrumentationFailures, Observation $observation): void
     {
-        $failure = $this->observations->observe($observation);
-
-        if ($failure !== null) {
+        foreach ($this->observations->observeAll($observation) as $failure) {
             $instrumentationFailures[] = $failure;
         }
+    }
+
+    /**
+     * @param array<array-key, mixed> $executionContextAttachers
+     *
+     * @return list<ExecutionContextAttacher>
+     */
+    private function normalizeExecutionContextAttachers(array $executionContextAttachers): array
+    {
+        $normalized = [];
+        $seen = [];
+
+        foreach ($executionContextAttachers as $attacher) {
+            if (! $attacher instanceof ExecutionContextAttacher) {
+                throw new InvalidArgumentException('Execution context attachers must implement ExecutionContextAttacher.');
+            }
+
+            $objectId = spl_object_id($attacher);
+
+            if (isset($seen[$objectId])) {
+                throw new InvalidArgumentException('Execution context attachers must not contain duplicate object instances.');
+            }
+
+            $seen[$objectId] = true;
+            $normalized[] = $attacher;
+        }
+
+        return $normalized;
     }
 }
