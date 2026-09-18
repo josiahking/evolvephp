@@ -2,15 +2,15 @@
 
 `evolvephp/insight`
 
-Diagnostic batch collection and storage-projection foundation for EvolvePHP 2.
+Local diagnostic capture, persistence, query and access-policy foundation for EvolvePHP 2.
 
 ## Responsibility
 
-Evolve Insight consumes safe Core execution observations and collects them into immutable, bounded diagnostic batches. This package provides the storage-neutral `DiagnosticBatchSink` contract, immutable `DiagnosticBatch` values, `DiagnosticBatchCollector`, which implements Core's `ObservationSink` boundary, and an explicit `DiagnosticPipeline` composition helper for applications that opt in to collection plus persistence.
+Evolve Insight consumes safe Core execution observations and explicitly submitted diagnostic candidates, then collects them into immutable, bounded diagnostic batches. This package provides the storage-neutral `DiagnosticBatchSink` contract, immutable `DiagnosticBatch` values, `DiagnosticBatchCollector`, which implements Core's `ObservationSink` boundary, an explicit `DiagnosticPipeline` composition helper for applications that opt in to collection plus persistence, and a storage-neutral read/query foundation guarded by an application-supplied access policy.
 
 Insight also provides a storage-neutral projection boundary for finalized diagnostic batches. `DiagnosticBatchProjector` detaches a `DiagnosticBatch` into a primitive-only `DiagnosticBatchSnapshot` made of string-backed execution identity, execution kind, ordered `DiagnosticObservationSnapshot` values, ordered accepted diagnostic-entry snapshots and separate dropped observation and diagnostic-entry counts. Snapshots do not retain Core `Observation`, execution identifier, diagnostic-entry objects, diagnostic-attribute objects, request, response, container, throwable or execution-scope objects.
 
-Insight includes a detached diagnostic capture-policy foundation for future rich diagnostic sources. `DiagnosticEntry` and `DiagnosticAttribute` represent bounded primitive-only diagnostic data: execution identifier value, diagnostic category, diagnostic name and ordered attributes whose values are limited to `string`, `int`, `float`, `bool` or `null`. Attribute names, entry identifiers, categories, names and string values are bounded, and non-finite floats, arrays, objects, resources and callables are not accepted.
+Insight includes a detached diagnostic capture-policy foundation for diagnostic sources. `DiagnosticEntry` and `DiagnosticAttribute` represent bounded primitive-only diagnostic data: execution identifier value, diagnostic category, diagnostic name and ordered attributes whose values are limited to `string`, `int`, `float`, `bool` or `null`. Attribute names, entry identifiers, categories, names and string values are bounded, and non-finite floats, arrays, objects, resources and callables are not accepted.
 
 Current bounded behavior:
 
@@ -82,13 +82,25 @@ Current capture-policy behavior:
 - `DiagnosticDataClassification` provides explicit machine-readable classifications for public operational metadata, internal operational metadata, personal data, authentication data, secret data, business-sensitive payloads and regulated data
 - `DiagnosticCapturePolicy` accepts public and internal operational metadata by default; personal, business-sensitive and regulated data are excluded unless explicitly enabled by application code
 - secret and authentication data are never deliberately accepted raw
-- `DefaultDiagnosticRedactor` deterministically suppresses secret and authentication attributes, and replaces common sensitive operational machine names such as authorization, password, cookies, tokens, API keys, secrets and session identifiers with `[REDACTED]`
+- `DefaultDiagnosticRedactor` deterministically suppresses secret and authentication attributes, and replaces common sensitive operational machine names such as authorization, password, cookies, tokens, access tokens, refresh tokens, API keys, secrets, session identifiers and set-cookie names with `[REDACTED]`
+- compact and separator-based machine names such as `token`, `accessToken`, `access_token`, `refreshToken`, `refresh.token`, `apiKey`, `api-key`, `sessionId`, `session.id`, `sessionIdentifier`, `setCookie` and `set-cookie` are treated as sensitive when otherwise classified as operational metadata
+- unrelated lookalikes such as `token_count` are not redacted merely because they contain a sensitive word
 - `DiagnosticCaptureFilter` supports exact category and diagnostic-name disabling for volume control only
 - `DeterministicDiagnosticSampler` supports integer percentage sampling from 0 to 100 using a stable hash of the execution identifier
 - sampling controls diagnostic volume only; it is not authorization, authentication, security enforcement, redaction, legal retention or an error-retention guarantee
 - accepted attributes keep their original order, use first-accepted-wins duplicate-name handling and are capped by a deterministic retained-attribute limit
 
-The capture-policy foundation does not add rich HTTP, database, cache, log, event, queue or other watchers. Candidate capture entries can be submitted explicitly to `DiagnosticBatchCollector` or `DiagnosticPipeline`, and configured observation watchers can derive candidates from existing Core execution observations. Policy-accepted entries become part of the same finalized execution batch as Core observations, are projected into detached diagnostic-entry snapshots and can persist through the configured projector, snapshot codec and store. This integration remains opt-in and does not add automatic runtime wiring.
+Redaction and classification filtering happen before accepted rich diagnostic values reach persistence. Candidate capture entries can be submitted explicitly to `DiagnosticBatchCollector` or `DiagnosticPipeline`, and configured observation watchers can derive candidates from existing Core execution observations. Policy-accepted entries become part of the same finalized execution batch as Core observations, are projected into detached diagnostic-entry snapshots and can persist through the configured projector, snapshot codec and store. This integration remains opt-in and does not add automatic runtime wiring.
+
+Operational characteristics:
+
+- composition is explicit and opt-in
+- Insight does not discover watchers, create hidden global registration, inspect the environment or automatically expose local diagnostics
+- retention is count-bounded rather than time-based
+- in-memory and SQLite query behavior is bounded by the requested page size, but exact filters may require scanning retained snapshots
+- SQLite is local-development persistence through a caller-owned `PDO`; it is not application database integration
+- local Insight diagnostics are framework-owned diagnostic evidence, not production telemetry export
+- Core remains independent of Insight, and Insight remains independent of OpenTelemetry and Evolve Observe
 
 ## Requirements
 
@@ -106,7 +118,7 @@ https://github.com/josiahking/evolvephp
 
 ## Current Limitations
 
-This package does not provide time-based retention, timestamp or range queries, rich HTTP/database/cache/log/event/queue/plugin/module/service-resolution/worker-memory/tenant diagnostic watchers, native dashboards, routes, UI rendering, authentication, user or role management, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, application database integration, production telemetry export or production-ready diagnostics. The current scope-close and quarantine diagnostics are generic runtime signals only; they do not prove a specific request-scope leak, tenant leak or memory leak.
+This package does not provide time-based retention, timestamp or range queries, rich HTTP/database/cache/log/event/queue/plugin/module/service-resolution/worker-memory/tenant diagnostic watchers, native dashboards, routes, UI rendering, authentication, user or role management, default access policies, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, application database integration, production telemetry export or production-ready diagnostics. The current scope-close and quarantine diagnostics are generic runtime signals only; they do not prove a specific request-scope leak, tenant leak or memory leak.
 
 ## Licence
 

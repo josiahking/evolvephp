@@ -30,6 +30,8 @@ final class DiagnosticBatchSnapshotTest extends TestCase
         self::assertSame('http-request', $snapshot->executionKind());
         self::assertSame(array($first, $second), $snapshot->observations());
         self::assertSame(2, $snapshot->droppedObservationCount());
+
+        self::assertContainsOnlyInstancesOf(DiagnosticObservationSnapshot::class, $snapshot->observations());
     }
 
     public function testObservationCollectionsDoNotExposeMutableInternalState(): void
@@ -44,6 +46,27 @@ final class DiagnosticBatchSnapshotTest extends TestCase
 
         $observations = $snapshot->observations();
         $observations[] = new DiagnosticObservationSnapshot('execution-completed', null, null, null);
+
+        self::assertSame(array($first), $snapshot->observations());
+    }
+
+    public function testInvalidObservationObjectIsRejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Diagnostic observations must be diagnostic observation snapshots.');
+
+        new DiagnosticBatchSnapshot('execution-123', 'http-request', array(new \stdClass()), 0);
+    }
+
+    public function testObservationInputIsReindexedAsAList(): void
+    {
+        $first = new DiagnosticObservationSnapshot('execution-started', null, null, null);
+        $snapshot = new DiagnosticBatchSnapshot(
+            'execution-123',
+            'http-request',
+            array(5 => $first),
+            0,
+        );
 
         self::assertSame(array($first), $snapshot->observations());
     }

@@ -53,6 +53,10 @@ final class DefaultDiagnosticRedactorTest extends TestCase
         $redacted = (new DefaultDiagnosticRedactor())->redact($attribute);
 
         self::assertSame($attribute, $redacted);
+
+        $lookalike = new DiagnosticAttribute('token_count', DiagnosticDataClassification::PublicOperationalMetadata, 12);
+
+        self::assertSame($lookalike, (new DefaultDiagnosticRedactor())->redact($lookalike));
     }
 
     /**
@@ -70,8 +74,15 @@ final class DefaultDiagnosticRedactorTest extends TestCase
             'access_token',
             'refresh.token',
             'api-key',
+            'token',
+            'accessToken',
+            'refreshToken',
+            'apiKey',
             'secret',
             'session.id',
+            'sessionId',
+            'sessionIdentifier',
+            'setCookie',
         );
     }
 }

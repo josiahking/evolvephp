@@ -1307,7 +1307,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/insight",
-                "reference": "61835e6e3f67ecc0ce6647f4ee11b7d61cb8788b"
+                "reference": "ce734a1083ee86d15c6f99516b44c09ff003f092"
             },
             "require": {
                 "evolvephp/core": "^2.0",
@@ -1322,7 +1322,7 @@
             "license": [
                 "BSD-3-Clause"
             ],
-            "description": "Diagnostic batch collection foundation for EvolvePHP 2.",
+            "description": "Local diagnostic capture, persistence, query and access-policy foundation for EvolvePHP 2.",
             "transport-options": {
                 "relative": true
             }

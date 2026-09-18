@@ -208,7 +208,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'name' => 'evolvephp/insight',
                 'directory' => 'packages/insight',
                 'human' => 'EvolvePHP Insight',
-                'responsibility' => 'Diagnostic batch collection and storage-projection foundation for EvolvePHP 2.',
+                'responsibility' => 'Local diagnostic capture, persistence, query and access-policy foundation for EvolvePHP 2.',
                 'dependencies' => '`evolvephp/core`',
             ),
             array(

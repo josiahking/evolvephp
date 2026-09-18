@@ -36,6 +36,19 @@ final class DefaultDiagnosticRedactor implements DiagnosticRedactor
 
     private function isSensitiveMachineName(string $name): bool
     {
+        $normalizedName = strtolower(str_replace(array('.', '_', '-', ' ', '/'), '', $name));
+        if (in_array($normalizedName, array(
+            'token',
+            'accesstoken',
+            'refreshtoken',
+            'apikey',
+            'sessionid',
+            'sessionidentifier',
+            'setcookie',
+        ), true)) {
+            return true;
+        }
+
         $segments = array_values(array_filter(
             preg_split('/[._\\-\\s\\/]+/', strtolower($name)) ?: array(),
             static fn (string $segment): bool => $segment !== '',

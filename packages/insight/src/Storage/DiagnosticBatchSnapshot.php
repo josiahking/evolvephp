@@ -17,7 +17,7 @@ final class DiagnosticBatchSnapshot
     private array $diagnosticEntries;
 
     /**
-     * @param list<DiagnosticObservationSnapshot> $observations
+     * @param array<array-key, mixed> $observations
      * @param array<array-key, mixed> $diagnosticEntries
      */
     public function __construct(
@@ -40,6 +40,16 @@ final class DiagnosticBatchSnapshot
             throw new \InvalidArgumentException('Dropped diagnostic entry count must not be negative.');
         }
 
+        $validatedObservations = array();
+
+        foreach ($observations as $observation) {
+            if (!$observation instanceof DiagnosticObservationSnapshot) {
+                throw new \InvalidArgumentException('Diagnostic observations must be diagnostic observation snapshots.');
+            }
+
+            $validatedObservations[] = $observation;
+        }
+
         $validatedDiagnosticEntries = array();
 
         foreach ($diagnosticEntries as $entry) {
@@ -50,7 +60,7 @@ final class DiagnosticBatchSnapshot
             $validatedDiagnosticEntries[] = $entry;
         }
 
-        $this->observations = $observations;
+        $this->observations = $validatedObservations;
         $this->diagnosticEntries = $validatedDiagnosticEntries;
     }
 

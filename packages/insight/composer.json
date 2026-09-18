@@ -1,6 +1,6 @@
 {
     "name": "evolvephp/insight",
-    "description": "Diagnostic batch collection foundation for EvolvePHP 2.",
+    "description": "Local diagnostic capture, persistence, query and access-policy foundation for EvolvePHP 2.",
     "type": "library",
     "license": "BSD-3-Clause",
     "require": {

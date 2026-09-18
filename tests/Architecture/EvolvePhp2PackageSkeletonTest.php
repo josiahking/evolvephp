@@ -802,7 +802,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'manifest' => 'packages/insight/composer.json',
                 'src' => 'packages/insight/src',
                 'name' => 'evolvephp/insight',
-                'description' => 'Diagnostic batch collection foundation for EvolvePHP 2.',
+                'description' => 'Local diagnostic capture, persistence, query and access-policy foundation for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Insight\\',
                 'require' => array('php' => '^8.4', 'evolvephp/core' => '^2.0'),
             ),
