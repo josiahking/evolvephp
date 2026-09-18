@@ -9,11 +9,13 @@ use Evolve\Core\Execution\ExecutionKind;
 use Evolve\Core\Instrumentation\Observation;
 use Evolve\Core\Instrumentation\ObservationSink;
 use Evolve\Core\Instrumentation\ObservationType;
+use Evolve\Insight\Capture\DiagnosticCapturePolicy;
+use Evolve\Insight\Capture\DiagnosticEntry;
 
 final class DiagnosticBatchCollector implements ObservationSink
 {
     /**
-     * @var array<string, array{identifier: ExecutionIdentifier, kind: ExecutionKind, observations: list<Observation>, dropped: int}>
+     * @var array<string, array{identifier: ExecutionIdentifier, kind: ExecutionKind, observations: list<Observation>, dropped: int, diagnosticEntries: list<DiagnosticEntry>, droppedDiagnosticEntries: int}>
      */
     private array $activeBatches = array();
 
@@ -22,14 +24,23 @@ final class DiagnosticBatchCollector implements ObservationSink
      */
     private \WeakMap $finalizedIdentifiers;
 
+    private DiagnosticCapturePolicy $capturePolicy;
+
     public function __construct(
         private DiagnosticBatchSink $sink,
         private int $maximumRetainedObservationCount,
+        ?DiagnosticCapturePolicy $capturePolicy = null,
+        private int $maximumRetainedDiagnosticEntryCount = 16,
     ) {
         if ($this->maximumRetainedObservationCount <= 0) {
             throw new \InvalidArgumentException('Maximum retained observation count must be positive.');
         }
 
+        if ($this->maximumRetainedDiagnosticEntryCount <= 0) {
+            throw new \InvalidArgumentException('Maximum retained diagnostic entry count must be positive.');
+        }
+
+        $this->capturePolicy = $capturePolicy ?? new DiagnosticCapturePolicy();
         $this->finalizedIdentifiers = new \WeakMap();
     }
 
@@ -47,6 +58,8 @@ final class DiagnosticBatchCollector implements ObservationSink
                 'kind' => $observation->kind(),
                 'observations' => array(),
                 'dropped' => 0,
+                'diagnosticEntries' => array(),
+                'droppedDiagnosticEntries' => 0,
             );
         }
 
@@ -69,7 +82,32 @@ final class DiagnosticBatchCollector implements ObservationSink
             $state['kind'],
             $state['observations'],
             $state['dropped'],
+            $state['diagnosticEntries'],
+            $state['droppedDiagnosticEntries'],
         ));
+    }
+
+    public function capture(DiagnosticEntry $candidate): void
+    {
+        $identifierValue = $candidate->executionIdentifier();
+
+        if (!isset($this->activeBatches[$identifierValue])) {
+            return;
+        }
+
+        $accepted = $this->capturePolicy->apply($candidate);
+
+        if ($accepted === null) {
+            return;
+        }
+
+        if (count($this->activeBatches[$identifierValue]['diagnosticEntries']) < $this->maximumRetainedDiagnosticEntryCount) {
+            $this->activeBatches[$identifierValue]['diagnosticEntries'][] = $accepted;
+
+            return;
+        }
+
+        $this->activeBatches[$identifierValue]['droppedDiagnosticEntries']++;
     }
 
     private function record(string $identifierValue, Observation $observation): void

@@ -12,13 +12,21 @@ final class DiagnosticBatchSnapshot
     private array $observations;
 
     /**
+     * @var list<DiagnosticEntrySnapshot>
+     */
+    private array $diagnosticEntries;
+
+    /**
      * @param list<DiagnosticObservationSnapshot> $observations
+     * @param array<array-key, mixed> $diagnosticEntries
      */
     public function __construct(
         private string $executionIdentifier,
         private string $executionKind,
         array $observations,
         private int $droppedObservationCount,
+        array $diagnosticEntries = array(),
+        private int $droppedDiagnosticEntryCount = 0,
     ) {
         if ($this->executionIdentifier === '') {
             throw new \InvalidArgumentException('Execution identifier must not be empty.');
@@ -28,7 +36,22 @@ final class DiagnosticBatchSnapshot
             throw new \InvalidArgumentException('Dropped observation count must not be negative.');
         }
 
+        if ($this->droppedDiagnosticEntryCount < 0) {
+            throw new \InvalidArgumentException('Dropped diagnostic entry count must not be negative.');
+        }
+
+        $validatedDiagnosticEntries = array();
+
+        foreach ($diagnosticEntries as $entry) {
+            if (!$entry instanceof DiagnosticEntrySnapshot) {
+                throw new \InvalidArgumentException('Diagnostic entries must be diagnostic entry snapshots.');
+            }
+
+            $validatedDiagnosticEntries[] = $entry;
+        }
+
         $this->observations = $observations;
+        $this->diagnosticEntries = $validatedDiagnosticEntries;
     }
 
     public function executionIdentifier(): string
@@ -52,5 +75,18 @@ final class DiagnosticBatchSnapshot
     public function droppedObservationCount(): int
     {
         return $this->droppedObservationCount;
+    }
+
+    /**
+     * @return list<DiagnosticEntrySnapshot>
+     */
+    public function diagnosticEntries(): array
+    {
+        return $this->diagnosticEntries;
+    }
+
+    public function droppedDiagnosticEntryCount(): int
+    {
+        return $this->droppedDiagnosticEntryCount;
     }
 }

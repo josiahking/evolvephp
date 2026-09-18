@@ -6,9 +6,9 @@ Diagnostic batch collection and storage-projection foundation for EvolvePHP 2.
 
 ## Responsibility
 
-Evolve Insight consumes safe Core execution observations and collects them into immutable, bounded diagnostic batches. This package provides the storage-neutral `DiagnosticBatchSink` contract, immutable `DiagnosticBatch` values and `DiagnosticBatchCollector`, which implements Core's `ObservationSink` boundary.
+Evolve Insight consumes safe Core execution observations and collects them into immutable, bounded diagnostic batches. This package provides the storage-neutral `DiagnosticBatchSink` contract, immutable `DiagnosticBatch` values, `DiagnosticBatchCollector`, which implements Core's `ObservationSink` boundary, and an explicit `DiagnosticPipeline` composition helper for applications that opt in to collection plus persistence.
 
-Insight also provides a storage-neutral projection boundary for finalized diagnostic batches. `DiagnosticBatchProjector` detaches a `DiagnosticBatch` into a primitive-only `DiagnosticBatchSnapshot` made of string-backed execution identity, execution kind, ordered `DiagnosticObservationSnapshot` values and the dropped observation count. Snapshots do not retain Core `Observation`, execution identifier, request, response, container, throwable or execution-scope objects.
+Insight also provides a storage-neutral projection boundary for finalized diagnostic batches. `DiagnosticBatchProjector` detaches a `DiagnosticBatch` into a primitive-only `DiagnosticBatchSnapshot` made of string-backed execution identity, execution kind, ordered `DiagnosticObservationSnapshot` values, ordered accepted diagnostic-entry snapshots and separate dropped observation and diagnostic-entry counts. Snapshots do not retain Core `Observation`, execution identifier, diagnostic-entry objects, diagnostic-attribute objects, request, response, container, throwable or execution-scope objects.
 
 Insight includes a detached diagnostic capture-policy foundation for future rich diagnostic sources. `DiagnosticEntry` and `DiagnosticAttribute` represent bounded primitive-only diagnostic data: execution identifier value, diagnostic category, diagnostic name and ordered attributes whose values are limited to `string`, `int`, `float`, `bool` or `null`. Attribute names, entry identifiers, categories, names and string values are bounded, and non-finite floats, arrays, objects, resources and callables are not accepted.
 
@@ -17,8 +17,13 @@ Current bounded behavior:
 - collection starts only after Core reports an execution start
 - active collection state is isolated by Core execution identifier value
 - observations for unknown or already completed executions are ignored
+- candidate diagnostic entries are retained only when their execution identifier exactly matches an active execution
+- diagnostic entries for unknown or already completed executions are ignored and never start collection
+- candidate diagnostic entries pass through `DiagnosticCapturePolicy` before becoming retainable batch data
+- retained diagnostic entries are bounded per execution and keep accepted arrival order
 - retained observations are bounded per execution
 - dropped observation counts are deterministic and non-negative
+- dropped diagnostic-entry counts are deterministic, non-negative and count only policy-accepted entries that exceeded the per-execution entry bound
 - completed executions are forgotten before the finalized batch is handed to the configured sink
 - sink failures propagate to the existing Core instrumentation boundary
 
@@ -27,7 +32,7 @@ Current storage behavior:
 - `DiagnosticBatchStore` defines minimal save, exact execution-identifier lookup and newest-first bounded reads
 - `InMemoryDiagnosticBatchStore` keeps snapshots in insertion order, requires an explicit positive stored-batch count and prunes oldest retained snapshots first
 - `SqliteDiagnosticBatchStore` provides an optional persistent local-development adapter for caller-supplied SQLite `PDO` connections, requires an explicit positive stored-batch count and prunes by SQLite sequence order
-- `DiagnosticBatchSnapshotCodec` stores snapshots as a versioned primitive JSON payload and rejects malformed, unsupported or unexpected persisted data during reads
+- `DiagnosticBatchSnapshotCodec` stores snapshots as a versioned primitive JSON payload, writes the current expanded schema with diagnostic entries, continues to read legacy observation-only version 1 payloads, and rejects malformed, unsupported or unexpected persisted data during reads
 - duplicate execution identifiers are rejected and never replace the original snapshot
 - `StoringDiagnosticBatchSink` projects accepted batches and saves the detached snapshot through a configured store
 - storage remains optional and unwired; installing Insight does not create storage automatically
@@ -49,7 +54,7 @@ Current capture-policy behavior:
 - sampling controls diagnostic volume only; it is not authorization, authentication, security enforcement, redaction, legal retention or an error-retention guarantee
 - accepted attributes keep their original order, use first-accepted-wins duplicate-name handling and are capped by a deterministic retained-attribute limit
 
-The capture-policy foundation does not add rich HTTP, database, cache, log, event, queue or other watchers. Capture entries are not integrated into diagnostic batches, storage snapshots, SQLite payloads or automatic runtime wiring.
+The capture-policy foundation does not add rich HTTP, database, cache, log, event, queue or other watchers. Candidate capture entries can be submitted explicitly to `DiagnosticBatchCollector` or `DiagnosticPipeline`. Policy-accepted entries become part of the same finalized execution batch as Core observations, are projected into detached diagnostic-entry snapshots and can persist through the configured projector, snapshot codec and store. This integration remains opt-in and does not add automatic runtime wiring.
 
 ## Requirements
 

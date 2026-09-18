@@ -10,8 +10,13 @@ use Evolve\Core\Execution\ProcessReuseDecision;
 use Evolve\Core\Instrumentation\Observation;
 use Evolve\Core\Instrumentation\ObservationOutcome;
 use Evolve\Core\Instrumentation\ObservationType;
+use Evolve\Insight\Capture\DiagnosticAttribute;
+use Evolve\Insight\Capture\DiagnosticDataClassification;
+use Evolve\Insight\Capture\DiagnosticEntry;
 use Evolve\Insight\DiagnosticBatch;
 use Evolve\Insight\Storage\DiagnosticBatchProjector;
+use Evolve\Insight\Storage\DiagnosticEntryAttributeSnapshot;
+use Evolve\Insight\Storage\DiagnosticEntrySnapshot;
 use Evolve\Insight\Storage\DiagnosticObservationSnapshot;
 use PHPUnit\Framework\TestCase;
 
@@ -119,6 +124,51 @@ final class DiagnosticBatchProjectorTest extends TestCase
         self::assertSame('quarantine-required', $observation->reuseDecision());
     }
 
+    public function testItProjectsDiagnosticEntriesIntoDetachedPrimitiveSnapshots(): void
+    {
+        $identifier = ExecutionIdentifier::generate();
+        $entry = new DiagnosticEntry(
+            $identifier->value(),
+            'database',
+            'query',
+            array(
+                new DiagnosticAttribute('statement', DiagnosticDataClassification::PublicOperationalMetadata, 'select-user'),
+                new DiagnosticAttribute('duration_ms', DiagnosticDataClassification::InternalOperationalMetadata, 12),
+                new DiagnosticAttribute('sample_rate', DiagnosticDataClassification::InternalOperationalMetadata, 1.0),
+                new DiagnosticAttribute('cached', DiagnosticDataClassification::InternalOperationalMetadata, false),
+                new DiagnosticAttribute('tenant', DiagnosticDataClassification::InternalOperationalMetadata, null),
+            ),
+        );
+        $batch = new DiagnosticBatch(
+            $identifier,
+            ExecutionKind::HttpRequest,
+            array(new Observation(ObservationType::ExecutionStarted, $identifier, ExecutionKind::HttpRequest)),
+            0,
+            array($entry),
+            2,
+        );
+
+        $snapshot = (new DiagnosticBatchProjector())->project($batch);
+
+        self::assertSame(2, $snapshot->droppedDiagnosticEntryCount());
+        self::assertEquals(
+            array(
+                new DiagnosticEntrySnapshot(
+                    'database',
+                    'query',
+                    array(
+                        new DiagnosticEntryAttributeSnapshot('statement', 'select-user'),
+                        new DiagnosticEntryAttributeSnapshot('duration_ms', 12),
+                        new DiagnosticEntryAttributeSnapshot('sample_rate', 1.0),
+                        new DiagnosticEntryAttributeSnapshot('cached', false),
+                        new DiagnosticEntryAttributeSnapshot('tenant', null),
+                    ),
+                ),
+            ),
+            $snapshot->diagnosticEntries(),
+        );
+    }
+
     public function testSnapshotApiDoesNotExposeSourceCoreObjects(): void
     {
         $identifier = ExecutionIdentifier::generate();
@@ -133,9 +183,32 @@ final class DiagnosticBatchProjectorTest extends TestCase
 
         self::assertContainsOnlyInstancesOf(DiagnosticObservationSnapshot::class, $snapshot->observations());
         self::assertSame(
-            array('droppedObservationCount', 'executionIdentifier', 'executionKind', 'observations'),
+            array('diagnosticEntries', 'droppedDiagnosticEntryCount', 'droppedObservationCount', 'executionIdentifier', 'executionKind', 'observations'),
             $this->publicMethods($snapshot),
         );
+    }
+
+    public function testSnapshotApiDoesNotExposeSourceDiagnosticEntryObjects(): void
+    {
+        $identifier = ExecutionIdentifier::generate();
+        $batch = new DiagnosticBatch(
+            $identifier,
+            ExecutionKind::HttpRequest,
+            array(),
+            0,
+            array(new DiagnosticEntry(
+                $identifier->value(),
+                'database',
+                'query',
+                array(new DiagnosticAttribute('statement', DiagnosticDataClassification::PublicOperationalMetadata, 'select-user')),
+            )),
+            0,
+        );
+
+        $snapshot = (new DiagnosticBatchProjector())->project($batch);
+
+        self::assertContainsOnlyInstancesOf(DiagnosticEntrySnapshot::class, $snapshot->diagnosticEntries());
+        self::assertContainsOnlyInstancesOf(DiagnosticEntryAttributeSnapshot::class, $snapshot->diagnosticEntries()[0]->attributes());
     }
 
     /**

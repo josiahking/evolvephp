@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Evolve\Insight\Tests\Unit\Storage;
 
 use Evolve\Insight\Storage\DiagnosticBatchSnapshot;
+use Evolve\Insight\Storage\DiagnosticEntryAttributeSnapshot;
+use Evolve\Insight\Storage\DiagnosticEntrySnapshot;
 use Evolve\Insight\Storage\DiagnosticObservationSnapshot;
 use Evolve\Insight\Storage\SqliteDiagnosticBatchStore;
 use PHPUnit\Framework\TestCase;
@@ -350,6 +352,33 @@ final class SqliteDiagnosticBatchStoreTest extends TestCase
         );
         self::assertNull($found?->observations()[0]->outcome());
         self::assertNull($found?->observations()[1]->reuseDecision());
+    }
+
+    public function testRichDiagnosticSnapshotUsesExistingFindLatestAndRetentionSemantics(): void
+    {
+        $store = new SqliteDiagnosticBatchStore($this->pdo(), 1);
+        $rich = new DiagnosticBatchSnapshot(
+            'execution-1',
+            'http-request',
+            array(),
+            0,
+            array(new DiagnosticEntrySnapshot(
+                'database',
+                'query',
+                array(new DiagnosticEntryAttributeSnapshot('sample_rate', 1.0)),
+            )),
+            1,
+        );
+        $newer = $this->snapshot('execution-2');
+
+        $store->save($rich);
+        self::assertEquals($rich, $store->find('execution-1'));
+        self::assertEquals(array($rich), $store->latest(10));
+
+        $store->save($newer);
+
+        self::assertNull($store->find('execution-1'));
+        self::assertEquals(array($newer), $store->latest(10));
     }
 
     private function pdo(?string $path = null): \PDO

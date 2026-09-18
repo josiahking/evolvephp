@@ -8,6 +8,8 @@ use Evolve\Core\Execution\ProcessReuseDecision;
 use Evolve\Core\Instrumentation\Observation;
 use Evolve\Core\Instrumentation\ObservationOutcome;
 use Evolve\Core\Instrumentation\ObservationType;
+use Evolve\Insight\Capture\DiagnosticAttribute;
+use Evolve\Insight\Capture\DiagnosticEntry;
 use Evolve\Insight\DiagnosticBatch;
 
 final class DiagnosticBatchProjector
@@ -22,6 +24,11 @@ final class DiagnosticBatchProjector
                 $batch->observations(),
             ),
             $batch->droppedObservationCount(),
+            array_map(
+                fn (DiagnosticEntry $entry): DiagnosticEntrySnapshot => $this->projectEntry($entry),
+                $batch->diagnosticEntries(),
+            ),
+            $batch->droppedDiagnosticEntryCount(),
         );
     }
 
@@ -63,5 +70,20 @@ final class DiagnosticBatchProjector
             ProcessReuseDecision::QuarantineRequired => 'quarantine-required',
             null => null,
         };
+    }
+
+    private function projectEntry(DiagnosticEntry $entry): DiagnosticEntrySnapshot
+    {
+        return new DiagnosticEntrySnapshot(
+            $entry->category(),
+            $entry->name(),
+            array_map(
+                fn (DiagnosticAttribute $attribute): DiagnosticEntryAttributeSnapshot => new DiagnosticEntryAttributeSnapshot(
+                    $attribute->name(),
+                    $attribute->value(),
+                ),
+                $entry->attributes(),
+            ),
+        );
     }
 }
