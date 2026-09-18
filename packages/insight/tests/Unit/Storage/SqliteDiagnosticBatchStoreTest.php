@@ -9,6 +9,8 @@ use Evolve\Insight\Storage\DiagnosticEntryAttributeSnapshot;
 use Evolve\Insight\Storage\DiagnosticEntrySnapshot;
 use Evolve\Insight\Storage\DiagnosticObservationSnapshot;
 use Evolve\Insight\Storage\SqliteDiagnosticBatchStore;
+use Evolve\Insight\Query\DiagnosticBatchQuery;
+use Evolve\Insight\Query\DiagnosticBatchSummary;
 use PHPUnit\Framework\TestCase;
 
 final class SqliteDiagnosticBatchStoreTest extends TestCase
@@ -381,14 +383,156 @@ final class SqliteDiagnosticBatchStoreTest extends TestCase
         self::assertEquals(array($newer), $store->latest(10));
     }
 
+    public function testQueryReturnsNewestFirstBoundedPagesBySequenceWithoutDuplicates(): void
+    {
+        $store = new SqliteDiagnosticBatchStore($this->pdo(), 10);
+        $first = $this->snapshot('execution-1');
+        $second = $this->snapshot('execution-2');
+        $third = $this->snapshot('execution-3');
+        $fourth = $this->snapshot('execution-4');
+
+        foreach (array($first, $second, $third, $fourth) as $snapshot) {
+            $store->save($snapshot);
+        }
+
+        $firstPage = $store->query(new DiagnosticBatchQuery(2));
+        $secondPage = $store->query(new DiagnosticBatchQuery(2, $firstPage->nextCursor()));
+
+        self::assertSame(array('execution-4', 'execution-3'), $this->summaryIdentifiers($firstPage->items()));
+        self::assertSame('execution-3', $firstPage->nextCursor());
+        self::assertSame(array('execution-2', 'execution-1'), $this->summaryIdentifiers($secondPage->items()));
+        self::assertNull($secondPage->nextCursor());
+    }
+
+    public function testQueryFiltersAreExactAndUseSameEntryCategoryNameSemantics(): void
+    {
+        $store = new SqliteDiagnosticBatchStore($this->pdo(), 10);
+        $first = $this->snapshot('execution-1', 'http-request', array(
+            new DiagnosticEntrySnapshot('evolve.execution', 'handler-failed', array()),
+            new DiagnosticEntrySnapshot('evolve.runtime', 'scope-close-failed', array()),
+        ));
+        $second = $this->snapshot('execution-2', 'queue-message', array(
+            new DiagnosticEntrySnapshot('evolve.execution', 'scope-close-failed', array()),
+        ));
+        $third = $this->snapshot('execution-3', 'http-request', array(
+            new DiagnosticEntrySnapshot('database', 'query', array()),
+        ));
+
+        foreach (array($first, $second, $third) as $snapshot) {
+            $store->save($snapshot);
+        }
+
+        self::assertSame(array('execution-3', 'execution-1'), $this->summaryIdentifiers($store->query(new DiagnosticBatchQuery(10, executionKind: 'http-request'))->items()));
+        self::assertSame(array('execution-2', 'execution-1'), $this->summaryIdentifiers($store->query(new DiagnosticBatchQuery(10, diagnosticCategory: 'evolve.execution'))->items()));
+        self::assertSame(array('execution-2', 'execution-1'), $this->summaryIdentifiers($store->query(new DiagnosticBatchQuery(10, diagnosticName: 'scope-close-failed'))->items()));
+        self::assertSame(array('execution-2'), $this->summaryIdentifiers($store->query(new DiagnosticBatchQuery(10, diagnosticCategory: 'evolve.execution', diagnosticName: 'scope-close-failed'))->items()));
+        self::assertSame(array(), $this->summaryIdentifiers($store->query(new DiagnosticBatchQuery(10, executionKind: 'http-request', diagnosticCategory: 'evolve.execution', diagnosticName: 'scope-close-failed'))->items()));
+    }
+
+    public function testFilteredQueryPaginationSkipsInterleavedNonMatchesWithoutSkippingMatches(): void
+    {
+        $store = new SqliteDiagnosticBatchStore($this->pdo(), 10);
+
+        foreach (array(
+            $this->nonMatchingSnapshot('execution-0', 'queue-message'),
+            $this->matchingSnapshot('execution-1'),
+            $this->nonMatchingSnapshot('execution-2', 'http-request'),
+            $this->matchingSnapshot('execution-3'),
+            $this->sameEntryNonMatchingSnapshot('execution-4'),
+            $this->matchingSnapshot('execution-5'),
+        ) as $snapshot) {
+            $store->save($snapshot);
+        }
+
+        $query = new DiagnosticBatchQuery(
+            2,
+            executionKind: 'http-request',
+            diagnosticCategory: 'evolve.execution',
+            diagnosticName: 'handler-failed',
+        );
+        $firstPage = $store->query($query);
+        $secondPage = $store->query(new DiagnosticBatchQuery(
+            2,
+            $firstPage->nextCursor(),
+            executionKind: 'http-request',
+            diagnosticCategory: 'evolve.execution',
+            diagnosticName: 'handler-failed',
+        ));
+
+        self::assertSame(array('execution-5', 'execution-3'), $this->summaryIdentifiers($firstPage->items()));
+        self::assertSame('execution-3', $firstPage->nextCursor());
+        self::assertSame(array('execution-1'), $this->summaryIdentifiers($secondPage->items()));
+        self::assertNull($secondPage->nextCursor());
+        self::assertSame(array('execution-5', 'execution-3', 'execution-1'), $this->summaryIdentifiers(array_merge($firstPage->items(), $secondPage->items())));
+    }
+
+    public function testQueryRejectsUnknownAndPrunedCursorsButRetainedCursorContinues(): void
+    {
+        $store = new SqliteDiagnosticBatchStore($this->pdo(), 2);
+        $store->save($this->snapshot('execution-1'));
+        $store->save($this->snapshot('execution-2'));
+        $store->save($this->snapshot('execution-3'));
+
+        try {
+            $store->query(new DiagnosticBatchQuery(1, 'execution-1'));
+            self::fail('Expected pruned cursor to be rejected.');
+        } catch (\InvalidArgumentException $exception) {
+            self::assertSame('Diagnostic query cursor does not reference a retained batch.', $exception->getMessage());
+        }
+
+        self::assertSame(array(), $this->summaryIdentifiers($store->query(new DiagnosticBatchQuery(10, 'execution-2'))->items()));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Diagnostic query cursor does not reference a retained batch.');
+
+        $store->query(new DiagnosticBatchQuery(1, 'missing-execution'));
+    }
+
+    public function testQueryFailsExplicitlyWhenRelevantPayloadIsCorrupt(): void
+    {
+        $pdo = $this->pdo();
+        new SqliteDiagnosticBatchStore($pdo, 10);
+        $this->insertRaw($pdo, 'execution-1', '{');
+        $store = new SqliteDiagnosticBatchStore($pdo, 10);
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $store->query(new DiagnosticBatchQuery(10));
+    }
+
     private function pdo(?string $path = null): \PDO
     {
         return new \PDO($path === null ? 'sqlite::memory:' : 'sqlite:' . $path);
     }
 
-    private function snapshot(string $identifier, string $kind = 'http-request'): DiagnosticBatchSnapshot
+    /**
+     * @param list<DiagnosticEntrySnapshot> $entries
+     */
+    private function snapshot(string $identifier, string $kind = 'http-request', array $entries = array()): DiagnosticBatchSnapshot
     {
-        return new DiagnosticBatchSnapshot($identifier, $kind, array(), 0);
+        return new DiagnosticBatchSnapshot($identifier, $kind, array(), 0, $entries);
+    }
+
+    private function matchingSnapshot(string $identifier): DiagnosticBatchSnapshot
+    {
+        return $this->snapshot($identifier, 'http-request', array(
+            new DiagnosticEntrySnapshot('evolve.execution', 'handler-failed', array()),
+        ));
+    }
+
+    private function nonMatchingSnapshot(string $identifier, string $kind): DiagnosticBatchSnapshot
+    {
+        return $this->snapshot($identifier, $kind, array(
+            new DiagnosticEntrySnapshot('evolve.runtime', 'scope-close-failed', array()),
+        ));
+    }
+
+    private function sameEntryNonMatchingSnapshot(string $identifier): DiagnosticBatchSnapshot
+    {
+        return $this->snapshot($identifier, 'http-request', array(
+            new DiagnosticEntrySnapshot('evolve.execution', 'scope-close-failed', array()),
+            new DiagnosticEntrySnapshot('evolve.runtime', 'handler-failed', array()),
+        ));
     }
 
     private function insertRaw(\PDO $pdo, string $identifier, string $payload): void
@@ -421,5 +565,15 @@ final class SqliteDiagnosticBatchStoreTest extends TestCase
         }
 
         return $path;
+    }
+
+    /**
+     * @param list<DiagnosticBatchSummary> $summaries
+     *
+     * @return list<string>
+     */
+    private function summaryIdentifiers(array $summaries): array
+    {
+        return array_map(static fn ($summary): string => $summary->executionIdentifier(), $summaries);
     }
 }
