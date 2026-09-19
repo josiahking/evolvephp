@@ -43,7 +43,7 @@ final class ExecutionOrchestrator
     /**
      * @param callable(ExecutionContext, ExecutionScope): mixed $operation
      */
-    public function execute(ExecutionKind $kind, callable $operation): ExecutionOutcome
+    public function execute(ExecutionKind $kind, callable $operation, ?ExecutionContextValues $values = null): ExecutionOutcome
     {
         if ($this->quarantined) {
             throw new ExecutionStartFailed('Execution orchestrator is quarantined and cannot accept more work.');
@@ -56,7 +56,7 @@ final class ExecutionOrchestrator
             throw new ExecutionStartFailed('Execution could not be started.', 0, $exception);
         }
 
-        $context = new ExecutionContext($identifier, $kind);
+        $context = new ExecutionContext($identifier, $kind, $values ?? new ExecutionContextValues());
         $primarySucceeded = false;
         $primaryResult = null;
         $primaryThrowable = null;

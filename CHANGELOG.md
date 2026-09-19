@@ -4,6 +4,7 @@
 
 ### Core
 
+- Added immutable Core execution context values for an explicit per-execution locale and timezone. Absent values remain `null`, Core does not create an ambient current execution or mutate PHP process locale/timezone defaults, while translation, formatting, locale negotiation and fallback behavior remain outside Core and belong to higher-level localization and application policy.
 - Added explicit multi-consumer Core execution observations. Applications can configure no sink, one sink or an ordered list of generic observation sinks; Core invokes every sink in declaration order, isolates consumer failures and reports every safe instrumentation failure on the execution outcome.
 - Added generic execution-context attachment contracts for caller-owned external context lifecycles. Successful attachments detach before execution-scope close, attachment-establishment failures remain non-fatal instrumentation failures, and attachment-detach failures are treated as execution-isolation cleanup failures that require quarantine while preserving the primary handler result or throwable.
 

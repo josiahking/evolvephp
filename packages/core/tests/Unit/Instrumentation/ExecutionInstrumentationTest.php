@@ -12,6 +12,7 @@ use Evolve\Core\Exception\ExecutionResetFailed;
 use Evolve\Core\Execution\ExecutionContext;
 use Evolve\Core\Execution\ExecutionContextAttacher;
 use Evolve\Core\Execution\ExecutionContextAttachment;
+use Evolve\Core\Execution\ExecutionContextValues;
 use Evolve\Core\Execution\ExecutionKind;
 use Evolve\Core\Execution\ExecutionOrchestrator;
 use Evolve\Core\Execution\ExecutionScope;
@@ -168,19 +169,26 @@ final class ExecutionInstrumentationTest extends TestCase
         $sink = new RecordingObservationSink('observe', $events);
         $first = new RecordingExecutionContextAttacher('first', $events);
         $second = new RecordingExecutionContextAttacher('second', $events);
+        $values = new ExecutionContextValues('en-NG', 'Africa/Lagos');
+        $operationValues = null;
 
         $outcome = (new ExecutionOrchestrator($this->frozenRegistry(), $sink, [$first, $second]))->execute(
             ExecutionKind::ScheduledJob,
-            function (ExecutionContext $context, ExecutionScope $scope) use (&$events): string {
+            function (ExecutionContext $context, ExecutionScope $scope) use (&$events, &$operationValues): string {
+                $operationValues = $context->values();
                 $scope->registerResetParticipant('reset', $this->participant(static function () use (&$events): void {
                     $events[] = 'reset';
                 }));
 
                 return 'handled';
             },
+            $values,
         );
 
         self::assertSame('handled', $outcome->primaryResult());
+        self::assertSame($values, $operationValues);
+        self::assertSame([$values], $first->attachedValues());
+        self::assertSame([$values], $second->attachedValues());
         self::assertSame(
             [
                 'first:attach',
@@ -905,6 +913,11 @@ final class RecordingExecutionContextAttacher implements ExecutionContextAttache
     private array $attachments = [];
 
     /**
+     * @var list<ExecutionContextValues>
+     */
+    private array $attachedValues = [];
+
+    /**
      * @param list<string> $events
      */
     public function __construct(
@@ -918,6 +931,7 @@ final class RecordingExecutionContextAttacher implements ExecutionContextAttache
     public function attach(ExecutionContext $context): ExecutionContextAttachment
     {
         $this->events[] = $this->name . ':attach';
+        $this->attachedValues[] = $context->values();
         $attachment = new RecordingExecutionContextAttachment($this->name, $this->events, $this->detachFailure);
         $this->attachments[] = $attachment;
 
@@ -927,6 +941,14 @@ final class RecordingExecutionContextAttacher implements ExecutionContextAttache
     public function attachmentCount(): int
     {
         return count($this->attachments);
+    }
+
+    /**
+     * @return list<ExecutionContextValues>
+     */
+    public function attachedValues(): array
+    {
+        return $this->attachedValues;
     }
 
     /**
