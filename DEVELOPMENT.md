@@ -8,13 +8,50 @@ The preserved EvolvePHP 1 runtime and the former legacy root suite remain preser
 
 ## Requirements
 
-- PHP 8.4
-- Composer
+- PHP 8.4+
+- Composer 2
 - Git
 
 EvolvePHP 2 requires PHP 8.4 as its baseline. GitHub Actions exercises the current root quality pipeline on PHP 8.4 and PHP 8.5 for the current tooling and package foundation.
 
 Platform emulation must not be used for runtime compatibility claims. Do not use `config.platform.php`, `--ignore-platform-req=php` or `--ignore-platform-reqs` to generate the root lockfile or claim PHP compatibility.
+
+GitHub CLI is optional. It is useful only for maintainers and contributors who choose GitHub CLI workflows; it is not a framework runtime requirement.
+
+## Portable Workstation Bootstrap
+
+Start from the expected branch or ref and fetch the latest remote state before new work:
+
+```bash
+git fetch --prune
+git status
+```
+
+The working tree should be clean before a new change begins. The committed lockfile is authoritative for normal setup, so ordinary setup uses `composer install`, not `composer update`.
+
+Validate the Composer manifest and platform before installing dependencies:
+
+```bash
+composer validate --strict --check-lock
+composer check-platform-reqs --lock
+composer install --no-interaction
+```
+
+Do not bypass platform requirements to claim compatibility. Unexpected Composer plugin prompts should be reviewed before they are approved.
+
+EvolvePHP owns text checkout line endings through `.gitattributes`. Repository text is checked out using LF, local or system `core.autocrlf` should not determine EvolvePHP text checkout behavior, and `.editorconfig` and PHP-CS-Fixer are aligned with the repository-owned LF policy.
+
+Inspect the effective EOL state portably when needed:
+
+```bash
+git ls-files --eol
+```
+
+Before development begins, a ready checkout has the expected branch or ref, a clean working tree, valid PHP and Composer platform requirements, dependencies installed from `composer.lock`, repository files showing the expected LF behavior, and passing root quality:
+
+```bash
+composer quality
+```
 
 ## Package Resolution
 
