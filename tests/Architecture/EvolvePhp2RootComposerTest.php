@@ -73,8 +73,10 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/bridge-symfony' => '^2.0@dev',
             'evolvephp/dev-tools' => '^2.0@dev',
             'evolvephp/insight' => '^2.0@dev',
+            'evolvephp/observe' => '^2.0@dev',
             'evolvephp/testing' => '^2.0@dev',
             'friendsofphp/php-cs-fixer' => '^3.95',
+            'open-telemetry/sdk' => '^1.15',
             'phpstan/phpstan' => '^2.2',
             'phpstan/phpstan-phpunit' => '^2.0',
             'phpunit/phpunit' => '^13.2',
@@ -101,6 +103,14 @@ final class EvolvePhp2RootComposerTest extends TestCase
         }
 
         $this->assertTrue($manifest['config']['sort-packages']);
+        $this->assertArrayHasKey('allow-plugins', $manifest['config']);
+        $this->assertSame(
+            array(
+                'php-http/discovery' => false,
+                'tbachert/spi' => false,
+            ),
+            $manifest['config']['allow-plugins']
+        );
         $this->assertFalse(isset($manifest['config']['platform']), 'composer.json must not emulate Composer platform configuration.');
 
         foreach ($this->legacyDependencies() as $package) {
@@ -136,6 +146,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test:http' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http',
             'test:insight' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite insight',
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
+            'test:observe' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe',
             'test:plugin' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin',
             'test:testing' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing',
         );
@@ -196,7 +207,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         }
     }
 
-    public function testReleaseMapContainsOnlyTheThirteenReleasePackages(): void
+    public function testReleaseMapContainsOnlyTheFourteenReleasePackages(): void
     {
         $map = $this->readJsonFile('release-packages.json');
 
@@ -207,6 +218,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
+                array('name' => 'evolvephp/observe', 'directory' => 'packages/observe'),
                 array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
                 array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
@@ -248,6 +260,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/http',
             'evolvephp/insight',
             'evolvephp/module',
+            'evolvephp/observe',
             'evolvephp/plugin',
             'evolvephp/testing',
         );

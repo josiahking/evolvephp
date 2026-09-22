@@ -19,6 +19,7 @@ return static function (DeptracConfig $config): void {
             'packages/bridge-remote/src',
             'packages/core/src',
             'packages/insight/src',
+            'packages/observe/src',
             'packages/dev-tools/src',
             'packages/http/src',
             'packages/module/src',
@@ -69,6 +70,15 @@ return static function (DeptracConfig $config): void {
             $insight = Layer::withName('Insight')->collectors(
                 DirectoryConfig::create('packages/insight/src/.*'),
             ),
+            $observe = Layer::withName('Observe')->collectors(
+                DirectoryConfig::create('packages/observe/src/.*'),
+            ),
+            $openTelemetryApi = Layer::withName('OpenTelemetryApi')->collectors(
+                ClassLikeConfig::create('^OpenTelemetry\\API\\.*'),
+            ),
+            $openTelemetrySdk = Layer::withName('OpenTelemetrySdk')->collectors(
+                ClassLikeConfig::create('^OpenTelemetry\\SDK\\.*'),
+            ),
             $devTools = Layer::withName('DevTools')->collectors(
                 DirectoryConfig::create('packages/dev-tools/src/.*'),
             ),
@@ -100,6 +110,9 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($psrHttpServer),
             Ruleset::forLayer($core)->accesses($contracts, $psrContainer),
             Ruleset::forLayer($insight)->accesses($core),
+            Ruleset::forLayer($observe)->accesses($openTelemetryApi, $openTelemetrySdk),
+            Ruleset::forLayer($openTelemetryApi),
+            Ruleset::forLayer($openTelemetrySdk),
             Ruleset::forLayer($devTools)->accesses($contracts, $core, $module, $plugin),
             Ruleset::forLayer($http)->accesses($contracts, $core, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($module)->accesses($contracts),

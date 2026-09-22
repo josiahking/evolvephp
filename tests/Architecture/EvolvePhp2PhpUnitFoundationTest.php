@@ -30,6 +30,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/dev-tools']);
         $this->assertArrayHasKey('evolvephp/insight', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/insight']);
+        $this->assertArrayHasKey('evolvephp/observe', $manifest['require-dev']);
+        $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/observe']);
+        $this->assertArrayHasKey('open-telemetry/sdk', $manifest['require-dev']);
+        $this->assertSame('^1.15', $manifest['require-dev']['open-telemetry/sdk']);
         $this->assertArrayHasKey('evolvephp/testing', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/testing']);
         $this->assertArrayHasKey('phpunit/phpunit', $manifest['require-dev']);
@@ -53,7 +57,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         }
     }
 
-    public function testRootPhpUnitConfigurationDefinesThirteenPackageSuites(): void
+    public function testRootPhpUnitConfigurationDefinesFourteenPackageSuites(): void
     {
         $path = $this->projectPath('phpunit.xml.dist');
 
@@ -153,7 +157,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $developmentGuide);
         $this->assertMatchesPattern('/PHPUnit 13.*root|root.*PHPUnit 13/i', $developmentGuide);
 
-        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:insight', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:insight', 'test:module', 'test:observe', 'test:plugin', 'test:testing') as $script) {
             $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $developmentGuide);
         }
 
@@ -214,6 +218,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
                 'tests' => 'packages/insight/tests',
                 'smokeTest' => 'packages/insight/tests/Unit/PackageManifestTest.php',
             ),
+            'observe' => array(
+                'tests' => 'packages/observe/tests',
+                'smokeTest' => 'packages/observe/tests/Unit/PackageManifestTest.php',
+            ),
             'dev-tools' => array(
                 'tests' => 'packages/dev-tools/tests',
                 'smokeTest' => 'packages/dev-tools/tests/Unit/PackageManifestTest.php',
@@ -252,6 +260,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test:http' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http',
             'test:insight' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite insight',
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
+            'test:observe' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe',
             'test:plugin' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin',
             'test:testing' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing',
         );
@@ -271,8 +280,12 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'evolvephp/http',
             'evolvephp/insight',
             'evolvephp/module',
+            'evolvephp/observe',
             'evolvephp/plugin',
             'evolvephp/testing',
+            'open-telemetry/api',
+            'open-telemetry/context',
+            'open-telemetry/sdk',
             'phpunit/phpunit',
         );
     }
