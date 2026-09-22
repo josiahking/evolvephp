@@ -87,6 +87,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
 
         $this->assertSame(
             array(
+                '* text=auto eol=lf',
                 '# Package licences intentionally mirror root LICENSE.md byte-for-byte.',
                 'packages/*/LICENSE.md -whitespace',
             ),

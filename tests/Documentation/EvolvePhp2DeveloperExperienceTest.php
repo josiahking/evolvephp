@@ -14,6 +14,7 @@ final class EvolvePhp2DeveloperExperienceTest extends TestCase
     public function testRequiredRepositoryEditorAssetsExist(): void
     {
         foreach (array(
+            '.gitattributes',
             '.editorconfig',
             '.vscode/extensions.json',
             '.vscode/settings.json',
@@ -37,6 +38,7 @@ final class EvolvePhp2DeveloperExperienceTest extends TestCase
     public function testEditorConfigDeclaresPortableWhitespacePolicy(): void
     {
         $content = $this->readProjectFile('.editorconfig');
+        $attributes = $this->readProjectFile('.gitattributes');
 
         $this->assertMatchesPattern('/^root\s*=\s*true\s*$/m', $content);
         $this->assertMatchesPattern('/^\[\*\]\s*$/m', $content);
@@ -48,6 +50,9 @@ final class EvolvePhp2DeveloperExperienceTest extends TestCase
         $this->assertMatchesPattern('/^\[\*\.\{json,jsonc\}\]\s*\R(?:.*\R)*?^indent_size\s*=\s*4\s*$/m', $content);
         $this->assertMatchesPattern('/^\[\*\.\{ya?ml,yml\}\]\s*\R(?:.*\R)*?^indent_size\s*=\s*2\s*$/m', $content);
         $this->assertDoesNotMatchPattern('/trim_trailing_whitespace\s*=\s*true/i', $content);
+
+        $this->assertMatchesPattern('/^\*\s+text=auto\s+eol=lf\s*$/m', $attributes);
+        $this->assertMatchesPattern('/^packages\/\*\/LICENSE\.md\s+-whitespace\s*$/m', $attributes);
     }
 
     public function testRecommendedVsCodeExtensionsAreMinimalPhpEditorBaseline(): void
@@ -166,9 +171,10 @@ final class EvolvePhp2DeveloperExperienceTest extends TestCase
 
     public function testDocumentationDescribesPortableOptionalDeveloperExperienceContract(): void
     {
+        $development = $this->readProjectFile('DEVELOPMENT.md');
         $combined = $this->readProjectFile('README.md')
             . "\n"
-            . $this->readProjectFile('DEVELOPMENT.md');
+            . $development;
 
         foreach (array(
             '/VS Code.*optional developer tooling|optional developer tooling.*VS Code/i',
@@ -188,6 +194,16 @@ final class EvolvePhp2DeveloperExperienceTest extends TestCase
             '/multiple PHP versions.*PHP 8\.4\+|PHP 8\.4\+.*multiple PHP versions/i',
             '/integrated terminal.*PHP 8\.4\+|PHP 8\.4\+.*integrated terminal/i',
             '/runtime.*debugging.*deferred|debugging.*deferred.*runtime/i',
+            '/\.gitattributes.*LF|LF.*\.gitattributes/i',
+            '/repository-owned.*LF|LF.*repository-owned/i',
+            '/core\.autocrlf/i',
+            '/git ls-files --eol/i',
+            '/composer validate --strict --check-lock/i',
+            '/composer check-platform-reqs --lock/i',
+            '/composer install --no-interaction/i',
+            '/composer quality/i',
+            '/composer install.*composer update|composer update.*composer install/i',
+            '/Composer plugin prompts.*reviewed|reviewed.*Composer plugin prompts/i',
         ) as $pattern) {
             $this->assertMatchesPattern($pattern, $combined);
         }
@@ -200,6 +216,15 @@ final class EvolvePhp2DeveloperExperienceTest extends TestCase
             '/Xdebug.*configured|configured.*Xdebug/i',
         ) as $pattern) {
             $this->assertDoesNotMatchPattern($pattern, $combined);
+        }
+
+        foreach (array(
+            '#/d/Workspace#i',
+            '/C:\\\\Users/i',
+            '/josiahking/i',
+            '/emir005/i',
+        ) as $pattern) {
+            $this->assertDoesNotMatchPattern($pattern, $development);
         }
     }
 

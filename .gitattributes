@@ -1,2 +1,4 @@
+* text=auto eol=lf
+
 # Package licences intentionally mirror root LICENSE.md byte-for-byte.
 packages/*/LICENSE.md -whitespace
