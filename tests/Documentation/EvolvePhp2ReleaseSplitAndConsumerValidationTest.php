@@ -737,10 +737,11 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertSame(1, substr_count($workflow, 'name: Policy (PHP 8.4)'));
         $this->assertSame(1, substr_count($workflow, 'name: Workspace quality (PHP ${{ matrix.php }})'));
         $this->assertSame(1, substr_count($workflow, 'Run release package split validation'));
+        $this->assertSame(1, substr_count($workflow, 'Run prerelease consumer validation'));
         $this->assertSame(1, substr_count($workflow, 'Run application skeleton create-project validation'));
-        $this->assertStringContainsString('composer release:split:validate', $workflow);
-        $this->assertStringContainsString('composer release:skeleton:validate', $workflow);
-        $this->assertStringNotContainsString('release:consumer:validate', $workflow);
+        $this->assertSame(1, substr_count($workflow, 'composer release:split:validate'));
+        $this->assertSame(1, substr_count($workflow, 'composer release:consumer:validate'));
+        $this->assertSame(1, substr_count($workflow, 'composer release:skeleton:validate'));
         $this->assertStringContainsString('Run root supply-chain checks', $workflow);
         $this->assertStringContainsString('Run root policy tests', $workflow);
     }
