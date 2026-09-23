@@ -82,8 +82,9 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $this->assertStringContainsString('composer install --no-interaction --no-progress --prefer-dist', $job);
         $this->assertSame(1, substr_count($job, 'composer supply-chain'));
         $this->assertSame(1, substr_count($job, 'composer release:split:validate'));
+        $this->assertSame(1, substr_count($job, 'composer release:consumer:validate'));
+        $this->assertSame(1, substr_count($job, 'composer release:skeleton:validate'));
         $this->assertStringContainsString('php vendor/bin/phpunit --configuration phpunit.xml.dist tests/Architecture tests/Documentation', $job);
-        $this->assertStringNotContainsString('release:consumer:validate', $this->workflow);
         $this->assertDoesNotMatchPattern('/--working-dir=workspace|composer --working-dir=\.\s+install/', $job);
         $this->assertDoesNotMatchPattern('/composer update|--ignore-platform-reqs?|config\.platform\.php/', $job);
         $this->assertDoesNotMatchPattern('/phpunit.*(?:core|components|helpers|index\.php|route\.php)/i', $job);
