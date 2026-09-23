@@ -9,8 +9,11 @@ use InvalidArgumentException;
 use OpenTelemetry\API\Logs\NoopLoggerProvider;
 use OpenTelemetry\API\Metrics\Noop\NoopMeterProvider;
 use OpenTelemetry\API\Trace\NoopTracerProvider;
-use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
+use OpenTelemetry\SDK\Common\Attribute\Attributes;
+use OpenTelemetry\SDK\Resource\ResourceInfo;
 use OpenTelemetry\SDK\Trace\Sampler\AlwaysOnSampler;
+use OpenTelemetry\SemConv\Attributes\ServiceAttributes;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use stdClass;
@@ -44,7 +47,7 @@ final class OpenTelemetryCompositionTest extends TestCase
         $tracerProvider = new NoopTracerProvider();
         $meterProvider = new NoopMeterProvider();
         $loggerProvider = NoopLoggerProvider::getInstance();
-        $resource = ResourceInfoFactory::emptyResource();
+        $resource = $this->resourceWithServiceName('observe-test');
         $sampler = new AlwaysOnSampler();
 
         $composition = new OpenTelemetryComposition(
@@ -72,6 +75,17 @@ final class OpenTelemetryCompositionTest extends TestCase
         new OpenTelemetryComposition(enabled: true);
     }
 
+    public function testDirectEnabledCompositionRequiresResource(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Enabled Observe composition requires an explicit OpenTelemetry resource.');
+
+        new OpenTelemetryComposition(
+            enabled: true,
+            tracerProvider: new NoopTracerProvider(),
+        );
+    }
+
     public function testDirectDisabledCompositionRejectsTracerProvider(): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -90,7 +104,44 @@ final class OpenTelemetryCompositionTest extends TestCase
 
         new OpenTelemetryComposition(
             enabled: false,
-            resource: ResourceInfoFactory::emptyResource(),
+            resource: $this->resourceWithServiceName('observe-test'),
+        );
+    }
+
+    public function testDirectEnabledCompositionRejectsMissingServiceName(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Enabled Observe composition requires resource service.name.');
+
+        new OpenTelemetryComposition(
+            enabled: true,
+            tracerProvider: new NoopTracerProvider(),
+            resource: ResourceInfo::create(Attributes::create([])),
+        );
+    }
+
+    public function testDirectEnabledCompositionRejectsNonStringServiceName(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Enabled Observe composition resource service.name must be a string.');
+
+        new OpenTelemetryComposition(
+            enabled: true,
+            tracerProvider: new NoopTracerProvider(),
+            resource: ResourceInfo::create(Attributes::create([ServiceAttributes::SERVICE_NAME => 123])),
+        );
+    }
+
+    #[DataProvider('invalidServiceNames')]
+    public function testDirectEnabledCompositionRejectsInvalidStringServiceName(string $serviceName): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Enabled Observe composition resource service.name must be non-empty, unpadded and at most 255 bytes.');
+
+        new OpenTelemetryComposition(
+            enabled: true,
+            tracerProvider: new NoopTracerProvider(),
+            resource: $this->resourceWithServiceName($serviceName),
         );
     }
 
@@ -105,5 +156,24 @@ final class OpenTelemetryCompositionTest extends TestCase
             null,
             new stdClass(),
         ]);
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function invalidServiceNames(): array
+    {
+        return [
+            'empty' => [''],
+            'whitespace only' => ['   '],
+            'leading whitespace' => [' observe'],
+            'trailing whitespace' => ['observe '],
+            'too long' => [str_repeat('a', 256)],
+        ];
+    }
+
+    private function resourceWithServiceName(string $serviceName): ResourceInfo
+    {
+        return ResourceInfo::create(Attributes::create([ServiceAttributes::SERVICE_NAME => $serviceName]));
     }
 }

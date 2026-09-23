@@ -140,7 +140,12 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $manifest = $this->readJsonFile('packages/observe/composer.json');
 
         $this->assertSame(
-            array('php' => '^8.4', 'open-telemetry/api' => '^1.10'),
+            array(
+                'php' => '^8.4',
+                'evolvephp/core' => '^2.0',
+                'open-telemetry/api' => '^1.10',
+                'open-telemetry/sem-conv' => '^1.44',
+            ),
             $manifest['require']
         );
         $this->assertSame(
@@ -149,7 +154,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
 
         foreach (array_keys(array_merge($manifest['require'], $manifest['suggest'])) as $packageName) {
-            $this->assertFalse(str_starts_with($packageName, 'evolvephp/'), 'Observe must not require another first-party Evolve package.');
+            if ($packageName !== 'evolvephp/core') {
+                $this->assertFalse(str_starts_with($packageName, 'evolvephp/'), 'Observe must not require unapproved first-party Evolve packages.');
+            }
+
             $this->assertDoesNotMatchPattern('/exporter|otlp|auto-?instrument|opentelemetry$/i', $packageName);
         }
 
@@ -836,9 +844,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'manifest' => 'packages/observe/composer.json',
                 'src' => 'packages/observe/src',
                 'name' => 'evolvephp/observe',
-                'description' => 'OpenTelemetry composition foundation for EvolvePHP 2.',
+                'description' => 'OpenTelemetry composition and generic execution tracing foundation for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Observe\\',
-                'require' => array('php' => '^8.4', 'open-telemetry/api' => '^1.10'),
+                'require' => array(
+                    'php' => '^8.4',
+                    'evolvephp/core' => '^2.0',
+                    'open-telemetry/api' => '^1.10',
+                    'open-telemetry/sem-conv' => '^1.44',
+                ),
                 'suggest' => array('open-telemetry/sdk' => 'Allows applications to pass SDK resource and sampler objects into Observe composition values.'),
             ),
             array(
@@ -1086,6 +1099,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Watcher/ObservationDiagnosticWatcher.php',
             ),
             'packages/observe/src' => array(
+                'EvolveSemanticConventions.php',
+                'Exception/OpenTelemetryContextDetachFailed.php',
+                'ExecutionTraceInstrumentation.php',
                 'ObserveConfiguration.php',
                 'OpenTelemetryComposition.php',
                 'OpenTelemetryCompositionFactory.php',

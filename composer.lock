@@ -1393,10 +1393,12 @@
             "dist": {
                 "type": "path",
                 "url": "packages/observe",
-                "reference": "6c352bf918587236625d1c39d25277ca4bdc715f"
+                "reference": "3e7343fac7b64858c23c9b01294e683147afea55"
             },
             "require": {
+                "evolvephp/core": "^2.0",
                 "open-telemetry/api": "^1.10",
+                "open-telemetry/sem-conv": "^1.44",
                 "php": "^8.4"
             },
             "suggest": {
@@ -1411,7 +1413,7 @@
             "license": [
                 "BSD-3-Clause"
             ],
-            "description": "OpenTelemetry composition foundation for EvolvePHP 2.",
+            "description": "OpenTelemetry composition and generic execution tracing foundation for EvolvePHP 2.",
             "transport-options": {
                 "relative": true
             }

@@ -11,8 +11,10 @@ use InvalidArgumentException;
 use OpenTelemetry\API\Logs\NoopLoggerProvider;
 use OpenTelemetry\API\Metrics\Noop\NoopMeterProvider;
 use OpenTelemetry\API\Trace\NoopTracerProvider;
-use OpenTelemetry\SDK\Resource\ResourceInfoFactory;
+use OpenTelemetry\SDK\Common\Attribute\Attributes;
+use OpenTelemetry\SDK\Resource\ResourceInfo;
 use OpenTelemetry\SDK\Trace\Sampler\AlwaysOnSampler;
+use OpenTelemetry\SemConv\Attributes\ServiceAttributes;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use stdClass;
@@ -35,7 +37,7 @@ final class OpenTelemetryCompositionFactoryTest extends TestCase
             tracerProvider: new NoopTracerProvider(),
             meterProvider: new NoopMeterProvider(),
             loggerProvider: NoopLoggerProvider::getInstance(),
-            resource: ResourceInfoFactory::emptyResource(),
+            resource: $this->resourceWithServiceName('ignored-service'),
             sampler: new AlwaysOnSampler(),
         );
 
@@ -56,12 +58,23 @@ final class OpenTelemetryCompositionFactoryTest extends TestCase
         (new OpenTelemetryCompositionFactory())->create(new ObserveConfiguration(enabled: true));
     }
 
+    public function testEnabledConfigurationRequiresResourceWithoutFallback(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Enabled Observe composition requires an explicit OpenTelemetry resource.');
+
+        (new OpenTelemetryCompositionFactory())->create(
+            configuration: new ObserveConfiguration(enabled: true),
+            tracerProvider: new NoopTracerProvider(),
+        );
+    }
+
     public function testEnabledConfigurationPreservesExactOptionalIdentities(): void
     {
         $tracerProvider = new NoopTracerProvider();
         $meterProvider = new NoopMeterProvider();
         $loggerProvider = NoopLoggerProvider::getInstance();
-        $resource = ResourceInfoFactory::emptyResource();
+        $resource = $this->resourceWithServiceName('observe-test');
         $sampler = new AlwaysOnSampler();
 
         $composition = (new OpenTelemetryCompositionFactory())->create(
@@ -84,18 +97,32 @@ final class OpenTelemetryCompositionFactoryTest extends TestCase
     public function testEnabledConfigurationDoesNotCreateSilentFallbacksForOptionalProviders(): void
     {
         $tracerProvider = new NoopTracerProvider();
+        $resource = $this->resourceWithServiceName('observe-test');
 
         $composition = (new OpenTelemetryCompositionFactory())->create(
             configuration: new ObserveConfiguration(enabled: true),
             tracerProvider: $tracerProvider,
+            resource: $resource,
         );
 
         $this->assertTrue($composition->isEnabled());
         $this->assertSame($tracerProvider, $composition->tracerProvider());
         $this->assertNull($composition->meterProvider());
         $this->assertNull($composition->loggerProvider());
-        $this->assertNull($composition->resource());
+        $this->assertSame($resource, $composition->resource());
         $this->assertNull($composition->sampler());
+    }
+
+    public function testEnabledConfigurationRejectsInvalidResourceServiceName(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Enabled Observe composition resource service.name must be non-empty, unpadded and at most 255 bytes.');
+
+        (new OpenTelemetryCompositionFactory())->create(
+            configuration: new ObserveConfiguration(enabled: true),
+            tracerProvider: new NoopTracerProvider(),
+            resource: ResourceInfo::create(Attributes::create([ServiceAttributes::SERVICE_NAME => ' observe'])),
+        );
     }
 
     public function testSdkSpecificFactoryValuesRejectUnrelatedObjectsThroughPhpTypes(): void
@@ -114,5 +141,10 @@ final class OpenTelemetryCompositionFactoryTest extends TestCase
                     new stdClass(),
                 ],
             );
+    }
+
+    private function resourceWithServiceName(string $serviceName): ResourceInfo
+    {
+        return ResourceInfo::create(Attributes::create([ServiceAttributes::SERVICE_NAME => $serviceName]));
     }
 }

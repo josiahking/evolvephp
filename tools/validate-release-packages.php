@@ -135,7 +135,7 @@ function expectedGraph(): array
         'evolvephp/bridge-remote' => array('evolvephp/bridge-contracts', 'evolvephp/bridge-psr'),
         'evolvephp/core' => array('evolvephp/contracts'),
         'evolvephp/insight' => array('evolvephp/core'),
-        'evolvephp/observe' => array(),
+        'evolvephp/observe' => array('evolvephp/core'),
         'evolvephp/module' => array('evolvephp/contracts'),
         'evolvephp/plugin' => array('evolvephp/contracts'),
         'evolvephp/http' => array('evolvephp/contracts', 'evolvephp/core'),

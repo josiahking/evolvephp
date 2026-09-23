@@ -18,14 +18,21 @@ final class PackageManifestTest extends TestCase
         );
 
         $this->assertSame('evolvephp/observe', $manifest['name']);
-        $this->assertSame('OpenTelemetry composition foundation for EvolvePHP 2.', $manifest['description']);
+        $this->assertSame('OpenTelemetry composition and generic execution tracing foundation for EvolvePHP 2.', $manifest['description']);
         $this->assertSame('library', $manifest['type']);
         $this->assertSame('BSD-3-Clause', $manifest['license']);
-        $this->assertSame(['php' => '^8.4', 'open-telemetry/api' => '^1.10'], $manifest['require']);
+        $this->assertSame(
+            [
+                'php' => '^8.4',
+                'evolvephp/core' => '^2.0',
+                'open-telemetry/api' => '^1.10',
+                'open-telemetry/sem-conv' => '^1.44',
+            ],
+            $manifest['require'],
+        );
         $this->assertArrayHasKey('open-telemetry/sdk', $manifest['suggest']);
         $this->assertSame(['Evolve\\Observe\\' => 'src/'], $manifest['autoload']['psr-4']);
         $this->assertArrayNotHasKey('bin', $manifest);
-        $this->assertArrayNotHasKey('evolvephp/core', $manifest['require']);
         $this->assertArrayNotHasKey('evolvephp/insight', $manifest['require']);
         $this->assertArrayNotHasKey('open-telemetry/sdk', $manifest['require']);
     }

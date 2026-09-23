@@ -217,8 +217,8 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'name' => 'evolvephp/observe',
                 'directory' => 'packages/observe',
                 'human' => 'EvolvePHP Observe',
-                'responsibility' => 'OpenTelemetry composition foundation for EvolvePHP 2.',
-                'dependencies' => '`open-telemetry/api`; optional SDK resource and sampler typing is supported when applications install `open-telemetry/sdk`.',
+                'responsibility' => 'OpenTelemetry composition and generic execution tracing foundation for EvolvePHP 2.',
+                'dependencies' => '`evolvephp/core`, `open-telemetry/api` and `open-telemetry/sem-conv`; optional SDK resource and sampler typing is supported when applications install `open-telemetry/sdk`.',
             ),
             array(
                 'name' => 'evolvephp/dev-tools',

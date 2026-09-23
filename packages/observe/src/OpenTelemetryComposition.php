@@ -10,6 +10,7 @@ use OpenTelemetry\API\Metrics\MeterProviderInterface;
 use OpenTelemetry\API\Trace\TracerProviderInterface;
 use OpenTelemetry\SDK\Resource\ResourceInfo;
 use OpenTelemetry\SDK\Trace\SamplerInterface;
+use OpenTelemetry\SemConv\Attributes\ServiceAttributes;
 
 final readonly class OpenTelemetryComposition
 {
@@ -23,6 +24,14 @@ final readonly class OpenTelemetryComposition
     ) {
         if ($enabled && $tracerProvider === null) {
             throw new InvalidArgumentException('Enabled Observe composition requires a tracer provider.');
+        }
+
+        if ($enabled) {
+            if ($resource === null) {
+                throw new InvalidArgumentException('Enabled Observe composition requires an explicit OpenTelemetry resource.');
+            }
+
+            $this->assertValidServiceName($resource);
         }
 
         if (!$enabled && (
@@ -71,5 +80,24 @@ final readonly class OpenTelemetryComposition
     public function sampler(): ?SamplerInterface
     {
         return $this->sampler;
+    }
+
+    private function assertValidServiceName(ResourceInfo $resource): void
+    {
+        $attributes = $resource->getAttributes();
+
+        if (!$attributes->has(ServiceAttributes::SERVICE_NAME)) {
+            throw new InvalidArgumentException('Enabled Observe composition requires resource service.name.');
+        }
+
+        $serviceName = $attributes->get(ServiceAttributes::SERVICE_NAME);
+
+        if (!is_string($serviceName)) {
+            throw new InvalidArgumentException('Enabled Observe composition resource service.name must be a string.');
+        }
+
+        if ($serviceName === '' || trim($serviceName) !== $serviceName || strlen($serviceName) > 255) {
+            throw new InvalidArgumentException('Enabled Observe composition resource service.name must be non-empty, unpadded and at most 255 bytes.');
+        }
     }
 }
