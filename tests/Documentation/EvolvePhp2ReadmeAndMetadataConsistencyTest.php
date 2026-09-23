@@ -33,6 +33,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'packages/http/README.md',
                 'packages/insight/README.md',
                 'packages/module/README.md',
+                'packages/observe/README.md',
                 'packages/plugin/README.md',
                 'packages/testing/README.md',
                 'skeleton/README.md',
@@ -107,7 +108,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             $this->assertStringContainsString('composer ' . $script, $content);
         }
 
-        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:insight', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:insight', 'test:observe', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertStringContainsString('composer ' . $script, $content);
         }
     }
@@ -277,6 +278,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'BridgeSymfony -> BridgeContracts, BridgePsr, PsrHttpMessage, SymfonyHost',
             'Core      -> Contracts',
             'Insight   -> Core',
+            'Observe   -> OpenTelemetryApi, OpenTelemetrySdk',
             'DevTools  -> Contracts, Core, Module, Plugin',
             'Http      -> Contracts, Core',
             'Module    -> Contracts',
@@ -302,6 +304,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'packages/insight/README.md',
             'packages/http/README.md',
             'packages/module/README.md',
+            'packages/observe/README.md',
             'packages/plugin/README.md',
             'packages/testing/README.md',
             'packages/dev-tools/README.md',

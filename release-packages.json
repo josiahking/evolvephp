@@ -18,6 +18,10 @@
             "directory": "packages/insight"
         },
         {
+            "name": "evolvephp/observe",
+            "directory": "packages/observe"
+        },
+        {
             "name": "evolvephp/module",
             "directory": "packages/module"
         },

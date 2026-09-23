@@ -60,6 +60,7 @@ final class PrereleaseConsumerValidator
                 'evolvephp/bridge-remote' => '^2.0@alpha',
                 'evolvephp/dev-tools' => '^2.0@alpha',
                 'evolvephp/insight' => '^2.0@alpha',
+                'evolvephp/observe' => '^2.0@alpha',
                 'evolvephp/testing' => '^2.0@alpha',
             ));
             $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case F', $alphaRepositories, $lockedRuntimePackages, array(
@@ -70,6 +71,7 @@ final class PrereleaseConsumerValidator
                 'evolvephp/bridge-remote' => '^2.0',
                 'evolvephp/dev-tools' => '^2.0',
                 'evolvephp/insight' => '^2.0',
+                'evolvephp/observe' => '^2.0',
                 'evolvephp/testing' => '^2.0',
             ), array('minimum-stability' => 'alpha', 'prefer-stable' => true), $this->expectedVersions($packages, self::ALPHA_VERSION));
             $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case G', $alphaRepositories, $lockedRuntimePackages, $this->explicitAlphaRootRequirements($packages), array(), $this->expectedVersions($packages, self::ALPHA_VERSION));
@@ -81,6 +83,7 @@ final class PrereleaseConsumerValidator
                 'evolvephp/bridge-remote' => '^2.0',
                 'evolvephp/dev-tools' => '^2.0',
                 'evolvephp/insight' => '^2.0',
+                'evolvephp/observe' => '^2.0',
                 'evolvephp/testing' => '^2.0',
             ), array(), $this->expectedVersions($packages, self::STABLE_VERSION));
 

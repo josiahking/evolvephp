@@ -16,13 +16,17 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'bridge-symfony' => null,
             'bridge-remote' => null,
             'insight' => null,
+            'observe' => null,
             'http' => null,
             'module' => null,
             'plugin' => null,
             'testing' => null,
         ] as $package => $expectedBin) {
+            $manifestPath = dirname(__DIR__, 2) . sprintf('/packages/%s/composer.json', $package);
+
+            self::assertFileExists($manifestPath);
             $manifest = json_decode(
-                file_get_contents(dirname(__DIR__, 2) . sprintf('/packages/%s/composer.json', $package)),
+                file_get_contents($manifestPath),
                 true,
                 flags: JSON_THROW_ON_ERROR,
             );
@@ -131,6 +135,27 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertPackageGraphIsAcyclic($graph);
     }
 
+    public function testObserveManifestDeclaresCompositionOnlyOpenTelemetryDependencyPolicy(): void
+    {
+        $manifest = $this->readJsonFile('packages/observe/composer.json');
+
+        $this->assertSame(
+            array('php' => '^8.4', 'open-telemetry/api' => '^1.10'),
+            $manifest['require']
+        );
+        $this->assertSame(
+            array('open-telemetry/sdk' => 'Allows applications to pass SDK resource and sampler objects into Observe composition values.'),
+            $manifest['suggest']
+        );
+
+        foreach (array_keys(array_merge($manifest['require'], $manifest['suggest'])) as $packageName) {
+            $this->assertFalse(str_starts_with($packageName, 'evolvephp/'), 'Observe must not require another first-party Evolve package.');
+            $this->assertDoesNotMatchPattern('/exporter|otlp|auto-?instrument|opentelemetry$/i', $packageName);
+        }
+
+        $this->assertArrayNotHasKey('open-telemetry/sdk', $manifest['require']);
+    }
+
     public function testPackageManifestsAvoidDeferredComposerPolicyFields(): void
     {
         $forbiddenFields = array('version', 'repositories', 'minimum-stability', 'prefer-stable');
@@ -172,6 +197,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertFileDoesNotExist($this->projectPath('packages/bridge-remote/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/core/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/insight/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/observe/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/dev-tools/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/http/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/module/src/.gitkeep'));
@@ -807,6 +833,15 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'evolvephp/core' => '^2.0'),
             ),
             array(
+                'manifest' => 'packages/observe/composer.json',
+                'src' => 'packages/observe/src',
+                'name' => 'evolvephp/observe',
+                'description' => 'OpenTelemetry composition foundation for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Observe\\',
+                'require' => array('php' => '^8.4', 'open-telemetry/api' => '^1.10'),
+                'suggest' => array('open-telemetry/sdk' => 'Allows applications to pass SDK resource and sampler objects into Observe composition values.'),
+            ),
+            array(
                 'manifest' => 'packages/dev-tools/composer.json',
                 'src' => 'packages/dev-tools/src',
                 'name' => 'evolvephp/dev-tools',
@@ -1049,6 +1084,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Storage/StoringDiagnosticBatchSink.php',
                 'Watcher/ExecutionLifecycleDiagnosticWatcher.php',
                 'Watcher/ObservationDiagnosticWatcher.php',
+            ),
+            'packages/observe/src' => array(
+                'ObserveConfiguration.php',
+                'OpenTelemetryComposition.php',
+                'OpenTelemetryCompositionFactory.php',
             ),
             'packages/dev-tools/src' => array(
                 'Adoption/AdoptionPlan.php',

@@ -42,6 +42,7 @@
                     "evolvephp/http": "2.0.x-dev",
                     "evolvephp/insight": "2.0.x-dev",
                     "evolvephp/module": "2.0.x-dev",
+                    "evolvephp/observe": "2.0.x-dev",
                     "evolvephp/plugin": "2.0.x-dev",
                     "evolvephp/testing": "2.0.x-dev"
                 },
@@ -66,8 +67,10 @@
         "evolvephp/bridge-symfony": "^2.0@dev",
         "evolvephp/dev-tools": "^2.0@dev",
         "evolvephp/insight": "^2.0@dev",
+        "evolvephp/observe": "^2.0@dev",
         "evolvephp/testing": "^2.0@dev",
         "friendsofphp/php-cs-fixer": "^3.95",
+        "open-telemetry/sdk": "^1.15",
         "phpstan/phpstan": "^2.2",
         "phpstan/phpstan-phpunit": "^2.0",
         "phpunit/phpunit": "^13.2"
@@ -105,10 +108,15 @@
         "test:http": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http",
         "test:insight": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite insight",
         "test:module": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module",
+        "test:observe": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe",
         "test:plugin": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin",
         "test:testing": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing"
     },
     "config": {
+        "allow-plugins": {
+            "php-http/discovery": false,
+            "tbachert/spi": false
+        },
         "sort-packages": true
     }
 }
