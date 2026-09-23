@@ -79,6 +79,9 @@ return static function (DeptracConfig $config): void {
             $openTelemetrySdk = Layer::withName('OpenTelemetrySdk')->collectors(
                 ClassLikeConfig::create('^OpenTelemetry\\SDK\\.*'),
             ),
+            $openTelemetrySemConv = Layer::withName('OpenTelemetrySemConv')->collectors(
+                ClassLikeConfig::create('^OpenTelemetry\\SemConv\\.*'),
+            ),
             $devTools = Layer::withName('DevTools')->collectors(
                 DirectoryConfig::create('packages/dev-tools/src/.*'),
             ),
@@ -110,9 +113,10 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($psrHttpServer),
             Ruleset::forLayer($core)->accesses($contracts, $psrContainer),
             Ruleset::forLayer($insight)->accesses($core),
-            Ruleset::forLayer($observe)->accesses($openTelemetryApi, $openTelemetrySdk),
+            Ruleset::forLayer($observe)->accesses($core, $openTelemetryApi, $openTelemetrySdk, $openTelemetrySemConv),
             Ruleset::forLayer($openTelemetryApi),
             Ruleset::forLayer($openTelemetrySdk),
+            Ruleset::forLayer($openTelemetrySemConv),
             Ruleset::forLayer($devTools)->accesses($contracts, $core, $module, $plugin),
             Ruleset::forLayer($http)->accesses($contracts, $core, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($module)->accesses($contracts),

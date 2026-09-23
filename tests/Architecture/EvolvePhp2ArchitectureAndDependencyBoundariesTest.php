@@ -108,6 +108,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
                 'PsrHttpServer' => '^Psr\\\\Http\\\\Server\\\\.*',
                 'OpenTelemetryApi' => '^OpenTelemetry\\\\API\\\\.*',
                 'OpenTelemetrySdk' => '^OpenTelemetry\\\\SDK\\\\.*',
+                'OpenTelemetrySemConv' => '^OpenTelemetry\\\\SemConv\\\\.*',
             ),
             $this->deptracExternalClassLikeLayers($content)
         );
@@ -243,9 +244,10 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'PsrHttpServer' => array(),
             'OpenTelemetryApi' => array(),
             'OpenTelemetrySdk' => array(),
+            'OpenTelemetrySemConv' => array(),
             'Core' => array('Contracts', 'PsrContainer'),
             'Insight' => array('Core'),
-            'Observe' => array('OpenTelemetryApi', 'OpenTelemetrySdk'),
+            'Observe' => array('Core', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv'),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
             'Http' => array('Contracts', 'Core', 'PsrHttpMessage', 'PsrHttpServer'),
             'Module' => array('Contracts'),
@@ -299,6 +301,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'psrHttpServer' => 'PsrHttpServer',
             'openTelemetryApi' => 'OpenTelemetryApi',
             'openTelemetrySdk' => 'OpenTelemetrySdk',
+            'openTelemetrySemConv' => 'OpenTelemetrySemConv',
             'core' => 'Core',
             'insight' => 'Insight',
             'observe' => 'Observe',
@@ -316,7 +319,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrHttpMessage|psrHttpClient|psrHttpServer|openTelemetryApi|openTelemetrySdk|laravelHost|symfonyHost|core|insight|observe|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrHttpMessage|psrHttpClient|psrHttpServer|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|laravelHost|symfonyHost|core|insight|observe|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
@@ -326,7 +329,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $rulesets[$layerName] = $accesses;
         }
 
-        foreach (array('Contracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'PsrContainer', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'LaravelHost', 'SymfonyHost', 'Core', 'Insight', 'Observe', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
+        foreach (array('Contracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'PsrContainer', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'LaravelHost', 'SymfonyHost', 'Core', 'Insight', 'Observe', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
             $this->assertNotContains('Testing', $rulesets[$productionLayer], $productionLayer . ' must not access Testing.');
         }
 

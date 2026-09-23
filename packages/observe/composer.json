@@ -1,11 +1,13 @@
 {
     "name": "evolvephp/observe",
-    "description": "OpenTelemetry composition foundation for EvolvePHP 2.",
+    "description": "OpenTelemetry composition and generic execution tracing foundation for EvolvePHP 2.",
     "type": "library",
     "license": "BSD-3-Clause",
     "require": {
         "php": "^8.4",
-        "open-telemetry/api": "^1.10"
+        "evolvephp/core": "^2.0",
+        "open-telemetry/api": "^1.10",
+        "open-telemetry/sem-conv": "^1.44"
     },
     "suggest": {
         "open-telemetry/sdk": "Allows applications to pass SDK resource and sampler objects into Observe composition values."

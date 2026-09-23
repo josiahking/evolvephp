@@ -565,6 +565,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         }
 
         $this->assertContains('open-telemetry/api', $fixtureNames, 'Observe requires the OpenTelemetry API at runtime.');
+        $this->assertContains('open-telemetry/sem-conv', $fixtureNames, 'Observe uses stable OpenTelemetry semantic convention constants at runtime.');
         $this->assertNotContains('open-telemetry/sdk', $fixtureNames, 'Observe suggesting the SDK must not pull it into published runtime closure metadata.');
 
         foreach ($fixtures as $fixture) {
