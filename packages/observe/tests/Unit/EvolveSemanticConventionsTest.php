@@ -66,6 +66,20 @@ final class EvolveSemanticConventionsTest extends TestCase
         $this->assertSame('evolve.execution.scope_close_started', $constants['EVENT_SCOPE_CLOSE_STARTED']);
     }
 
+    public function testMetricNamesUseAcceptedStableVocabulary(): void
+    {
+        $constants = $this->constants();
+
+        $this->assertSame('evolve.execution.duration', $constants['METRIC_EXECUTION_DURATION']);
+        $this->assertSame('evolve.execution.count', $constants['METRIC_EXECUTION_COUNT']);
+        $this->assertSame('evolve.execution.active', $constants['METRIC_EXECUTION_ACTIVE']);
+        $this->assertSame('evolve.execution.failures', $constants['METRIC_EXECUTION_FAILURES']);
+        $this->assertSame('evolve.execution.quarantines', $constants['METRIC_EXECUTION_QUARANTINES']);
+        $this->assertSame('evolve.http.server.request.count', $constants['METRIC_HTTP_SERVER_REQUEST_COUNT']);
+        $this->assertSame('evolve.http.server.active_requests', $constants['METRIC_HTTP_SERVER_ACTIVE_REQUESTS']);
+        $this->assertSame('evolve.http.server.request.failures', $constants['METRIC_HTTP_SERVER_REQUEST_FAILURES']);
+    }
+
     public function testStandardErrorTypeIsNotRedefinedAsCustomEvolveAttribute(): void
     {
         $this->assertSame('error.type', (new ReflectionClass(ErrorAttributes::class))->getConstant('ERROR_TYPE'));

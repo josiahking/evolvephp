@@ -67,12 +67,54 @@ final class OpenTelemetryCompositionTest extends TestCase
         $this->assertSame($sampler, $composition->sampler());
     }
 
-    public function testDirectEnabledCompositionRequiresTracerProvider(): void
+    public function testEnabledCompositionRequiresAtLeastOneSignalProvider(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Enabled Observe composition requires a tracer provider.');
+        $this->expectExceptionMessage('Enabled Observe composition requires at least one OpenTelemetry signal provider.');
 
-        new OpenTelemetryComposition(enabled: true);
+        new OpenTelemetryComposition(
+            enabled: true,
+            resource: $this->resourceWithServiceName('observe-test'),
+        );
+    }
+
+    public function testEnabledCompositionAllowsMeterOnlyAndLoggerOnlySignals(): void
+    {
+        $resource = $this->resourceWithServiceName('observe-test');
+        $meterProvider = new NoopMeterProvider();
+        $loggerProvider = NoopLoggerProvider::getInstance();
+
+        $meterOnly = new OpenTelemetryComposition(
+            enabled: true,
+            meterProvider: $meterProvider,
+            resource: $resource,
+        );
+        $loggerOnly = new OpenTelemetryComposition(
+            enabled: true,
+            loggerProvider: $loggerProvider,
+            resource: $resource,
+        );
+
+        $this->assertTrue($meterOnly->isEnabled());
+        $this->assertNull($meterOnly->tracerProvider());
+        $this->assertSame($meterProvider, $meterOnly->meterProvider());
+        $this->assertSame($resource, $meterOnly->resource());
+        $this->assertTrue($loggerOnly->isEnabled());
+        $this->assertNull($loggerOnly->tracerProvider());
+        $this->assertSame($loggerProvider, $loggerOnly->loggerProvider());
+    }
+
+    public function testEnabledCompositionRejectsSamplerWithoutTracerProvider(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Enabled Observe composition cannot use a sampler without a tracer provider.');
+
+        new OpenTelemetryComposition(
+            enabled: true,
+            meterProvider: new NoopMeterProvider(),
+            resource: $this->resourceWithServiceName('observe-test'),
+            sampler: new AlwaysOnSampler(),
+        );
     }
 
     public function testDirectEnabledCompositionRequiresResource(): void

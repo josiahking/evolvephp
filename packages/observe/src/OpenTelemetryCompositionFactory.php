@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Evolve\Observe;
 
-use InvalidArgumentException;
 use OpenTelemetry\API\Logs\LoggerProviderInterface;
 use OpenTelemetry\API\Metrics\MeterProviderInterface;
 use OpenTelemetry\API\Trace\TracerProviderInterface;
@@ -23,10 +22,6 @@ final class OpenTelemetryCompositionFactory
     ): OpenTelemetryComposition {
         if (!$configuration->isEnabled()) {
             return OpenTelemetryComposition::disabled();
-        }
-
-        if ($tracerProvider === null) {
-            throw new InvalidArgumentException('Enabled Observe composition requires a tracer provider.');
         }
 
         return new OpenTelemetryComposition(

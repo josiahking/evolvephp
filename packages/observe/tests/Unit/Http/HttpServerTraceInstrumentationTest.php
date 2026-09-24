@@ -9,6 +9,7 @@ use Evolve\Observe\Exception\OpenTelemetryContextDetachFailed;
 use Evolve\Observe\Http\HttpServerTraceInstrumentation;
 use Evolve\Observe\Http\Internal\HttpServerSpanState;
 use Evolve\Observe\OpenTelemetryComposition;
+use OpenTelemetry\API\Metrics\Noop\NoopMeterProvider;
 use OpenTelemetry\API\Trace\Span;
 use OpenTelemetry\API\Trace\SpanBuilderInterface;
 use OpenTelemetry\API\Trace\SpanContext;
@@ -52,6 +53,29 @@ final class HttpServerTraceInstrumentationTest extends TestCase
         $actual = $instrumentation->trace($request, static function (ServerRequestInterface $operationRequest) use (&$handledRequest, $response): ResponseInterface {
             $handledRequest = $operationRequest;
             self::assertFalse(Span::getCurrent()->getContext()->isValid());
+
+            return $response;
+        });
+
+        $this->assertSame($response, $actual);
+        $this->assertSame($request, $handledRequest);
+        $this->assertNull($request->getAttribute(HttpServerSpanState::class));
+        $this->assertFalse(Span::getCurrent()->getContext()->isValid());
+    }
+
+    public function testMeterOnlyCompositionLeavesHttpTracingInert(): void
+    {
+        $instrumentation = new HttpServerTraceInstrumentation(new OpenTelemetryComposition(
+            enabled: true,
+            meterProvider: new NoopMeterProvider(),
+            resource: $this->resource(),
+        ));
+        $request = TraceServerRequest::get('/meter-only');
+        $response = new TraceResponse(204);
+        $handledRequest = null;
+
+        $actual = $instrumentation->trace($request, static function (ServerRequestInterface $operationRequest) use (&$handledRequest, $response): ResponseInterface {
+            $handledRequest = $operationRequest;
 
             return $response;
         });
