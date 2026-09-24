@@ -2,11 +2,11 @@
 
 `evolvephp/observe`
 
-OpenTelemetry composition, generic execution tracing, explicit HTTP SERVER tracing and bounded metrics foundation for EvolvePHP 2.
+OpenTelemetry composition, generic execution tracing, explicit HTTP SERVER tracing, bounded metrics and structured-log correlation foundation for EvolvePHP 2.
 
 ## Responsibility
 
-Evolve Observe provides a small boundary for application-owned OpenTelemetry providers, explicit SDK resource identity, generic Core execution tracing and metrics, and explicit HTTP SERVER tracing and metrics. It consumes Core's generic lifecycle contracts through `ExecutionContextAttacher` and `ObservationSink`, and it consumes Evolve HTTP routing state only for route-template span enrichment.
+Evolve Observe provides a small boundary for application-owned OpenTelemetry providers, explicit SDK resource identity, generic Core execution tracing and metrics, explicit HTTP SERVER tracing and metrics, and structured-log correlation snapshots. It consumes Core's generic lifecycle contracts through `ExecutionContextAttacher` and `ObservationSink`, and it consumes Evolve HTTP routing state only for route-template span enrichment.
 
 Observe is disabled by default. Disabled composition keeps all provider, resource and sampler references null, even when optional objects are supplied to the factory, and execution tracing creates no span or OpenTelemetry context state.
 
@@ -53,9 +53,15 @@ Metric dimensions must not include `evolve.execution.id`, trace IDs, span IDs, r
 
 The structural cardinality ceilings are: 10 series for `evolve.execution.duration` and `evolve.execution.count`, 5 series for `evolve.execution.active`, `evolve.execution.failures` and `evolve.execution.quarantines`, and 10 series for each HTTP metric. Observe does not maintain a runtime cache of every series ever seen to enforce those numbers.
 
+`ExecutionLogCorrelationInstrumentation` is an optional execution-context attacher and `LogCorrelationProvider`. When Observe is enabled, it stores the current Evolve execution ID and execution kind in the active OpenTelemetry `Context` and returns immutable `LogCorrelation` snapshots containing any currently available trace ID, span ID, W3C trace flags, execution ID and execution kind. Disabled Observe returns empty snapshots and creates no context scope.
+
+`LogCorrelation::structuredFields()` is for non-OTLP structured logging and may return only `trace_id`, `span_id`, `trace_flags`, `evolve.execution.id` and `evolve.execution.kind` when those values are present. `LogCorrelation::openTelemetryAttributes()` returns only `evolve.execution.id` and `evolve.execution.kind`; native OpenTelemetry logs get trace ID, span ID and trace flags from the active OpenTelemetry context as top-level log-record fields.
+
+Observe does not create or decorate loggers. Applications own their logger provider, processors, exporters, resources, flushing, shutdown and backend configuration. The correlation boundary does not inspect baggage, tracestate, user identity, tenant identity, session identity, auth state, cookies, arbitrary headers, request or response bodies, URLs, query strings, SQL, exception messages, stack traces or arbitrary application logging context.
+
 Applications own OpenTelemetry setup. They create providers, processors, readers, exporters, resources, sampling policy, shutdown behavior, backend configuration and any Collector deployment outside this package.
 
-Observe does not register global OpenTelemetry state, call OpenTelemetry globals, read environment configuration, discover resources, create providers, create processors, create readers, create exporters, configure SDK builders, install automatic runtime wiring or require a Collector. It does not own metric readers or exporters and does not provide infrastructure metrics.
+Observe does not register global OpenTelemetry state, call OpenTelemetry globals, read environment configuration, discover resources, create providers, create processors, create readers, create exporters, configure SDK builders, install automatic runtime wiring or require a Collector. It does not own metric readers, log processors or exporters and does not provide infrastructure telemetry.
 
 Observe depends on Core for generic lifecycle contracts and on HTTP for public route-template state. Core and HTTP themselves remain OpenTelemetry-neutral. Observe has no dependency on Insight.
 
@@ -87,9 +93,9 @@ https://github.com/josiahking/evolvephp
 
 ## Current Limitations
 
-This package does not implement baggage, outbound HTTP-client spans or metrics, outbound HTTP injection, trace headers on responses, queue/message metrics beyond generic execution-kind metrics, scheduled-job transport propagation, database metrics, cache metrics, storage metrics, worker/process/runtime metrics, structured log correlation, logger instrumentation beyond logger-only composition, exporters, processors, readers, OTLP, Collector setup, retries, batching, buffering, flush, shutdown hooks, Bridge trace propagation, OpenTelemetry auto-instrumentation, global OpenTelemetry registration, environment interpretation, provider builders or resource detectors.
+This package does not implement baggage, outbound HTTP-client spans or metrics, outbound HTTP injection, trace headers on responses, queue/message metrics beyond generic execution-kind metrics, scheduled-job transport propagation, database metrics, cache metrics, storage metrics, worker/process/runtime metrics, an `EvolveLogger`, logger facades, PSR-3 adapters, Monolog adapters, logger decorators, mandatory OpenTelemetry logging, exporters, processors, readers, OTLP, Collector setup, retries, batching, buffering, flush, shutdown hooks, Bridge trace propagation, OpenTelemetry auto-instrumentation, global OpenTelemetry registration, environment interpretation, provider builders or resource detectors.
 
-Outbound propagation, structured-log correlation, exporters, Bridge propagation, telemetry drop-health metrics and infrastructure telemetry remain deferred.
+Outbound propagation, logger adapters, exporters, Bridge propagation, telemetry drop-health metrics and infrastructure telemetry remain deferred.
 
 ## Licence
 
