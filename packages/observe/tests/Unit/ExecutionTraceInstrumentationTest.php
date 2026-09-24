@@ -17,6 +17,7 @@ use Evolve\Observe\EvolveSemanticConventions;
 use Evolve\Observe\Exception\OpenTelemetryContextDetachFailed;
 use Evolve\Observe\ExecutionTraceInstrumentation;
 use Evolve\Observe\OpenTelemetryComposition;
+use OpenTelemetry\API\Metrics\Noop\NoopMeterProvider;
 use OpenTelemetry\API\Trace\Span;
 use OpenTelemetry\API\Trace\SpanBuilderInterface;
 use OpenTelemetry\API\Trace\SpanContext;
@@ -55,6 +56,25 @@ final class ExecutionTraceInstrumentationTest extends TestCase
         $this->assertTrue($outcome->primarySucceeded());
         $this->assertFalse($outcome->instrumentationFailed());
         $this->assertFalse($outcome->cleanupFailed());
+        $this->assertFalse(Span::getCurrent()->getContext()->isValid());
+    }
+
+    public function testMeterOnlyCompositionLeavesTracingInert(): void
+    {
+        $instrumentation = new ExecutionTraceInstrumentation(new OpenTelemetryComposition(
+            enabled: true,
+            meterProvider: new NoopMeterProvider(),
+            resource: $this->resource(),
+        ));
+
+        $outcome = $this->execute($instrumentation, static function (): string {
+            self::assertFalse(Span::getCurrent()->getContext()->isValid());
+
+            return 'ok';
+        });
+
+        $this->assertTrue($outcome->primarySucceeded());
+        $this->assertFalse($outcome->instrumentationFailed());
         $this->assertFalse(Span::getCurrent()->getContext()->isValid());
     }
 

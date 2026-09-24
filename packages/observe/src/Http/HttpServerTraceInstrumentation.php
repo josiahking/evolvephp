@@ -46,7 +46,7 @@ final readonly class HttpServerTraceInstrumentation
      */
     public function trace(ServerRequestInterface $request, callable $operation): ResponseInterface
     {
-        if (!$this->composition->isEnabled()) {
+        if (!$this->composition->isEnabled() || $this->composition->tracerProvider() === null) {
             return $operation($request);
         }
 

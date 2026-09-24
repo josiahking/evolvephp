@@ -22,13 +22,17 @@ final readonly class OpenTelemetryComposition
         private ?ResourceInfo $resource = null,
         private ?SamplerInterface $sampler = null
     ) {
-        if ($enabled && $tracerProvider === null) {
-            throw new InvalidArgumentException('Enabled Observe composition requires a tracer provider.');
-        }
-
         if ($enabled) {
             if ($resource === null) {
                 throw new InvalidArgumentException('Enabled Observe composition requires an explicit OpenTelemetry resource.');
+            }
+
+            if ($tracerProvider === null && $meterProvider === null && $loggerProvider === null) {
+                throw new InvalidArgumentException('Enabled Observe composition requires at least one OpenTelemetry signal provider.');
+            }
+
+            if ($tracerProvider === null && $sampler !== null) {
+                throw new InvalidArgumentException('Enabled Observe composition cannot use a sampler without a tracer provider.');
             }
 
             $this->assertValidServiceName($resource);

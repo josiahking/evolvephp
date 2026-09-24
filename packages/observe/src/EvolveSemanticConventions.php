@@ -20,6 +20,22 @@ final class EvolveSemanticConventions
 
     public const EVENT_SCOPE_CLOSE_STARTED = 'evolve.execution.scope_close_started';
 
+    public const METRIC_EXECUTION_DURATION = 'evolve.execution.duration';
+
+    public const METRIC_EXECUTION_COUNT = 'evolve.execution.count';
+
+    public const METRIC_EXECUTION_ACTIVE = 'evolve.execution.active';
+
+    public const METRIC_EXECUTION_FAILURES = 'evolve.execution.failures';
+
+    public const METRIC_EXECUTION_QUARANTINES = 'evolve.execution.quarantines';
+
+    public const METRIC_HTTP_SERVER_REQUEST_COUNT = 'evolve.http.server.request.count';
+
+    public const METRIC_HTTP_SERVER_ACTIVE_REQUESTS = 'evolve.http.server.active_requests';
+
+    public const METRIC_HTTP_SERVER_REQUEST_FAILURES = 'evolve.http.server.request.failures';
+
     public const OUTCOME_SUCCEEDED = 'succeeded';
 
     public const OUTCOME_FAILED = 'failed';

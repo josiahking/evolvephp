@@ -35,7 +35,7 @@ final class ExecutionTraceInstrumentation implements ExecutionContextAttacher, O
 
     public function attach(ExecutionContext $context): ExecutionContextAttachment
     {
-        if (!$this->composition->isEnabled()) {
+        if (!$this->composition->isEnabled() || $this->composition->tracerProvider() === null) {
             return new class implements ExecutionContextAttachment {
                 public function detach(): void {}
             };

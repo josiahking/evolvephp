@@ -2,17 +2,17 @@
 
 `evolvephp/observe`
 
-OpenTelemetry composition, generic execution tracing and explicit HTTP SERVER tracing foundation for EvolvePHP 2.
+OpenTelemetry composition, generic execution tracing, explicit HTTP SERVER tracing and bounded metrics foundation for EvolvePHP 2.
 
 ## Responsibility
 
-Evolve Observe provides a small boundary for application-owned OpenTelemetry providers, explicit SDK resource identity, generic Core execution tracing and explicit HTTP SERVER tracing. It consumes Core's generic lifecycle contracts through `ExecutionContextAttacher` and `ObservationSink`, and it consumes Evolve HTTP routing state only for route-template span enrichment.
+Evolve Observe provides a small boundary for application-owned OpenTelemetry providers, explicit SDK resource identity, generic Core execution tracing and metrics, and explicit HTTP SERVER tracing and metrics. It consumes Core's generic lifecycle contracts through `ExecutionContextAttacher` and `ObservationSink`, and it consumes Evolve HTTP routing state only for route-template span enrichment.
 
 Observe is disabled by default. Disabled composition keeps all provider, resource and sampler references null, even when optional objects are supplied to the factory, and execution tracing creates no span or OpenTelemetry context state.
 
-Enabled composition requires a caller-owned tracer provider and caller-owned `ResourceInfo` with a valid `service.name`. Observe validates that `service.name` is a string, non-empty, unpadded and at most 255 bytes. The supplied resource object is preserved by identity. Provider/resource consistency remains the application's composition responsibility because OpenTelemetry does not expose a portable provider-resource comparison API.
+Enabled composition requires caller-owned `ResourceInfo` with a valid `service.name` and at least one caller-owned signal provider: tracer, meter or logger. Tracer-only, meter-only, logger-only and multi-provider compositions are valid. A sampler is accepted only when a tracer provider is present. Observe validates that `service.name` is a string, non-empty, unpadded and at most 255 bytes. Supplied provider, resource and sampler objects are preserved by identity. Provider/resource consistency remains the application's composition responsibility because OpenTelemetry does not expose a portable provider-resource comparison API.
 
-`ExecutionTraceInstrumentation` creates one generic INTERNAL `evolve.execution` span for each traced Core execution. The Evolve execution identifier remains framework lifecycle identity and is distinct from OpenTelemetry trace and span identity. `evolve.execution.id` is a trace-correlation attribute only and must not become a metric label or dimension when metrics are added later.
+`ExecutionTraceInstrumentation` creates one generic INTERNAL `evolve.execution` span for each traced Core execution. It is inert when Observe is disabled or when enabled composition has no tracer provider. The Evolve execution identifier remains framework lifecycle identity and is distinct from OpenTelemetry trace and span identity. `evolve.execution.id` is a trace-correlation attribute only and never a metric label or dimension.
 
 Custom Evolve telemetry vocabulary uses the `evolve.*` namespace through `EvolveSemanticConventions`. Stable OpenTelemetry semantic-convention constants are used where applicable, including `error.type` for handler failure classification.
 
@@ -28,9 +28,34 @@ SERVER spans record only the accepted bounded HTTP and URL attributes: `http.req
 
 Inbound baggage is deny-by-default. Observe does not extract the `baggage` header, activate baggage context, copy baggage into attributes, propagate baggage downstream or inject baggage. Observe also does not inject trace headers into responses. Outbound HTTP propagation remains outside this capability.
 
+`ExecutionMetricsInstrumentation` consumes Core execution observations without modifying Core. It is inert when Observe is disabled or when enabled composition has no meter provider; no meter lookup, instrument creation or per-execution metric state is allocated in those modes. A tracer-only composition therefore produces no metrics. A meter-only composition produces metrics while trace instrumentation remains inert.
+
+Execution metrics use instrumentation scope `evolvephp/observe` and these instruments:
+
+- `evolve.execution.duration`: histogram, unit `s`
+- `evolve.execution.count`: counter, unit `{execution}`
+- `evolve.execution.active`: up/down counter, unit `{execution}`
+- `evolve.execution.failures`: counter, unit `{execution}`
+- `evolve.execution.quarantines`: counter, unit `{execution}`
+
+`HttpServerMetricsInstrumentation` is an explicit PSR request-to-response wrapper with request-local Observe-owned metric state. It is inert when Observe is disabled or when no meter provider is present. It records metrics with instrumentation scope `evolvephp/observe` and these instruments:
+
+- `http.server.request.duration`: histogram, unit `s`
+- `evolve.http.server.request.count`: counter, unit `{request}`
+- `evolve.http.server.active_requests`: up/down counter, unit `{request}`
+- `evolve.http.server.request.failures`: counter, unit `{request}`
+
+The HTTP duration metric uses the stable OpenTelemetry semantic-convention name. The active request metric intentionally uses an Evolve-owned name instead of the incubating OpenTelemetry `http.server.active_requests` contract.
+
+All metrics use the closed `MetricCardinalityPolicy`; instrumentation does not expose an API for arbitrary extra metric labels. Execution metric dimensions are limited to `evolve.execution.kind` and, where applicable, `evolve.execution.outcome`. The accepted execution kind values are `http_request`, `queue_message`, `scheduled_job`, `cli_command` and `worker_task`; outcomes are `succeeded` and `failed`. HTTP metrics use only `http.request.method`; recognised methods are canonical uppercase values, while every other method maps to `_OTHER`. Raw/original HTTP methods are never metric attributes.
+
+Metric dimensions must not include `evolve.execution.id`, trace IDs, span IDs, raw HTTP methods, `http.route`, concrete paths, URLs, query strings, HTTP status codes, throwable classes, `error.type`, user, tenant or session identity, authorization, cookies, arbitrary headers, request or response bodies, SQL or arbitrary application-provided values.
+
+The structural cardinality ceilings are: 10 series for `evolve.execution.duration` and `evolve.execution.count`, 5 series for `evolve.execution.active`, `evolve.execution.failures` and `evolve.execution.quarantines`, and 10 series for each HTTP metric. Observe does not maintain a runtime cache of every series ever seen to enforce those numbers.
+
 Applications own OpenTelemetry setup. They create providers, processors, readers, exporters, resources, sampling policy, shutdown behavior, backend configuration and any Collector deployment outside this package.
 
-Observe does not register global OpenTelemetry state, call OpenTelemetry globals, read environment configuration, discover resources, create providers, create processors, create readers, create exporters, configure SDK builders, install automatic runtime wiring or require a Collector.
+Observe does not register global OpenTelemetry state, call OpenTelemetry globals, read environment configuration, discover resources, create providers, create processors, create readers, create exporters, configure SDK builders, install automatic runtime wiring or require a Collector. It does not own metric readers or exporters and does not provide infrastructure metrics.
 
 Observe depends on Core for generic lifecycle contracts and on HTTP for public route-template state. Core and HTTP themselves remain OpenTelemetry-neutral. Observe has no dependency on Insight.
 
@@ -62,9 +87,9 @@ https://github.com/josiahking/evolvephp
 
 ## Current Limitations
 
-This package does not implement baggage, outbound HTTP-client spans, outbound HTTP injection, trace headers on responses, queue spans, scheduled-job transport propagation, database spans, cache spans, storage spans, metrics, metric labels, structured log correlation, logger adapters, exporters, processors, readers, OTLP, Collector setup, retries, buffering, flush, shutdown, Bridge trace propagation, OpenTelemetry auto-instrumentation, global OpenTelemetry registration, environment interpretation, provider builders or resource detectors.
+This package does not implement baggage, outbound HTTP-client spans or metrics, outbound HTTP injection, trace headers on responses, queue/message metrics beyond generic execution-kind metrics, scheduled-job transport propagation, database metrics, cache metrics, storage metrics, worker/process/runtime metrics, structured log correlation, logger instrumentation beyond logger-only composition, exporters, processors, readers, OTLP, Collector setup, retries, batching, buffering, flush, shutdown hooks, Bridge trace propagation, OpenTelemetry auto-instrumentation, global OpenTelemetry registration, environment interpretation, provider builders or resource detectors.
 
-Outbound propagation, metrics, structured-log correlation, exporters, Bridge propagation and infrastructure telemetry remain deferred.
+Outbound propagation, structured-log correlation, exporters, Bridge propagation, telemetry drop-health metrics and infrastructure telemetry remain deferred.
 
 ## Licence
 

@@ -50,12 +50,15 @@ final class OpenTelemetryCompositionFactoryTest extends TestCase
         $this->assertNull($composition->sampler());
     }
 
-    public function testEnabledConfigurationRequiresTracerProviderWithoutFallback(): void
+    public function testEnabledConfigurationRequiresAtLeastOneSignalProviderWithoutFallback(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Enabled Observe composition requires a tracer provider.');
+        $this->expectExceptionMessage('Enabled Observe composition requires at least one OpenTelemetry signal provider.');
 
-        (new OpenTelemetryCompositionFactory())->create(new ObserveConfiguration(enabled: true));
+        (new OpenTelemetryCompositionFactory())->create(
+            configuration: new ObserveConfiguration(enabled: true),
+            resource: $this->resourceWithServiceName('observe-test'),
+        );
     }
 
     public function testEnabledConfigurationRequiresResourceWithoutFallback(): void
@@ -111,6 +114,23 @@ final class OpenTelemetryCompositionFactoryTest extends TestCase
         $this->assertNull($composition->loggerProvider());
         $this->assertSame($resource, $composition->resource());
         $this->assertNull($composition->sampler());
+    }
+
+    public function testEnabledConfigurationAllowsMeterOnlySignals(): void
+    {
+        $meterProvider = new NoopMeterProvider();
+        $resource = $this->resourceWithServiceName('observe-test');
+
+        $composition = (new OpenTelemetryCompositionFactory())->create(
+            configuration: new ObserveConfiguration(enabled: true),
+            meterProvider: $meterProvider,
+            resource: $resource,
+        );
+
+        $this->assertTrue($composition->isEnabled());
+        $this->assertNull($composition->tracerProvider());
+        $this->assertSame($meterProvider, $composition->meterProvider());
+        $this->assertSame($resource, $composition->resource());
     }
 
     public function testEnabledConfigurationRejectsInvalidResourceServiceName(): void
