@@ -1393,13 +1393,17 @@
             "dist": {
                 "type": "path",
                 "url": "packages/observe",
-                "reference": "3e7343fac7b64858c23c9b01294e683147afea55"
+                "reference": "44f21bf0f4da1aa8f37ac16a6f72f8476db9f7cf"
             },
             "require": {
                 "evolvephp/core": "^2.0",
+                "evolvephp/http": "^2.0",
                 "open-telemetry/api": "^1.10",
                 "open-telemetry/sem-conv": "^1.44",
-                "php": "^8.4"
+                "php": "^8.4",
+                "psr/http-message": "^1.1 || ^2.0",
+                "psr/http-server-handler": "^1.0",
+                "psr/http-server-middleware": "^1.0"
             },
             "suggest": {
                 "open-telemetry/sdk": "Allows applications to pass SDK resource and sampler objects into Observe composition values."

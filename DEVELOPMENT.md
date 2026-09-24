@@ -71,9 +71,9 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/bridge-remote`
 - `evolvephp/core`
 - `evolvephp/insight`
-- `evolvephp/observe`
 - `evolvephp/dev-tools`
 - `evolvephp/http`
+- `evolvephp/observe`
 - `evolvephp/module`
 - `evolvephp/plugin`
 - `evolvephp/testing`
@@ -217,7 +217,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains fourteen packages in this order: contracts, bridge-contracts, core, insight, observe, module, plugin, http, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains fourteen packages in this order: contracts, bridge-contracts, core, insight, module, plugin, http, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -491,7 +491,7 @@ BridgeSymfony -> BridgeContracts, BridgePsr, PsrHttpMessage, SymfonyHost
 BridgeRemote -> BridgeContracts, BridgePsr, PsrHttpMessage, PsrHttpClient, PsrHttpServer
 Core      -> Contracts
 Insight   -> Core
-Observe   -> Core, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv
+Observe   -> Core, Http, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PsrHttpMessage, PsrHttpServer
 DevTools  -> Contracts, Core, Module, Plugin
 Http      -> Contracts, Core
 Module    -> Contracts
@@ -499,7 +499,7 @@ Plugin    -> Contracts
 Testing   -> Contracts, Core, Http, Module, Plugin
 ```
 
-There is no production dependency on Testing. BridgeContracts is an optional outward package and may depend only on Contracts. BridgePsr is an optional outward package and may depend on BridgeContracts, Core, Http and PSR HTTP message interfaces. BridgeLaravel is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow LaravelHost layer. BridgeSymfony is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow SymfonyHost layer. BridgeRemote is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message and factory interfaces, PSR-18 HTTP client interfaces and PSR HTTP server-handler interfaces. Insight is an optional outward package and may depend on Core. Observe is an optional outward package and may depend on Core, OpenTelemetryApi, OpenTelemetrySdk and OpenTelemetrySemConv only. The Core edge is for generic execution lifecycle contracts. The SDK edge is optional package functionality for suggested SDK resource and sampler typing, not a mandatory published Observe runtime dependency. OpenTelemetrySemConv is a mandatory runtime edge because Observe production source uses stable semantic-convention constants. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on BridgeContracts, BridgePsr, BridgeLaravel, BridgeSymfony or BridgeRemote.
+There is no production dependency on Testing. BridgeContracts is an optional outward package and may depend only on Contracts. BridgePsr is an optional outward package and may depend on BridgeContracts, Core, Http and PSR HTTP message interfaces. BridgeLaravel is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow LaravelHost layer. BridgeSymfony is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow SymfonyHost layer. BridgeRemote is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message and factory interfaces, PSR-18 HTTP client interfaces and PSR HTTP server-handler interfaces. Insight is an optional outward package and may depend on Core. Observe is an optional outward package and may depend on Core, Http, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PSR HTTP message interfaces and PSR HTTP server interfaces. The Core edge is for generic execution lifecycle contracts, and the Http edge is for route-template enrichment through public routing state while Core and HTTP remain OpenTelemetry-neutral. The SDK edge is optional package functionality for suggested SDK resource and sampler typing, not a mandatory published Observe runtime dependency. OpenTelemetrySemConv is a mandatory runtime edge because Observe production source uses stable semantic-convention constants. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on BridgeContracts, BridgePsr, BridgeLaravel, BridgeSymfony or BridgeRemote.
 
 The root also models deliberate external standard layers:
 
@@ -517,6 +517,8 @@ Observe external standards
 OpenTelemetryApi
 OpenTelemetrySdk
 OpenTelemetrySemConv
+PsrHttpMessage
+PsrHttpServer
 
 Http external standards
 PsrHttpMessage
@@ -539,7 +541,7 @@ PsrHttpClient
 PsrHttpServer
 ```
 
-`PsrContainer` represents the approved PSR-11 interoperability layer used by Core and by Contracts for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`, by BridgePsr for caller-owned PSR request input and resolved PSR response output, by BridgeLaravel and BridgeSymfony for caller-owned PSR request construction and delegated PSR response translation, and by BridgeRemote for outer and delegated PSR requests/responses plus PSR-17 factories. `LaravelHost` represents the narrow Illuminate HTTP and authentication-contract layer used only by BridgeLaravel for host request and principal translation. `SymfonyHost` represents the narrow Symfony HttpFoundation and Security Core layer used only by BridgeSymfony for host request and principal translation. `PsrHttpClient` represents the approved PSR-18 `Psr\Http\Client` namespace used only by BridgeRemote for host-side remote invocation transport. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http and the BridgeRemote endpoint. `OpenTelemetryApi` represents the OpenTelemetry API namespace required by Observe for provider interfaces and spans. `OpenTelemetrySdk` represents optional SDK resource and sampler value types supported when applications install the suggested SDK. `OpenTelemetrySemConv` represents stable semantic-convention constants used by Observe, including `error.type` and `service.name`.
+`PsrContainer` represents the approved PSR-11 interoperability layer used by Core and by Contracts for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`, by BridgePsr for caller-owned PSR request input and resolved PSR response output, by BridgeLaravel and BridgeSymfony for caller-owned PSR request construction and delegated PSR response translation, by BridgeRemote for outer and delegated PSR requests/responses plus PSR-17 factories, and by Observe for explicit HTTP server tracing over caller-owned PSR requests/responses. `LaravelHost` represents the narrow Illuminate HTTP and authentication-contract layer used only by BridgeLaravel for host request and principal translation. `SymfonyHost` represents the narrow Symfony HttpFoundation and Security Core layer used only by BridgeSymfony for host request and principal translation. `PsrHttpClient` represents the approved PSR-18 `Psr\Http\Client` namespace used only by BridgeRemote for host-side remote invocation transport. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http, Observe route-enrichment middleware and the BridgeRemote endpoint. `OpenTelemetryApi` represents the OpenTelemetry API and context namespaces required by Observe for provider interfaces, propagation, spans and context scopes. `OpenTelemetrySdk` represents optional SDK resource and sampler value types supported when applications install the suggested SDK. `OpenTelemetrySemConv` represents stable semantic-convention constants used by Observe, including HTTP server attributes, `error.type` and `service.name`.
 
 These PSR HTTP interfaces are external interoperability standards and do not change the first-party Evolve package dependency direction. Adding `psr/http-factory` does not require a new Deptrac external namespace layer because PSR-17 factory interfaces live under `Psr\Http\Message`. PSR-18 is tracked as its own external namespace because the client interfaces live under `Psr\Http\Client`. Http still depends inward on Contracts and Core, while BridgeLaravel, BridgeSymfony and BridgeRemote use their approved external layers only at optional Bridge boundaries.
 

@@ -135,7 +135,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertPackageGraphIsAcyclic($graph);
     }
 
-    public function testObserveManifestDeclaresCompositionOnlyOpenTelemetryDependencyPolicy(): void
+    public function testObserveManifestDeclaresOpenTelemetryAndHttpServerTracingDependencyPolicy(): void
     {
         $manifest = $this->readJsonFile('packages/observe/composer.json');
 
@@ -143,8 +143,12 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             array(
                 'php' => '^8.4',
                 'evolvephp/core' => '^2.0',
+                'evolvephp/http' => '^2.0',
                 'open-telemetry/api' => '^1.10',
                 'open-telemetry/sem-conv' => '^1.44',
+                'psr/http-message' => '^1.1 || ^2.0',
+                'psr/http-server-handler' => '^1.0',
+                'psr/http-server-middleware' => '^1.0',
             ),
             $manifest['require']
         );
@@ -154,7 +158,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
 
         foreach (array_keys(array_merge($manifest['require'], $manifest['suggest'])) as $packageName) {
-            if ($packageName !== 'evolvephp/core') {
+            if ($packageName !== 'evolvephp/core' && $packageName !== 'evolvephp/http') {
                 $this->assertFalse(str_starts_with($packageName, 'evolvephp/'), 'Observe must not require unapproved first-party Evolve packages.');
             }
 
@@ -849,8 +853,12 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array(
                     'php' => '^8.4',
                     'evolvephp/core' => '^2.0',
+                    'evolvephp/http' => '^2.0',
                     'open-telemetry/api' => '^1.10',
                     'open-telemetry/sem-conv' => '^1.44',
+                    'psr/http-message' => '^1.1 || ^2.0',
+                    'psr/http-server-handler' => '^1.0',
+                    'psr/http-server-middleware' => '^1.0',
                 ),
                 'suggest' => array('open-telemetry/sdk' => 'Allows applications to pass SDK resource and sampler objects into Observe composition values.'),
             ),
@@ -1102,6 +1110,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'EvolveSemanticConventions.php',
                 'Exception/OpenTelemetryContextDetachFailed.php',
                 'ExecutionTraceInstrumentation.php',
+                'Http/HttpRouteSpanMiddleware.php',
+                'Http/HttpServerTraceInstrumentation.php',
+                'Http/Internal/HttpServerSpanState.php',
+                'Http/Internal/PsrServerRequestPropagationGetter.php',
                 'ObserveConfiguration.php',
                 'OpenTelemetryComposition.php',
                 'OpenTelemetryCompositionFactory.php',

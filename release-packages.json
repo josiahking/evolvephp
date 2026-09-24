@@ -18,10 +18,6 @@
             "directory": "packages/insight"
         },
         {
-            "name": "evolvephp/observe",
-            "directory": "packages/observe"
-        },
-        {
             "name": "evolvephp/module",
             "directory": "packages/module"
         },
@@ -32,6 +28,10 @@
         {
             "name": "evolvephp/http",
             "directory": "packages/http"
+        },
+        {
+            "name": "evolvephp/observe",
+            "directory": "packages/observe"
         },
         {
             "name": "evolvephp/bridge-psr",
