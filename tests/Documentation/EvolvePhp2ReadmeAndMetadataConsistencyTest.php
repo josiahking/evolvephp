@@ -278,7 +278,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'BridgeSymfony -> BridgeContracts, BridgePsr, PsrHttpMessage, SymfonyHost',
             'Core      -> Contracts',
             'Insight   -> Core',
-            'Observe   -> Core, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv',
+            'Observe   -> Core, Http, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PsrHttpMessage, PsrHttpServer',
             'DevTools  -> Contracts, Core, Module, Plugin',
             'Http      -> Contracts, Core',
             'Module    -> Contracts',

@@ -612,8 +612,12 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             $packages[$coreIndex + 1]
         );
         $this->assertSame(
-            array('name' => 'evolvephp/observe', 'directory' => 'packages/observe'),
+            array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
             $packages[$coreIndex + 2]
+        );
+        $this->assertSame(
+            array('name' => 'evolvephp/observe', 'directory' => 'packages/observe'),
+            $packages[$coreIndex + 5]
         );
         $this->assertSame($map['packages'], $packages);
     }

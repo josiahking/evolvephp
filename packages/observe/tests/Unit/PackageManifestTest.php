@@ -25,8 +25,12 @@ final class PackageManifestTest extends TestCase
             [
                 'php' => '^8.4',
                 'evolvephp/core' => '^2.0',
+                'evolvephp/http' => '^2.0',
                 'open-telemetry/api' => '^1.10',
                 'open-telemetry/sem-conv' => '^1.44',
+                'psr/http-message' => '^1.1 || ^2.0',
+                'psr/http-server-handler' => '^1.0',
+                'psr/http-server-middleware' => '^1.0',
             ],
             $manifest['require'],
         );
