@@ -28,6 +28,8 @@ SERVER spans record only the accepted bounded HTTP and URL attributes: `http.req
 
 Inbound baggage is deny-by-default. Observe does not extract the `baggage` header, activate baggage context, copy baggage into attributes, propagate baggage downstream or inject baggage. Observe also does not inject trace headers into responses. Outbound HTTP propagation remains outside this capability.
 
+For Remote Bridge deployments, Bridge clients may project an invocation's manual `traceparent` and conditional `tracestate` carrier onto the outer HTTP request. `HttpServerTraceInstrumentation` remains the receiving boundary that extracts and semantically validates that W3C context before delegated execution. Exactly one component must own the outer Remote Bridge HTTP SERVER span; applications using framework or host OpenTelemetry auto-instrumentation for that server request must not also wrap the same request with Evolve's explicit HTTP server tracing.
+
 `ExecutionMetricsInstrumentation` consumes Core execution observations without modifying Core. It is inert when Observe is disabled or when enabled composition has no meter provider; no meter lookup, instrument creation or per-execution metric state is allocated in those modes. A tracer-only composition therefore produces no metrics. A meter-only composition produces metrics while trace instrumentation remains inert.
 
 Execution metrics use instrumentation scope `evolvephp/observe` and these instruments:
@@ -101,9 +103,9 @@ https://github.com/josiahking/evolvephp
 
 ## Current Limitations
 
-This package does not implement baggage, outbound HTTP-client spans or metrics, outbound HTTP injection, trace headers on responses, queue/message metrics beyond generic execution-kind metrics, scheduled-job transport propagation, database metrics, cache metrics, storage metrics, worker/process/runtime metrics, an `EvolveLogger`, logger facades, PSR-3 adapters, Monolog adapters, logger decorators, mandatory OpenTelemetry logging, Evolve-owned exporters, endpoint configuration, transport configuration, Collector setup, retries, durable buffering, automatic flush, shutdown hooks, Bridge trace propagation, OpenTelemetry auto-instrumentation, global OpenTelemetry registration, environment interpretation, provider builders or resource detectors.
+This package does not implement baggage, outbound HTTP-client spans or metrics, outbound HTTP injection, trace headers on responses, queue/message metrics beyond generic execution-kind metrics, scheduled-job transport propagation, database metrics, cache metrics, storage metrics, worker/process/runtime metrics, an `EvolveLogger`, logger facades, PSR-3 adapters, Monolog adapters, logger decorators, mandatory OpenTelemetry logging, Evolve-owned exporters, endpoint configuration, transport configuration, Collector setup, retries, durable buffering, automatic flush, shutdown hooks, OpenTelemetry auto-instrumentation, global OpenTelemetry registration, environment interpretation, provider builders or resource detectors.
 
-Outbound propagation, logger adapters, Bridge propagation, telemetry drop-health metrics beyond the narrow exporter failure tracker and infrastructure telemetry remain deferred.
+Outbound propagation beyond the bounded Remote Bridge trace carrier, logger adapters, telemetry drop-health metrics beyond the narrow exporter failure tracker and infrastructure telemetry remain deferred.
 
 ## Licence
 
