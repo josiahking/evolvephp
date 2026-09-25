@@ -8,6 +8,8 @@ The client sends exactly one protocol-v1 `POST` request to a configured HTTP or 
 
 Authentication is caller supplied through `LegacyRemoteClientAuthenticator`. The artifact does not implement JWT, HMAC, OAuth, API-key storage, credential discovery or secret rotation. Authentication headers are validated and cannot override protocol-controlled or unsafe transport headers.
 
+`LegacyRemoteInvocation::trace()` is a transport-neutral manual trace carrier. The client projects only `traceparent` and, when `traceparent` is present, `tracestate` onto the outer HTTP request for the receiving OpenTelemetry server boundary. It does not forward baggage or arbitrary trace-map keys, parse W3C Trace Context, depend on OpenTelemetry or treat trace metadata as authentication, authorization, principal, tenant, session or other security authority. Authentication headers cannot override `traceparent` or `tracestate`.
+
 `LegacyCurlTransport` is the optional cURL transport included for legacy hosts. It uses POST only, disables redirects, captures response bodies and headers, applies explicit connect/request timeouts and keeps TLS peer and host verification enabled. HTTP remains usable only for explicitly trusted local or private sidecar deployments; networked or untrusted deployments require TLS.
 
 It does not provide automatic retries, retry backoff, circuit breakers, fallback routing, idempotency persistence, shared PHP sessions, cookie bridging, uploaded-file transport, streaming or binary protocol support, queues, service discovery, proxying, process supervision, cutover or data migration.

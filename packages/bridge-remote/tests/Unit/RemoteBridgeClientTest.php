@@ -105,6 +105,67 @@ final class RemoteBridgeClientTest extends TestCase
         self::assertSame('{"ok":true}', $received->applicationBody());
     }
 
+    public function testTraceContextCarrierIsProjectedOntoOuterHttpRequestOnlyForW3cHeaders(): void
+    {
+        $http = new RecordingHttpClient();
+        $client = $this->client(http: $http);
+
+        $client->invoke($this->invocation(trace: [
+            'traceparent' => '00-11111111111111111111111111111111-2222222222222222-01',
+            'tracestate' => 'vendor=value',
+            'baggage' => 'tenant=secret',
+            'x-custom-trace' => 'custom',
+        ]));
+
+        self::assertNotNull($http->request);
+        self::assertSame('00-11111111111111111111111111111111-2222222222222222-01', $http->request->getHeaderLine('traceparent'));
+        self::assertSame('vendor=value', $http->request->getHeaderLine('tracestate'));
+        self::assertSame('', $http->request->getHeaderLine('baggage'));
+        self::assertSame('', $http->request->getHeaderLine('x-custom-trace'));
+    }
+
+    public function testTracestateIsNotProjectedWithoutTraceparent(): void
+    {
+        $http = new RecordingHttpClient();
+
+        $this->client(http: $http)->invoke($this->invocation(trace: ['tracestate' => 'vendor=value']));
+
+        self::assertNotNull($http->request);
+        self::assertSame('', $http->request->getHeaderLine('traceparent'));
+        self::assertSame('', $http->request->getHeaderLine('tracestate'));
+    }
+
+    public function testTracePropagationHeaderMutationIsFailOpen(): void
+    {
+        $traceparentFailureHttp = new RecordingHttpClient();
+        $this->client(
+            http: $traceparentFailureHttp,
+            requestFactory: new ThrowingHeaderRequestFactory(['traceparent']),
+        )->invoke($this->invocation(trace: [
+            'traceparent' => '00-11111111111111111111111111111111-2222222222222222-01',
+            'tracestate' => 'vendor=value',
+        ]));
+
+        self::assertSame(1, $traceparentFailureHttp->calls);
+        self::assertNotNull($traceparentFailureHttp->request);
+        self::assertSame('', $traceparentFailureHttp->request->getHeaderLine('traceparent'));
+        self::assertSame('', $traceparentFailureHttp->request->getHeaderLine('tracestate'));
+
+        $tracestateFailureHttp = new RecordingHttpClient();
+        $this->client(
+            http: $tracestateFailureHttp,
+            requestFactory: new ThrowingHeaderRequestFactory(['tracestate']),
+        )->invoke($this->invocation(trace: [
+            'traceparent' => '00-33333333333333333333333333333333-4444444444444444-01',
+            'tracestate' => 'vendor=value',
+        ]));
+
+        self::assertSame(1, $tracestateFailureHttp->calls);
+        self::assertNotNull($tracestateFailureHttp->request);
+        self::assertSame('00-33333333333333333333333333333333-4444444444444444-01', $tracestateFailureHttp->request->getHeaderLine('traceparent'));
+        self::assertSame('', $tracestateFailureHttp->request->getHeaderLine('tracestate'));
+    }
+
     public function testRemoteBridgeErrorResultAndHttpErrorEnvelopeAreReturnedAsReceived(): void
     {
         foreach ([401, 503] as $status) {
@@ -175,6 +236,8 @@ final class RemoteBridgeClientTest extends TestCase
         yield 'host override' => [['host' => ['evil.test']]];
         yield 'protocol identity override' => [['x-request-id' => ['other']]];
         yield 'proxy transport override' => [['proxy-authorization' => ['secret']]];
+        yield 'traceparent override' => [['traceparent' => ['00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01']]];
+        yield 'tracestate override' => [['tracestate' => ['vendor=value']]];
     }
 
     public function testAuthenticatorExceptionIsSafeAndDoesNotExposeSecretDetails(): void
@@ -260,19 +323,27 @@ final class RemoteBridgeClientTest extends TestCase
         ?RecordingHttpClient $http = null,
         ?RemoteBridgeCodec $codec = null,
         ?RemoteBridgeClientAuthenticator $authenticator = null,
+        ?RequestFactoryInterface $requestFactory = null,
     ): RemoteBridgeClient {
         return new RemoteBridgeClient(
             $endpoint,
             $http ?? new RecordingHttpClient(new ClientTestResponse(200, ['content-type' => [RemoteBridgeProtocol::MEDIA_TYPE]], (new RemoteBridgeCodec())->encodeResult(RemoteBridgeResult::applicationResponse('request-1', 'correlation-1', 200, [], null)))),
-            new ClientTestRequestFactory(),
+            $requestFactory ?? new ClientTestRequestFactory(),
             new ClientTestStreamFactory(),
             $codec ?? new RemoteBridgeCodec(),
             $authenticator ?? new RecordingClientAuthenticator(['x-service-auth' => ['signed']]),
         );
     }
 
-    private function invocation(?string $deadline = '2999-01-01T00:00:00+00:00', string $target = '/delegated', string $body = '{"ok":true}'): RemoteBridgeInvocation
-    {
+    /**
+     * @param array<string, string> $trace
+     */
+    private function invocation(
+        ?string $deadline = '2999-01-01T00:00:00+00:00',
+        string $target = '/delegated',
+        string $body = '{"ok":true}',
+        array $trace = ['traceparent' => '00-00000000000000000000000000000000-0000000000000000-01'],
+    ): RemoteBridgeInvocation {
         return new RemoteBridgeInvocation(
             operation: 'delegated.operation',
             method: 'PATCH',
@@ -285,7 +356,7 @@ final class RemoteBridgeClientTest extends TestCase
             callerIdentifier: 'caller-1',
             deadline: $deadline,
             idempotencyKey: 'idem-1',
-            trace: ['traceparent' => '00-00000000000000000000000000000000-0000000000000000-01'],
+            trace: $trace,
         );
     }
 }
@@ -345,6 +416,23 @@ final class ClientTestRequestFactory implements RequestFactoryInterface
     public function createRequest(string $method, $uri): RequestInterface
     {
         return new ClientTestRequest($method, $uri instanceof UriInterface ? $uri : new ClientTestUri((string) $uri));
+    }
+}
+
+final class ThrowingHeaderRequestFactory implements RequestFactoryInterface
+{
+    /**
+     * @param list<string> $throwOnHeaderNames
+     */
+    public function __construct(private readonly array $throwOnHeaderNames) {}
+
+    public function createRequest(string $method, $uri): RequestInterface
+    {
+        return new ThrowingHeaderRequest(
+            $method,
+            $uri instanceof UriInterface ? $uri : new ClientTestUri((string) $uri),
+            $this->throwOnHeaderNames,
+        );
     }
 }
 
@@ -529,7 +617,7 @@ class ClientTestMessage implements MessageInterface
     }
 }
 
-final class ClientTestRequest extends ClientTestMessage implements RequestInterface
+class ClientTestRequest extends ClientTestMessage implements RequestInterface
 {
     /**
      * @param array<string, list<string>> $headers
@@ -577,6 +665,32 @@ final class ClientTestRequest extends ClientTestMessage implements RequestInterf
         $clone->uri = $uri;
 
         return $clone;
+    }
+}
+
+final class ThrowingHeaderRequest extends ClientTestRequest
+{
+    /**
+     * @param list<string> $throwOnHeaderNames
+     * @param array<string, list<string>> $headers
+     */
+    public function __construct(
+        string $method,
+        UriInterface $uri,
+        private readonly array $throwOnHeaderNames,
+        array $headers = [],
+        string $body = '',
+    ) {
+        parent::__construct($method, $uri, $headers, $body);
+    }
+
+    public function withHeader(string $name, $value): MessageInterface
+    {
+        if (in_array(strtolower($name), $this->throwOnHeaderNames, true)) {
+            throw new RuntimeException('header mutation failed');
+        }
+
+        return parent::withHeader($name, $value);
     }
 }
 

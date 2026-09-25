@@ -112,6 +112,28 @@ function fixtureInvocation(): LegacyRemoteInvocation
     );
 }
 
+function tracedInvocation(array $trace): LegacyRemoteInvocation
+{
+    return new LegacyRemoteInvocation(
+        'legacy.submit',
+        'post',
+        '/delegated',
+        ['accept' => ['application/json']],
+        '{"name":"Ada"}',
+        ['items' => [['id' => 1]], 'active' => true],
+        'request-1',
+        'correlation-1',
+        'legacy-app',
+        'user-1',
+        'tenant-1',
+        'en_GB',
+        'UTC',
+        '2999-01-01T00:00:00+00:00',
+        'idem-1',
+        $trace,
+    );
+}
+
 test('exact protocol constants', function (): void {
     same(1, LegacyRemoteProtocol::VERSION);
     same('POST', LegacyRemoteProtocol::HTTP_METHOD);
@@ -321,6 +343,45 @@ test('client validation, auth, transport, timeout and protocol failures', functi
     $oversizedRequestResult = (new LegacyRemoteClient('https://example.test/bridge', $oversizedRequestTransport, new NullAuthenticator()))->invoke($oversizedRequest);
     same('remote_bridge_request_too_large', $oversizedRequestResult->failureCode());
     same(0, $oversizedRequestTransport->calls);
+});
+
+test('client projects only W3C trace context onto outer HTTP transport headers', function (): void {
+    $transport = new RecordingTransport();
+    $result = (new LegacyRemoteClient('https://example.test/bridge', $transport, new NullAuthenticator()))->invoke(tracedInvocation([
+        'traceparent' => '00-11111111111111111111111111111111-2222222222222222-01',
+        'tracestate' => 'vendor=value',
+        'baggage' => 'tenant=secret',
+        'x-custom-trace' => 'custom',
+    ]));
+
+    ok($result->received());
+    same('00-11111111111111111111111111111111-2222222222222222-01', $transport->headers['traceparent'][0]);
+    same('vendor=value', $transport->headers['tracestate'][0]);
+    ok(!isset($transport->headers['baggage']), 'Baggage must not be projected.');
+    ok(!isset($transport->headers['x-custom-trace']), 'Arbitrary trace keys must not be projected.');
+
+    $tracestateOnly = new RecordingTransport();
+    (new LegacyRemoteClient('https://example.test/bridge', $tracestateOnly, new NullAuthenticator()))->invoke(tracedInvocation([
+        'tracestate' => 'vendor=value',
+    ]));
+
+    ok(!isset($tracestateOnly->headers['traceparent']), 'Traceparent must be absent.');
+    ok(!isset($tracestateOnly->headers['tracestate']), 'Tracestate must not be projected without traceparent.');
+
+    $traceparentOverride = (new LegacyRemoteClient('https://example.test/bridge', new RecordingTransport(), new RecordingAuthenticator([
+        'traceparent' => ['00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01'],
+    ])))->invoke(tracedInvocation([
+        'traceparent' => '00-11111111111111111111111111111111-2222222222222222-01',
+    ]));
+    same('authentication', $traceparentOverride->failureKind());
+
+    $tracestateOverride = (new LegacyRemoteClient('https://example.test/bridge', new RecordingTransport(), new RecordingAuthenticator([
+        'tracestate' => ['vendor=value'],
+    ])))->invoke(tracedInvocation([
+        'traceparent' => '00-11111111111111111111111111111111-2222222222222222-01',
+        'tracestate' => 'caller=value',
+    ]));
+    same('authentication', $tracestateOverride->failureKind());
 });
 
 test('quarantine fields are preserved', function (): void {

@@ -26,6 +26,14 @@ The host application owns the concrete PSR-18 transport, bounded timeout configu
 
 The configured client endpoint is trusted deployment configuration. `RemoteBridgeInvocation::target()` is the delegated application request target and is never used as the network destination.
 
+`RemoteBridgeInvocation::trace()` is a transport-neutral manual trace carrier. The host-side client projects only `traceparent` and, when `traceparent` is present, `tracestate` onto the outer HTTP request so the receiving OpenTelemetry server boundary can continue a W3C trace. Arbitrary trace-map keys and baggage are not forwarded, and Bridge does not parse W3C Trace Context or depend on OpenTelemetry. Receiving instrumentation owns semantic validation; malformed but transport-safe trace context must not make delegated application execution fail.
+
+Trace metadata is observability-only. It must never be used as authentication, authorization, principal, tenant, session or other security authority. Authentication providers cannot override `traceparent` or `tracestate`.
+
+Exactly one component must own the outer Remote Bridge HTTP SERVER span. Applications that use host or framework OpenTelemetry auto-instrumentation for the remote endpoint must not also wrap the same request with Evolve Observe's explicit HTTP server tracing.
+
+Remote Bridge does not create CLIENT spans or provide general outbound HTTP observability.
+
 TLS is required across untrusted or networked boundaries. Explicitly trusted localhost or private sidecar transport may use local HTTP according to deployment policy.
 
 This package requires PHP `^8.4`.

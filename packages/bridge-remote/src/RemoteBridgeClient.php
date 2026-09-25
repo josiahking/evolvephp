@@ -35,6 +35,8 @@ final readonly class RemoteBridgeClient
         'proxy-connection',
         'te',
         'trailer',
+        'traceparent',
+        'tracestate',
         'transfer-encoding',
         'upgrade',
         'via',
@@ -95,6 +97,8 @@ final readonly class RemoteBridgeClient
                 'Remote Bridge request could not be constructed.',
             );
         }
+
+        $request = $this->withTracePropagation($request, $invocation);
 
         try {
             $request = $this->withAuthenticationHeaders($request, $invocation);
@@ -182,6 +186,31 @@ final readonly class RemoteBridgeClient
     private function failure(BridgeErrorKind $kind, string $code, string $message): RemoteBridgeClientResult
     {
         return RemoteBridgeClientResult::failure(new BridgeError($kind, $code, $message, false));
+    }
+
+    private function withTracePropagation(RequestInterface $request, RemoteBridgeInvocation $invocation): RequestInterface
+    {
+        $trace = $invocation->trace();
+
+        if (!isset($trace['traceparent'])) {
+            return $request;
+        }
+
+        try {
+            $tracedRequest = $request->withHeader('traceparent', $trace['traceparent']);
+        } catch (Throwable) {
+            return $request;
+        }
+
+        if (!isset($trace['tracestate'])) {
+            return $tracedRequest;
+        }
+
+        try {
+            return $tracedRequest->withHeader('tracestate', $trace['tracestate']);
+        } catch (Throwable) {
+            return $tracedRequest;
+        }
     }
 
     private function withAuthenticationHeaders(RequestInterface $request, RemoteBridgeInvocation $invocation): RequestInterface

@@ -18,6 +18,8 @@ final class LegacyRemoteClient
         'proxy-connection',
         'te',
         'trailer',
+        'traceparent',
+        'tracestate',
         'transfer-encoding',
         'upgrade',
         'via',
@@ -137,6 +139,16 @@ final class LegacyRemoteClient
 
         if ($invocation->idempotencyKey() !== null) {
             $headers['x-idempotency-key'] = [$invocation->idempotencyKey()];
+        }
+
+        $trace = $invocation->trace();
+
+        if (isset($trace['traceparent'])) {
+            $headers['traceparent'] = [$trace['traceparent']];
+
+            if (isset($trace['tracestate'])) {
+                $headers['tracestate'] = [$trace['tracestate']];
+            }
         }
 
         $authHeaders = $this->authenticator->authenticationHeaders($invocation);
