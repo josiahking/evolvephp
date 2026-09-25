@@ -205,8 +205,6 @@ final class OpenTelemetryExportProcessingFactoryTest extends TestCase
         do {
             if ($reflection->hasProperty($property)) {
                 $propertyReflection = $reflection->getProperty($property);
-                $propertyReflection->setAccessible(true);
-
                 return $propertyReflection->getValue($object);
             }
 
