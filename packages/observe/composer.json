@@ -1,6 +1,6 @@
 {
     "name": "evolvephp/observe",
-    "description": "OpenTelemetry composition and generic execution tracing foundation for EvolvePHP 2.",
+    "description": "OpenTelemetry composition, execution and HTTP server tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.",
     "type": "library",
     "license": "BSD-3-Clause",
     "require": {

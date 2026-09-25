@@ -18,7 +18,7 @@ final class PackageManifestTest extends TestCase
         );
 
         $this->assertSame('evolvephp/observe', $manifest['name']);
-        $this->assertSame('OpenTelemetry composition and generic execution tracing foundation for EvolvePHP 2.', $manifest['description']);
+        $this->assertSame('OpenTelemetry composition, execution and HTTP server tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.', $manifest['description']);
         $this->assertSame('library', $manifest['type']);
         $this->assertSame('BSD-3-Clause', $manifest['license']);
         $this->assertSame(
