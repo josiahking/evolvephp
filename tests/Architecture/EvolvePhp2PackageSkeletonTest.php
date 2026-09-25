@@ -153,7 +153,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $manifest['require']
         );
         $this->assertSame(
-            array('open-telemetry/sdk' => 'Allows applications to pass SDK resource and sampler objects into Observe composition values.'),
+            array('open-telemetry/sdk' => "Allows applications to use Observe's optional SDK resource, sampler, export-processing, reader and lifecycle integration surfaces."),
             $manifest['suggest']
         );
 
@@ -1111,6 +1111,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/OpenTelemetryContextDetachFailed.php',
                 'ExecutionMetricsInstrumentation.php',
                 'ExecutionTraceInstrumentation.php',
+                'Export/BatchExportConfiguration.php',
+                'Export/ExportLifecycleResult.php',
+                'Export/ExporterFailureTracker.php',
+                'Export/OpenTelemetryExportLifecycle.php',
+                'Export/OpenTelemetryExportProcessingFactory.php',
                 'Http/HttpRouteSpanMiddleware.php',
                 'Http/HttpServerMetricsInstrumentation.php',
                 'Http/HttpServerTraceInstrumentation.php',
