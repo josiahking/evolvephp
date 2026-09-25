@@ -4,6 +4,10 @@
 
 OpenTelemetry composition, generic execution tracing, explicit HTTP SERVER tracing, bounded metrics, structured-log correlation and bounded export-processing integration foundation for EvolvePHP 2.
 
+## Operational ownership
+
+Observe owns only the composition boundary and local execution/export lifecycle surfaces described in this package. Applications remain responsible for provider setup, exporters, transports, Collector wiring, backend routing, retry policy, timing policy, and all outbound HTTP or database/cache/queue infrastructure telemetry beyond the accepted Evolve Core and HTTP boundaries.
+
 ## Responsibility
 
 Evolve Observe provides a small boundary for application-owned OpenTelemetry providers, explicit SDK resource identity, generic Core execution tracing and metrics, explicit HTTP SERVER tracing and metrics, structured-log correlation snapshots and optional bounded SDK export-processing integration. It consumes Core's generic lifecycle contracts through `ExecutionContextAttacher` and `ObservationSink`, and it consumes Evolve HTTP routing state only for route-template span enrichment.

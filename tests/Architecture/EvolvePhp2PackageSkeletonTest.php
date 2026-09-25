@@ -153,6 +153,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $manifest['require']
         );
         $this->assertSame(
+            'OpenTelemetry composition, execution and HTTP server tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.',
+            $manifest['description']
+        );
+        $this->assertSame(
             array('open-telemetry/sdk' => "Allows applications to use Observe's optional SDK resource, sampler, export-processing, reader and lifecycle integration surfaces."),
             $manifest['suggest']
         );
@@ -848,7 +852,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'manifest' => 'packages/observe/composer.json',
                 'src' => 'packages/observe/src',
                 'name' => 'evolvephp/observe',
-                'description' => 'OpenTelemetry composition and generic execution tracing foundation for EvolvePHP 2.',
+                'description' => 'OpenTelemetry composition, execution and HTTP server tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Observe\\',
                 'require' => array(
                     'php' => '^8.4',

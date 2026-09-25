@@ -36,6 +36,20 @@ Run correctness tests:
 php benchmarks\vendor\bin\phpunit --configuration benchmarks\phpunit.xml.dist
 ```
 
+Run the Observe benchmark fixture correctness check:
+
+```powershell
+php benchmarks\vendor\bin\phpunit --configuration benchmarks\phpunit.xml.dist benchmarks\tests\ObserveBenchmarkFixtureTest.php
+```
+
+Run the local Observe overhead benchmark:
+
+```powershell
+php benchmarks\vendor\bin\phpbench run --config=benchmarks\phpbench.json --group=observe --report=aggregate
+```
+
+The Observe benchmark measures equivalent prepared workloads: the same Core `ExecutionOrchestrator` application operation in bare, Observe-disabled and Observe-enabled modes, plus the same prepared local HTTP `HttpKernel` request in bare, disabled-wrapper and enabled-wrapper modes. Benchmark-enabled tracing uses an SDK provider without span processors or exporters, so exporter, backend, network and Collector work is excluded. It does not claim end-to-end application throughput, exporter/backend performance, external Collector latency, or production framework comparison. Local timing evidence is environment-specific and non-canonical unless produced under the repository's controlled PHP 8.4 benchmark protocol.
+
 Run syntax checks:
 
 ```powershell
