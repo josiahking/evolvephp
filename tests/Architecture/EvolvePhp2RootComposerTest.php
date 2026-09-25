@@ -76,6 +76,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/observe' => '^2.0@dev',
             'evolvephp/testing' => '^2.0@dev',
             'friendsofphp/php-cs-fixer' => '^3.95',
+            'open-telemetry/exporter-otlp' => '^1.4',
             'open-telemetry/sdk' => '^1.15',
             'phpstan/phpstan' => '^2.2',
             'phpstan/phpstan-phpunit' => '^2.0',

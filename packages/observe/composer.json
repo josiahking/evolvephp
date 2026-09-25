@@ -14,7 +14,7 @@
         "psr/http-server-middleware": "^1.0"
     },
     "suggest": {
-        "open-telemetry/sdk": "Allows applications to pass SDK resource and sampler objects into Observe composition values."
+        "open-telemetry/sdk": "Allows applications to use Observe's optional SDK resource, sampler, export-processing, reader and lifecycle integration surfaces."
     },
     "autoload": {
         "psr-4": {

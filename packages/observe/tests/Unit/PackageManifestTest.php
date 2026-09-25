@@ -35,9 +35,21 @@ final class PackageManifestTest extends TestCase
             $manifest['require'],
         );
         $this->assertArrayHasKey('open-telemetry/sdk', $manifest['suggest']);
+        $this->assertSame(
+            "Allows applications to use Observe's optional SDK resource, sampler, export-processing, reader and lifecycle integration surfaces.",
+            $manifest['suggest']['open-telemetry/sdk'],
+        );
         $this->assertSame(['Evolve\\Observe\\' => 'src/'], $manifest['autoload']['psr-4']);
         $this->assertArrayNotHasKey('bin', $manifest);
         $this->assertArrayNotHasKey('evolvephp/insight', $manifest['require']);
         $this->assertArrayNotHasKey('open-telemetry/sdk', $manifest['require']);
+        $this->assertArrayNotHasKey('open-telemetry/exporter-otlp', $manifest['require']);
+        $this->assertArrayNotHasKey('open-telemetry/exporter-otlp', $manifest['suggest']);
+
+        foreach (array_keys($manifest['require']) as $packageName) {
+            if ($packageName !== 'evolvephp/core' && $packageName !== 'evolvephp/http') {
+                $this->assertFalse(str_starts_with($packageName, 'evolvephp/'));
+            }
+        }
     }
 }
