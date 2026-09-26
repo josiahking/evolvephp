@@ -131,11 +131,13 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
         $coreManifest = $this->readJsonFile('packages/core/composer.json');
         $skeletonManifest = $this->readJsonFile('skeleton/composer.json');
 
-        $this->assertCount(14, $map['packages']);
+        $this->assertCount(15, $map['packages']);
         $this->assertNotContains('evolvephp/skeleton', $packageNames);
         $this->assertNotContains('skeleton', $packageDirectories);
         $this->assertStringNotContainsString('skeleton', $deptrac);
         $this->assertArrayNotHasKey('evolvephp/http', $coreManifest['require']);
+        $this->assertArrayNotHasKey('evolvephp/database-contracts', $skeletonManifest['require']);
+        $this->assertArrayNotHasKey('evolvephp/database-contracts', $skeletonManifest['require-dev']);
         $this->assertArrayNotHasKey('evolvephp/bridge-contracts', $skeletonManifest['require']);
         $this->assertArrayNotHasKey('evolvephp/bridge-contracts', $skeletonManifest['require-dev']);
         $this->assertArrayNotHasKey('evolvephp/bridge-psr', $skeletonManifest['require']);

@@ -20,6 +20,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
         $this->assertSame(
             array(
                 array('name' => 'evolvephp/contracts', 'directory' => 'packages/contracts'),
+                array('name' => 'evolvephp/database-contracts', 'directory' => 'packages/database-contracts'),
                 array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -151,7 +152,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/## Release Validation/',
             '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
-            '/fourteen packages.*mapped explicitly|mapped explicitly.*fourteen packages|map contains fourteen packages/i',
+            '/fifteen packages.*mapped explicitly|mapped explicitly.*fifteen packages|map contains fifteen packages/i',
             '/dependency-compatible/i',
             '/package-local README/i',
             '/package-local.*licen[cs]es/i',
@@ -191,6 +192,13 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'human' => 'EvolvePHP Contracts',
                 'responsibility' => 'Foundational public contracts for EvolvePHP 2.',
                 'dependencies' => 'None.',
+            ),
+            array(
+                'name' => 'evolvephp/database-contracts',
+                'directory' => 'packages/database-contracts',
+                'human' => 'EvolvePHP Database Contracts',
+                'responsibility' => 'Portable SQL database statement and transaction contracts for EvolvePHP 2.',
+                'dependencies' => '`evolvephp/contracts`',
             ),
             array(
                 'name' => 'evolvephp/bridge-contracts',
