@@ -21,6 +21,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             array(
                 array('name' => 'evolvephp/contracts', 'directory' => 'packages/contracts'),
                 array('name' => 'evolvephp/database-contracts', 'directory' => 'packages/database-contracts'),
+                array('name' => 'evolvephp/database-pdo', 'directory' => 'packages/database-pdo'),
                 array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -152,7 +153,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/## Release Validation/',
             '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
-            '/fifteen packages.*mapped explicitly|mapped explicitly.*fifteen packages|map contains fifteen packages/i',
+            '/sixteen packages.*mapped explicitly|mapped explicitly.*sixteen packages|map contains sixteen packages/i',
             '/dependency-compatible/i',
             '/package-local README/i',
             '/package-local.*licen[cs]es/i',
@@ -199,6 +200,13 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'human' => 'EvolvePHP Database Contracts',
                 'responsibility' => 'Portable SQL database statement and transaction contracts for EvolvePHP 2.',
                 'dependencies' => '`evolvephp/contracts`',
+            ),
+            array(
+                'name' => 'evolvephp/database-pdo',
+                'directory' => 'packages/database-pdo',
+                'human' => 'EvolvePHP Database PDO',
+                'responsibility' => 'PDO database adapter for EvolvePHP 2 database contracts.',
+                'dependencies' => '`evolvephp/contracts`, `evolvephp/database-contracts`',
             ),
             array(
                 'name' => 'evolvephp/bridge-contracts',

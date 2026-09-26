@@ -17,6 +17,9 @@
         <testsuite name="database-contracts">
             <directory suffix="Test.php">packages/database-contracts/tests</directory>
         </testsuite>
+        <testsuite name="database-pdo">
+            <directory suffix="Test.php">packages/database-pdo/tests</directory>
+        </testsuite>
         <testsuite name="bridge-contracts">
             <directory suffix="Test.php">packages/bridge-contracts/tests</directory>
         </testsuite>
@@ -61,6 +64,7 @@
         <include>
             <directory suffix=".php">packages/contracts/src</directory>
             <directory suffix=".php">packages/database-contracts/src</directory>
+            <directory suffix=".php">packages/database-pdo/src</directory>
             <directory suffix=".php">packages/bridge-contracts/src</directory>
             <directory suffix=".php">packages/bridge-psr/src</directory>
             <directory suffix=".php">packages/bridge-laravel/src</directory>

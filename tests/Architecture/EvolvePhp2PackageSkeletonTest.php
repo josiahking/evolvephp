@@ -11,6 +11,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'dev-tools' => ['bin/evolve-audit'],
             'contracts' => null,
             'database-contracts' => null,
+            'database-pdo' => null,
             'bridge-contracts' => null,
             'bridge-psr' => null,
             'bridge-laravel' => null,
@@ -772,6 +773,19 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
             ),
             array(
+                'manifest' => 'packages/database-pdo/composer.json',
+                'src' => 'packages/database-pdo/src',
+                'name' => 'evolvephp/database-pdo',
+                'description' => 'PDO database adapter for EvolvePHP 2 database contracts.',
+                'namespace' => 'Evolve\\Database\\Pdo\\',
+                'require' => array(
+                    'php' => '^8.4',
+                    'ext-pdo' => '*',
+                    'evolvephp/contracts' => '^2.0',
+                    'evolvephp/database-contracts' => '^2.0',
+                ),
+            ),
+            array(
                 'manifest' => 'packages/bridge-contracts/composer.json',
                 'src' => 'packages/bridge-contracts/src',
                 'name' => 'evolvephp/bridge-contracts',
@@ -972,6 +986,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'DatabaseOperation.php',
                 'DatabaseStatement.php',
                 'Exception/DatabaseException.php',
+            ),
+            'packages/database-pdo/src' => array(
+                'Exception/PdoDatabaseException.php',
+                'Internal/PdoFailureTranslator.php',
+                'PdoDatabaseConnection.php',
             ),
             'packages/bridge-contracts/src' => array(
                 'BridgeContext.php',

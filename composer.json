@@ -33,6 +33,7 @@
                 "versions": {
                     "evolvephp/contracts": "2.0.x-dev",
                     "evolvephp/database-contracts": "2.0.x-dev",
+                    "evolvephp/database-pdo": "2.0.x-dev",
                     "evolvephp/bridge-contracts": "2.0.x-dev",
                     "evolvephp/bridge-laravel": "2.0.x-dev",
                     "evolvephp/bridge-psr": "2.0.x-dev",
@@ -67,6 +68,7 @@
         "evolvephp/bridge-remote": "^2.0@dev",
         "evolvephp/bridge-symfony": "^2.0@dev",
         "evolvephp/database-contracts": "^2.0@dev",
+        "evolvephp/database-pdo": "^2.0@dev",
         "evolvephp/dev-tools": "^2.0@dev",
         "evolvephp/insight": "^2.0@dev",
         "evolvephp/observe": "^2.0@dev",
@@ -108,6 +110,7 @@
         "test:contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts",
         "test:core": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core",
         "test:database-contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite database-contracts",
+        "test:database-pdo": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite database-pdo",
         "test:dev-tools": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools",
         "test:http": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http",
         "test:insight": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite insight",

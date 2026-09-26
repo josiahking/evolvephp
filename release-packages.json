@@ -10,6 +10,10 @@
             "directory": "packages/database-contracts"
         },
         {
+            "name": "evolvephp/database-pdo",
+            "directory": "packages/database-pdo"
+        },
+        {
             "name": "evolvephp/bridge-contracts",
             "directory": "packages/bridge-contracts"
         },
