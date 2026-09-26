@@ -39,7 +39,7 @@ final class EvolvePhp2LegacyRemoteClientTest extends TestCase
         $releaseMap = $this->json($root . '/release-packages.json');
         $rootComposer = $this->json($root . '/composer.json');
 
-        self::assertCount(14, $releaseMap['packages']);
+        self::assertCount(15, $releaseMap['packages']);
         self::assertNotContains('evolvephp/legacy-http-client', array_column($releaseMap['packages'], 'name'));
         self::assertArrayNotHasKey('evolvephp/legacy-http-client', $rootComposer['require']);
         self::assertArrayNotHasKey('evolvephp/legacy-http-client', $rootComposer['require-dev']);
@@ -56,7 +56,7 @@ final class EvolvePhp2LegacyRemoteClientTest extends TestCase
         $source = $this->source($root . '/compat/legacy-http-client/src');
 
         self::assertStringContainsString('namespace Evolve\\Bridge\\LegacyHttp;', $source);
-        self::assertDoesNotMatchRegularExpression('/use Evolve\\\\(Bridge\\\\(Remote|Contracts|Psr)|Core|Http|Contracts|Module|Plugin|Testing|DevTools)\\\\/', $source);
+        self::assertDoesNotMatchRegularExpression('/use Evolve\\\\(Bridge\\\\(Remote|Contracts|Psr)|Database\\\\Contracts|Core|Http|Contracts|Module|Plugin|Testing|DevTools)\\\\/', $source);
         self::assertDoesNotMatchRegularExpression('/\breadonly\b|\benum\s+\w|\bmatch\s*\(|\?\->/', $source);
         self::assertDoesNotMatchRegularExpression('/function\s+[A-Za-z0-9_]+\s*\([^)]*,\s*\)/', $source);
         self::assertStringNotContainsString('array_is_list(', $source);

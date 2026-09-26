@@ -64,6 +64,7 @@ packages/*
 The root maps each initial package explicitly to `2.0.x-dev` inside the path repository:
 
 - `evolvephp/contracts`
+- `evolvephp/database-contracts`
 - `evolvephp/bridge-contracts`
 - `evolvephp/bridge-psr`
 - `evolvephp/bridge-laravel`
@@ -122,6 +123,7 @@ Run individual package suites:
 
 ```bash
 composer test:contracts
+composer test:database-contracts
 composer test:bridge-contracts
 composer test:bridge-psr
 composer test:bridge-laravel
@@ -217,7 +219,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains fourteen packages in this order: contracts, bridge-contracts, core, insight, module, plugin, http, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains fifteen packages in this order: contracts, database-contracts, bridge-contracts, core, insight, module, plugin, http, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -367,6 +369,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | Suite | Test directory |
 | --- | --- |
 | `contracts` | `packages/contracts/tests` |
+| `database-contracts` | `packages/database-contracts/tests` |
 | `bridge-contracts` | `packages/bridge-contracts/tests` |
 | `bridge-psr` | `packages/bridge-psr/tests` |
 | `bridge-laravel` | `packages/bridge-laravel/tests` |
@@ -393,11 +396,13 @@ The distributable PHPStan configuration lives at:
 phpstan.neon.dist
 ```
 
-The initial PHPStan level is `6`. PHPStan analyzes all fourteen package `src` and `tests` directories:
+The initial PHPStan level is `6`. PHPStan analyzes all fifteen package `src` and `tests` directories:
 
 ```text
 packages/contracts/src
 packages/contracts/tests
+packages/database-contracts/src
+packages/database-contracts/tests
 packages/bridge-contracts/src
 packages/bridge-contracts/tests
 packages/bridge-psr/src
@@ -446,6 +451,7 @@ Deptrac analyzes production source directories only:
 
 ```text
 packages/contracts/src
+packages/database-contracts/src
 packages/bridge-contracts/src
 packages/bridge-psr/src
 packages/bridge-laravel/src
@@ -465,6 +471,7 @@ Package tests are excluded from Deptrac boundary analysis so test dependencies c
 
 ```text
 Contracts -> packages/contracts/src/.* -> Evolve\Contracts\
+DatabaseContracts -> packages/database-contracts/src/.* -> Evolve\Database\Contracts\
 BridgeContracts -> packages/bridge-contracts/src/.* -> Evolve\Bridge\Contracts\
 BridgePsr -> packages/bridge-psr/src/.* -> Evolve\Bridge\Psr\
 BridgeLaravel -> packages/bridge-laravel/src/.* -> Evolve\Bridge\Laravel\
@@ -484,6 +491,7 @@ The accepted dependency matrix is:
 
 ```text
 Contracts -> none
+DatabaseContracts -> Contracts
 BridgeContracts -> Contracts
 BridgePsr -> BridgeContracts, Core, Http
 BridgeLaravel -> BridgeContracts, BridgePsr, PsrHttpMessage, LaravelHost
@@ -499,7 +507,7 @@ Plugin    -> Contracts
 Testing   -> Contracts, Core, Http, Module, Plugin
 ```
 
-There is no production dependency on Testing. BridgeContracts is an optional outward package and may depend only on Contracts. BridgePsr is an optional outward package and may depend on BridgeContracts, Core, Http and PSR HTTP message interfaces. BridgeLaravel is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow LaravelHost layer. BridgeSymfony is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow SymfonyHost layer. BridgeRemote is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message and factory interfaces, PSR-18 HTTP client interfaces and PSR HTTP server-handler interfaces. Insight is an optional outward package and may depend on Core. Observe is an optional outward package and may depend on Core, Http, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PSR HTTP message interfaces and PSR HTTP server interfaces. The Core edge is for generic execution lifecycle contracts, and the Http edge is for route-template enrichment through public routing state while Core and HTTP remain OpenTelemetry-neutral. The SDK edge is optional package functionality for suggested SDK resource and sampler typing, not a mandatory published Observe runtime dependency. OpenTelemetrySemConv is a mandatory runtime edge because Observe production source uses stable semantic-convention constants. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on BridgeContracts, BridgePsr, BridgeLaravel, BridgeSymfony or BridgeRemote.
+There is no production dependency on Testing. DatabaseContracts is an optional outward package and may depend only on Contracts. BridgeContracts is an optional outward package and may depend only on Contracts. BridgePsr is an optional outward package and may depend on BridgeContracts, Core, Http and PSR HTTP message interfaces. BridgeLaravel is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow LaravelHost layer. BridgeSymfony is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow SymfonyHost layer. BridgeRemote is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message and factory interfaces, PSR-18 HTTP client interfaces and PSR HTTP server-handler interfaces. Insight is an optional outward package and may depend on Core. Observe is an optional outward package and may depend on Core, Http, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PSR HTTP message interfaces and PSR HTTP server interfaces. The Core edge is for generic execution lifecycle contracts, and the Http edge is for route-template enrichment through public routing state while Core and HTTP remain OpenTelemetry-neutral. The SDK edge is optional package functionality for suggested SDK resource and sampler typing, not a mandatory published Observe runtime dependency. OpenTelemetrySemConv is a mandatory runtime edge because Observe production source uses stable semantic-convention constants. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on DatabaseContracts, BridgeContracts, BridgePsr, BridgeLaravel, BridgeSymfony or BridgeRemote.
 
 The root also models deliberate external standard layers:
 

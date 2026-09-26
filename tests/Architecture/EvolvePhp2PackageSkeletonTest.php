@@ -10,6 +10,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'core' => ['bin/evolve'],
             'dev-tools' => ['bin/evolve-audit'],
             'contracts' => null,
+            'database-contracts' => null,
             'bridge-contracts' => null,
             'bridge-psr' => null,
             'bridge-laravel' => null,
@@ -763,6 +764,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'psr/container' => '^1.1 || ^2.0'),
             ),
             array(
+                'manifest' => 'packages/database-contracts/composer.json',
+                'src' => 'packages/database-contracts/src',
+                'name' => 'evolvephp/database-contracts',
+                'description' => 'Portable SQL database statement and transaction contracts for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Database\\Contracts\\',
+                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
+            ),
+            array(
                 'manifest' => 'packages/bridge-contracts/composer.json',
                 'src' => 'packages/bridge-contracts/src',
                 'name' => 'evolvephp/bridge-contracts',
@@ -956,6 +965,13 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/LifecycleException.php',
                 'Execution/ResetParticipant.php',
                 'Lifecycle/ApplicationLifecycle.php',
+            ),
+            'packages/database-contracts/src' => array(
+                'DatabaseConnection.php',
+                'DatabaseFailureCategory.php',
+                'DatabaseOperation.php',
+                'DatabaseStatement.php',
+                'Exception/DatabaseException.php',
             ),
             'packages/bridge-contracts/src' => array(
                 'BridgeContext.php',
