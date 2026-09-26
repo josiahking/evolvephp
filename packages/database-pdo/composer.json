@@ -1,0 +1,39 @@
+{
+    "name": "evolvephp/database-pdo",
+    "description": "PDO database adapter for EvolvePHP 2 database contracts.",
+    "type": "library",
+    "homepage": "https://github.com/josiahking/evolvephp",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "evolvephp",
+        "database",
+        "pdo",
+        "sql"
+    ],
+    "authors": [
+        {
+            "name": "Josiah King",
+            "email": "josiahaccounts@gmail.com",
+            "homepage": "https://github.com/josiahking"
+        },
+        {
+            "name": "EvolvePHP Community"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "ext-pdo": "*",
+        "evolvephp/contracts": "^2.0",
+        "evolvephp/database-contracts": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evolve\\Database\\Pdo\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Evolve\\Database\\Pdo\\Tests\\": "tests/"
+        }
+    }
+}

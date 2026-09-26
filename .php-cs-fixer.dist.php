@@ -8,6 +8,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/contracts/tests',
         'packages/database-contracts/src',
         'packages/database-contracts/tests',
+        'packages/database-pdo/src',
+        'packages/database-pdo/tests',
         'packages/bridge-contracts/src',
         'packages/bridge-contracts/tests',
         'packages/bridge-psr/src',
