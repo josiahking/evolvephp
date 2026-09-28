@@ -521,6 +521,40 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/\\b(?:curl|gh|git push|remote add|config --global)\\b/i', $content);
     }
 
+    public function testConsumerValidatorRequiresIndependentCachePackageInExplicitFullGraphCases(): void
+    {
+        $content = $this->readProjectFile('tools/validate-prerelease-consumers.php');
+
+        $caseEStart = strpos($content, "'Full-graph case E'");
+        $caseFStart = strpos($content, "'Full-graph case F'");
+        $caseGStart = strpos($content, "'Full-graph case G'");
+        $caseHStart = strpos($content, "'Stable case H'");
+        $postHStart = strpos($content, 'assertSourceStatePreserved', is_int($caseHStart) ? $caseHStart : 0);
+
+        $this->assertIsInt($caseEStart);
+        $this->assertIsInt($caseFStart);
+        $this->assertIsInt($caseGStart);
+        $this->assertIsInt($caseHStart);
+        $this->assertIsInt($postHStart);
+
+        $caseEBlock = substr($content, $caseEStart, $caseFStart - $caseEStart);
+        $caseFBlock = substr($content, $caseFStart, $caseGStart - $caseFStart);
+        $caseHBlock = substr($content, $caseHStart, $postHStart - $caseHStart);
+
+        $this->assertMatchesRegularExpression(
+            "/'evolvephp\\/database-contracts' => '\\^2\\.0@alpha'.*?'evolvephp\\/database-pdo' => '\\^2\\.0@alpha'.*?'evolvephp\\/cache-memory' => '\\^2\\.0@alpha'/s",
+            $caseEBlock
+        );
+        $this->assertMatchesRegularExpression(
+            "/'evolvephp\\/database-contracts' => '\\^2\\.0'.*?'evolvephp\\/database-pdo' => '\\^2\\.0'.*?'evolvephp\\/cache-memory' => '\\^2\\.0'/s",
+            $caseFBlock
+        );
+        $this->assertMatchesRegularExpression(
+            "/'evolvephp\\/database-contracts' => '\\^2\\.0'.*?'evolvephp\\/database-pdo' => '\\^2\\.0'.*?'evolvephp\\/cache-memory' => '\\^2\\.0'/s",
+            $caseHBlock
+        );
+    }
+
     public function testConsumerValidatorClonesDisposableTaggedRepositoriesWithoutInheritedTags(): void
     {
         $content = $this->readProjectFile('tools/validate-prerelease-consumers.php');
