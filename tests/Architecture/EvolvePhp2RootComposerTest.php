@@ -71,6 +71,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/bridge-psr' => '^2.0@dev',
             'evolvephp/bridge-remote' => '^2.0@dev',
             'evolvephp/bridge-symfony' => '^2.0@dev',
+            'evolvephp/cache-memory' => '^2.0@dev',
             'evolvephp/database-contracts' => '^2.0@dev',
             'evolvephp/database-pdo' => '^2.0@dev',
             'evolvephp/dev-tools' => '^2.0@dev',
@@ -143,6 +144,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test:bridge-psr' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-psr',
             'test:bridge-remote' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-remote',
             'test:bridge-symfony' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-symfony',
+            'test:cache-memory' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite cache-memory',
             'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
             'test:database-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite database-contracts',
@@ -212,7 +214,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         }
     }
 
-    public function testReleaseMapContainsOnlyTheSixteenReleasePackages(): void
+    public function testReleaseMapContainsOnlyTheSeventeenReleasePackages(): void
     {
         $map = $this->readJsonFile('release-packages.json');
 
@@ -222,6 +224,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/contracts', 'directory' => 'packages/contracts'),
                 array('name' => 'evolvephp/database-contracts', 'directory' => 'packages/database-contracts'),
                 array('name' => 'evolvephp/database-pdo', 'directory' => 'packages/database-pdo'),
+                array('name' => 'evolvephp/cache-memory', 'directory' => 'packages/cache-memory'),
                 array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -259,6 +262,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/contracts',
             'evolvephp/database-contracts',
             'evolvephp/database-pdo',
+            'evolvephp/cache-memory',
             'evolvephp/bridge-contracts',
             'evolvephp/bridge-laravel',
             'evolvephp/bridge-psr',

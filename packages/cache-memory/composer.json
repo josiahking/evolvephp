@@ -1,0 +1,42 @@
+{
+    "name": "evolvephp/cache-memory",
+    "description": "In-memory PSR-16 cache implementation for EvolvePHP 2.",
+    "type": "library",
+    "homepage": "https://github.com/josiahking/evolvephp",
+    "license": "BSD-3-Clause",
+    "keywords": [
+        "evolvephp",
+        "cache",
+        "psr-16",
+        "simple-cache",
+        "in-memory"
+    ],
+    "authors": [
+        {
+            "name": "Josiah King",
+            "email": "josiahaccounts@gmail.com",
+            "homepage": "https://github.com/josiahking"
+        },
+        {
+            "name": "EvolvePHP Community"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "psr/clock": "^1.0",
+        "psr/simple-cache": "^3.0"
+    },
+    "provide": {
+        "psr/simple-cache-implementation": "3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evolve\\Cache\\Memory\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Evolve\\Cache\\Memory\\Tests\\": "tests/"
+        }
+    }
+}
