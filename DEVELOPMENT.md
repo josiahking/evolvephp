@@ -213,6 +213,27 @@ The initial route configuration is explicit and empty through `skeleton/config/r
 
 The skeleton installs `evolvephp/dev-tools`, `evolvephp/testing` and PHPUnit as development dependencies. `config/commands.php` registers `module:new` and `plugin:new` only when the DevTools classes exist, so a production `composer install --no-dev` keeps `doctor` and `route:list` available without requiring DevTools. The generator commands derive all output paths from the application root and a single ASCII StudlyCase name token; they do not edit Composer manifests, execute generated PHP, run Composer, run Git, auto-enable generated components or perform automatic discovery.
 
+## Database Guidance
+
+DevTools includes an experimental database capability catalogue and advisor for
+developer planning. The public `Evolve\DevTools\Database` models accept explicit
+workload profiles and explicit database-family definitions, then produce
+deterministic structured advice. The built-in catalogue covers family-level
+guidance for analytical warehouse, distributed SQL, document, graph, in-memory,
+key-value, ledger/immutable, multi-model, relational, search/index, time-series,
+vector and wide-column storage families.
+
+Database capabilities are conservative family-level guidance: representative
+systems in a family are commonly suited to the characteristic, but individual
+products are not certified by the catalogue. Example engines are documentation
+evidence only and do not add dependencies.
+
+The advisor performs no runtime inspection, infrastructure inspection, driver
+detection, SQL analysis, telemetry, network research, AI recommendation,
+database installation, vendor ranking or compatibility certification. Multiple
+workload profiles are evaluated independently through `adviseMany()` for
+polyglot-persistence planning; they are not merged into a composite score.
+
 ## Release Validation
 
 Run deterministic/offline package release-readiness validation:
@@ -516,6 +537,8 @@ Testing   -> Contracts, Core, Http, Module, Plugin
 ```
 
 There is no production dependency on Testing. DatabaseContracts is an optional outward package and may depend only on Contracts. DatabasePdo is an optional outward adapter package and may depend only on Contracts and DatabaseContracts. BridgeContracts is an optional outward package and may depend only on Contracts. BridgePsr is an optional outward package and may depend on BridgeContracts, Core, Http and PSR HTTP message interfaces. BridgeLaravel is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow LaravelHost layer. BridgeSymfony is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow SymfonyHost layer. BridgeRemote is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message and factory interfaces, PSR-18 HTTP client interfaces and PSR HTTP server-handler interfaces. Insight is an optional outward package and may depend on Core. Observe is an optional outward package and may depend on Core, Http, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PSR HTTP message interfaces and PSR HTTP server interfaces. The Core edge is for generic execution lifecycle contracts, and the Http edge is for route-template enrichment through public routing state while Core and HTTP remain OpenTelemetry-neutral. The SDK edge is optional package functionality for suggested SDK resource and sampler typing, not a mandatory published Observe runtime dependency. OpenTelemetrySemConv is a mandatory runtime edge because Observe production source uses stable semantic-convention constants. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on DatabaseContracts, DatabasePdo, BridgeContracts, BridgePsr, BridgeLaravel, BridgeSymfony or BridgeRemote.
+
+The database capability advisor in DevTools is developer guidance only. It evaluates explicit workload profiles against explicit static catalogs deterministically: required capabilities are hard gates, excluded capabilities are hard conflicts, preferred score is only the count of matched preferred capabilities, ties remain explicit, and advice includes per-family explainability. The built-in catalog contains exactly thirteen database families. Built-in engines are examples only, not dependencies; family capabilities describe representative family characteristics; custom catalogs are supported; `adviseMany()` evaluates profiles independently for polyglot planning. This slice is not product/version compatibility certification and has no application/runtime inspection, installed-driver inference, SQL inspection, telemetry, network/vendor lookup, hidden weights, popularity/pricing/cloud-provider ranking, automatic installation, automatic configuration, automatic migration, automatic database switching, universal CRUD/query/database API, `database:recommend` command or other CLI adapter.
 
 The root also models deliberate external standard layers:
 

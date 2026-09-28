@@ -46,6 +46,42 @@ certification, migration-readiness certification, Bridge implementation, Bridge
 protocol, adapter, database synchronization, cutover execution or rollback
 execution.
 
+## Database Capability Advisor
+
+The package provides public experimental database-family guidance models under
+`Evolve\DevTools\Database`.
+
+`DatabaseCatalog::builtIn()` exposes a deterministic catalogue of exactly
+thirteen database families, their family-level capabilities, example engines
+and trade-offs. Custom catalogs are supported by constructing `DatabaseCatalog`
+with explicit `DatabaseFamilyDefinition` values.
+`DatabaseAdvisor` evaluates explicitly supplied `DatabaseWorkloadProfile`
+instances against an explicit catalogue and returns structured `DatabaseAdvice`
+with recommendations, alternatives and disqualified families. Advice is
+explainable through per-family `DatabaseFamilyAssessment` values that record
+matched required capabilities, missing required capabilities, matched preferred
+capabilities, missing preferred capabilities and conflicting excluded
+capabilities. Required capabilities are hard gates, excluded capabilities are
+hard conflicts, and preferred score is only the count of matched preferred
+capabilities. Equal recommendation scores remain explicit ties ordered
+deterministically.
+
+A capability means representative systems in that family are commonly suited to
+that workload characteristic. It does not mean every product belonging to the
+family guarantees that capability. Example engines are documentation and
+guidance data only; they are not Composer dependencies.
+
+The advisor is deterministic and static-input driven. It does not inspect the
+running application, inspect infrastructure, detect installed database drivers,
+inspect SQL, query vendors, use runtime telemetry, perform network lookup, apply
+hidden weights, rank products by popularity, price or cloud provider, install
+databases, configure databases, migrate databases, switch databases, mutate
+infrastructure, provide a universal CRUD/query/database API, certify product or
+version compatibility or combine multiple workload profiles into a composite
+score. This slice has no `database:recommend` command or other CLI adapter.
+`adviseMany()` evaluates multiple explicit workload profiles independently for
+polyglot-persistence planning.
+
 ## Audit Foundation
 
 The package provides a public experimental Audit foundation under

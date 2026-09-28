@@ -1194,6 +1194,13 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Console/ComponentScaffoldGenerator.php',
                 'Console/ModuleNewCommand.php',
                 'Console/PluginNewCommand.php',
+                'Database/DatabaseAdvice.php',
+                'Database/DatabaseAdvisor.php',
+                'Database/DatabaseCapability.php',
+                'Database/DatabaseCatalog.php',
+                'Database/DatabaseFamilyAssessment.php',
+                'Database/DatabaseFamilyDefinition.php',
+                'Database/DatabaseWorkloadProfile.php',
             ),
             'packages/http/src' => array(
                 'Exception/MethodNotAllowed.php',
