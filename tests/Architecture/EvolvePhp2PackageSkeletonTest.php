@@ -11,6 +11,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'dev-tools' => ['bin/evolve-audit'],
             'contracts' => null,
             'cache-memory' => null,
+            'session-contracts' => null,
             'database-contracts' => null,
             'database-pdo' => null,
             'bridge-contracts' => null,
@@ -209,6 +210,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
 
         $this->assertFileDoesNotExist($this->projectPath('packages/contracts/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/session-contracts/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/bridge-contracts/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/bridge-psr/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/bridge-laravel/src/.gitkeep'));
@@ -806,6 +808,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'provide' => array('psr/simple-cache-implementation' => '3.0'),
             ),
             array(
+                'manifest' => 'packages/session-contracts/composer.json',
+                'src' => 'packages/session-contracts/src',
+                'name' => 'evolvephp/session-contracts',
+                'description' => 'Runtime-neutral session contracts for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Session\\Contracts\\',
+                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
+            ),
+            array(
                 'manifest' => 'packages/bridge-contracts/composer.json',
                 'src' => 'packages/bridge-contracts/src',
                 'name' => 'evolvephp/bridge-contracts',
@@ -1016,6 +1026,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/InvalidCacheKeyException.php',
                 'InMemoryCache.php',
                 'Internal/SystemClock.php',
+            ),
+            'packages/session-contracts/src' => array(
+                'Session.php',
+                'SessionAdapter.php',
+                'SessionIdentifier.php',
             ),
             'packages/bridge-contracts/src' => array(
                 'BridgeContext.php',

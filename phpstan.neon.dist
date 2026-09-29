@@ -12,6 +12,8 @@ parameters:
         - packages/database-pdo/tests
         - packages/cache-memory/src
         - packages/cache-memory/tests
+        - packages/session-contracts/src
+        - packages/session-contracts/tests
         - packages/bridge-contracts/src
         - packages/bridge-contracts/tests
         - packages/bridge-psr/src

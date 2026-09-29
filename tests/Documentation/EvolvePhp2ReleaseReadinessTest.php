@@ -23,6 +23,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 array('name' => 'evolvephp/database-contracts', 'directory' => 'packages/database-contracts'),
                 array('name' => 'evolvephp/database-pdo', 'directory' => 'packages/database-pdo'),
                 array('name' => 'evolvephp/cache-memory', 'directory' => 'packages/cache-memory'),
+                array('name' => 'evolvephp/session-contracts', 'directory' => 'packages/session-contracts'),
                 array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -68,7 +69,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             $this->assertStringContainsString('BSD-3-Clause', $content);
             $this->assertStringContainsString('`LICENSE.md`', $content);
             $this->assertDoesNotMatchPattern('/composer require/i', $content);
-            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|bridge-remote|bridge-symfony|contracts|core|dev-tools|http|insight|module|plugin|testing)/i', $content);
+            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|bridge-remote|bridge-symfony|contracts|core|dev-tools|http|insight|module|plugin|session-contracts|testing)/i', $content);
         }
     }
 
@@ -154,7 +155,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/## Release Validation/',
             '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
-            '/seventeen packages.*mapped explicitly|mapped explicitly.*seventeen packages|map contains seventeen packages/i',
+            '/eighteen packages.*mapped explicitly|mapped explicitly.*eighteen packages|map contains eighteen packages/i',
             '/dependency-compatible/i',
             '/package-local README/i',
             '/package-local.*licen[cs]es/i',
@@ -215,6 +216,13 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'human' => 'EvolvePHP Cache Memory',
                 'responsibility' => 'In-memory PSR-16 cache implementation for EvolvePHP 2.',
                 'dependencies' => '`psr/simple-cache`, `psr/clock`',
+            ),
+            array(
+                'name' => 'evolvephp/session-contracts',
+                'directory' => 'packages/session-contracts',
+                'human' => 'EvolvePHP Session Contracts',
+                'responsibility' => 'Runtime-neutral session contracts for EvolvePHP 2.',
+                'dependencies' => '`evolvephp/contracts`',
             ),
             array(
                 'name' => 'evolvephp/bridge-contracts',

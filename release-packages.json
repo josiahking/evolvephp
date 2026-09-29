@@ -18,6 +18,10 @@
             "directory": "packages/cache-memory"
         },
         {
+            "name": "evolvephp/session-contracts",
+            "directory": "packages/session-contracts"
+        },
+        {
             "name": "evolvephp/bridge-contracts",
             "directory": "packages/bridge-contracts"
         },

@@ -32,6 +32,8 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/database-pdo']);
         $this->assertArrayHasKey('evolvephp/cache-memory', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/cache-memory']);
+        $this->assertArrayHasKey('evolvephp/session-contracts', $manifest['require-dev']);
+        $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/session-contracts']);
         $this->assertArrayHasKey('evolvephp/dev-tools', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/dev-tools']);
         $this->assertArrayHasKey('evolvephp/insight', $manifest['require-dev']);
@@ -63,7 +65,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         }
     }
 
-    public function testRootPhpUnitConfigurationDefinesSeventeenPackageSuites(): void
+    public function testRootPhpUnitConfigurationDefinesEighteenPackageSuites(): void
     {
         $path = $this->projectPath('phpunit.xml.dist');
 
@@ -134,6 +136,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/composer test/i', $content);
         $this->assertMatchesPattern('/test:contracts/i', $content);
         $this->assertMatchesPattern('/test:database-contracts/i', $content);
+        $this->assertMatchesPattern('/test:session-contracts/i', $content);
         $this->assertMatchesPattern('/test:bridge-contracts/i', $content);
         $this->assertMatchesPattern('/test:bridge-psr/i', $content);
         $this->assertMatchesPattern('/test:bridge-laravel/i', $content);
@@ -164,7 +167,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $developmentGuide);
         $this->assertMatchesPattern('/PHPUnit 13.*root|root.*PHPUnit 13/i', $developmentGuide);
 
-        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:cache-memory', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:insight', 'test:module', 'test:observe', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:cache-memory', 'test:session-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:insight', 'test:module', 'test:observe', 'test:plugin', 'test:testing') as $script) {
             $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $developmentGuide);
         }
 
@@ -208,6 +211,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'cache-memory' => array(
                 'tests' => 'packages/cache-memory/tests',
                 'smokeTest' => 'packages/cache-memory/tests/Unit/PackageManifestTest.php',
+            ),
+            'session-contracts' => array(
+                'tests' => 'packages/session-contracts/tests',
+                'smokeTest' => 'packages/session-contracts/tests/Unit/PackageManifestTest.php',
             ),
             'bridge-contracts' => array(
                 'tests' => 'packages/bridge-contracts/tests',
@@ -274,6 +281,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test:bridge-remote' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-remote',
             'test:bridge-symfony' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite bridge-symfony',
             'test:cache-memory' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite cache-memory',
+            'test:session-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite session-contracts',
             'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
             'test:database-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite database-contracts',
@@ -295,6 +303,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'evolvephp/database-contracts',
             'evolvephp/database-pdo',
             'evolvephp/cache-memory',
+            'evolvephp/session-contracts',
             'evolvephp/bridge-contracts',
             'evolvephp/bridge-laravel',
             'evolvephp/bridge-psr',
