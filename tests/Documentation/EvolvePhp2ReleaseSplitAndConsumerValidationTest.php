@@ -350,7 +350,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array($path));
 
             $this->assertSame('full', $decision['mode'], $path . ' must force full validation.');
-            $this->assertSame(18, count($decision['packages']), $path . ' must keep the complete package map.');
+            $this->assertSame(19, count($decision['packages']), $path . ' must keep the complete package map.');
         }
 
         $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array('docs/release-notes.md', 'README.md'));
@@ -542,15 +542,15 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $caseHBlock = substr($content, $caseHStart, $postHStart - $caseHStart);
 
         $this->assertMatchesRegularExpression(
-            "/'evolvephp\\/database-contracts' => '\\^2\\.0@alpha'.*?'evolvephp\\/database-pdo' => '\\^2\\.0@alpha'.*?'evolvephp\\/cache-memory' => '\\^2\\.0@alpha'.*?'evolvephp\\/session-contracts' => '\\^2\\.0@alpha'/s",
+            "/'evolvephp\\/database-contracts' => '\\^2\\.0@alpha'.*?'evolvephp\\/database-pdo' => '\\^2\\.0@alpha'.*?'evolvephp\\/cache-memory' => '\\^2\\.0@alpha'.*?'evolvephp\\/session-contracts' => '\\^2\\.0@alpha'.*?'evolvephp\\/lock-contracts' => '\\^2\\.0@alpha'/s",
             $caseEBlock
         );
         $this->assertMatchesRegularExpression(
-            "/'evolvephp\\/database-contracts' => '\\^2\\.0'.*?'evolvephp\\/database-pdo' => '\\^2\\.0'.*?'evolvephp\\/cache-memory' => '\\^2\\.0'.*?'evolvephp\\/session-contracts' => '\\^2\\.0'/s",
+            "/'evolvephp\\/database-contracts' => '\\^2\\.0'.*?'evolvephp\\/database-pdo' => '\\^2\\.0'.*?'evolvephp\\/cache-memory' => '\\^2\\.0'.*?'evolvephp\\/session-contracts' => '\\^2\\.0'.*?'evolvephp\\/lock-contracts' => '\\^2\\.0'/s",
             $caseFBlock
         );
         $this->assertMatchesRegularExpression(
-            "/'evolvephp\\/database-contracts' => '\\^2\\.0'.*?'evolvephp\\/database-pdo' => '\\^2\\.0'.*?'evolvephp\\/cache-memory' => '\\^2\\.0'.*?'evolvephp\\/session-contracts' => '\\^2\\.0'/s",
+            "/'evolvephp\\/database-contracts' => '\\^2\\.0'.*?'evolvephp\\/database-pdo' => '\\^2\\.0'.*?'evolvephp\\/cache-memory' => '\\^2\\.0'.*?'evolvephp\\/session-contracts' => '\\^2\\.0'.*?'evolvephp\\/lock-contracts' => '\\^2\\.0'/s",
             $caseHBlock
         );
     }
@@ -629,7 +629,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertStringContainsString("'COMPOSER_DISABLE_NETWORK' => '1'", $content);
     }
 
-    public function testSharedReleasePackageLoaderAcceptsCanonicalSeventeenPackageMap(): void
+    public function testSharedReleasePackageLoaderAcceptsCanonicalNineteenPackageMap(): void
     {
         require_once $this->path('tools/release-validation-common.php');
 
@@ -639,7 +639,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $coreIndex = array_search('evolvephp/core', $packageNames, true);
 
         $this->assertIsInt($coreIndex);
-        $this->assertCount(18, $packages);
+        $this->assertCount(19, $packages);
         $this->assertContains('evolvephp/insight', $packageNames);
         $this->assertSame(
             array('name' => 'evolvephp/database-contracts', 'directory' => 'packages/database-contracts'),
@@ -656,6 +656,10 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertSame(
             array('name' => 'evolvephp/session-contracts', 'directory' => 'packages/session-contracts'),
             $packages[4]
+        );
+        $this->assertSame(
+            array('name' => 'evolvephp/lock-contracts', 'directory' => 'packages/lock-contracts'),
+            $packages[5]
         );
         $this->assertSame(
             array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -920,7 +924,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $map = $this->readJsonFile('release-packages.json');
 
         $this->assertSame(1, $map['version']);
-        $this->assertCount(18, $map['packages']);
+        $this->assertCount(19, $map['packages']);
 
         return $map['packages'];
     }

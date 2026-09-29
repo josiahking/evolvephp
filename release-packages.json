@@ -22,6 +22,10 @@
             "directory": "packages/session-contracts"
         },
         {
+            "name": "evolvephp/lock-contracts",
+            "directory": "packages/lock-contracts"
+        },
+        {
             "name": "evolvephp/bridge-contracts",
             "directory": "packages/bridge-contracts"
         },

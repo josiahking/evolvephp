@@ -16,6 +16,7 @@ return static function (DeptracConfig $config): void {
             'packages/database-pdo/src',
             'packages/cache-memory/src',
             'packages/session-contracts/src',
+            'packages/lock-contracts/src',
             'packages/bridge-contracts/src',
             'packages/bridge-psr/src',
             'packages/bridge-laravel/src',
@@ -46,6 +47,9 @@ return static function (DeptracConfig $config): void {
             ),
             $sessionContracts = Layer::withName('SessionContracts')->collectors(
                 DirectoryConfig::create('packages/session-contracts/src/.*'),
+            ),
+            $lockContracts = Layer::withName('LockContracts')->collectors(
+                DirectoryConfig::create('packages/lock-contracts/src/.*'),
             ),
             $bridgeContracts = Layer::withName('BridgeContracts')->collectors(
                 DirectoryConfig::create('packages/bridge-contracts/src/.*'),
@@ -126,6 +130,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($databasePdo)->accesses($contracts, $databaseContracts),
             Ruleset::forLayer($cacheMemory)->accesses($psrSimpleCache, $psrClock),
             Ruleset::forLayer($sessionContracts)->accesses($contracts),
+            Ruleset::forLayer($lockContracts)->accesses($contracts),
             Ruleset::forLayer($bridgeContracts)->accesses($contracts),
             Ruleset::forLayer($bridgePsr)->accesses($bridgeContracts, $core, $http, $psrHttpMessage),
             Ruleset::forLayer($bridgeLaravel)->accesses($bridgeContracts, $bridgePsr, $psrHttpMessage, $laravelHost),

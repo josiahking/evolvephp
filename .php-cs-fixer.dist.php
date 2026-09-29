@@ -14,6 +14,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/cache-memory/tests',
         'packages/session-contracts/src',
         'packages/session-contracts/tests',
+        'packages/lock-contracts/src',
+        'packages/lock-contracts/tests',
         'packages/bridge-contracts/src',
         'packages/bridge-contracts/tests',
         'packages/bridge-psr/src',
