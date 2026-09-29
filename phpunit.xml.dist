@@ -23,6 +23,9 @@
         <testsuite name="cache-memory">
             <directory suffix="Test.php">packages/cache-memory/tests</directory>
         </testsuite>
+        <testsuite name="session-contracts">
+            <directory suffix="Test.php">packages/session-contracts/tests</directory>
+        </testsuite>
         <testsuite name="bridge-contracts">
             <directory suffix="Test.php">packages/bridge-contracts/tests</directory>
         </testsuite>
@@ -69,6 +72,7 @@
             <directory suffix=".php">packages/database-contracts/src</directory>
             <directory suffix=".php">packages/database-pdo/src</directory>
             <directory suffix=".php">packages/cache-memory/src</directory>
+            <directory suffix=".php">packages/session-contracts/src</directory>
             <directory suffix=".php">packages/bridge-contracts/src</directory>
             <directory suffix=".php">packages/bridge-psr/src</directory>
             <directory suffix=".php">packages/bridge-laravel/src</directory>
