@@ -10,7 +10,7 @@ All package manifests require PHP `^8.4`.
 
 EvolvePHP 2 packages continue to require PHP `^8.4`. `compat/legacy-http-client` is a separate isolated remote compatibility artifact for legacy applications whose initial official legacy runtime evidence is PHP 7.4.
 
-The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 18-package release map.
+The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 19-package release map.
 
 The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge endpoint. It does not enable embedded or same-process EvolvePHP on PHP 7, lower Core or package requirements, share sessions or cookies, provide automatic retries or fallback routing, or perform modernization cutover or data migration.
 
@@ -23,6 +23,7 @@ The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge e
 | `evolvephp/database-pdo` | `Evolve\Database\Pdo\` | Public experimental PDO adapter for the database contracts, using caller-owned `PDO` instances with bounded failures, explicit parameter binding, eager row materialization and adapter-owned transaction cleanup. |
 | `evolvephp/cache-memory` | `Evolve\Cache\Memory\` | Public experimental in-memory PSR-16 cache implementation with object-local application-lifetime state, injected clock support and no backend dependency. |
 | `evolvephp/session-contracts` | `Evolve\Session\Contracts\` | Public experimental runtime-neutral session contracts with execution-owned lifecycle cleanup, sensitive identifier handling and no native session or storage implementation. |
+| `evolvephp/lock-contracts` | `Evolve\Lock\Contracts\` | Public experimental runtime-neutral lock-provider and lease contracts with explicit execution cleanup, sensitive lock-key handling and no concrete locking algorithm or adapter. |
 | `evolvephp/bridge-contracts` | `Evolve\Bridge\Contracts\` | Public experimental generic Bridge contract boundary with transport-neutral context, request, response and error value objects for explicit host/Evolve translation. |
 | `evolvephp/bridge-psr` | `Evolve\Bridge\Psr\` | Public experimental same-process PSR HTTP Bridge adapter foundation that composes existing readiness, HTTP execution and response-resolution boundaries without owning response emission or process lifecycle. |
 | `evolvephp/bridge-laravel` | `Evolve\Bridge\Laravel\` | Public experimental embedded Laravel host Bridge adapter that translates explicit Laravel route delegation into the same-process PSR Bridge while preserving host lifecycle and quarantine visibility. |
@@ -48,6 +49,7 @@ The package graph follows an inward dependency principle:
 - `database-pdo` depends inward on `contracts` and `database-contracts`, consumes caller-owned PDO connections and remains independent of Core, HTTP, Insight and Observe.
 - `cache-memory` depends only on PSR Simple Cache and PSR Clock, implements PSR-16 directly and remains independent of Evolve Core, Insight, Observe, Redis, APCu, Memcached, database and HTTP packages.
 - `session-contracts` depends inward on `contracts` and remains independent of Core, HTTP, Cache Memory, database packages, Bridge packages, Insight, Observe, host frameworks, PSR HTTP packages and native session integration.
+- `lock-contracts` depends inward on `contracts` and remains independent of Core, Session, Insight, Observe, host frameworks and all concrete lock backends; it does not promise fairness, fencing, linearizability, consensus or a distributed locking algorithm.
 - `bridge-contracts` depends inward on `contracts` and remains independent of Core, HTTP and host frameworks.
 - `bridge-psr` depends inward on `bridge-contracts`, `core` and `http`, plus PSR HTTP message interfaces.
 - `bridge-laravel` depends inward on `bridge-contracts` and `bridge-psr`, plus narrow Illuminate host contracts and PSR HTTP message/factory interfaces.

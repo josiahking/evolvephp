@@ -12,6 +12,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'contracts' => null,
             'cache-memory' => null,
             'session-contracts' => null,
+            'lock-contracts' => null,
             'database-contracts' => null,
             'database-pdo' => null,
             'bridge-contracts' => null,
@@ -816,6 +817,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
             ),
             array(
+                'manifest' => 'packages/lock-contracts/composer.json',
+                'src' => 'packages/lock-contracts/src',
+                'name' => 'evolvephp/lock-contracts',
+                'description' => 'Runtime-neutral lock and lease contracts for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Lock\\Contracts\\',
+                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
+            ),
+            array(
                 'manifest' => 'packages/bridge-contracts/composer.json',
                 'src' => 'packages/bridge-contracts/src',
                 'name' => 'evolvephp/bridge-contracts',
@@ -1031,6 +1040,13 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Session.php',
                 'SessionAdapter.php',
                 'SessionIdentifier.php',
+            ),
+            'packages/lock-contracts/src' => array(
+                'Exception/LockException.php',
+                'Lease.php',
+                'LeaseDuration.php',
+                'LockKey.php',
+                'LockProvider.php',
             ),
             'packages/bridge-contracts/src' => array(
                 'BridgeContext.php',

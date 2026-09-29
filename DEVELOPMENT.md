@@ -68,6 +68,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/database-pdo`
 - `evolvephp/cache-memory`
 - `evolvephp/session-contracts`
+- `evolvephp/lock-contracts`
 - `evolvephp/bridge-contracts`
 - `evolvephp/bridge-psr`
 - `evolvephp/bridge-laravel`
@@ -130,6 +131,7 @@ composer test:database-contracts
 composer test:database-pdo
 composer test:cache-memory
 composer test:session-contracts
+composer test:lock-contracts
 composer test:bridge-contracts
 composer test:bridge-psr
 composer test:bridge-laravel
@@ -246,7 +248,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains eighteen packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, bridge-contracts, core, insight, module, plugin, http, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains nineteen packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, bridge-contracts, core, insight, module, plugin, http, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -400,6 +402,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `database-pdo` | `packages/database-pdo/tests` |
 | `cache-memory` | `packages/cache-memory/tests` |
 | `session-contracts` | `packages/session-contracts/tests` |
+| `lock-contracts` | `packages/lock-contracts/tests` |
 | `bridge-contracts` | `packages/bridge-contracts/tests` |
 | `bridge-psr` | `packages/bridge-psr/tests` |
 | `bridge-laravel` | `packages/bridge-laravel/tests` |
@@ -426,7 +429,7 @@ The distributable PHPStan configuration lives at:
 phpstan.neon.dist
 ```
 
-The initial PHPStan level is `6`. PHPStan analyzes all eighteen package `src` and `tests` directories:
+The initial PHPStan level is `6`. PHPStan analyzes all nineteen package `src` and `tests` directories:
 
 ```text
 packages/contracts/src
@@ -439,6 +442,8 @@ packages/cache-memory/src
 packages/cache-memory/tests
 packages/session-contracts/src
 packages/session-contracts/tests
+packages/lock-contracts/src
+packages/lock-contracts/tests
 packages/bridge-contracts/src
 packages/bridge-contracts/tests
 packages/bridge-psr/src
@@ -491,6 +496,7 @@ packages/database-contracts/src
 packages/database-pdo/src
 packages/cache-memory/src
 packages/session-contracts/src
+packages/lock-contracts/src
 packages/bridge-contracts/src
 packages/bridge-psr/src
 packages/bridge-laravel/src
@@ -514,6 +520,7 @@ DatabaseContracts -> packages/database-contracts/src/.* -> Evolve\Database\Contr
 DatabasePdo -> packages/database-pdo/src/.* -> Evolve\Database\Pdo\
 CacheMemory -> packages/cache-memory/src/.* -> Evolve\Cache\Memory\
 SessionContracts -> packages/session-contracts/src/.* -> Evolve\Session\Contracts\
+LockContracts -> packages/lock-contracts/src/.* -> Evolve\Lock\Contracts\
 BridgeContracts -> packages/bridge-contracts/src/.* -> Evolve\Bridge\Contracts\
 BridgePsr -> packages/bridge-psr/src/.* -> Evolve\Bridge\Psr\
 BridgeLaravel -> packages/bridge-laravel/src/.* -> Evolve\Bridge\Laravel\
@@ -537,6 +544,7 @@ DatabaseContracts -> Contracts
 DatabasePdo -> Contracts, DatabaseContracts
 CacheMemory -> PsrSimpleCache, PsrClock
 SessionContracts -> Contracts
+LockContracts -> Contracts
 BridgeContracts -> Contracts
 BridgePsr -> BridgeContracts, Core, Http
 BridgeLaravel -> BridgeContracts, BridgePsr, PsrHttpMessage, LaravelHost
@@ -553,6 +561,8 @@ Testing   -> Contracts, Core, Http, Module, Plugin
 ```
 
 There is no production dependency on Testing. DatabaseContracts is an optional outward package and may depend only on Contracts. DatabasePdo is an optional outward adapter package and may depend only on Contracts and DatabaseContracts. CacheMemory is an optional outward package and may depend only on PSR Simple Cache and PSR Clock. It uses PSR-16 as the cache contract, has application-lifetime object state rather than execution reset state, and does not provide PSR-6, Redis, APCu, Memcached, database, HTTP, Insight, Observe, telemetry, session or lock behavior. SessionContracts is an optional outward package and may depend only on Contracts. It defines execution-owned mutable session data, adapter close/reset cleanup through ResetParticipant and sensitive identifier redaction, but it does not provide native PHP session integration, storage backends, cookies, CSRF, flash, authentication, distributed locks, Insight or Observe behavior. BridgeContracts is an optional outward package and may depend only on Contracts. BridgePsr is an optional outward package and may depend on BridgeContracts, Core, Http and PSR HTTP message interfaces. BridgeLaravel is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow LaravelHost layer. BridgeSymfony is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message interfaces and the narrow SymfonyHost layer. BridgeRemote is an optional outward package and may depend on BridgeContracts, BridgePsr, PSR HTTP message and factory interfaces, PSR-18 HTTP client interfaces and PSR HTTP server-handler interfaces. Insight is an optional outward package and may depend on Core. Observe is an optional outward package and may depend on Core, Http, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PSR HTTP message interfaces and PSR HTTP server interfaces. The Core edge is for generic execution lifecycle contracts, and the Http edge is for route-template enrichment through public routing state while Core and HTTP remain OpenTelemetry-neutral. The SDK edge is optional package functionality for suggested SDK resource and sampler typing, not a mandatory published Observe runtime dependency. OpenTelemetrySemConv is a mandatory runtime edge because Observe production source uses stable semantic-convention constants. DevTools is development tooling and may depend on Contracts, Core, Module and Plugin. Testing may depend on Contracts, Core, Http, Module and Plugin; it does not depend on DatabaseContracts, DatabasePdo, CacheMemory, SessionContracts, BridgeContracts, BridgePsr, BridgeLaravel, BridgeSymfony or BridgeRemote.
+
+LockContracts is an optional outward package and may depend only on Contracts. It defines a non-blocking acquisition attempt and explicit lease ownership capability, with safe cleanup available through explicit execution reset registration. It contains no adapter and promises no fairness, fencing, linearizability, consensus, exact wall-clock expiry, or particular distributed locking algorithm.
 
 The database capability advisor in DevTools is developer guidance only. It evaluates explicit workload profiles against explicit static catalogs deterministically: required capabilities are hard gates, excluded capabilities are hard conflicts, preferred score is only the count of matched preferred capabilities, ties remain explicit, and advice includes per-family explainability. The built-in catalog contains exactly thirteen database families. Built-in engines are examples only, not dependencies; family capabilities describe representative family characteristics; custom catalogs are supported; `adviseMany()` evaluates profiles independently for polyglot planning. This slice is not product/version compatibility certification and has no application/runtime inspection, installed-driver inference, SQL inspection, telemetry, network/vendor lookup, hidden weights, popularity/pricing/cloud-provider ranking, automatic installation, automatic configuration, automatic migration, automatic database switching, universal CRUD/query/database API, `database:recommend` command or other CLI adapter.
 
