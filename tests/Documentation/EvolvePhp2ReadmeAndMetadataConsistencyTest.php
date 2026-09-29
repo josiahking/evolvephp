@@ -27,6 +27,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'packages/bridge-psr/README.md',
                 'packages/bridge-remote/README.md',
                 'packages/bridge-symfony/README.md',
+                'packages/cache-memory/README.md',
                 'packages/contracts/README.md',
                 'packages/core/README.md',
                 'packages/database-contracts/README.md',

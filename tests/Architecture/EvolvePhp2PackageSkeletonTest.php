@@ -10,6 +10,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'core' => ['bin/evolve'],
             'dev-tools' => ['bin/evolve-audit'],
             'contracts' => null,
+            'cache-memory' => null,
             'database-contracts' => null,
             'database-pdo' => null,
             'bridge-contracts' => null,
@@ -445,6 +446,12 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 $manifest['require'],
                 $package['manifest'] . ' must not require PSR-11 without an approved interoperability boundary.'
             );
+            if ($package['name'] === 'evolvephp/cache-memory') {
+                $this->assertArrayNotHasKey('psr/container-implementation', $manifest['provide']);
+
+                continue;
+            }
+
             $this->assertArrayNotHasKey(
                 'provide',
                 $manifest,
@@ -786,6 +793,19 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 ),
             ),
             array(
+                'manifest' => 'packages/cache-memory/composer.json',
+                'src' => 'packages/cache-memory/src',
+                'name' => 'evolvephp/cache-memory',
+                'description' => 'In-memory PSR-16 cache implementation for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Cache\\Memory\\',
+                'require' => array(
+                    'php' => '^8.4',
+                    'psr/clock' => '^1.0',
+                    'psr/simple-cache' => '^3.0',
+                ),
+                'provide' => array('psr/simple-cache-implementation' => '3.0'),
+            ),
+            array(
                 'manifest' => 'packages/bridge-contracts/composer.json',
                 'src' => 'packages/bridge-contracts/src',
                 'name' => 'evolvephp/bridge-contracts',
@@ -991,6 +1011,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/PdoDatabaseException.php',
                 'Internal/PdoFailureTranslator.php',
                 'PdoDatabaseConnection.php',
+            ),
+            'packages/cache-memory/src' => array(
+                'Exception/InvalidCacheKeyException.php',
+                'InMemoryCache.php',
+                'Internal/SystemClock.php',
             ),
             'packages/bridge-contracts/src' => array(
                 'BridgeContext.php',
