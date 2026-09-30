@@ -14,6 +14,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'session-contracts' => null,
             'lock-contracts' => null,
             'queue-contracts' => null,
+            'queue-memory' => null,
             'database-contracts' => null,
             'database-pdo' => null,
             'bridge-contracts' => null,
@@ -834,6 +835,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
             ),
             array(
+                'manifest' => 'packages/queue-memory/composer.json',
+                'src' => 'packages/queue-memory/src',
+                'name' => 'evolvephp/queue-memory',
+                'description' => 'Object-local in-memory queue adapter for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Queue\\Memory\\',
+                'require' => array('php' => '^8.4', 'evolvephp/queue-contracts' => '^2.0'),
+            ),
+            array(
                 'manifest' => 'packages/bridge-contracts/composer.json',
                 'src' => 'packages/bridge-contracts/src',
                 'name' => 'evolvephp/bridge-contracts',
@@ -1066,6 +1075,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'QueueOperation.php',
                 'QueuePublisher.php',
                 'QueueReceiver.php',
+            ),
+            'packages/queue-memory/src' => array(
+                'InMemoryQueue.php',
+                'Internal/InMemoryDelivery.php',
             ),
             'packages/bridge-contracts/src' => array(
                 'BridgeContext.php',

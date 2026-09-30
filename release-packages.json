@@ -30,6 +30,10 @@
             "directory": "packages/queue-contracts"
         },
         {
+            "name": "evolvephp/queue-memory",
+            "directory": "packages/queue-memory"
+        },
+        {
             "name": "evolvephp/bridge-contracts",
             "directory": "packages/bridge-contracts"
         },

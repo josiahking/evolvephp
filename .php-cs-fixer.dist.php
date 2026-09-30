@@ -18,6 +18,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/lock-contracts/tests',
         'packages/queue-contracts/src',
         'packages/queue-contracts/tests',
+        'packages/queue-memory/src',
+        'packages/queue-memory/tests',
         'packages/bridge-contracts/src',
         'packages/bridge-contracts/tests',
         'packages/bridge-psr/src',
