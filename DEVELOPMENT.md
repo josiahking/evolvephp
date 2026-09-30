@@ -71,6 +71,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/lock-contracts`
 - `evolvephp/queue-contracts`
 - `evolvephp/queue-memory`
+- `evolvephp/storage-contracts`
 - `evolvephp/bridge-contracts`
 - `evolvephp/bridge-psr`
 - `evolvephp/bridge-laravel`
@@ -136,6 +137,7 @@ composer test:session-contracts
 composer test:lock-contracts
 composer test:queue-contracts
 composer test:queue-memory
+composer test:storage-contracts
 composer test:bridge-contracts
 composer test:bridge-psr
 composer test:bridge-laravel
@@ -252,7 +254,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-one packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, bridge-contracts, core, insight, module, plugin, http, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-two packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, bridge-contracts, core, insight, module, plugin, http, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -409,6 +411,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `lock-contracts` | `packages/lock-contracts/tests` |
 | `queue-contracts` | `packages/queue-contracts/tests` |
 | `queue-memory` | `packages/queue-memory/tests` |
+| `storage-contracts` | `packages/storage-contracts/tests` |
 | `bridge-contracts` | `packages/bridge-contracts/tests` |
 | `bridge-psr` | `packages/bridge-psr/tests` |
 | `bridge-laravel` | `packages/bridge-laravel/tests` |
@@ -435,7 +438,7 @@ The distributable PHPStan configuration lives at:
 phpstan.neon.dist
 ```
 
-The initial PHPStan level is `6`. PHPStan analyzes all twenty-one package `src` and `tests` directories:
+The initial PHPStan level is `6`. PHPStan analyzes all twenty-two package `src` and `tests` directories:
 
 ```text
 packages/contracts/src
@@ -454,6 +457,8 @@ packages/queue-contracts/src
 packages/queue-contracts/tests
 packages/queue-memory/src
 packages/queue-memory/tests
+packages/storage-contracts/src
+packages/storage-contracts/tests
 packages/bridge-contracts/src
 packages/bridge-contracts/tests
 packages/bridge-psr/src
@@ -509,6 +514,7 @@ packages/session-contracts/src
 packages/lock-contracts/src
 packages/queue-contracts/src
 packages/queue-memory/src
+packages/storage-contracts/src
 packages/bridge-contracts/src
 packages/bridge-psr/src
 packages/bridge-laravel/src
@@ -535,6 +541,7 @@ SessionContracts -> packages/session-contracts/src/.* -> Evolve\Session\Contract
 LockContracts -> packages/lock-contracts/src/.* -> Evolve\Lock\Contracts\
 QueueContracts -> packages/queue-contracts/src/.* -> Evolve\Queue\Contracts\
 QueueMemory -> packages/queue-memory/src/.* -> Evolve\Queue\Memory\
+StorageContracts -> packages/storage-contracts/src/.* -> Evolve\Storage\Contracts\
 BridgeContracts -> packages/bridge-contracts/src/.* -> Evolve\Bridge\Contracts\
 BridgePsr -> packages/bridge-psr/src/.* -> Evolve\Bridge\Psr\
 BridgeLaravel -> packages/bridge-laravel/src/.* -> Evolve\Bridge\Laravel\
