@@ -39,7 +39,7 @@ final class EvolvePhp2LegacyRemoteClientTest extends TestCase
         $releaseMap = $this->json($root . '/release-packages.json');
         $rootComposer = $this->json($root . '/composer.json');
 
-        self::assertCount(22, $releaseMap['packages']);
+        self::assertCount(23, $releaseMap['packages']);
         self::assertNotContains('evolvephp/legacy-http-client', array_column($releaseMap['packages'], 'name'));
         self::assertArrayNotHasKey('evolvephp/legacy-http-client', $rootComposer['require']);
         self::assertArrayNotHasKey('evolvephp/legacy-http-client', $rootComposer['require-dev']);

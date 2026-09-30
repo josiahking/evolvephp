@@ -39,6 +39,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/queue-contracts']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/queue-memory']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/storage-contracts']);
+        $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/storage-local']);
         $this->assertArrayHasKey('evolvephp/dev-tools', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/dev-tools']);
         $this->assertArrayHasKey('evolvephp/insight', $manifest['require-dev']);
@@ -173,7 +174,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $developmentGuide);
         $this->assertMatchesPattern('/PHPUnit 13.*root|root.*PHPUnit 13/i', $developmentGuide);
 
-        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:cache-memory', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:insight', 'test:module', 'test:observe', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:cache-memory', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:insight', 'test:module', 'test:observe', 'test:plugin', 'test:testing') as $script) {
             $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $developmentGuide);
         }
 
@@ -237,6 +238,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'storage-contracts' => array(
                 'tests' => 'packages/storage-contracts/tests',
                 'smokeTest' => 'packages/storage-contracts/tests/Unit/PackageManifestTest.php',
+            ),
+            'storage-local' => array(
+                'tests' => 'packages/storage-local/tests',
+                'smokeTest' => 'packages/storage-local/tests/Unit/PackageManifestTest.php',
             ),
             'bridge-contracts' => array(
                 'tests' => 'packages/bridge-contracts/tests',
@@ -308,6 +313,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test:queue-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-contracts',
             'test:queue-memory' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-memory',
             'test:storage-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite storage-contracts',
+            'test:storage-local' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite storage-local',
             'test:contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite contracts',
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
             'test:database-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite database-contracts',
@@ -334,6 +340,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'evolvephp/queue-contracts',
             'evolvephp/queue-memory',
             'evolvephp/storage-contracts',
+            'evolvephp/storage-local',
             'evolvephp/bridge-contracts',
             'evolvephp/bridge-laravel',
             'evolvephp/bridge-psr',

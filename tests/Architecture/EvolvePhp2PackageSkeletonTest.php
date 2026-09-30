@@ -16,6 +16,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'queue-contracts' => null,
             'queue-memory' => null,
             'storage-contracts' => null,
+            'storage-local' => null,
             'database-contracts' => null,
             'database-pdo' => null,
             'bridge-contracts' => null,
@@ -852,6 +853,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
             ),
             array(
+                'manifest' => 'packages/storage-local/composer.json',
+                'src' => 'packages/storage-local/src',
+                'name' => 'evolvephp/storage-local',
+                'description' => 'Local filesystem adapter for EvolvePHP object storage contracts.',
+                'namespace' => 'Evolve\\Storage\\Local\\',
+                'require' => array('php' => '^8.4', 'evolvephp/storage-contracts' => '^2.0'),
+            ),
+            array(
                 'manifest' => 'packages/bridge-contracts/composer.json',
                 'src' => 'packages/bridge-contracts/src',
                 'name' => 'evolvephp/bridge-contracts',
@@ -1096,6 +1105,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'StorageFailureCategory.php',
                 'StorageKey.php',
                 'StorageOperation.php',
+            ),
+            'packages/storage-local/src' => array(
+                'Internal/LocalFilesystemReadableObject.php',
+                'Internal/LocalFilesystemStorageException.php',
+                'LocalFilesystemStorage.php',
             ),
             'packages/bridge-contracts/src' => array(
                 'BridgeContext.php',

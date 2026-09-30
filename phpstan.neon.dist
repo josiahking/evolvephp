@@ -22,6 +22,8 @@ parameters:
         - packages/queue-memory/tests
         - packages/storage-contracts/src
         - packages/storage-contracts/tests
+        - packages/storage-local/src
+        - packages/storage-local/tests
         - packages/bridge-contracts/src
         - packages/bridge-contracts/tests
         - packages/bridge-psr/src

@@ -10,7 +10,7 @@ All package manifests require PHP `^8.4`.
 
 EvolvePHP 2 packages continue to require PHP `^8.4`. `compat/legacy-http-client` is a separate isolated remote compatibility artifact for legacy applications whose initial official legacy runtime evidence is PHP 7.4.
 
-The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 22-package release map.
+The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 23-package release map.
 
 The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge endpoint. It does not enable embedded or same-process EvolvePHP on PHP 7, lower Core or package requirements, share sessions or cookies, provide automatic retries or fallback routing, or perform modernization cutover or data migration.
 
@@ -27,6 +27,7 @@ The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge e
 | `evolvephp/queue-contracts` | `Evolve\Queue\Contracts\` | Public experimental runtime-neutral queue publisher, non-blocking receiver, opaque message envelope and explicit transient delivery settlement contracts; no broker adapter or worker loop. |
 | `evolvephp/queue-memory` | `Evolve\Queue\Memory\` | Public experimental object-local, deterministic in-memory FIFO queue adapter for tests and local development; no persistence or cross-process communication. |
 | `evolvephp/storage-contracts` | `Evolve\Storage\Contracts\` | Public experimental vendor-neutral object storage contract with opaque exact keys, incremental chunk writes, nullable opens and explicit caller-owned readable handles; no storage adapter or vendor SDK. |
+| `evolvephp/storage-local` | `Evolve\Storage\Local\` | Public experimental local filesystem adapter for object storage with explicit root configuration, opaque hashed paths, incremental writes and bounded caller-owned readers; no durability or rollback guarantee. |
 | `evolvephp/bridge-contracts` | `Evolve\Bridge\Contracts\` | Public experimental generic Bridge contract boundary with transport-neutral context, request, response and error value objects for explicit host/Evolve translation. |
 | `evolvephp/bridge-psr` | `Evolve\Bridge\Psr\` | Public experimental same-process PSR HTTP Bridge adapter foundation that composes existing readiness, HTTP execution and response-resolution boundaries without owning response emission or process lifecycle. |
 | `evolvephp/bridge-laravel` | `Evolve\Bridge\Laravel\` | Public experimental embedded Laravel host Bridge adapter that translates explicit Laravel route delegation into the same-process PSR Bridge while preserving host lifecycle and quarantine visibility. |
@@ -56,6 +57,7 @@ The package graph follows an inward dependency principle:
 - `queue-contracts` depends inward on `contracts` and remains independent of Core, HTTP, Insight, Observe, Session, Lock, host frameworks and all queue broker SDKs; receive is non-blocking, rejection semantics are adapter-specific, and uncertain settlement outcomes are not retried automatically.
 - `queue-memory` depends only on `queue-contracts`; it is non-durable, isolated per adapter instance, and maps rejection to terminal discard without automatic requeue, retry or dead-letter behavior.
 - `storage-contracts` depends inward on `contracts` and remains vendor-neutral; it defines opaque exact keys, chunked writes and caller-owned explicitly closed readers without requiring whole-object buffering, filesystem behavior, vendor SDKs, listing or consistency guarantees.
+- `storage-local` depends on `storage-contracts`, requires an explicit existing absolute root, hashes opaque keys into its reserved subtree, streams writes through temporary files, and does not promise rollback, atomic failure, durability or safety against hostile concurrent filesystem changes.
 - `bridge-contracts` depends inward on `contracts` and remains independent of Core, HTTP and host frameworks.
 - `bridge-psr` depends inward on `bridge-contracts`, `core` and `http`, plus PSR HTTP message interfaces.
 - `bridge-laravel` depends inward on `bridge-contracts` and `bridge-psr`, plus narrow Illuminate host contracts and PSR HTTP message/factory interfaces.

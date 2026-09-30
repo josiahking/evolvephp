@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "daeb33e843bdc1d0ea5e5b9b0dfe1756",
+    "content-hash": "1dbed2fcbc241bf731c66f512ada147a",
     "packages": [
         {
             "name": "evolvephp/contracts",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/contracts",
-                "reference": "273b5586b8cdcdd3453a76fd14f058f356776103"
+                "reference": "69349b43b7f2fb5e271e8142f9ccd5f1b17ed1d1"
             },
             "require": {
                 "php": "^8.4",
@@ -38,7 +38,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "5f632766eee1015f9b1bb02d057f19819677ae85"
+                "reference": "3f0f7cee78941ed9dea04953c02110b1e3027906"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -71,7 +71,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/http",
-                "reference": "a8189db58e1c94344effc54ff1b3b3e3a3c992e0"
+                "reference": "9cc2828b8b4ae573f34e631b72e0e140802ffc9f"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -102,7 +102,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/module",
-                "reference": "9d2493b9e992313f9383263f8d538b34b3a4017a"
+                "reference": "b647319b256c3808770e6214bd7c250e3b608832"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -128,7 +128,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/plugin",
-                "reference": "bb77d591ed858fe10d38e64751b6f1ab90713bcf"
+                "reference": "99cdef2fe7314e265b8416feba329313e3629d3a"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1186,7 +1186,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-contracts",
-                "reference": "e78fee115c38fe18b2a7f04b74010d338ea674e8"
+                "reference": "dae77c0199ec0d2b63d5ae331d9d5f569650d023"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1212,7 +1212,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-laravel",
-                "reference": "a8df7a1c6b76669d17c12cade90dfde7cb47c7cd"
+                "reference": "95a41937cdcb451ab9db9b0253b0904f3685a446"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1243,7 +1243,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-psr",
-                "reference": "90f65fcd34269e5b9d0b7906f564179951c3c783"
+                "reference": "cc2a572b01bc9c3e1c988d8f90aea10609c889f4"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1272,7 +1272,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-remote",
-                "reference": "7e6b4709c144104c461ccab5661f1b9f54950c15"
+                "reference": "89a7d91b1d0aba5e210f16e1ef50cfb33b2a79ef"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1303,7 +1303,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-symfony",
-                "reference": "a0810f16f834416fe83fe1687332197019cd81f1"
+                "reference": "c7cff46f13d8dda349a9fca3f0c8dd7d181eb0a7"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1334,7 +1334,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/cache-memory",
-                "reference": "241e4ba6537ce94576e3a816e662d1f99048ff1e"
+                "reference": "922049d92566b0b4aef14b84180121c93e76fde0"
             },
             "require": {
                 "php": "^8.4",
@@ -1387,7 +1387,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/database-contracts",
-                "reference": "683bb706ead6cbd6de2ab3e0ed360eec3a372f7f"
+                "reference": "2f687575f5c3b1d899830dbdb1a139c25b4fd554"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1413,7 +1413,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/database-pdo",
-                "reference": "030443cd2c87c977506bbf702f431e00ebedcdb5"
+                "reference": "6fa6bba14d735c9b0b470fc4b80fa9c52b07db85"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1463,7 +1463,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/dev-tools",
-                "reference": "44800c1226a02d48c7f6c3a333db4daffe252307"
+                "reference": "da867ef693a32dac8ab00b9ca55a9a939961e738"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1496,7 +1496,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/insight",
-                "reference": "461942b9a36859f2bab3108c21e821cf1a7fcdef"
+                "reference": "13e9f3a213b9c7a4319e9d9590218476ce9e3b6f"
             },
             "require": {
                 "evolvephp/core": "^2.0",
@@ -1522,7 +1522,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/lock-contracts",
-                "reference": "2e6ecaa12ed3629a897400ded7295813cd52228f"
+                "reference": "1bd865c754314f358380c7bbedc315a2126e2d31"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1553,7 +1553,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/observe",
-                "reference": "5f0664cadcd11da309aac2ab2d39d608084f53ca"
+                "reference": "ccaf30d2e5ebaee495d398accaa285a370a7e969"
             },
             "require": {
                 "evolvephp/core": "^2.0",
@@ -1588,7 +1588,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/queue-contracts",
-                "reference": "fb5943237786beb3995ef6bacd757d71ae6efd93"
+                "reference": "d3a9c1b2fff251110f03e382f288d0f66bcc43d1"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1619,7 +1619,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/queue-memory",
-                "reference": "2bb05d1242640b4635d34050ca6a58a1145d65fd"
+                "reference": "932e1a4a7fd569ec777bc23de7906e4feb5bc5f7"
             },
             "require": {
                 "evolvephp/queue-contracts": "^2.0",
@@ -1650,7 +1650,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/session-contracts",
-                "reference": "6c638d1af0baef33437e0dba01911aeadf642854"
+                "reference": "6fb4c510c205047974d6d1891678e51db4a50604"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1681,7 +1681,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/storage-contracts",
-                "reference": "6a5ec5240908bd6c6f4d1bef91784ddc06470720"
+                "reference": "525c13b7be339c7c54dccd06edc9769b8d1dc0d0"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1725,12 +1725,61 @@
             }
         },
         {
+            "name": "evolvephp/storage-local",
+            "version": "2.0.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "packages/storage-local",
+                "reference": "1c77b72027b0a05bf7d3ddde4b386e80588dc367"
+            },
+            "require": {
+                "evolvephp/storage-contracts": "^2.0",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\Storage\\Local\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Evolve\\Storage\\Local\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Josiah King",
+                    "email": "josiahaccounts@gmail.com",
+                    "homepage": "https://github.com/josiahking"
+                },
+                {
+                    "name": "EvolvePHP Community"
+                }
+            ],
+            "description": "Local filesystem adapter for EvolvePHP object storage contracts.",
+            "homepage": "https://github.com/josiahking/evolvephp",
+            "keywords": [
+                "evolvephp",
+                "framework",
+                "local-filesystem",
+                "object-storage",
+                "php"
+            ],
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
             "name": "evolvephp/testing",
             "version": "2.0.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/testing",
-                "reference": "3d48b8ebb4507499ff8d59e5a6859cadbb7b55fa"
+                "reference": "3dfd84cd8f487dd34099622c7fa59d3569c59033"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -10031,6 +10080,7 @@
         "evolvephp/queue-memory": 20,
         "evolvephp/session-contracts": 20,
         "evolvephp/storage-contracts": 20,
+        "evolvephp/storage-local": 20,
         "evolvephp/testing": 20
     },
     "prefer-stable": false,

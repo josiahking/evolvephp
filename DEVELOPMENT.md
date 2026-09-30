@@ -72,6 +72,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/queue-contracts`
 - `evolvephp/queue-memory`
 - `evolvephp/storage-contracts`
+- `evolvephp/storage-local`
 - `evolvephp/bridge-contracts`
 - `evolvephp/bridge-psr`
 - `evolvephp/bridge-laravel`
@@ -138,6 +139,7 @@ composer test:lock-contracts
 composer test:queue-contracts
 composer test:queue-memory
 composer test:storage-contracts
+composer test:storage-local
 composer test:bridge-contracts
 composer test:bridge-psr
 composer test:bridge-laravel
@@ -254,7 +256,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-two packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, bridge-contracts, core, insight, module, plugin, http, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-three packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, bridge-contracts, core, insight, module, plugin, http, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -412,6 +414,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `queue-contracts` | `packages/queue-contracts/tests` |
 | `queue-memory` | `packages/queue-memory/tests` |
 | `storage-contracts` | `packages/storage-contracts/tests` |
+| `storage-local` | `packages/storage-local/tests` |
 | `bridge-contracts` | `packages/bridge-contracts/tests` |
 | `bridge-psr` | `packages/bridge-psr/tests` |
 | `bridge-laravel` | `packages/bridge-laravel/tests` |
@@ -438,7 +441,7 @@ The distributable PHPStan configuration lives at:
 phpstan.neon.dist
 ```
 
-The initial PHPStan level is `6`. PHPStan analyzes all twenty-two package `src` and `tests` directories:
+The initial PHPStan level is `6`. PHPStan analyzes all twenty-three package `src` and `tests` directories:
 
 ```text
 packages/contracts/src
@@ -459,6 +462,8 @@ packages/queue-memory/src
 packages/queue-memory/tests
 packages/storage-contracts/src
 packages/storage-contracts/tests
+packages/storage-local/src
+packages/storage-local/tests
 packages/bridge-contracts/src
 packages/bridge-contracts/tests
 packages/bridge-psr/src
@@ -515,6 +520,7 @@ packages/lock-contracts/src
 packages/queue-contracts/src
 packages/queue-memory/src
 packages/storage-contracts/src
+packages/storage-local/src
 packages/bridge-contracts/src
 packages/bridge-psr/src
 packages/bridge-laravel/src
@@ -542,6 +548,7 @@ LockContracts -> packages/lock-contracts/src/.* -> Evolve\Lock\Contracts\
 QueueContracts -> packages/queue-contracts/src/.* -> Evolve\Queue\Contracts\
 QueueMemory -> packages/queue-memory/src/.* -> Evolve\Queue\Memory\
 StorageContracts -> packages/storage-contracts/src/.* -> Evolve\Storage\Contracts\
+StorageLocal -> packages/storage-local/src/.* -> Evolve\Storage\Local\
 BridgeContracts -> packages/bridge-contracts/src/.* -> Evolve\Bridge\Contracts\
 BridgePsr -> packages/bridge-psr/src/.* -> Evolve\Bridge\Psr\
 BridgeLaravel -> packages/bridge-laravel/src/.* -> Evolve\Bridge\Laravel\
@@ -568,6 +575,8 @@ SessionContracts -> Contracts
 LockContracts -> Contracts
 QueueContracts -> Contracts
 QueueMemory -> QueueContracts
+StorageContracts -> Contracts
+StorageLocal -> StorageContracts
 BridgeContracts -> Contracts
 BridgePsr -> BridgeContracts, Core, Http
 BridgeLaravel -> BridgeContracts, BridgePsr, PsrHttpMessage, LaravelHost
@@ -635,11 +644,11 @@ PsrHttpClient
 PsrHttpServer
 ```
 
-`PsrContainer` represents the approved PSR-11 interoperability layer used by Core and by Contracts for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrSimpleCache` represents the approved PSR-16 `Psr\SimpleCache` namespace used by CacheMemory as the application-facing cache contract. `PsrClock` represents the approved PSR-20 `Psr\Clock` namespace used by CacheMemory for deterministic expiration decisions. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`, by BridgePsr for caller-owned PSR request input and resolved PSR response output, by BridgeLaravel and BridgeSymfony for caller-owned PSR request construction and delegated PSR response translation, by BridgeRemote for outer and delegated PSR requests/responses plus PSR-17 factories, and by Observe for explicit HTTP server tracing over caller-owned PSR requests/responses. `LaravelHost` represents the narrow Illuminate HTTP and authentication-contract layer used only by BridgeLaravel for host request and principal translation. `SymfonyHost` represents the narrow Symfony HttpFoundation and Security Core layer used only by BridgeSymfony for host request and principal translation. `PsrHttpClient` represents the approved PSR-18 `Psr\Http\Client` namespace used only by BridgeRemote for host-side remote invocation transport. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http, Observe route-enrichment middleware and the BridgeRemote endpoint. `OpenTelemetryApi` represents the OpenTelemetry API and context namespaces required by Observe for provider interfaces, propagation, spans and context scopes. `OpenTelemetrySdk` represents optional SDK resource and sampler value types supported when applications install the suggested SDK. `OpenTelemetrySemConv` represents stable semantic-convention constants used by Observe, including HTTP server attributes, `error.type` and `service.name`.
+`StorageLocal` depends on the `StorageContracts` layer and does not introduce framework or provider SDK dependencies. The `storage-local` package has no direct `evolvephp/contracts` dependency. Its internal `LocalFilesystemStorageException` implements `StorageException`, which inherits `EvolveException`, so Deptrac observes the inherited Contracts edge. The exact skip in `deptrac.baseline.yaml` permits only this class pair and does not grant the `StorageLocal` layer general access to `Contracts`. `PsrContainer` represents the approved PSR-11 interoperability layer used by Core and by Contracts for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrSimpleCache` represents the approved PSR-16 `Psr\SimpleCache` namespace used by CacheMemory as the application-facing cache contract. `PsrClock` represents the approved PSR-20 `Psr\Clock` namespace used by CacheMemory for deterministic expiration decisions. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`, by BridgePsr for caller-owned PSR request input and resolved PSR response output, by BridgeLaravel and BridgeSymfony for caller-owned PSR request construction and delegated PSR response translation, by BridgeRemote for outer and delegated PSR requests/responses plus PSR-17 factories, and by Observe for explicit HTTP server tracing over caller-owned PSR requests/responses. `LaravelHost` represents the narrow Illuminate HTTP and authentication-contract layer used only by BridgeLaravel for host request and principal translation. `SymfonyHost` represents the narrow Symfony HttpFoundation and Security Core layer used only by BridgeSymfony for host request and principal translation. `PsrHttpClient` represents the approved PSR-18 `Psr\Http\Client` namespace used only by BridgeRemote for host-side remote invocation transport. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http, Observe route-enrichment middleware and the BridgeRemote endpoint. `OpenTelemetryApi` represents the OpenTelemetry API and context namespaces required by Observe for provider interfaces, propagation, spans and context scopes. `OpenTelemetrySdk` represents optional SDK resource and sampler value types supported when applications install the suggested SDK. `OpenTelemetrySemConv` represents stable semantic-convention constants used by Observe, including HTTP server attributes, `error.type` and `service.name`.
 
 These PSR HTTP interfaces are external interoperability standards and do not change the first-party Evolve package dependency direction. Adding `psr/http-factory` does not require a new Deptrac external namespace layer because PSR-17 factory interfaces live under `Psr\Http\Message`. PSR-18 is tracked as its own external namespace because the client interfaces live under `Psr\Http\Client`. Http still depends inward on Contracts and Core, while BridgeLaravel, BridgeSymfony and BridgeRemote use their approved external layers only at optional Bridge boundaries.
 
-Uncovered dependencies fail. No baseline or skipped violations are allowed. No graph is generated. New external dependency treatment requires deliberate architecture review.
+Uncovered dependencies fail. The baseline contains only the exact inherited exception pair described above; no other skipped violations are allowed. No graph is generated. New external dependency treatment requires deliberate architecture review.
 
 ## Coding Standards
 

@@ -90,6 +90,7 @@ function expectedPackages(): array
         'evolvephp/queue-contracts' => array('name' => 'evolvephp/queue-contracts', 'directory' => 'packages/queue-contracts'),
         'evolvephp/queue-memory' => array('name' => 'evolvephp/queue-memory', 'directory' => 'packages/queue-memory'),
         'evolvephp/storage-contracts' => array('name' => 'evolvephp/storage-contracts', 'directory' => 'packages/storage-contracts'),
+        'evolvephp/storage-local' => array('name' => 'evolvephp/storage-local', 'directory' => 'packages/storage-local'),
         'evolvephp/bridge-contracts' => array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
         'evolvephp/core' => array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
         'evolvephp/insight' => array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -121,6 +122,7 @@ function expectedNamespaces(): array
         'evolvephp/queue-contracts' => 'Evolve\\Queue\\Contracts\\',
         'evolvephp/queue-memory' => 'Evolve\\Queue\\Memory\\',
         'evolvephp/storage-contracts' => 'Evolve\\Storage\\Contracts\\',
+        'evolvephp/storage-local' => 'Evolve\\Storage\\Local\\',
         'evolvephp/bridge-contracts' => 'Evolve\\Bridge\\Contracts\\',
         'evolvephp/bridge-psr' => 'Evolve\\Bridge\\Psr\\',
         'evolvephp/bridge-laravel' => 'Evolve\\Bridge\\Laravel\\',
@@ -152,6 +154,7 @@ function expectedGraph(): array
         'evolvephp/queue-contracts' => array('evolvephp/contracts'),
         'evolvephp/queue-memory' => array('evolvephp/queue-contracts'),
         'evolvephp/storage-contracts' => array('evolvephp/contracts'),
+        'evolvephp/storage-local' => array('evolvephp/storage-contracts'),
         'evolvephp/bridge-contracts' => array('evolvephp/contracts'),
         'evolvephp/bridge-psr' => array('evolvephp/bridge-contracts', 'evolvephp/core', 'evolvephp/http'),
         'evolvephp/bridge-laravel' => array('evolvephp/bridge-contracts', 'evolvephp/bridge-psr'),
@@ -188,8 +191,8 @@ function validateMap(string $root): array
         fail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 22) {
-        fail('release-packages.json must contain exactly twenty-two package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 23) {
+        fail('release-packages.json must contain exactly twenty-three package entries.');
     }
 
     $expectedPackages = array_values(expectedPackages());
@@ -541,7 +544,7 @@ function validateReadme(array $package, string $readmePath): void
         fail($package['name'] . ' README.md must state that independent publication has not begun yet.');
     }
 
-    if (preg_match('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|bridge-remote|contracts|core|dev-tools|http|lock-contracts|module|plugin|queue-contracts|queue-memory|session-contracts|storage-contracts|testing)/i', $content) === 1) {
+    if (preg_match('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|bridge-remote|contracts|core|dev-tools|http|lock-contracts|module|plugin|queue-contracts|queue-memory|session-contracts|storage-contracts|storage-local|testing)/i', $content) === 1) {
         fail($package['name'] . ' README.md must not claim a split repository URL.');
     }
 
