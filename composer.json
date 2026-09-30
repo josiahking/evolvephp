@@ -50,6 +50,7 @@
                     "evolvephp/observe": "2.0.x-dev",
                     "evolvephp/plugin": "2.0.x-dev",
                     "evolvephp/queue-contracts": "2.0.x-dev",
+                    "evolvephp/queue-memory": "2.0.x-dev",
                     "evolvephp/testing": "2.0.x-dev"
                 },
                 "reference": "config"
@@ -79,6 +80,7 @@
         "evolvephp/lock-contracts": "^2.0@dev",
         "evolvephp/observe": "^2.0@dev",
         "evolvephp/queue-contracts": "^2.0@dev",
+        "evolvephp/queue-memory": "^2.0@dev",
         "evolvephp/session-contracts": "^2.0@dev",
         "evolvephp/testing": "^2.0@dev",
         "friendsofphp/php-cs-fixer": "^3.95",
@@ -128,6 +130,7 @@
         "test:observe": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe",
         "test:plugin": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin",
         "test:queue-contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-contracts",
+        "test:queue-memory": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-memory",
         "test:session-contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite session-contracts",
         "test:testing": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing"
     },

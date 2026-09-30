@@ -26,6 +26,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 array('name' => 'evolvephp/session-contracts', 'directory' => 'packages/session-contracts'),
                 array('name' => 'evolvephp/lock-contracts', 'directory' => 'packages/lock-contracts'),
                 array('name' => 'evolvephp/queue-contracts', 'directory' => 'packages/queue-contracts'),
+                array('name' => 'evolvephp/queue-memory', 'directory' => 'packages/queue-memory'),
                 array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -71,7 +72,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             $this->assertStringContainsString('BSD-3-Clause', $content);
             $this->assertStringContainsString('`LICENSE.md`', $content);
             $this->assertDoesNotMatchPattern('/composer require/i', $content);
-            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|bridge-remote|bridge-symfony|contracts|core|dev-tools|http|insight|lock-contracts|module|plugin|queue-contracts|session-contracts|testing)/i', $content);
+            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|bridge-remote|bridge-symfony|contracts|core|dev-tools|http|insight|lock-contracts|module|plugin|queue-contracts|queue-memory|session-contracts|testing)/i', $content);
         }
     }
 
@@ -157,7 +158,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/## Release Validation/',
             '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
-            '/twenty packages.*mapped explicitly|mapped explicitly.*twenty packages|map contains twenty packages/i',
+            '/twenty-one packages.*mapped explicitly|mapped explicitly.*twenty-one packages|map contains twenty-one packages/i',
             '/dependency-compatible/i',
             '/package-local README/i',
             '/package-local.*licen[cs]es/i',
@@ -239,6 +240,13 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'human' => 'EvolvePHP Queue Contracts',
                 'responsibility' => 'Runtime-neutral queue transport contracts for EvolvePHP 2.',
                 'dependencies' => '`evolvephp/contracts`',
+            ),
+            array(
+                'name' => 'evolvephp/queue-memory',
+                'directory' => 'packages/queue-memory',
+                'human' => 'EvolvePHP Queue Memory',
+                'responsibility' => 'Object-local in-memory queue adapter for EvolvePHP 2.',
+                'dependencies' => '`evolvephp/queue-contracts`',
             ),
             array(
                 'name' => 'evolvephp/bridge-contracts',

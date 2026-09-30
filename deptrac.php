@@ -18,6 +18,7 @@ return static function (DeptracConfig $config): void {
             'packages/session-contracts/src',
             'packages/lock-contracts/src',
             'packages/queue-contracts/src',
+            'packages/queue-memory/src',
             'packages/bridge-contracts/src',
             'packages/bridge-psr/src',
             'packages/bridge-laravel/src',
@@ -54,6 +55,9 @@ return static function (DeptracConfig $config): void {
             ),
             $queueContracts = Layer::withName('QueueContracts')->collectors(
                 DirectoryConfig::create('packages/queue-contracts/src/.*'),
+            ),
+            $queueMemory = Layer::withName('QueueMemory')->collectors(
+                DirectoryConfig::create('packages/queue-memory/src/.*'),
             ),
             $bridgeContracts = Layer::withName('BridgeContracts')->collectors(
                 DirectoryConfig::create('packages/bridge-contracts/src/.*'),
@@ -136,6 +140,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($sessionContracts)->accesses($contracts),
             Ruleset::forLayer($lockContracts)->accesses($contracts),
             Ruleset::forLayer($queueContracts)->accesses($contracts),
+            Ruleset::forLayer($queueMemory)->accesses($queueContracts),
             Ruleset::forLayer($bridgeContracts)->accesses($contracts),
             Ruleset::forLayer($bridgePsr)->accesses($bridgeContracts, $core, $http, $psrHttpMessage),
             Ruleset::forLayer($bridgeLaravel)->accesses($bridgeContracts, $bridgePsr, $psrHttpMessage, $laravelHost),

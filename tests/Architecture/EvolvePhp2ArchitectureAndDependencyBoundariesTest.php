@@ -116,7 +116,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         );
         $this->assertSame($this->expectedRulesets(), $this->deptracRulesets($content));
 
-        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
+        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
             $this->assertStringNotContainsString($testPath, $content);
         }
 
@@ -223,6 +223,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'SessionContracts' => 'packages/session-contracts/src/.*',
             'LockContracts' => 'packages/lock-contracts/src/.*',
             'QueueContracts' => 'packages/queue-contracts/src/.*',
+            'QueueMemory' => 'packages/queue-memory/src/.*',
             'BridgeContracts' => 'packages/bridge-contracts/src/.*',
             'BridgePsr' => 'packages/bridge-psr/src/.*',
             'BridgeLaravel' => 'packages/bridge-laravel/src/.*',
@@ -249,6 +250,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'SessionContracts' => array('Contracts'),
             'LockContracts' => array('Contracts'),
             'QueueContracts' => array('Contracts'),
+            'QueueMemory' => array('QueueContracts'),
             'BridgeContracts' => array('Contracts'),
             'BridgePsr' => array('BridgeContracts', 'Core', 'Http', 'PsrHttpMessage'),
             'BridgeLaravel' => array('BridgeContracts', 'BridgePsr', 'PsrHttpMessage', 'LaravelHost'),
@@ -314,6 +316,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'sessionContracts' => 'SessionContracts',
             'lockContracts' => 'LockContracts',
             'queueContracts' => 'QueueContracts',
+            'queueMemory' => 'QueueMemory',
             'bridgeContracts' => 'BridgeContracts',
             'bridgePsr' => 'BridgePsr',
             'bridgeLaravel' => 'BridgeLaravel',
@@ -347,7 +350,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|psrHttpMessage|psrHttpClient|psrHttpServer|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|laravelHost|symfonyHost|core|insight|observe|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|queueContracts|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|psrHttpMessage|psrHttpClient|psrHttpServer|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|laravelHost|symfonyHost|core|insight|observe|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
@@ -384,6 +387,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/session-contracts/src' => 'Evolve\\Session\\Contracts\\',
             'packages/lock-contracts/src' => 'Evolve\\Lock\\Contracts\\',
             'packages/queue-contracts/src' => 'Evolve\\Queue\\Contracts\\',
+            'packages/queue-memory/src' => 'Evolve\\Queue\\Memory\\',
             'packages/bridge-contracts/src' => 'Evolve\\Bridge\\Contracts\\',
             'packages/bridge-psr/src' => 'Evolve\\Bridge\\Psr\\',
             'packages/bridge-laravel/src' => 'Evolve\\Bridge\\Laravel\\',
@@ -409,6 +413,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/session-contracts/composer.json',
             'packages/lock-contracts/composer.json',
             'packages/queue-contracts/composer.json',
+            'packages/queue-memory/composer.json',
             'packages/bridge-contracts/composer.json',
             'packages/bridge-psr/composer.json',
             'packages/bridge-laravel/composer.json',
