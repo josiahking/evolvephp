@@ -38,6 +38,10 @@
             "directory": "packages/storage-contracts"
         },
         {
+            "name": "evolvephp/storage-local",
+            "directory": "packages/storage-local"
+        },
+        {
             "name": "evolvephp/bridge-contracts",
             "directory": "packages/bridge-contracts"
         },

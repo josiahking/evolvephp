@@ -28,6 +28,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 array('name' => 'evolvephp/queue-contracts', 'directory' => 'packages/queue-contracts'),
                 array('name' => 'evolvephp/queue-memory', 'directory' => 'packages/queue-memory'),
                 array('name' => 'evolvephp/storage-contracts', 'directory' => 'packages/storage-contracts'),
+                array('name' => 'evolvephp/storage-local', 'directory' => 'packages/storage-local'),
                 array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -73,7 +74,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             $this->assertStringContainsString('BSD-3-Clause', $content);
             $this->assertStringContainsString('`LICENSE.md`', $content);
             $this->assertDoesNotMatchPattern('/composer require/i', $content);
-            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|bridge-remote|bridge-symfony|contracts|core|dev-tools|http|insight|lock-contracts|module|plugin|queue-contracts|queue-memory|session-contracts|storage-contracts|testing)/i', $content);
+            $this->assertDoesNotMatchPattern('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|bridge-remote|bridge-symfony|contracts|core|dev-tools|http|insight|lock-contracts|module|plugin|queue-contracts|queue-memory|session-contracts|storage-contracts|storage-local|testing)/i', $content);
         }
     }
 
@@ -159,7 +160,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/## Release Validation/',
             '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
-            '/twenty-two packages.*mapped explicitly|mapped explicitly.*twenty-two packages|map contains twenty-two packages/i',
+            '/twenty-three packages.*mapped explicitly|mapped explicitly.*twenty-three packages|map contains twenty-three packages/i',
             '/dependency-compatible/i',
             '/package-local README/i',
             '/package-local.*licen[cs]es/i',

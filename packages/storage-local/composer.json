@@ -1,0 +1,38 @@
+{
+    "name": "evolvephp/storage-local",
+    "description": "Local filesystem adapter for EvolvePHP object storage contracts.",
+    "type": "library",
+    "homepage": "https://github.com/josiahking/evolvephp",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Josiah King",
+            "email": "josiahaccounts@gmail.com",
+            "homepage": "https://github.com/josiahking"
+        },
+        {
+            "name": "EvolvePHP Community"
+        }
+    ],
+    "keywords": [
+        "evolvephp",
+        "php",
+        "framework",
+        "object-storage",
+        "local-filesystem"
+    ],
+    "require": {
+        "php": "^8.4",
+        "evolvephp/storage-contracts": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evolve\\Storage\\Local\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Evolve\\Storage\\Local\\Tests\\": "tests/"
+        }
+    }
+}

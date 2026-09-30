@@ -81,6 +81,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/queue-contracts' => '^2.0@dev',
             'evolvephp/queue-memory' => '^2.0@dev',
             'evolvephp/storage-contracts' => '^2.0@dev',
+            'evolvephp/storage-local' => '^2.0@dev',
             'evolvephp/session-contracts' => '^2.0@dev',
             'evolvephp/testing' => '^2.0@dev',
             'friendsofphp/php-cs-fixer' => '^3.95',
@@ -164,6 +165,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test:queue-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-contracts',
             'test:queue-memory' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-memory',
             'test:storage-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite storage-contracts',
+            'test:storage-local' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite storage-local',
             'test:session-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite session-contracts',
             'test:testing' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing',
         );
@@ -224,7 +226,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         }
     }
 
-    public function testReleaseMapContainsOnlyTheTwentyReleasePackages(): void
+    public function testReleaseMapContainsOnlyTheTwentyThreeReleasePackages(): void
     {
         $map = $this->readJsonFile('release-packages.json');
 
@@ -240,6 +242,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/queue-contracts', 'directory' => 'packages/queue-contracts'),
                 array('name' => 'evolvephp/queue-memory', 'directory' => 'packages/queue-memory'),
                 array('name' => 'evolvephp/storage-contracts', 'directory' => 'packages/storage-contracts'),
+                array('name' => 'evolvephp/storage-local', 'directory' => 'packages/storage-local'),
                 array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -295,6 +298,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/queue-contracts',
             'evolvephp/queue-memory',
             'evolvephp/storage-contracts',
+            'evolvephp/storage-local',
             'evolvephp/testing',
         );
     }
