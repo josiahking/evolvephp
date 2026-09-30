@@ -39,6 +39,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'packages/module/README.md',
                 'packages/observe/README.md',
                 'packages/plugin/README.md',
+                'packages/queue-contracts/README.md',
                 'packages/session-contracts/README.md',
                 'packages/testing/README.md',
                 'skeleton/README.md',
@@ -113,7 +114,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             $this->assertStringContainsString('composer ' . $script, $content);
         }
 
-        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:session-contracts', 'test:lock-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:insight', 'test:observe', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:insight', 'test:observe', 'test:dev-tools', 'test:http', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertStringContainsString('composer ' . $script, $content);
         }
     }

@@ -16,6 +16,8 @@ parameters:
         - packages/session-contracts/tests
         - packages/lock-contracts/src
         - packages/lock-contracts/tests
+        - packages/queue-contracts/src
+        - packages/queue-contracts/tests
         - packages/bridge-contracts/src
         - packages/bridge-contracts/tests
         - packages/bridge-psr/src

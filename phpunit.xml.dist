@@ -29,6 +29,9 @@
         <testsuite name="lock-contracts">
             <directory suffix="Test.php">packages/lock-contracts/tests</directory>
         </testsuite>
+        <testsuite name="queue-contracts">
+            <directory suffix="Test.php">packages/queue-contracts/tests</directory>
+        </testsuite>
         <testsuite name="bridge-contracts">
             <directory suffix="Test.php">packages/bridge-contracts/tests</directory>
         </testsuite>
@@ -77,6 +80,7 @@
             <directory suffix=".php">packages/cache-memory/src</directory>
             <directory suffix=".php">packages/session-contracts/src</directory>
             <directory suffix=".php">packages/lock-contracts/src</directory>
+            <directory suffix=".php">packages/queue-contracts/src</directory>
             <directory suffix=".php">packages/bridge-contracts/src</directory>
             <directory suffix=".php">packages/bridge-psr/src</directory>
             <directory suffix=".php">packages/bridge-laravel/src</directory>

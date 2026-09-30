@@ -26,6 +26,10 @@
             "directory": "packages/lock-contracts"
         },
         {
+            "name": "evolvephp/queue-contracts",
+            "directory": "packages/queue-contracts"
+        },
+        {
             "name": "evolvephp/bridge-contracts",
             "directory": "packages/bridge-contracts"
         },

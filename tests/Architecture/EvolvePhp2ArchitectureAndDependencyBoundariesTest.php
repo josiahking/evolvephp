@@ -116,7 +116,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         );
         $this->assertSame($this->expectedRulesets(), $this->deptracRulesets($content));
 
-        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
+        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
             $this->assertStringNotContainsString($testPath, $content);
         }
 
@@ -222,6 +222,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'CacheMemory' => 'packages/cache-memory/src/.*',
             'SessionContracts' => 'packages/session-contracts/src/.*',
             'LockContracts' => 'packages/lock-contracts/src/.*',
+            'QueueContracts' => 'packages/queue-contracts/src/.*',
             'BridgeContracts' => 'packages/bridge-contracts/src/.*',
             'BridgePsr' => 'packages/bridge-psr/src/.*',
             'BridgeLaravel' => 'packages/bridge-laravel/src/.*',
@@ -247,6 +248,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'CacheMemory' => array('PsrSimpleCache', 'PsrClock'),
             'SessionContracts' => array('Contracts'),
             'LockContracts' => array('Contracts'),
+            'QueueContracts' => array('Contracts'),
             'BridgeContracts' => array('Contracts'),
             'BridgePsr' => array('BridgeContracts', 'Core', 'Http', 'PsrHttpMessage'),
             'BridgeLaravel' => array('BridgeContracts', 'BridgePsr', 'PsrHttpMessage', 'LaravelHost'),
@@ -311,6 +313,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'cacheMemory' => 'CacheMemory',
             'sessionContracts' => 'SessionContracts',
             'lockContracts' => 'LockContracts',
+            'queueContracts' => 'QueueContracts',
             'bridgeContracts' => 'BridgeContracts',
             'bridgePsr' => 'BridgePsr',
             'bridgeLaravel' => 'BridgeLaravel',
@@ -380,6 +383,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/cache-memory/src' => 'Evolve\\Cache\\Memory\\',
             'packages/session-contracts/src' => 'Evolve\\Session\\Contracts\\',
             'packages/lock-contracts/src' => 'Evolve\\Lock\\Contracts\\',
+            'packages/queue-contracts/src' => 'Evolve\\Queue\\Contracts\\',
             'packages/bridge-contracts/src' => 'Evolve\\Bridge\\Contracts\\',
             'packages/bridge-psr/src' => 'Evolve\\Bridge\\Psr\\',
             'packages/bridge-laravel/src' => 'Evolve\\Bridge\\Laravel\\',
@@ -404,6 +408,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/database-pdo/composer.json',
             'packages/session-contracts/composer.json',
             'packages/lock-contracts/composer.json',
+            'packages/queue-contracts/composer.json',
             'packages/bridge-contracts/composer.json',
             'packages/bridge-psr/composer.json',
             'packages/bridge-laravel/composer.json',
