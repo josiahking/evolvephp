@@ -15,6 +15,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'lock-contracts' => null,
             'queue-contracts' => null,
             'queue-memory' => null,
+            'storage-contracts' => null,
             'database-contracts' => null,
             'database-pdo' => null,
             'bridge-contracts' => null,
@@ -843,6 +844,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'evolvephp/queue-contracts' => '^2.0'),
             ),
             array(
+                'manifest' => 'packages/storage-contracts/composer.json',
+                'src' => 'packages/storage-contracts/src',
+                'name' => 'evolvephp/storage-contracts',
+                'description' => 'Vendor-neutral object storage contracts for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Storage\\Contracts\\',
+                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
+            ),
+            array(
                 'manifest' => 'packages/bridge-contracts/composer.json',
                 'src' => 'packages/bridge-contracts/src',
                 'name' => 'evolvephp/bridge-contracts',
@@ -1079,6 +1088,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'packages/queue-memory/src' => array(
                 'InMemoryQueue.php',
                 'Internal/InMemoryDelivery.php',
+            ),
+            'packages/storage-contracts/src' => array(
+                'Exception/StorageException.php',
+                'ObjectStorage.php',
+                'ReadableObject.php',
+                'StorageFailureCategory.php',
+                'StorageKey.php',
+                'StorageOperation.php',
             ),
             'packages/bridge-contracts/src' => array(
                 'BridgeContext.php',

@@ -350,7 +350,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array($path));
 
             $this->assertSame('full', $decision['mode'], $path . ' must force full validation.');
-            $this->assertSame(21, count($decision['packages']), $path . ' must keep the complete package map.');
+            $this->assertSame(22, count($decision['packages']), $path . ' must keep the complete package map.');
         }
 
         $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array('docs/release-notes.md', 'README.md'));
@@ -542,15 +542,15 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $caseHBlock = substr($content, $caseHStart, $postHStart - $caseHStart);
 
         $this->assertMatchesRegularExpression(
-            "/'evolvephp\\/database-contracts' => '\\^2\\.0@alpha'.*?'evolvephp\\/database-pdo' => '\\^2\\.0@alpha'.*?'evolvephp\\/cache-memory' => '\\^2\\.0@alpha'.*?'evolvephp\\/session-contracts' => '\\^2\\.0@alpha'.*?'evolvephp\\/lock-contracts' => '\\^2\\.0@alpha'.*?'evolvephp\\/queue-contracts' => '\\^2\\.0@alpha'.*?'evolvephp\\/queue-memory' => '\\^2\\.0@alpha'/s",
+            "/'evolvephp\\/database-contracts' => '\\^2\\.0@alpha'.*?'evolvephp\\/database-pdo' => '\\^2\\.0@alpha'.*?'evolvephp\\/cache-memory' => '\\^2\\.0@alpha'.*?'evolvephp\\/session-contracts' => '\\^2\\.0@alpha'.*?'evolvephp\\/lock-contracts' => '\\^2\\.0@alpha'.*?'evolvephp\\/queue-contracts' => '\\^2\\.0@alpha'.*?'evolvephp\\/queue-memory' => '\\^2\\.0@alpha'.*?'evolvephp\\/storage-contracts' => '\\^2\\.0@alpha'/s",
             $caseEBlock
         );
         $this->assertMatchesRegularExpression(
-            "/'evolvephp\\/database-contracts' => '\\^2\\.0'.*?'evolvephp\\/database-pdo' => '\\^2\\.0'.*?'evolvephp\\/cache-memory' => '\\^2\\.0'.*?'evolvephp\\/session-contracts' => '\\^2\\.0'.*?'evolvephp\\/lock-contracts' => '\\^2\\.0'.*?'evolvephp\\/queue-contracts' => '\\^2\\.0'.*?'evolvephp\\/queue-memory' => '\\^2\\.0'/s",
+            "/'evolvephp\\/database-contracts' => '\\^2\\.0'.*?'evolvephp\\/database-pdo' => '\\^2\\.0'.*?'evolvephp\\/cache-memory' => '\\^2\\.0'.*?'evolvephp\\/session-contracts' => '\\^2\\.0'.*?'evolvephp\\/lock-contracts' => '\\^2\\.0'.*?'evolvephp\\/queue-contracts' => '\\^2\\.0'.*?'evolvephp\\/queue-memory' => '\\^2\\.0'.*?'evolvephp\\/storage-contracts' => '\\^2\\.0'/s",
             $caseFBlock
         );
         $this->assertMatchesRegularExpression(
-            "/'evolvephp\\/database-contracts' => '\\^2\\.0'.*?'evolvephp\\/database-pdo' => '\\^2\\.0'.*?'evolvephp\\/cache-memory' => '\\^2\\.0'.*?'evolvephp\\/session-contracts' => '\\^2\\.0'.*?'evolvephp\\/lock-contracts' => '\\^2\\.0'.*?'evolvephp\\/queue-contracts' => '\\^2\\.0'.*?'evolvephp\\/queue-memory' => '\\^2\\.0'/s",
+            "/'evolvephp\\/database-contracts' => '\\^2\\.0'.*?'evolvephp\\/database-pdo' => '\\^2\\.0'.*?'evolvephp\\/cache-memory' => '\\^2\\.0'.*?'evolvephp\\/session-contracts' => '\\^2\\.0'.*?'evolvephp\\/lock-contracts' => '\\^2\\.0'.*?'evolvephp\\/queue-contracts' => '\\^2\\.0'.*?'evolvephp\\/queue-memory' => '\\^2\\.0'.*?'evolvephp\\/storage-contracts' => '\\^2\\.0'/s",
             $caseHBlock
         );
     }
@@ -629,7 +629,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertStringContainsString("'COMPOSER_DISABLE_NETWORK' => '1'", $content);
     }
 
-    public function testSharedReleasePackageLoaderAcceptsCanonicalTwentyOnePackageMap(): void
+    public function testSharedReleasePackageLoaderAcceptsCanonicalTwentyTwoPackageMap(): void
     {
         require_once $this->path('tools/release-validation-common.php');
 
@@ -639,7 +639,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $coreIndex = array_search('evolvephp/core', $packageNames, true);
 
         $this->assertIsInt($coreIndex);
-        $this->assertCount(21, $packages);
+        $this->assertCount(22, $packages);
         $this->assertContains('evolvephp/insight', $packageNames);
         $this->assertSame(
             array('name' => 'evolvephp/database-contracts', 'directory' => 'packages/database-contracts'),
@@ -668,6 +668,10 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertSame(
             array('name' => 'evolvephp/queue-memory', 'directory' => 'packages/queue-memory'),
             $packages[7]
+        );
+        $this->assertSame(
+            array('name' => 'evolvephp/storage-contracts', 'directory' => 'packages/storage-contracts'),
+            $packages[8]
         );
         $this->assertSame(
             array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -932,7 +936,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $map = $this->readJsonFile('release-packages.json');
 
         $this->assertSame(1, $map['version']);
-        $this->assertCount(21, $map['packages']);
+        $this->assertCount(22, $map['packages']);
 
         return $map['packages'];
     }

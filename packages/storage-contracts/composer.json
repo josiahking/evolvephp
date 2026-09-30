@@ -1,0 +1,38 @@
+{
+    "name": "evolvephp/storage-contracts",
+    "description": "Vendor-neutral object storage contracts for EvolvePHP 2.",
+    "type": "library",
+    "homepage": "https://github.com/josiahking/evolvephp",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Josiah King",
+            "email": "josiahaccounts@gmail.com",
+            "homepage": "https://github.com/josiahking"
+        },
+        {
+            "name": "EvolvePHP Community"
+        }
+    ],
+    "keywords": [
+        "evolvephp",
+        "php",
+        "framework",
+        "object-storage",
+        "storage-contracts"
+    ],
+    "require": {
+        "php": "^8.4",
+        "evolvephp/contracts": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evolve\\Storage\\Contracts\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Evolve\\Storage\\Contracts\\Tests\\": "tests/"
+        }
+    }
+}
