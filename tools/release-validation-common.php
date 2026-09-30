@@ -706,8 +706,8 @@ function loadReleasePackages(string $root): array
         releaseValidationFail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 19) {
-        releaseValidationFail('release-packages.json must contain exactly nineteen package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 20) {
+        releaseValidationFail('release-packages.json must contain exactly twenty package entries.');
     }
 
     $expected = array(
@@ -717,6 +717,7 @@ function loadReleasePackages(string $root): array
         array('name' => 'evolvephp/cache-memory', 'directory' => 'packages/cache-memory'),
         array('name' => 'evolvephp/session-contracts', 'directory' => 'packages/session-contracts'),
         array('name' => 'evolvephp/lock-contracts', 'directory' => 'packages/lock-contracts'),
+        array('name' => 'evolvephp/queue-contracts', 'directory' => 'packages/queue-contracts'),
         array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
         array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
         array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),

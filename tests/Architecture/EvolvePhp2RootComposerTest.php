@@ -78,6 +78,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/insight' => '^2.0@dev',
             'evolvephp/lock-contracts' => '^2.0@dev',
             'evolvephp/observe' => '^2.0@dev',
+            'evolvephp/queue-contracts' => '^2.0@dev',
             'evolvephp/session-contracts' => '^2.0@dev',
             'evolvephp/testing' => '^2.0@dev',
             'friendsofphp/php-cs-fixer' => '^3.95',
@@ -158,6 +159,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
             'test:observe' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe',
             'test:plugin' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin',
+            'test:queue-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-contracts',
             'test:session-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite session-contracts',
             'test:testing' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing',
         );
@@ -218,7 +220,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         }
     }
 
-    public function testReleaseMapContainsOnlyTheNineteenReleasePackages(): void
+    public function testReleaseMapContainsOnlyTheTwentyReleasePackages(): void
     {
         $map = $this->readJsonFile('release-packages.json');
 
@@ -231,6 +233,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/cache-memory', 'directory' => 'packages/cache-memory'),
                 array('name' => 'evolvephp/session-contracts', 'directory' => 'packages/session-contracts'),
                 array('name' => 'evolvephp/lock-contracts', 'directory' => 'packages/lock-contracts'),
+                array('name' => 'evolvephp/queue-contracts', 'directory' => 'packages/queue-contracts'),
                 array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -283,6 +286,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/module',
             'evolvephp/observe',
             'evolvephp/plugin',
+            'evolvephp/queue-contracts',
             'evolvephp/testing',
         );
     }

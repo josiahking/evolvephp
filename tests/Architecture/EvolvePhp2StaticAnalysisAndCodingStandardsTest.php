@@ -241,7 +241,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
     {
         $paths = array();
 
-        foreach (array('contracts', 'database-contracts', 'database-pdo', 'cache-memory', 'session-contracts', 'lock-contracts', 'bridge-contracts', 'bridge-psr', 'bridge-laravel', 'bridge-symfony', 'bridge-remote', 'core', 'observe', 'dev-tools', 'http', 'module', 'plugin', 'testing') as $package) {
+        foreach (array('contracts', 'database-contracts', 'database-pdo', 'cache-memory', 'session-contracts', 'lock-contracts', 'queue-contracts', 'bridge-contracts', 'bridge-psr', 'bridge-laravel', 'bridge-symfony', 'bridge-remote', 'core', 'observe', 'dev-tools', 'http', 'module', 'plugin', 'testing') as $package) {
             $paths[] = 'packages/' . $package . '/src';
             $paths[] = 'packages/' . $package . '/tests';
         }
@@ -258,6 +258,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
             'packages/cache-memory/composer.json',
             'packages/session-contracts/composer.json',
             'packages/lock-contracts/composer.json',
+            'packages/queue-contracts/composer.json',
             'packages/bridge-contracts/composer.json',
             'packages/bridge-psr/composer.json',
             'packages/bridge-laravel/composer.json',
@@ -282,6 +283,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
             'packages/cache-memory/src',
             'packages/session-contracts/src',
             'packages/lock-contracts/src',
+            'packages/queue-contracts/src',
             'packages/bridge-contracts/src',
             'packages/bridge-psr/src',
             'packages/bridge-laravel/src',
