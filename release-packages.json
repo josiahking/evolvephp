@@ -70,6 +70,10 @@
             "directory": "packages/http"
         },
         {
+            "name": "evolvephp/http-client",
+            "directory": "packages/http-client"
+        },
+        {
             "name": "evolvephp/observe",
             "directory": "packages/observe"
         },

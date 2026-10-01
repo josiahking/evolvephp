@@ -72,7 +72,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         }
     }
 
-    public function testRootPhpUnitConfigurationDefinesNineteenPackageSuites(): void
+    public function testRootPhpUnitConfigurationDefinesTwentyFivePackageSuites(): void
     {
         $path = $this->projectPath('phpunit.xml.dist');
 
@@ -153,6 +153,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/test:core/i', $content);
         $this->assertMatchesPattern('/test:dev-tools/i', $content);
         $this->assertMatchesPattern('/test:http/i', $content);
+        $this->assertMatchesPattern('/test:http-client/i', $content);
         $this->assertMatchesPattern('/test:insight/i', $content);
         $this->assertMatchesPattern('/test:module/i', $content);
         $this->assertMatchesPattern('/test:plugin/i', $content);
@@ -175,7 +176,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $developmentGuide);
         $this->assertMatchesPattern('/PHPUnit 13.*root|root.*PHPUnit 13/i', $developmentGuide);
 
-        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:cache-memory', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:insight', 'test:module', 'test:observe', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:cache-memory', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:dev-tools', 'test:http', 'test:http-client', 'test:insight', 'test:module', 'test:observe', 'test:plugin', 'test:testing') as $script) {
             $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $developmentGuide);
         }
 
@@ -288,6 +289,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
                 'tests' => 'packages/http/tests',
                 'smokeTest' => 'packages/http/tests/Unit/PackageManifestTest.php',
             ),
+            'http-client' => array(
+                'tests' => 'packages/http-client/tests',
+                'smokeTest' => 'packages/http-client/tests/Unit/PackageManifestTest.php',
+            ),
             'module' => array(
                 'tests' => 'packages/module/tests',
                 'smokeTest' => 'packages/module/tests/Unit/PackageManifestTest.php',
@@ -326,6 +331,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test:database-pdo' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite database-pdo',
             'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
             'test:http' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http',
+            'test:http-client' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http-client',
             'test:insight' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite insight',
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
             'test:observe' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe',
@@ -356,6 +362,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'evolvephp/core',
             'evolvephp/dev-tools',
             'evolvephp/http',
+            'evolvephp/http-client',
             'evolvephp/insight',
             'evolvephp/module',
             'evolvephp/observe',

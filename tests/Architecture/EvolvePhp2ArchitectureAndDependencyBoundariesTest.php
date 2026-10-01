@@ -140,7 +140,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $config->toArray()['skip_violations'] ?? array(),
         );
 
-        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/storage-contracts/tests', 'packages/storage-local/tests', 'packages/secret-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
+        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/storage-contracts/tests', 'packages/storage-local/tests', 'packages/secret-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/http-client/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
             $this->assertStringNotContainsString($testPath, $content);
         }
 
@@ -269,6 +269,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'Observe' => 'packages/observe/src/.*',
             'DevTools' => 'packages/dev-tools/src/.*',
             'Http' => 'packages/http/src/.*',
+            'HttpClient' => 'packages/http-client/src/.*',
             'Module' => 'packages/module/src/.*',
             'Plugin' => 'packages/plugin/src/.*',
             'Testing' => 'packages/testing/src/.*',
@@ -310,6 +311,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'Observe' => array('Core', 'Http', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'PsrHttpMessage', 'PsrHttpServer'),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
             'Http' => array('Contracts', 'Core', 'PsrHttpMessage', 'PsrHttpServer'),
+            'HttpClient' => array('PsrHttpMessage', 'PsrHttpClient'),
             'Module' => array('Contracts'),
             'Plugin' => array('Contracts'),
             'Testing' => array('Contracts', 'Core', 'Http', 'Module', 'Plugin'),
@@ -379,6 +381,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'observe' => 'Observe',
             'devTools' => 'DevTools',
             'http' => 'Http',
+            'httpClient' => 'HttpClient',
             'module' => 'Module',
             'plugin' => 'Plugin',
             'testing' => 'Testing',
@@ -442,6 +445,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/observe/src' => 'Evolve\\Observe\\',
             'packages/dev-tools/src' => 'Evolve\\DevTools\\',
             'packages/http/src' => 'Evolve\\Http\\',
+            'packages/http-client/src' => 'Evolve\\Http\\Client\\',
             'packages/module/src' => 'Evolve\\Module\\',
             'packages/plugin/src' => 'Evolve\\Plugin\\',
             'packages/testing/src' => 'Evolve\\Testing\\',
@@ -469,6 +473,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/insight/composer.json',
             'packages/dev-tools/composer.json',
             'packages/http/composer.json',
+            'packages/http-client/composer.json',
             'packages/module/composer.json',
             'packages/plugin/composer.json',
             'packages/testing/composer.json',

@@ -706,8 +706,8 @@ function loadReleasePackages(string $root): array
         releaseValidationFail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 24) {
-        releaseValidationFail('release-packages.json must contain exactly twenty-four package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 25) {
+        releaseValidationFail('release-packages.json must contain exactly twenty-five package entries.');
     }
 
     $expected = array(
@@ -728,6 +728,7 @@ function loadReleasePackages(string $root): array
         array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
         array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
         array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
+        array('name' => 'evolvephp/http-client', 'directory' => 'packages/http-client'),
         array('name' => 'evolvephp/observe', 'directory' => 'packages/observe'),
         array('name' => 'evolvephp/bridge-psr', 'directory' => 'packages/bridge-psr'),
         array('name' => 'evolvephp/bridge-laravel', 'directory' => 'packages/bridge-laravel'),

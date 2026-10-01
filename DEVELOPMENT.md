@@ -83,6 +83,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/insight`
 - `evolvephp/dev-tools`
 - `evolvephp/http`
+- `evolvephp/http-client`
 - `evolvephp/observe`
 - `evolvephp/module`
 - `evolvephp/plugin`
@@ -152,6 +153,7 @@ composer test:insight
 composer test:observe
 composer test:dev-tools
 composer test:http
+composer test:http-client
 composer test:module
 composer test:plugin
 composer test:testing
@@ -258,7 +260,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-four packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, insight, module, plugin, http, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-five packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, insight, module, plugin, http, http-client, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -428,6 +430,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `observe` | `packages/observe/tests` |
 | `dev-tools` | `packages/dev-tools/tests` |
 | `http` | `packages/http/tests` |
+| `http-client` | `packages/http-client/tests` |
 | `module` | `packages/module/tests` |
 | `plugin` | `packages/plugin/tests` |
 | `testing` | `packages/testing/tests` |
@@ -444,7 +447,7 @@ The distributable PHPStan configuration lives at:
 phpstan.neon.dist
 ```
 
-The initial PHPStan level is `6`. PHPStan analyzes all twenty-three package `src` and `tests` directories:
+The initial PHPStan level is `6`. PHPStan analyzes all twenty-five package `src` and `tests` directories:
 
 ```text
 packages/contracts/src
@@ -489,6 +492,8 @@ packages/dev-tools/src
 packages/dev-tools/tests
 packages/http/src
 packages/http/tests
+packages/http-client/src
+packages/http-client/tests
 packages/module/src
 packages/module/tests
 packages/plugin/src
@@ -537,6 +542,7 @@ packages/insight/src
 packages/observe/src
 packages/dev-tools/src
 packages/http/src
+packages/http-client/src
 packages/module/src
 packages/plugin/src
 packages/testing/src
@@ -566,6 +572,7 @@ Insight   -> packages/insight/src/.*   -> Evolve\Insight\
 Observe   -> packages/observe/src/.*   -> Evolve\Observe\
 DevTools  -> packages/dev-tools/src/.* -> Evolve\DevTools\
 Http      -> packages/http/src/.*      -> Evolve\Http\
+HttpClient -> packages/http-client/src/.* -> Evolve\Http\Client\
 Module    -> packages/module/src/.*    -> Evolve\Module\
 Plugin    -> packages/plugin/src/.*    -> Evolve\Plugin\
 Testing   -> packages/testing/src/.*   -> Evolve\Testing\
@@ -595,6 +602,7 @@ Insight   -> Core
 Observe   -> Core, Http, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PsrHttpMessage, PsrHttpServer
 DevTools  -> Contracts, Core, Module, Plugin
 Http      -> Contracts, Core
+HttpClient -> PsrHttpMessage, PsrHttpClient
 Module    -> Contracts
 Plugin    -> Contracts
 Testing   -> Contracts, Core, Http, Module, Plugin

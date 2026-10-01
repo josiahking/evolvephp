@@ -24,6 +24,8 @@ Sidecar deployment remains remote mode. The EvolvePHP endpoint keeps an independ
 
 The host application owns the concrete PSR-18 transport, bounded timeout configuration, controlled or disabled redirect behavior, fallback decisions and any retry policy. `RemoteBridgeClient` does not add retries, backoff, circuit breaking, automatic idempotency handling, redirect following, service discovery, health polling, process supervision, worker recycling or proxy-server behavior.
 
+The existing `ClientInterface` constructor seam may receive either a concrete PSR-18 client directly or an `Evolve\Http\Client\MiddlewareClient` that wraps one. This composition is application-owned: `bridge-remote` does not depend on `evolvephp/http-client` and does not automatically configure retries, redirects, timeouts, TLS, proxies or tracing.
+
 The configured client endpoint is trusted deployment configuration. `RemoteBridgeInvocation::target()` is the delegated application request target and is never used as the network destination.
 
 `RemoteBridgeInvocation::trace()` is a transport-neutral manual trace carrier. The host-side client projects only `traceparent` and, when `traceparent` is present, `tracestate` onto the outer HTTP request so the receiving OpenTelemetry server boundary can continue a W3C trace. Arbitrary trace-map keys and baggage are not forwarded, and Bridge does not parse W3C Trace Context or depend on OpenTelemetry. Receiving instrumentation owns semantic validation; malformed but transport-safe trace context must not make delegated application execution fail.

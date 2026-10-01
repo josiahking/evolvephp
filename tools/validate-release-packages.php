@@ -98,6 +98,7 @@ function expectedPackages(): array
         'evolvephp/module' => array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
         'evolvephp/plugin' => array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
         'evolvephp/http' => array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
+        'evolvephp/http-client' => array('name' => 'evolvephp/http-client', 'directory' => 'packages/http-client'),
         'evolvephp/observe' => array('name' => 'evolvephp/observe', 'directory' => 'packages/observe'),
         'evolvephp/bridge-psr' => array('name' => 'evolvephp/bridge-psr', 'directory' => 'packages/bridge-psr'),
         'evolvephp/bridge-laravel' => array('name' => 'evolvephp/bridge-laravel', 'directory' => 'packages/bridge-laravel'),
@@ -137,6 +138,7 @@ function expectedNamespaces(): array
         'evolvephp/module' => 'Evolve\\Module\\',
         'evolvephp/plugin' => 'Evolve\\Plugin\\',
         'evolvephp/http' => 'Evolve\\Http\\',
+        'evolvephp/http-client' => 'Evolve\\Http\\Client\\',
         'evolvephp/testing' => 'Evolve\\Testing\\',
     );
 }
@@ -169,6 +171,7 @@ function expectedGraph(): array
         'evolvephp/module' => array('evolvephp/contracts'),
         'evolvephp/plugin' => array('evolvephp/contracts'),
         'evolvephp/http' => array('evolvephp/contracts', 'evolvephp/core'),
+        'evolvephp/http-client' => array(),
         'evolvephp/testing' => array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/http', 'evolvephp/module', 'evolvephp/plugin'),
         'evolvephp/dev-tools' => array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/module', 'evolvephp/plugin'),
     );
@@ -194,8 +197,8 @@ function validateMap(string $root): array
         fail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 24) {
-        fail('release-packages.json must contain exactly twenty-four package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 25) {
+        fail('release-packages.json must contain exactly twenty-five package entries.');
     }
 
     $expectedPackages = array_values(expectedPackages());

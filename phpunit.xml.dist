@@ -74,6 +74,9 @@
         <testsuite name="http">
             <directory suffix="Test.php">packages/http/tests</directory>
         </testsuite>
+        <testsuite name="http-client">
+            <directory suffix="Test.php">packages/http-client/tests</directory>
+        </testsuite>
         <testsuite name="module">
             <directory suffix="Test.php">packages/module/tests</directory>
         </testsuite>
@@ -107,6 +110,7 @@
             <directory suffix=".php">packages/observe/src</directory>
             <directory suffix=".php">packages/dev-tools/src</directory>
             <directory suffix=".php">packages/http/src</directory>
+            <directory suffix=".php">packages/http-client/src</directory>
             <directory suffix=".php">packages/module/src</directory>
             <directory suffix=".php">packages/plugin/src</directory>
             <directory suffix=".php">packages/testing/src</directory>
