@@ -32,6 +32,7 @@ return static function (DeptracConfig $config): void {
             'packages/observe/src',
             'packages/dev-tools/src',
             'packages/http/src',
+            'packages/http-client/src',
             'packages/module/src',
             'packages/plugin/src',
             'packages/testing/src',
@@ -135,6 +136,9 @@ return static function (DeptracConfig $config): void {
             $http = Layer::withName('Http')->collectors(
                 DirectoryConfig::create('packages/http/src/.*'),
             ),
+            $httpClient = Layer::withName('HttpClient')->collectors(
+                DirectoryConfig::create('packages/http-client/src/.*'),
+            ),
             $module = Layer::withName('Module')->collectors(
                 DirectoryConfig::create('packages/module/src/.*'),
             ),
@@ -178,6 +182,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($openTelemetrySemConv),
             Ruleset::forLayer($devTools)->accesses($contracts, $core, $module, $plugin),
             Ruleset::forLayer($http)->accesses($contracts, $core, $psrHttpMessage, $psrHttpServer),
+            Ruleset::forLayer($httpClient)->accesses($psrHttpMessage, $psrHttpClient),
             Ruleset::forLayer($module)->accesses($contracts),
             Ruleset::forLayer($plugin)->accesses($contracts),
             Ruleset::forLayer($testing)->accesses(

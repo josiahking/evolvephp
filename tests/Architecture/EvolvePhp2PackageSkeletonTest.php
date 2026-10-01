@@ -28,6 +28,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'insight' => null,
             'observe' => null,
             'http' => null,
+            'http-client' => null,
             'module' => null,
             'plugin' => null,
             'testing' => null,
@@ -227,6 +228,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertFileDoesNotExist($this->projectPath('packages/observe/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/dev-tools/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/http/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/http-client/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/module/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/plugin/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/testing/src/.gitkeep'));
@@ -1005,6 +1007,18 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 ),
             ),
             array(
+                'manifest' => 'packages/http-client/composer.json',
+                'src' => 'packages/http-client/src',
+                'name' => 'evolvephp/http-client',
+                'description' => 'PSR-18 outbound HTTP client composition foundation for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Http\\Client\\',
+                'require' => array(
+                    'php' => '^8.4',
+                    'psr/http-client' => '^1.0',
+                    'psr/http-message' => '^1.1 || ^2.0',
+                ),
+            ),
+            array(
                 'manifest' => 'packages/module/composer.json',
                 'src' => 'packages/module/src',
                 'name' => 'evolvephp/module',
@@ -1355,6 +1369,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Routing/RouteMatch.php',
                 'Routing/RouteMatcher.php',
                 'Routing/RoutingRequestHandler.php',
+            ),
+            'packages/http-client/src' => array(
+                'ClientMiddleware.php',
+                'Internal/MiddlewareNextClient.php',
+                'MiddlewareClient.php',
             ),
             'packages/module/src' => array(
                 'Exception/IncompatibleModuleDescriptor.php',

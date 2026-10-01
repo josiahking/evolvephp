@@ -75,6 +75,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/database-contracts' => '^2.0@dev',
             'evolvephp/database-pdo' => '^2.0@dev',
             'evolvephp/dev-tools' => '^2.0@dev',
+            'evolvephp/http-client' => '^2.0@dev',
             'evolvephp/insight' => '^2.0@dev',
             'evolvephp/lock-contracts' => '^2.0@dev',
             'evolvephp/observe' => '^2.0@dev',
@@ -158,6 +159,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test:database-pdo' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite database-pdo',
             'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
             'test:http' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http',
+            'test:http-client' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http-client',
             'test:insight' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite insight',
             'test:lock-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite lock-contracts',
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
@@ -228,7 +230,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         }
     }
 
-    public function testReleaseMapContainsOnlyTheTwentyThreeReleasePackages(): void
+    public function testReleaseMapContainsOnlyTheTwentyFiveReleasePackages(): void
     {
         $map = $this->readJsonFile('release-packages.json');
 
@@ -252,6 +254,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
                 array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
+                array('name' => 'evolvephp/http-client', 'directory' => 'packages/http-client'),
                 array('name' => 'evolvephp/observe', 'directory' => 'packages/observe'),
                 array('name' => 'evolvephp/bridge-psr', 'directory' => 'packages/bridge-psr'),
                 array('name' => 'evolvephp/bridge-laravel', 'directory' => 'packages/bridge-laravel'),
@@ -294,6 +297,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/core',
             'evolvephp/dev-tools',
             'evolvephp/http',
+            'evolvephp/http-client',
             'evolvephp/insight',
             'evolvephp/module',
             'evolvephp/observe',

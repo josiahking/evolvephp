@@ -70,6 +70,7 @@ final class PrereleaseConsumerValidator
                 'evolvephp/secret-contracts' => '^2.0@alpha',
                 'evolvephp/dev-tools' => '^2.0@alpha',
                 'evolvephp/insight' => '^2.0@alpha',
+                'evolvephp/http-client' => '^2.0@alpha',
                 'evolvephp/observe' => '^2.0@alpha',
                 'evolvephp/testing' => '^2.0@alpha',
             ));
@@ -91,6 +92,7 @@ final class PrereleaseConsumerValidator
                 'evolvephp/secret-contracts' => '^2.0',
                 'evolvephp/dev-tools' => '^2.0',
                 'evolvephp/insight' => '^2.0',
+                'evolvephp/http-client' => '^2.0',
                 'evolvephp/observe' => '^2.0',
                 'evolvephp/testing' => '^2.0',
             ), array('minimum-stability' => 'alpha', 'prefer-stable' => true), $this->expectedVersions($packages, self::ALPHA_VERSION));
@@ -113,6 +115,7 @@ final class PrereleaseConsumerValidator
                 'evolvephp/secret-contracts' => '^2.0',
                 'evolvephp/dev-tools' => '^2.0',
                 'evolvephp/insight' => '^2.0',
+                'evolvephp/http-client' => '^2.0',
                 'evolvephp/observe' => '^2.0',
                 'evolvephp/testing' => '^2.0',
             ), array(), $this->expectedVersions($packages, self::STABLE_VERSION));
