@@ -10,7 +10,7 @@ All package manifests require PHP `^8.4`.
 
 EvolvePHP 2 packages continue to require PHP `^8.4`. `compat/legacy-http-client` is a separate isolated remote compatibility artifact for legacy applications whose initial official legacy runtime evidence is PHP 7.4.
 
-The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 25-package release map.
+The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 26-package release map.
 
 The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge endpoint. It does not enable embedded or same-process EvolvePHP on PHP 7, lower Core or package requirements, share sessions or cookies, provide automatic retries or fallback routing, or perform modernization cutover or data migration.
 
@@ -35,6 +35,7 @@ The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge e
 | `evolvephp/bridge-symfony` | `Evolve\Bridge\Symfony\` | Public experimental embedded Symfony host Bridge adapter that translates explicit Symfony route delegation into the same-process PSR Bridge while preserving host lifecycle and quarantine visibility. |
 | `evolvephp/bridge-remote` | `Evolve\Bridge\Remote\` | Public experimental remote HTTP JSON Bridge protocol with a PSR-18 host client and PSR-15 server endpoint, bounded decoding, mandatory injected authentication and explicit PSR request construction. |
 | `evolvephp/core` | `Evolve\Core\` | Core orchestration boundary, including the minimal application lifecycle kernel, array-backed configuration, PSR-11-readable service container, explicit execution scopes, runtime-neutral execution outcomes, generic execution-lifecycle observation hooks, runtime-neutral command foundation, `ComponentGraphResolver`, `ResolvedComponentGraph`, consumer-scoped `CapabilityProviderSelection`, restricted registration, component lifecycle coordination and explicit `ComponentBootstrapper`. |
+| `evolvephp/job` | `Evolve\Job\` | Public experimental one-shot queue job execution through Core orchestration, with post-cleanup settlement and fail-closed quarantine. |
 | `evolvephp/insight` | `Evolve\Insight\` | Optional diagnostic-batch collection foundation that consumes safe Core execution observations and finalizes immutable bounded per-execution batches for caller-owned storage-neutral sinks. |
 | `evolvephp/observe` | `Evolve\Observe\` | Optional OpenTelemetry composition, generic execution tracing and metrics, explicit HTTP SERVER tracing and metrics, structured-log correlation, bounded SDK export-processing integration, remote Bridge W3C continuity boundary and application-owned providers/exporters/transports with the final package boundary intentionally closed to first-party Bridge and Insight dependencies. |
 | `evolvephp/dev-tools` | `Evolve\DevTools\` | Development-only tooling boundary with public experimental `module:new` and `plugin:new` command adapters, read-only Audit APIs and the standalone `evolve-audit` binary for root Composer, resolved lockfile, PHP source coupling and lexical source-structure evidence, plus adoption-planning models for explicit migration declarations. |
@@ -67,6 +68,7 @@ The package graph follows an inward dependency principle:
 - `bridge-symfony` depends inward on `bridge-contracts` and `bridge-psr`, plus narrow Symfony host contracts and PSR HTTP message/factory interfaces.
 - `bridge-remote` depends inward on `bridge-contracts` and `bridge-psr`, plus PSR HTTP message, factory, client and server-handler interfaces.
 - `core`, `module` and `plugin` depend inward on `contracts`.
+- `job` depends only on `core` and `queue-contracts`; it adds no broker, worker loop or retry policy.
 - `insight` depends inward on `core`.
 - `observe` depends inward on `core` for generic execution lifecycle contracts and on `http` for public routing state used in route-template span enrichment, plus PSR HTTP interfaces, the external OpenTelemetry API and semantic-convention constants, with optional SDK typing supported through the suggested OpenTelemetry SDK.
 - `http` depends inward on `contracts` and `core`.

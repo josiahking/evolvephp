@@ -62,6 +62,9 @@
         <testsuite name="core">
             <directory suffix="Test.php">packages/core/tests</directory>
         </testsuite>
+        <testsuite name="job">
+            <directory suffix="Test.php">packages/job/tests</directory>
+        </testsuite>
         <testsuite name="insight">
             <directory suffix="Test.php">packages/insight/tests</directory>
         </testsuite>
@@ -106,6 +109,7 @@
             <directory suffix=".php">packages/bridge-symfony/src</directory>
             <directory suffix=".php">packages/bridge-remote/src</directory>
             <directory suffix=".php">packages/core/src</directory>
+            <directory suffix=".php">packages/job/src</directory>
             <directory suffix=".php">packages/insight/src</directory>
             <directory suffix=".php">packages/observe/src</directory>
             <directory suffix=".php">packages/dev-tools/src</directory>

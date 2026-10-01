@@ -38,6 +38,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/bridge-remote/tests',
         'packages/core/src',
         'packages/core/tests',
+        'packages/job/src',
+        'packages/job/tests',
         'packages/observe/src',
         'packages/observe/tests',
         'packages/dev-tools/src',

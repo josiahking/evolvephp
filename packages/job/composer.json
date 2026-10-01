@@ -1,0 +1,21 @@
+{
+    "name": "evolvephp/job",
+    "description": "One-shot queue job execution runtime for EvolvePHP 2.",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "require": {
+        "php": "^8.4",
+        "evolvephp/core": "^2.0",
+        "evolvephp/queue-contracts": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evolve\\Job\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Evolve\\Job\\Tests\\": "tests/"
+        }
+    }
+}

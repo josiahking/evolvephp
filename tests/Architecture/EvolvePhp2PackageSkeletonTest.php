@@ -8,6 +8,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
     {
         foreach ([
             'core' => ['bin/evolve'],
+            'job' => null,
             'dev-tools' => ['bin/evolve-audit'],
             'contracts' => null,
             'cache-memory' => null,
@@ -224,6 +225,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertFileDoesNotExist($this->projectPath('packages/bridge-symfony/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/bridge-remote/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/core/src/.gitkeep'));
+        $this->assertFileDoesNotExist($this->projectPath('packages/job/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/insight/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/observe/src/.gitkeep'));
         $this->assertFileDoesNotExist($this->projectPath('packages/dev-tools/src/.gitkeep'));
@@ -950,6 +952,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0', 'psr/container' => '^1.1 || ^2.0'),
             ),
             array(
+                'manifest' => 'packages/job/composer.json',
+                'src' => 'packages/job/src',
+                'name' => 'evolvephp/job',
+                'description' => 'One-shot queue job execution runtime for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Job\\',
+                'require' => array('php' => '^8.4', 'evolvephp/core' => '^2.0', 'evolvephp/queue-contracts' => '^2.0'),
+            ),
+            array(
                 'manifest' => 'packages/insight/composer.json',
                 'src' => 'packages/insight/src',
                 'name' => 'evolvephp/insight',
@@ -1259,6 +1269,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Instrumentation/ObservationSink.php',
                 'Instrumentation/ObservationType.php',
                 'Lifecycle/ApplicationState.php',
+            ),
+            'packages/job/src' => array(
+                'JobRunOutcome.php',
+                'JobRunner.php',
+                'JobSettlementState.php',
             ),
             'packages/insight/src' => array(
                 'Access/DiagnosticAccessDenied.php',
