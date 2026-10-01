@@ -17,6 +17,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'queue-memory' => null,
             'storage-contracts' => null,
             'storage-local' => null,
+            'secret-contracts' => null,
             'database-contracts' => null,
             'database-pdo' => null,
             'bridge-contracts' => null,
@@ -861,6 +862,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'evolvephp/storage-contracts' => '^2.0'),
             ),
             array(
+                'manifest' => 'packages/secret-contracts/composer.json',
+                'src' => 'packages/secret-contracts/src',
+                'name' => 'evolvephp/secret-contracts',
+                'description' => 'Vendor-neutral secret resolution contracts for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Secret\\Contracts\\',
+                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
+            ),
+            array(
                 'manifest' => 'packages/bridge-contracts/composer.json',
                 'src' => 'packages/bridge-contracts/src',
                 'name' => 'evolvephp/bridge-contracts',
@@ -1110,6 +1119,13 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Internal/LocalFilesystemReadableObject.php',
                 'Internal/LocalFilesystemStorageException.php',
                 'LocalFilesystemStorage.php',
+            ),
+            'packages/secret-contracts/src' => array(
+                'Exception/SecretException.php',
+                'SecretFailureCategory.php',
+                'SecretName.php',
+                'SecretResolver.php',
+                'SecretValue.php',
             ),
             'packages/bridge-contracts/src' => array(
                 'BridgeContext.php',

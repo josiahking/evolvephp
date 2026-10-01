@@ -73,6 +73,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/queue-memory`
 - `evolvephp/storage-contracts`
 - `evolvephp/storage-local`
+- `evolvephp/secret-contracts`
 - `evolvephp/bridge-contracts`
 - `evolvephp/bridge-psr`
 - `evolvephp/bridge-laravel`
@@ -140,6 +141,7 @@ composer test:queue-contracts
 composer test:queue-memory
 composer test:storage-contracts
 composer test:storage-local
+composer test:secret-contracts
 composer test:bridge-contracts
 composer test:bridge-psr
 composer test:bridge-laravel
@@ -256,7 +258,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-three packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, bridge-contracts, core, insight, module, plugin, http, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-four packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, insight, module, plugin, http, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -415,6 +417,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `queue-memory` | `packages/queue-memory/tests` |
 | `storage-contracts` | `packages/storage-contracts/tests` |
 | `storage-local` | `packages/storage-local/tests` |
+| `secret-contracts` | `packages/secret-contracts/tests` |
 | `bridge-contracts` | `packages/bridge-contracts/tests` |
 | `bridge-psr` | `packages/bridge-psr/tests` |
 | `bridge-laravel` | `packages/bridge-laravel/tests` |
@@ -464,6 +467,8 @@ packages/storage-contracts/src
 packages/storage-contracts/tests
 packages/storage-local/src
 packages/storage-local/tests
+packages/secret-contracts/src
+packages/secret-contracts/tests
 packages/bridge-contracts/src
 packages/bridge-contracts/tests
 packages/bridge-psr/src
@@ -521,6 +526,7 @@ packages/queue-contracts/src
 packages/queue-memory/src
 packages/storage-contracts/src
 packages/storage-local/src
+packages/secret-contracts/src
 packages/bridge-contracts/src
 packages/bridge-psr/src
 packages/bridge-laravel/src
@@ -549,6 +555,7 @@ QueueContracts -> packages/queue-contracts/src/.* -> Evolve\Queue\Contracts\
 QueueMemory -> packages/queue-memory/src/.* -> Evolve\Queue\Memory\
 StorageContracts -> packages/storage-contracts/src/.* -> Evolve\Storage\Contracts\
 StorageLocal -> packages/storage-local/src/.* -> Evolve\Storage\Local\
+SecretContracts -> packages/secret-contracts/src/.* -> Evolve\Secret\Contracts\
 BridgeContracts -> packages/bridge-contracts/src/.* -> Evolve\Bridge\Contracts\
 BridgePsr -> packages/bridge-psr/src/.* -> Evolve\Bridge\Psr\
 BridgeLaravel -> packages/bridge-laravel/src/.* -> Evolve\Bridge\Laravel\
@@ -577,6 +584,7 @@ QueueContracts -> Contracts
 QueueMemory -> QueueContracts
 StorageContracts -> Contracts
 StorageLocal -> StorageContracts
+SecretContracts -> Contracts
 BridgeContracts -> Contracts
 BridgePsr -> BridgeContracts, Core, Http
 BridgeLaravel -> BridgeContracts, BridgePsr, PsrHttpMessage, LaravelHost

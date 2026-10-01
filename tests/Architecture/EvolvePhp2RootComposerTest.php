@@ -82,6 +82,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/queue-memory' => '^2.0@dev',
             'evolvephp/storage-contracts' => '^2.0@dev',
             'evolvephp/storage-local' => '^2.0@dev',
+            'evolvephp/secret-contracts' => '^2.0@dev',
             'evolvephp/session-contracts' => '^2.0@dev',
             'evolvephp/testing' => '^2.0@dev',
             'friendsofphp/php-cs-fixer' => '^3.95',
@@ -166,6 +167,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test:queue-memory' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-memory',
             'test:storage-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite storage-contracts',
             'test:storage-local' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite storage-local',
+            'test:secret-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite secret-contracts',
             'test:session-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite session-contracts',
             'test:testing' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing',
         );
@@ -243,6 +245,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/queue-memory', 'directory' => 'packages/queue-memory'),
                 array('name' => 'evolvephp/storage-contracts', 'directory' => 'packages/storage-contracts'),
                 array('name' => 'evolvephp/storage-local', 'directory' => 'packages/storage-local'),
+                array('name' => 'evolvephp/secret-contracts', 'directory' => 'packages/secret-contracts'),
                 array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
                 array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -299,6 +302,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/queue-memory',
             'evolvephp/storage-contracts',
             'evolvephp/storage-local',
+            'evolvephp/secret-contracts',
             'evolvephp/testing',
         );
     }

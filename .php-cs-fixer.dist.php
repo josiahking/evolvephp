@@ -24,6 +24,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/storage-contracts/tests',
         'packages/storage-local/src',
         'packages/storage-local/tests',
+        'packages/secret-contracts/src',
+        'packages/secret-contracts/tests',
         'packages/bridge-contracts/src',
         'packages/bridge-contracts/tests',
         'packages/bridge-psr/src',

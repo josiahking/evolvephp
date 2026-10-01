@@ -140,7 +140,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $config->toArray()['skip_violations'] ?? array(),
         );
 
-        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/storage-contracts/tests', 'packages/storage-local/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
+        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/storage-contracts/tests', 'packages/storage-local/tests', 'packages/secret-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
             $this->assertStringNotContainsString($testPath, $content);
         }
 
@@ -207,6 +207,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'DatabaseContracts -> Contracts',
             'DatabasePdo -> Contracts, DatabaseContracts',
             'StorageLocal -> StorageContracts',
+            'SecretContracts -> Contracts',
             'SessionContracts -> Contracts',
             'LockContracts -> Contracts',
             'Core      -> Contracts',
@@ -257,6 +258,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'QueueMemory' => 'packages/queue-memory/src/.*',
             'StorageContracts' => 'packages/storage-contracts/src/.*',
             'StorageLocal' => 'packages/storage-local/src/.*',
+            'SecretContracts' => 'packages/secret-contracts/src/.*',
             'BridgeContracts' => 'packages/bridge-contracts/src/.*',
             'BridgePsr' => 'packages/bridge-psr/src/.*',
             'BridgeLaravel' => 'packages/bridge-laravel/src/.*',
@@ -286,6 +288,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'QueueMemory' => array('QueueContracts'),
             'StorageContracts' => array('Contracts'),
             'StorageLocal' => array('StorageContracts'),
+            'SecretContracts' => array('Contracts'),
             'BridgeContracts' => array('Contracts'),
             'BridgePsr' => array('BridgeContracts', 'Core', 'Http', 'PsrHttpMessage'),
             'BridgeLaravel' => array('BridgeContracts', 'BridgePsr', 'PsrHttpMessage', 'LaravelHost'),
@@ -354,6 +357,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'queueMemory' => 'QueueMemory',
             'storageContracts' => 'StorageContracts',
             'storageLocal' => 'StorageLocal',
+            'secretContracts' => 'SecretContracts',
             'bridgeContracts' => 'BridgeContracts',
             'bridgePsr' => 'BridgePsr',
             'bridgeLaravel' => 'BridgeLaravel',
@@ -397,11 +401,11 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $rulesets[$layerName] = $accesses;
         }
 
-        foreach (array('Contracts', 'DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'PsrContainer', 'PsrSimpleCache', 'PsrClock', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'LaravelHost', 'SymfonyHost', 'Core', 'Insight', 'Observe', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
+        foreach (array('Contracts', 'DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'SecretContracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'PsrContainer', 'PsrSimpleCache', 'PsrClock', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'LaravelHost', 'SymfonyHost', 'Core', 'Insight', 'Observe', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
             $this->assertNotContains('Testing', $rulesets[$productionLayer], $productionLayer . ' must not access Testing.');
         }
 
-        foreach (array('DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'Insight', 'Observe', 'DevTools', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
+        foreach (array('DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'SecretContracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'Insight', 'Observe', 'DevTools', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
             $this->assertNotContains('PsrContainer', $rulesets[$layerName], $layerName . ' must not access PsrContainer directly without an approved boundary.');
         }
 
@@ -427,6 +431,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/queue-memory/src' => 'Evolve\\Queue\\Memory\\',
             'packages/storage-contracts/src' => 'Evolve\\Storage\\Contracts\\',
             'packages/storage-local/src' => 'Evolve\\Storage\\Local\\',
+            'packages/secret-contracts/src' => 'Evolve\\Secret\\Contracts\\',
             'packages/bridge-contracts/src' => 'Evolve\\Bridge\\Contracts\\',
             'packages/bridge-psr/src' => 'Evolve\\Bridge\\Psr\\',
             'packages/bridge-laravel/src' => 'Evolve\\Bridge\\Laravel\\',
@@ -454,6 +459,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/queue-contracts/composer.json',
             'packages/queue-memory/composer.json',
             'packages/storage-contracts/composer.json',
+            'packages/secret-contracts/composer.json',
             'packages/bridge-contracts/composer.json',
             'packages/bridge-psr/composer.json',
             'packages/bridge-laravel/composer.json',

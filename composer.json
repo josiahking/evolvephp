@@ -53,6 +53,7 @@
                     "evolvephp/queue-memory": "2.0.x-dev",
                     "evolvephp/storage-contracts": "2.0.x-dev",
                     "evolvephp/storage-local": "2.0.x-dev",
+                    "evolvephp/secret-contracts": "2.0.x-dev",
                     "evolvephp/testing": "2.0.x-dev"
                 },
                 "reference": "config"
@@ -86,6 +87,7 @@
         "evolvephp/session-contracts": "^2.0@dev",
         "evolvephp/storage-contracts": "^2.0@dev",
         "evolvephp/storage-local": "^2.0@dev",
+        "evolvephp/secret-contracts": "^2.0@dev",
         "evolvephp/testing": "^2.0@dev",
         "friendsofphp/php-cs-fixer": "^3.95",
         "open-telemetry/exporter-otlp": "^1.4",
@@ -137,6 +139,7 @@
         "test:queue-memory": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-memory",
         "test:storage-contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite storage-contracts",
         "test:storage-local": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite storage-local",
+        "test:secret-contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite secret-contracts",
         "test:session-contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite session-contracts",
         "test:testing": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing"
     },

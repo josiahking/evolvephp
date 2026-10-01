@@ -1,0 +1,32 @@
+{
+    "name": "evolvephp/secret-contracts",
+    "description": "Vendor-neutral secret resolution contracts for EvolvePHP 2.",
+    "type": "library",
+    "homepage": "https://github.com/josiahking/evolvephp",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Josiah King",
+            "email": "josiahaccounts@gmail.com",
+            "homepage": "https://github.com/josiahking"
+        },
+        {
+            "name": "EvolvePHP Community"
+        }
+    ],
+    "keywords": ["evolvephp", "php", "framework", "secrets", "secret-contracts"],
+    "require": {
+        "php": "^8.4",
+        "evolvephp/contracts": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evolve\\Secret\\Contracts\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Evolve\\Secret\\Contracts\\Tests\\": "tests/"
+        }
+    }
+}

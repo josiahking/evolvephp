@@ -41,6 +41,9 @@
         <testsuite name="storage-local">
             <directory suffix="Test.php">packages/storage-local/tests</directory>
         </testsuite>
+        <testsuite name="secret-contracts">
+            <directory suffix="Test.php">packages/secret-contracts/tests</directory>
+        </testsuite>
         <testsuite name="bridge-contracts">
             <directory suffix="Test.php">packages/bridge-contracts/tests</directory>
         </testsuite>
@@ -93,6 +96,7 @@
             <directory suffix=".php">packages/queue-memory/src</directory>
             <directory suffix=".php">packages/storage-contracts/src</directory>
             <directory suffix=".php">packages/storage-local/src</directory>
+            <directory suffix=".php">packages/secret-contracts/src</directory>
             <directory suffix=".php">packages/bridge-contracts/src</directory>
             <directory suffix=".php">packages/bridge-psr/src</directory>
             <directory suffix=".php">packages/bridge-laravel/src</directory>
