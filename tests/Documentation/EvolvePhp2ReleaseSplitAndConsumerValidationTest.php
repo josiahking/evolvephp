@@ -350,7 +350,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array($path));
 
             $this->assertSame('full', $decision['mode'], $path . ' must force full validation.');
-            $this->assertSame(23, count($decision['packages']), $path . ' must keep the complete package map.');
+            $this->assertSame(24, count($decision['packages']), $path . ' must keep the complete package map.');
         }
 
         $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array('docs/release-notes.md', 'README.md'));
@@ -553,6 +553,9 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             "/'evolvephp\\/database-contracts' => '\\^2\\.0'.*?'evolvephp\\/database-pdo' => '\\^2\\.0'.*?'evolvephp\\/cache-memory' => '\\^2\\.0'.*?'evolvephp\\/session-contracts' => '\\^2\\.0'.*?'evolvephp\\/lock-contracts' => '\\^2\\.0'.*?'evolvephp\\/queue-contracts' => '\\^2\\.0'.*?'evolvephp\\/queue-memory' => '\\^2\\.0'.*?'evolvephp\\/storage-contracts' => '\\^2\\.0'.*?'evolvephp\\/storage-local' => '\\^2\\.0'/s",
             $caseHBlock
         );
+        $this->assertStringContainsString("'evolvephp/secret-contracts' => '^2.0@alpha'", $caseEBlock);
+        $this->assertStringContainsString("'evolvephp/secret-contracts' => '^2.0'", $caseFBlock);
+        $this->assertStringContainsString("'evolvephp/secret-contracts' => '^2.0'", $caseHBlock);
     }
 
     public function testConsumerValidatorClonesDisposableTaggedRepositoriesWithoutInheritedTags(): void
@@ -629,7 +632,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertStringContainsString("'COMPOSER_DISABLE_NETWORK' => '1'", $content);
     }
 
-    public function testSharedReleasePackageLoaderAcceptsCanonicalTwentyThreePackageMap(): void
+    public function testSharedReleasePackageLoaderAcceptsCanonicalTwentyFourPackageMap(): void
     {
         require_once $this->path('tools/release-validation-common.php');
 
@@ -639,7 +642,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $coreIndex = array_search('evolvephp/core', $packageNames, true);
 
         $this->assertIsInt($coreIndex);
-        $this->assertCount(23, $packages);
+        $this->assertCount(24, $packages);
         $this->assertContains('evolvephp/insight', $packageNames);
         $this->assertSame(
             array('name' => 'evolvephp/database-contracts', 'directory' => 'packages/database-contracts'),
@@ -676,6 +679,10 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertSame(
             array('name' => 'evolvephp/storage-local', 'directory' => 'packages/storage-local'),
             $packages[9]
+        );
+        $this->assertSame(
+            array('name' => 'evolvephp/secret-contracts', 'directory' => 'packages/secret-contracts'),
+            $packages[10]
         );
         $this->assertSame(
             array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -940,7 +947,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $map = $this->readJsonFile('release-packages.json');
 
         $this->assertSame(1, $map['version']);
-        $this->assertCount(23, $map['packages']);
+        $this->assertCount(24, $map['packages']);
 
         return $map['packages'];
     }

@@ -21,6 +21,7 @@ return static function (DeptracConfig $config): void {
             'packages/queue-memory/src',
             'packages/storage-contracts/src',
             'packages/storage-local/src',
+            'packages/secret-contracts/src',
             'packages/bridge-contracts/src',
             'packages/bridge-psr/src',
             'packages/bridge-laravel/src',
@@ -67,6 +68,9 @@ return static function (DeptracConfig $config): void {
             ),
             $storageLocal = Layer::withName('StorageLocal')->collectors(
                 DirectoryConfig::create('packages/storage-local/src/.*'),
+            ),
+            $secretContracts = Layer::withName('SecretContracts')->collectors(
+                DirectoryConfig::create('packages/secret-contracts/src/.*'),
             ),
             $bridgeContracts = Layer::withName('BridgeContracts')->collectors(
                 DirectoryConfig::create('packages/bridge-contracts/src/.*'),
@@ -152,6 +156,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($queueMemory)->accesses($queueContracts),
             Ruleset::forLayer($storageContracts)->accesses($contracts),
             Ruleset::forLayer($storageLocal)->accesses($storageContracts),
+            Ruleset::forLayer($secretContracts)->accesses($contracts),
             Ruleset::forLayer($bridgeContracts)->accesses($contracts),
             Ruleset::forLayer($bridgePsr)->accesses($bridgeContracts, $core, $http, $psrHttpMessage),
             Ruleset::forLayer($bridgeLaravel)->accesses($bridgeContracts, $bridgePsr, $psrHttpMessage, $laravelHost),
