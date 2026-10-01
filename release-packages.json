@@ -54,6 +54,10 @@
             "directory": "packages/core"
         },
         {
+            "name": "evolvephp/job",
+            "directory": "packages/job"
+        },
+        {
             "name": "evolvephp/insight",
             "directory": "packages/insight"
         },

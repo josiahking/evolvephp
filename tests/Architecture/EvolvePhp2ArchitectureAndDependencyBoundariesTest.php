@@ -140,7 +140,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $config->toArray()['skip_violations'] ?? array(),
         );
 
-        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/storage-contracts/tests', 'packages/storage-local/tests', 'packages/secret-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/http-client/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
+        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/storage-contracts/tests', 'packages/storage-local/tests', 'packages/secret-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/job/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/http-client/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
             $this->assertStringNotContainsString($testPath, $content);
         }
 
@@ -265,6 +265,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'BridgeSymfony' => 'packages/bridge-symfony/src/.*',
             'BridgeRemote' => 'packages/bridge-remote/src/.*',
             'Core' => 'packages/core/src/.*',
+            'Job' => 'packages/job/src/.*',
             'Insight' => 'packages/insight/src/.*',
             'Observe' => 'packages/observe/src/.*',
             'DevTools' => 'packages/dev-tools/src/.*',
@@ -307,6 +308,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'OpenTelemetrySdk' => array(),
             'OpenTelemetrySemConv' => array(),
             'Core' => array('Contracts', 'PsrContainer'),
+            'Job' => array('Core', 'QueueContracts'),
             'Insight' => array('Core'),
             'Observe' => array('Core', 'Http', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'PsrHttpMessage', 'PsrHttpServer'),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
@@ -377,6 +379,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'openTelemetrySdk' => 'OpenTelemetrySdk',
             'openTelemetrySemConv' => 'OpenTelemetrySemConv',
             'core' => 'Core',
+            'job' => 'Job',
             'insight' => 'Insight',
             'observe' => 'Observe',
             'devTools' => 'DevTools',
@@ -441,6 +444,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/bridge-symfony/src' => 'Evolve\\Bridge\\Symfony\\',
             'packages/bridge-remote/src' => 'Evolve\\Bridge\\Remote\\',
             'packages/core/src' => 'Evolve\\Core\\',
+            'packages/job/src' => 'Evolve\\Job\\',
             'packages/insight/src' => 'Evolve\\Insight\\',
             'packages/observe/src' => 'Evolve\\Observe\\',
             'packages/dev-tools/src' => 'Evolve\\DevTools\\',
@@ -470,6 +474,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/bridge-symfony/composer.json',
             'packages/bridge-remote/composer.json',
             'packages/core/composer.json',
+            'packages/job/composer.json',
             'packages/insight/composer.json',
             'packages/dev-tools/composer.json',
             'packages/http/composer.json',

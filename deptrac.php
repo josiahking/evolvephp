@@ -28,6 +28,7 @@ return static function (DeptracConfig $config): void {
             'packages/bridge-symfony/src',
             'packages/bridge-remote/src',
             'packages/core/src',
+            'packages/job/src',
             'packages/insight/src',
             'packages/observe/src',
             'packages/dev-tools/src',
@@ -115,6 +116,9 @@ return static function (DeptracConfig $config): void {
             $core = Layer::withName('Core')->collectors(
                 DirectoryConfig::create('packages/core/src/.*'),
             ),
+            $job = Layer::withName('Job')->collectors(
+                DirectoryConfig::create('packages/job/src/.*'),
+            ),
             $insight = Layer::withName('Insight')->collectors(
                 DirectoryConfig::create('packages/insight/src/.*'),
             ),
@@ -175,6 +179,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($psrHttpClient),
             Ruleset::forLayer($psrHttpServer),
             Ruleset::forLayer($core)->accesses($contracts, $psrContainer),
+            Ruleset::forLayer($job)->accesses($core, $queueContracts),
             Ruleset::forLayer($insight)->accesses($core),
             Ruleset::forLayer($observe)->accesses($core, $http, $openTelemetryApi, $openTelemetrySdk, $openTelemetrySemConv, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($openTelemetryApi),

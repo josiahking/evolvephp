@@ -706,8 +706,8 @@ function loadReleasePackages(string $root): array
         releaseValidationFail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 25) {
-        releaseValidationFail('release-packages.json must contain exactly twenty-five package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 26) {
+        releaseValidationFail('release-packages.json must contain exactly twenty-six package entries.');
     }
 
     $expected = array(
@@ -724,6 +724,7 @@ function loadReleasePackages(string $root): array
         array('name' => 'evolvephp/secret-contracts', 'directory' => 'packages/secret-contracts'),
         array('name' => 'evolvephp/bridge-contracts', 'directory' => 'packages/bridge-contracts'),
         array('name' => 'evolvephp/core', 'directory' => 'packages/core'),
+        array('name' => 'evolvephp/job', 'directory' => 'packages/job'),
         array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
         array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
         array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
