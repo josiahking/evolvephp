@@ -50,6 +50,7 @@
                     "evolvephp/job": "2.0.x-dev",
                     "evolvephp/scheduler": "2.0.x-dev",
                     "evolvephp/migration": "2.0.x-dev",
+                    "evolvephp/view": "2.0.x-dev",
                     "evolvephp/module": "2.0.x-dev",
                     "evolvephp/observe": "2.0.x-dev",
                     "evolvephp/plugin": "2.0.x-dev",
@@ -70,7 +71,8 @@
         "evolvephp/core": "^2.0@dev",
         "evolvephp/http": "^2.0@dev",
         "evolvephp/module": "^2.0@dev",
-        "evolvephp/plugin": "^2.0@dev"
+        "evolvephp/plugin": "^2.0@dev",
+        "evolvephp/view": "^2.0@dev"
     },
     "require-dev": {
         "deptrac/deptrac": "^4.7",
@@ -143,6 +145,7 @@
         "test:job": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite job",
         "test:scheduler": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite scheduler",
         "test:migration": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite migration",
+        "test:view": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite view",
         "test:lock-contracts": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite lock-contracts",
         "test:module": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module",
         "test:observe": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe",

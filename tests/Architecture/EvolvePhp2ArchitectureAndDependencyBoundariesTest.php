@@ -269,6 +269,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'Job' => 'packages/job/src/.*',
             'Scheduler' => 'packages/scheduler/src/.*',
             'Migration' => 'packages/migration/src/.*',
+            'View' => 'packages/view/src/.*',
             'Insight' => 'packages/insight/src/.*',
             'Observe' => 'packages/observe/src/.*',
             'DevTools' => 'packages/dev-tools/src/.*',
@@ -315,6 +316,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'Job' => array('Core', 'QueueContracts'),
             'Scheduler' => array('Core', 'LockContracts', 'QueueContracts', 'PsrClock', 'CronExpression'),
             'Migration' => array('Contracts', 'Core', 'DatabaseContracts', 'LockContracts'),
+            'View' => array(),
             'Insight' => array('Core'),
             'Observe' => array('Core', 'Http', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'PsrHttpMessage', 'PsrHttpServer'),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
@@ -322,7 +324,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'HttpClient' => array('PsrHttpMessage', 'PsrHttpClient'),
             'Module' => array('Contracts'),
             'Plugin' => array('Contracts'),
-            'Testing' => array('Contracts', 'Core', 'Http', 'Module', 'Plugin'),
+            'Testing' => array('Contracts', 'Core', 'Http', 'Module', 'Plugin', 'View'),
         );
     }
 
@@ -389,6 +391,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'job' => 'Job',
             'scheduler' => 'Scheduler',
             'migration' => 'Migration',
+            'view' => 'View',
             'insight' => 'Insight',
             'observe' => 'Observe',
             'devTools' => 'DevTools',
@@ -406,7 +409,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|queueContracts|storageContracts|storageLocal|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|cronExpression|psrHttpMessage|psrHttpClient|psrHttpServer|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|laravelHost|symfonyHost|core|job|scheduler|insight|observe|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|queueContracts|storageContracts|storageLocal|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|cronExpression|psrHttpMessage|psrHttpClient|psrHttpServer|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|laravelHost|symfonyHost|core|job|scheduler|view|insight|observe|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
@@ -456,6 +459,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/job/src' => 'Evolve\\Job\\',
             'packages/scheduler/src' => 'Evolve\\Scheduler\\',
             'packages/migration/src' => 'Evolve\\Migration\\',
+            'packages/view/src' => 'Evolve\\View\\',
             'packages/insight/src' => 'Evolve\\Insight\\',
             'packages/observe/src' => 'Evolve\\Observe\\',
             'packages/dev-tools/src' => 'Evolve\\DevTools\\',
@@ -488,6 +492,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/job/composer.json',
             'packages/scheduler/composer.json',
             'packages/migration/composer.json',
+            'packages/view/composer.json',
             'packages/insight/composer.json',
             'packages/dev-tools/composer.json',
             'packages/http/composer.json',

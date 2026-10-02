@@ -336,6 +336,10 @@ final class SkeletonProjectValidator
             releaseValidationFail('Generated skeleton manifest Plugin dependency changed.');
         }
 
+        if (($manifest['require']['evolvephp/view'] ?? null) !== '^2.0') {
+            releaseValidationFail('Generated skeleton manifest View dependency changed.');
+        }
+
         if (($manifest['require-dev']['evolvephp/dev-tools'] ?? null) !== '^2.0') {
             releaseValidationFail('Generated skeleton manifest DevTools development dependency changed.');
         }

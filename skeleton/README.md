@@ -4,6 +4,8 @@
 
 The skeleton uses the application namespace `App\` with the PSR-4 mapping `App\ => src/`. The initial `src/` directory is intentionally empty so later generator work has an authoritative target layout.
 
+The production manifest includes `evolvephp/view` for explicit application-owned server-rendered templates. View source registration remains application configuration; the skeleton has no default view roots or HTTP view helper.
+
 For current Alpha onboarding, see [Alpha getting started](../docs/alpha/getting-started.md) and [Application foundations](../docs/alpha/application-foundations.md). Those guides describe the skeleton as the accepted application template while package publication and public create-project installation remain unclaimed.
 
 ## CLI

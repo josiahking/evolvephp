@@ -97,6 +97,7 @@ function expectedPackages(): array
         'evolvephp/job' => array('name' => 'evolvephp/job', 'directory' => 'packages/job'),
         'evolvephp/scheduler' => array('name' => 'evolvephp/scheduler', 'directory' => 'packages/scheduler'),
         'evolvephp/migration' => array('name' => 'evolvephp/migration', 'directory' => 'packages/migration'),
+        'evolvephp/view' => array('name' => 'evolvephp/view', 'directory' => 'packages/view'),
         'evolvephp/insight' => array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
         'evolvephp/module' => array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
         'evolvephp/plugin' => array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
@@ -138,6 +139,7 @@ function expectedNamespaces(): array
         'evolvephp/job' => 'Evolve\\Job\\',
         'evolvephp/scheduler' => 'Evolve\\Scheduler\\',
         'evolvephp/migration' => 'Evolve\\Migration\\',
+        'evolvephp/view' => 'Evolve\\View\\',
         'evolvephp/insight' => 'Evolve\\Insight\\',
         'evolvephp/observe' => 'Evolve\\Observe\\',
         'evolvephp/dev-tools' => 'Evolve\\DevTools\\',
@@ -175,13 +177,14 @@ function expectedGraph(): array
         'evolvephp/job' => array('evolvephp/core', 'evolvephp/queue-contracts'),
         'evolvephp/scheduler' => array('evolvephp/core', 'evolvephp/lock-contracts', 'evolvephp/queue-contracts'),
         'evolvephp/migration' => array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/database-contracts', 'evolvephp/lock-contracts'),
+        'evolvephp/view' => array(),
         'evolvephp/insight' => array('evolvephp/core'),
         'evolvephp/observe' => array('evolvephp/core', 'evolvephp/http'),
         'evolvephp/module' => array('evolvephp/contracts'),
         'evolvephp/plugin' => array('evolvephp/contracts'),
         'evolvephp/http' => array('evolvephp/contracts', 'evolvephp/core'),
         'evolvephp/http-client' => array(),
-        'evolvephp/testing' => array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/http', 'evolvephp/module', 'evolvephp/plugin'),
+        'evolvephp/testing' => array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/http', 'evolvephp/module', 'evolvephp/plugin', 'evolvephp/view'),
         'evolvephp/dev-tools' => array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/module', 'evolvephp/plugin'),
     );
 }
@@ -206,8 +209,8 @@ function validateMap(string $root): array
         fail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 28) {
-        fail('release-packages.json must contain exactly twenty-eight package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 29) {
+        fail('release-packages.json must contain exactly twenty-nine package entries.');
     }
 
     $expectedPackages = array_values(expectedPackages());

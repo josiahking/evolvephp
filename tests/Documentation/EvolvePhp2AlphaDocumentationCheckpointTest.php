@@ -96,6 +96,9 @@ final class EvolvePhp2AlphaDocumentationCheckpointTest extends TestCase
             '/HTTP kernel/i',
             '/response.*resolution|response-resolution/i',
             '/response.*emission/i',
+            '/ViewRenderer/i',
+            '/native PHP renderer/i',
+            '/explicitly registered source roots|no automatic source discovery/i',
             '/component identity/i',
             '/module.*plugin|plugin.*module/is',
             '/dependency.*capability graph|capability.*dependency graph/is',
@@ -169,6 +172,10 @@ final class EvolvePhp2AlphaDocumentationCheckpointTest extends TestCase
         $this->assertMatchesPattern('/not yet independently published|packages.*not.*published/is', $content);
         $this->assertMatchesPattern('/Packagist.*not.*available|no public Packagist/is', $content);
         $this->assertMatchesPattern('/SAPI|web runtime/i', $content);
+        $this->assertMatchesPattern('/## Implemented.*Experimental server-rendered View/is', $content);
+        $this->assertMatchesPattern('/## Deferred.*Twig\/Blade/is', $content);
+        $this->assertMatchesPattern('/## Deferred.*localization/is', $content);
+        $this->assertMatchesPattern('/## Deferred.*Complete concrete web runtime/is', $content);
         $this->assertMatchesPattern('/no automatic migration|automatic migration.*not/is', $content);
         $this->assertMatchesPattern('/no LTS|not.*LTS/i', $content);
         $this->assertMatchesPattern('/no production support SLA|production support SLA.*not/i', $content);

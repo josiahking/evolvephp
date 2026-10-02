@@ -9,7 +9,8 @@
         "evolvephp/core": "^2.0",
         "evolvephp/http": "^2.0",
         "evolvephp/module": "^2.0",
-        "evolvephp/plugin": "^2.0"
+        "evolvephp/plugin": "^2.0",
+        "evolvephp/view": "^2.0"
     },
     "autoload": {
         "psr-4": {

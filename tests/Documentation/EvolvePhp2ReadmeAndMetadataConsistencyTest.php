@@ -50,6 +50,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'packages/storage-contracts/README.md',
                 'packages/storage-local/README.md',
                 'packages/testing/README.md',
+                'packages/view/README.md',
                 'skeleton/README.md',
             ),
             $this->trackedReadmes()
@@ -333,6 +334,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'packages/observe/README.md',
             'packages/plugin/README.md',
             'packages/testing/README.md',
+            'packages/view/README.md',
             'packages/dev-tools/README.md',
             'skeleton/README.md',
         );

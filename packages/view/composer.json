@@ -1,0 +1,15 @@
+{
+    "name": "evolvephp/view",
+    "description": "Server-rendered view contracts and native PHP renderer for EvolvePHP 2.",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "require": {
+        "php": "^8.4"
+    },
+    "autoload": {
+        "psr-4": {"Evolve\\View\\": "src/"}
+    },
+    "autoload-dev": {
+        "psr-4": {"Evolve\\View\\Tests\\": "tests/"}
+    }
+}

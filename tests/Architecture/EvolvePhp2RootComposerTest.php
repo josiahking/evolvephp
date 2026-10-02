@@ -62,6 +62,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/http' => '^2.0@dev',
             'evolvephp/module' => '^2.0@dev',
             'evolvephp/plugin' => '^2.0@dev',
+            'evolvephp/view' => '^2.0@dev',
         );
 
         $expectedRequireDev = array(
@@ -167,6 +168,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test:job' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite job',
             'test:scheduler' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite scheduler',
             'test:migration' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite migration',
+            'test:view' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite view',
             'test:lock-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite lock-contracts',
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
             'test:observe' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe',
@@ -259,6 +261,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/job', 'directory' => 'packages/job'),
                 array('name' => 'evolvephp/scheduler', 'directory' => 'packages/scheduler'),
                 array('name' => 'evolvephp/migration', 'directory' => 'packages/migration'),
+                array('name' => 'evolvephp/view', 'directory' => 'packages/view'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
                 array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
@@ -311,6 +314,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/job',
             'evolvephp/scheduler',
             'evolvephp/migration',
+            'evolvephp/view',
             'evolvephp/module',
             'evolvephp/observe',
             'evolvephp/plugin',

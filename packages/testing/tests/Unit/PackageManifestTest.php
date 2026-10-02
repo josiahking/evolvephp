@@ -22,6 +22,7 @@ final class PackageManifestTest extends TestCase
         $manifest = json_decode($contents, true, 512, JSON_THROW_ON_ERROR);
 
         self::assertSame('evolvephp/testing', $manifest['name']);
+        self::assertSame('^2.0', $manifest['require']['evolvephp/view']);
         self::assertSame(
             ['Evolve\\Testing\\' => 'src/'],
             $manifest['autoload']['psr-4'],
