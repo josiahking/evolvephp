@@ -216,7 +216,7 @@ The comparator matrix records these selected versions and lockfile hashes:
 | Comparator | Package | Version | Constraint | Lockfile SHA-256 |
 | --- | --- | --- | --- | --- |
 | EvolvePHP | `evolvephp/http` | `2.0.x-dev` | `^2.0@dev` | `f792575ec5491c8d3aa171ba5f7de3b38558bfbd82b977beea45e603fd79e491` |
-| Laravel | `laravel/framework` | `13.29.0` | `13.29.0` | `33b4d04706fa39dffc1d71a7d2d03f09651555afead629e31f9229adcdc86354` |
+| Laravel | `laravel/framework` | `13.30.0` | `13.30.0` | `b8881ac8e90b1667329ab712d2e0f3e29c2b76a2bee943d5bfa1d5dffa3898f9` |
 | Symfony | `symfony/http-kernel` | `8.1.5` | `8.1.5` | `d93fdac19b2cdd5379e5700a8146bb705c9b516c9ec9a0709dcd785be9b1e1d6` |
 | Slim | `slim/slim` | `4.15.2` | `4.15.2` | `87370678970fe51c62c6a4cd4e4ca7b3600b22c84a2a5b920e2b8527a2e089a7` |
 | Phalcon | `ext-phalcon` | `5.20.3` expected | `suggest ext-phalcon 5.20.3` | `1e6b5f4b3d70a3e0d5a74eaa55dec95bde1e1d2b33e1c64dc4a737ad8cd01562` |
