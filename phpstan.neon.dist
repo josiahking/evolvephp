@@ -42,6 +42,8 @@ parameters:
         - packages/job/tests
         - packages/scheduler/src
         - packages/scheduler/tests
+        - packages/migration/src
+        - packages/migration/tests
         - packages/insight/src
         - packages/insight/tests
         - packages/observe/src

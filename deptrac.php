@@ -30,6 +30,7 @@ return static function (DeptracConfig $config): void {
             'packages/core/src',
             'packages/job/src',
             'packages/scheduler/src',
+            'packages/migration/src',
             'packages/insight/src',
             'packages/observe/src',
             'packages/dev-tools/src',
@@ -126,6 +127,9 @@ return static function (DeptracConfig $config): void {
             $scheduler = Layer::withName('Scheduler')->collectors(
                 DirectoryConfig::create('packages/scheduler/src/.*'),
             ),
+            $migration = Layer::withName('Migration')->collectors(
+                DirectoryConfig::create('packages/migration/src/.*'),
+            ),
             $insight = Layer::withName('Insight')->collectors(
                 DirectoryConfig::create('packages/insight/src/.*'),
             ),
@@ -189,6 +193,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($core)->accesses($contracts, $psrContainer),
             Ruleset::forLayer($job)->accesses($core, $queueContracts),
             Ruleset::forLayer($scheduler)->accesses($core, $lockContracts, $queueContracts, $psrClock, $cronExpression),
+            Ruleset::forLayer($migration)->accesses($contracts, $core, $databaseContracts, $lockContracts),
             Ruleset::forLayer($insight)->accesses($core),
             Ruleset::forLayer($observe)->accesses($core, $http, $openTelemetryApi, $openTelemetrySdk, $openTelemetrySemConv, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($openTelemetryApi),

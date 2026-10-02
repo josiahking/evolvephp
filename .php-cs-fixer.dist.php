@@ -42,6 +42,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/job/tests',
         'packages/scheduler/src',
         'packages/scheduler/tests',
+        'packages/migration/src',
+        'packages/migration/tests',
         'packages/observe/src',
         'packages/observe/tests',
         'packages/dev-tools/src',

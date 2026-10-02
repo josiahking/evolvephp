@@ -68,6 +68,9 @@
         <testsuite name="scheduler">
             <directory suffix="Test.php">packages/scheduler/tests</directory>
         </testsuite>
+        <testsuite name="migration">
+            <directory suffix="Test.php">packages/migration/tests</directory>
+        </testsuite>
         <testsuite name="insight">
             <directory suffix="Test.php">packages/insight/tests</directory>
         </testsuite>
@@ -114,6 +117,7 @@
             <directory suffix=".php">packages/core/src</directory>
             <directory suffix=".php">packages/job/src</directory>
             <directory suffix=".php">packages/scheduler/src</directory>
+            <directory suffix=".php">packages/migration/src</directory>
             <directory suffix=".php">packages/insight/src</directory>
             <directory suffix=".php">packages/observe/src</directory>
             <directory suffix=".php">packages/dev-tools/src</directory>

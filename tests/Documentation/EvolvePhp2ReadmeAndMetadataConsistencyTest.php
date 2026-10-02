@@ -38,6 +38,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'packages/insight/README.md',
                 'packages/job/README.md',
                 'packages/lock-contracts/README.md',
+                'packages/migration/README.md',
                 'packages/module/README.md',
                 'packages/observe/README.md',
                 'packages/plugin/README.md',
@@ -121,7 +122,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             $this->assertStringContainsString('composer ' . $script, $content);
         }
 
-        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:job', 'test:scheduler', 'test:insight', 'test:observe', 'test:dev-tools', 'test:http', 'test:http-client', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:job', 'test:scheduler', 'test:migration', 'test:insight', 'test:observe', 'test:dev-tools', 'test:http', 'test:http-client', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertStringContainsString('composer ' . $script, $content);
         }
     }
@@ -325,6 +326,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'packages/insight/README.md',
             'packages/job/README.md',
             'packages/scheduler/README.md',
+            'packages/migration/README.md',
             'packages/http/README.md',
             'packages/http-client/README.md',
             'packages/module/README.md',

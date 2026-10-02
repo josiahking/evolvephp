@@ -82,6 +82,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/core`
 - `evolvephp/job`
 - `evolvephp/scheduler`
+- `evolvephp/migration`
 - `evolvephp/insight`
 - `evolvephp/dev-tools`
 - `evolvephp/http`
@@ -153,6 +154,7 @@ composer test:bridge-remote
 composer test:core
 composer test:job
 composer test:scheduler
+composer test:migration
 composer test:insight
 composer test:observe
 composer test:dev-tools
@@ -264,7 +266,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-seven packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, insight, module, plugin, http, http-client, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-eight packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, migration, insight, module, plugin, http, http-client, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -432,6 +434,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `core` | `packages/core/tests` |
 | `job` | `packages/job/tests` |
 | `scheduler` | `packages/scheduler/tests` |
+| `migration` | `packages/migration/tests` |
 | `insight` | `packages/insight/tests` |
 | `observe` | `packages/observe/tests` |
 | `dev-tools` | `packages/dev-tools/tests` |
