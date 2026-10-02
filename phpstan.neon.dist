@@ -40,6 +40,8 @@ parameters:
         - packages/core/tests
         - packages/job/src
         - packages/job/tests
+        - packages/scheduler/src
+        - packages/scheduler/tests
         - packages/insight/src
         - packages/insight/tests
         - packages/observe/src

@@ -58,6 +58,10 @@
             "directory": "packages/job"
         },
         {
+            "name": "evolvephp/scheduler",
+            "directory": "packages/scheduler"
+        },
+        {
             "name": "evolvephp/insight",
             "directory": "packages/insight"
         },
