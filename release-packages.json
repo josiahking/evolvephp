@@ -66,6 +66,10 @@
             "directory": "packages/migration"
         },
         {
+            "name": "evolvephp/view",
+            "directory": "packages/view"
+        },
+        {
             "name": "evolvephp/insight",
             "directory": "packages/insight"
         },

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the experimental `evolvephp/view` package with an engine-neutral renderer contract, explicit confined view sources, trusted native PHP templates, escaping helpers, layouts, partials, sections and per-render isolation. Added a recording renderer in `evolvephp/testing`; Twig/Blade and localization remain deferred.
 - Added the experimental `evolvephp/migration` one-shot runtime with explicit contributors, deterministic planning, storage-neutral applied history, optional database transactions, non-blocking lock protection and a Core `migrate` command adapter.
 - Added the experimental `evolvephp/scheduler` one-tick runtime with explicit timezone cron evaluation, bounded catch-up, direct command execution, queue publication, optional overlap leases and Core-owned execution outcomes.
 

@@ -241,7 +241,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
     {
         $paths = array();
 
-        foreach (array('contracts', 'database-contracts', 'database-pdo', 'cache-memory', 'session-contracts', 'lock-contracts', 'queue-contracts', 'queue-memory', 'storage-contracts', 'storage-local', 'secret-contracts', 'bridge-contracts', 'bridge-psr', 'bridge-laravel', 'bridge-symfony', 'bridge-remote', 'core', 'observe', 'dev-tools', 'http', 'module', 'plugin', 'testing') as $package) {
+        foreach (array('contracts', 'database-contracts', 'database-pdo', 'cache-memory', 'session-contracts', 'lock-contracts', 'queue-contracts', 'queue-memory', 'storage-contracts', 'storage-local', 'secret-contracts', 'bridge-contracts', 'bridge-psr', 'bridge-laravel', 'bridge-symfony', 'bridge-remote', 'core', 'view', 'observe', 'dev-tools', 'http', 'module', 'plugin', 'testing') as $package) {
             $paths[] = 'packages/' . $package . '/src';
             $paths[] = 'packages/' . $package . '/tests';
         }
@@ -272,6 +272,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
             'packages/job/composer.json',
             'packages/scheduler/composer.json',
             'packages/migration/composer.json',
+            'packages/view/composer.json',
             'packages/observe/composer.json',
             'packages/dev-tools/composer.json',
             'packages/http/composer.json',
@@ -305,6 +306,7 @@ final class EvolvePhp2StaticAnalysisAndCodingStandardsTest extends TestCase
             'packages/job/src',
             'packages/scheduler/src',
             'packages/migration/src',
+            'packages/view/src',
             'packages/observe/src',
             'packages/dev-tools/src',
             'packages/http/src',

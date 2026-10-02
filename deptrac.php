@@ -31,6 +31,7 @@ return static function (DeptracConfig $config): void {
             'packages/job/src',
             'packages/scheduler/src',
             'packages/migration/src',
+            'packages/view/src',
             'packages/insight/src',
             'packages/observe/src',
             'packages/dev-tools/src',
@@ -130,6 +131,9 @@ return static function (DeptracConfig $config): void {
             $migration = Layer::withName('Migration')->collectors(
                 DirectoryConfig::create('packages/migration/src/.*'),
             ),
+            $view = Layer::withName('View')->collectors(
+                DirectoryConfig::create('packages/view/src/.*'),
+            ),
             $insight = Layer::withName('Insight')->collectors(
                 DirectoryConfig::create('packages/insight/src/.*'),
             ),
@@ -194,6 +198,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($job)->accesses($core, $queueContracts),
             Ruleset::forLayer($scheduler)->accesses($core, $lockContracts, $queueContracts, $psrClock, $cronExpression),
             Ruleset::forLayer($migration)->accesses($contracts, $core, $databaseContracts, $lockContracts),
+            Ruleset::forLayer($view),
             Ruleset::forLayer($insight)->accesses($core),
             Ruleset::forLayer($observe)->accesses($core, $http, $openTelemetryApi, $openTelemetrySdk, $openTelemetrySemConv, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($openTelemetryApi),
@@ -210,6 +215,7 @@ return static function (DeptracConfig $config): void {
                 $http,
                 $module,
                 $plugin,
+                $view,
             ),
         );
 };

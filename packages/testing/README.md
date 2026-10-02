@@ -8,6 +8,8 @@ This package remains development-only.
 
 `evolvephp/testing`
 
+`Evolve\Testing\View\RecordingViewRenderer` implements the experimental View renderer contract. It records calls in order as `RecordedViewRender` values, copying the data array while retaining contained object identity. `renders()` returns the records and `reset()` clears them; `render()` returns an empty string. This production helper has no PHPUnit dependency.
+
 ## Requirements
 
 PHP `^8.4`

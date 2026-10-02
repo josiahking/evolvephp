@@ -22,7 +22,7 @@ final class PackageManifestTest extends TestCase
         self::assertSame(['Evolve\\Migration\\' => 'src/'], $manifest['autoload']['psr-4']);
         $map = json_decode((string) file_get_contents(dirname(__DIR__, 4) . '/release-packages.json'), true, flags: JSON_THROW_ON_ERROR);
         $names = array_column($map['packages'], 'name');
-        self::assertCount(28, $names);
-        self::assertSame(['evolvephp/job', 'evolvephp/scheduler', 'evolvephp/migration', 'evolvephp/insight'], array_slice($names, array_search('evolvephp/job', $names, true), 4));
+        self::assertCount(29, $names);
+        self::assertSame(['evolvephp/job', 'evolvephp/scheduler', 'evolvephp/migration', 'evolvephp/view', 'evolvephp/insight'], array_slice($names, array_search('evolvephp/job', $names, true), 5));
     }
 }

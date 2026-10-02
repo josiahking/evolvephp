@@ -11,6 +11,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'job' => null,
             'scheduler' => null,
             'migration' => null,
+            'view' => null,
             'dev-tools' => ['bin/evolve-audit'],
             'contracts' => null,
             'cache-memory' => null,
@@ -985,6 +986,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0', 'evolvephp/core' => '^2.0', 'evolvephp/database-contracts' => '^2.0', 'evolvephp/lock-contracts' => '^2.0'),
             ),
             array(
+                'manifest' => 'packages/view/composer.json',
+                'src' => 'packages/view/src',
+                'name' => 'evolvephp/view',
+                'description' => 'Server-rendered view contracts and native PHP renderer for EvolvePHP 2.',
+                'namespace' => 'Evolve\\View\\',
+                'require' => array('php' => '^8.4'),
+            ),
+            array(
                 'manifest' => 'packages/insight/composer.json',
                 'src' => 'packages/insight/src',
                 'name' => 'evolvephp/insight',
@@ -1082,6 +1091,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                     'evolvephp/http' => '^2.0',
                     'evolvephp/module' => '^2.0',
                     'evolvephp/plugin' => '^2.0',
+                    'evolvephp/view' => '^2.0',
                 ),
             ),
         );
@@ -1332,6 +1342,21 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'MigrationRunner.php',
                 'MigrationTransactionMode.php',
             ),
+            'packages/view/src' => array(
+                'Exception/InvalidViewName.php',
+                'Exception/InvalidViewSource.php',
+                'Exception/ViewNotFound.php',
+                'Exception/ViewRenderFailed.php',
+                'FilesystemViewPathResolver.php',
+                'Native/Internal/RenderSession.php',
+                'Native/NativePhpViewRenderer.php',
+                'Native/NativeViewContext.php',
+                'Native/TrustedHtml.php',
+                'ViewName.php',
+                'ViewPathResolver.php',
+                'ViewRenderer.php',
+                'ViewSource.php',
+            ),
             'packages/insight/src' => array(
                 'Access/DiagnosticAccessDenied.php',
                 'Access/DiagnosticAccessOperation.php',
@@ -1470,6 +1495,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Component/ComponentDefinitionFixture.php',
                 'Component/ComponentEntryPointFixture.php',
                 'Console/RecordingCommandOutput.php',
+                'View/RecordedViewRender.php',
+                'View/RecordingViewRenderer.php',
             ),
         );
     }

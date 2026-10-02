@@ -44,6 +44,8 @@ parameters:
         - packages/scheduler/tests
         - packages/migration/src
         - packages/migration/tests
+        - packages/view/src
+        - packages/view/tests
         - packages/insight/src
         - packages/insight/tests
         - packages/observe/src

@@ -12,4 +12,6 @@ Component foundations include component identity, module and plugin descriptors,
 
 CLI command foundations include a command registry, command runner and runtime-neutral command input/output abstractions. The skeleton composes `doctor` and `route:list` explicitly. Development-only generators from `evolvephp/dev-tools` can create module and plugin starter files when installed as development dependencies; generated code remains application-owned and is not auto-enabled.
 
+The experimental View foundation provides an engine-neutral `ViewRenderer`, explicitly registered source roots and a trusted native PHP renderer. Namespaced lookup uses declaration order for application overrides, with canonical path confinement. Native templates receive a narrow context for escaped output, partials, layouts and sections. There is no automatic source discovery or HTTP/Core view integration.
+
 These foundations are experimental and pre-release. They describe what the repository currently implements, while web runtime adapters, deployment scaffolding, automatic route discovery, dotenv loading, production bootstrap, retries, process recycling and complete application conventions remain deferred.
