@@ -62,6 +62,10 @@
             "directory": "packages/scheduler"
         },
         {
+            "name": "evolvephp/migration",
+            "directory": "packages/migration"
+        },
+        {
             "name": "evolvephp/insight",
             "directory": "packages/insight"
         },

@@ -282,6 +282,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
                 'tests' => 'packages/scheduler/tests',
                 'smokeTest' => 'packages/scheduler/tests/Unit/PackageManifestTest.php',
             ),
+            'migration' => array(
+                'tests' => 'packages/migration/tests',
+                'smokeTest' => 'packages/migration/tests/Unit/PackageManifestTest.php',
+            ),
             'insight' => array(
                 'tests' => 'packages/insight/tests',
                 'smokeTest' => 'packages/insight/tests/Unit/PackageManifestTest.php',
@@ -338,6 +342,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test:core' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite core',
             'test:job' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite job',
             'test:scheduler' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite scheduler',
+            'test:migration' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite migration',
             'test:database-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite database-contracts',
             'test:database-pdo' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite database-pdo',
             'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
@@ -373,6 +378,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'evolvephp/core',
             'evolvephp/job',
             'evolvephp/scheduler',
+            'evolvephp/migration',
             'evolvephp/dev-tools',
             'evolvephp/http',
             'evolvephp/http-client',
