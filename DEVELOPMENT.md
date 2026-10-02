@@ -81,6 +81,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/bridge-remote`
 - `evolvephp/core`
 - `evolvephp/job`
+- `evolvephp/scheduler`
 - `evolvephp/insight`
 - `evolvephp/dev-tools`
 - `evolvephp/http`
@@ -151,6 +152,7 @@ composer test:bridge-symfony
 composer test:bridge-remote
 composer test:core
 composer test:job
+composer test:scheduler
 composer test:insight
 composer test:observe
 composer test:dev-tools
@@ -262,7 +264,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-six packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, insight, module, plugin, http, http-client, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-seven packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, insight, module, plugin, http, http-client, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -429,6 +431,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `bridge-remote` | `packages/bridge-remote/tests` |
 | `core` | `packages/core/tests` |
 | `job` | `packages/job/tests` |
+| `scheduler` | `packages/scheduler/tests` |
 | `insight` | `packages/insight/tests` |
 | `observe` | `packages/observe/tests` |
 | `dev-tools` | `packages/dev-tools/tests` |
@@ -450,7 +453,7 @@ The distributable PHPStan configuration lives at:
 phpstan.neon.dist
 ```
 
-The initial PHPStan level is `6`. PHPStan analyzes all twenty-six package `src` and `tests` directories:
+The initial PHPStan level is `6`. PHPStan analyzes all twenty-seven package `src` and `tests` directories:
 
 ```text
 packages/contracts/src
@@ -489,6 +492,8 @@ packages/core/src
 packages/core/tests
 packages/job/src
 packages/job/tests
+packages/scheduler/src
+packages/scheduler/tests
 packages/insight/src
 packages/insight/tests
 packages/observe/src
@@ -544,6 +549,7 @@ packages/bridge-symfony/src
 packages/bridge-remote/src
 packages/core/src
 packages/job/src
+packages/scheduler/src
 packages/insight/src
 packages/observe/src
 packages/dev-tools/src
@@ -575,6 +581,7 @@ BridgeSymfony -> packages/bridge-symfony/src/.* -> Evolve\Bridge\Symfony\
 BridgeRemote -> packages/bridge-remote/src/.* -> Evolve\Bridge\Remote\
 Core      -> packages/core/src/.*      -> Evolve\Core\
 Job       -> packages/job/src/.*       -> Evolve\Job\
+Scheduler -> packages/scheduler/src/.* -> Evolve\Scheduler\
 Insight   -> packages/insight/src/.*   -> Evolve\Insight\
 Observe   -> packages/observe/src/.*   -> Evolve\Observe\
 DevTools  -> packages/dev-tools/src/.* -> Evolve\DevTools\

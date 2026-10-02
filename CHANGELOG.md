@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added the experimental `evolvephp/scheduler` one-tick runtime with explicit timezone cron evaluation, bounded catch-up, direct command execution, queue publication, optional overlap leases and Core-owned execution outcomes.
+
 ### Core
 
 - Added `evolvephp/job` as a public experimental one-shot queue job execution runtime. It composes Core execution with one queue receive and post-cleanup settlement, preserves primary results and failures, and quarantines after cleanup, settlement, or execution-start failure. It includes no worker loop, retry policy, scheduler, or broker adapter.

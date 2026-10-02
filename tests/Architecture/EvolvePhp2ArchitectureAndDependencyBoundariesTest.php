@@ -116,6 +116,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
                 'PsrContainer' => '^Psr\\\\Container\\\\.*',
                 'PsrSimpleCache' => '^Psr\\\\SimpleCache\\\\.*',
                 'PsrClock' => '^Psr\\\\Clock\\\\.*',
+                'CronExpression' => '^Cron\\\\.*',
                 'PsrHttpMessage' => '^Psr\\\\Http\\\\Message\\\\.*',
                 'PsrHttpClient' => '^Psr\\\\Http\\\\Client\\\\.*',
                 'PsrHttpServer' => '^Psr\\\\Http\\\\Server\\\\.*',
@@ -266,6 +267,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'BridgeRemote' => 'packages/bridge-remote/src/.*',
             'Core' => 'packages/core/src/.*',
             'Job' => 'packages/job/src/.*',
+            'Scheduler' => 'packages/scheduler/src/.*',
             'Insight' => 'packages/insight/src/.*',
             'Observe' => 'packages/observe/src/.*',
             'DevTools' => 'packages/dev-tools/src/.*',
@@ -301,6 +303,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'PsrContainer' => array(),
             'PsrSimpleCache' => array(),
             'PsrClock' => array(),
+            'CronExpression' => array(),
             'PsrHttpMessage' => array(),
             'PsrHttpClient' => array(),
             'PsrHttpServer' => array(),
@@ -309,6 +312,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'OpenTelemetrySemConv' => array(),
             'Core' => array('Contracts', 'PsrContainer'),
             'Job' => array('Core', 'QueueContracts'),
+            'Scheduler' => array('Core', 'LockContracts', 'QueueContracts', 'PsrClock', 'CronExpression'),
             'Insight' => array('Core'),
             'Observe' => array('Core', 'Http', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'PsrHttpMessage', 'PsrHttpServer'),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
@@ -372,6 +376,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'psrContainer' => 'PsrContainer',
             'psrSimpleCache' => 'PsrSimpleCache',
             'psrClock' => 'PsrClock',
+            'cronExpression' => 'CronExpression',
             'psrHttpMessage' => 'PsrHttpMessage',
             'psrHttpClient' => 'PsrHttpClient',
             'psrHttpServer' => 'PsrHttpServer',
@@ -380,6 +385,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'openTelemetrySemConv' => 'OpenTelemetrySemConv',
             'core' => 'Core',
             'job' => 'Job',
+            'scheduler' => 'Scheduler',
             'insight' => 'Insight',
             'observe' => 'Observe',
             'devTools' => 'DevTools',
@@ -397,7 +403,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|queueContracts|storageContracts|storageLocal|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|psrHttpMessage|psrHttpClient|psrHttpServer|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|laravelHost|symfonyHost|core|insight|observe|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|queueContracts|storageContracts|storageLocal|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|cronExpression|psrHttpMessage|psrHttpClient|psrHttpServer|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|laravelHost|symfonyHost|core|job|scheduler|insight|observe|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
@@ -445,6 +451,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/bridge-remote/src' => 'Evolve\\Bridge\\Remote\\',
             'packages/core/src' => 'Evolve\\Core\\',
             'packages/job/src' => 'Evolve\\Job\\',
+            'packages/scheduler/src' => 'Evolve\\Scheduler\\',
             'packages/insight/src' => 'Evolve\\Insight\\',
             'packages/observe/src' => 'Evolve\\Observe\\',
             'packages/dev-tools/src' => 'Evolve\\DevTools\\',
@@ -475,6 +482,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/bridge-remote/composer.json',
             'packages/core/composer.json',
             'packages/job/composer.json',
+            'packages/scheduler/composer.json',
             'packages/insight/composer.json',
             'packages/dev-tools/composer.json',
             'packages/http/composer.json',

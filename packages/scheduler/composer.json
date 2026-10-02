@@ -1,0 +1,20 @@
+{
+    "name": "evolvephp/scheduler",
+    "description": "One-tick scheduling runtime for EvolvePHP 2.",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "require": {
+        "php": "^8.4",
+        "evolvephp/core": "^2.0",
+        "evolvephp/lock-contracts": "^2.0",
+        "evolvephp/queue-contracts": "^2.0",
+        "psr/clock": "^1.0",
+        "dragonmantank/cron-expression": "^3.6"
+    },
+    "autoload": {
+        "psr-4": {"Evolve\\Scheduler\\": "src/"}
+    },
+    "autoload-dev": {
+        "psr-4": {"Evolve\\Scheduler\\Tests\\": "tests/"}
+    }
+}

@@ -29,6 +29,7 @@ return static function (DeptracConfig $config): void {
             'packages/bridge-remote/src',
             'packages/core/src',
             'packages/job/src',
+            'packages/scheduler/src',
             'packages/insight/src',
             'packages/observe/src',
             'packages/dev-tools/src',
@@ -104,6 +105,9 @@ return static function (DeptracConfig $config): void {
             $psrClock = Layer::withName('PsrClock')->collectors(
                 ClassLikeConfig::create('^Psr\\Clock\\.*'),
             ),
+            $cronExpression = Layer::withName('CronExpression')->collectors(
+                ClassLikeConfig::create('^Cron\\.*'),
+            ),
             $psrHttpMessage = Layer::withName('PsrHttpMessage')->collectors(
                 ClassLikeConfig::create('^Psr\\Http\\Message\\.*'),
             ),
@@ -118,6 +122,9 @@ return static function (DeptracConfig $config): void {
             ),
             $job = Layer::withName('Job')->collectors(
                 DirectoryConfig::create('packages/job/src/.*'),
+            ),
+            $scheduler = Layer::withName('Scheduler')->collectors(
+                DirectoryConfig::create('packages/scheduler/src/.*'),
             ),
             $insight = Layer::withName('Insight')->collectors(
                 DirectoryConfig::create('packages/insight/src/.*'),
@@ -175,11 +182,13 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($psrContainer),
             Ruleset::forLayer($psrSimpleCache),
             Ruleset::forLayer($psrClock),
+            Ruleset::forLayer($cronExpression),
             Ruleset::forLayer($psrHttpMessage),
             Ruleset::forLayer($psrHttpClient),
             Ruleset::forLayer($psrHttpServer),
             Ruleset::forLayer($core)->accesses($contracts, $psrContainer),
             Ruleset::forLayer($job)->accesses($core, $queueContracts),
+            Ruleset::forLayer($scheduler)->accesses($core, $lockContracts, $queueContracts, $psrClock, $cronExpression),
             Ruleset::forLayer($insight)->accesses($core),
             Ruleset::forLayer($observe)->accesses($core, $http, $openTelemetryApi, $openTelemetrySdk, $openTelemetrySemConv, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($openTelemetryApi),
