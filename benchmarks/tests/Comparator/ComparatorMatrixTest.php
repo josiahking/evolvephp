@@ -206,7 +206,7 @@ final class ComparatorMatrixTest extends TestCase
         $matrix = ComparatorMatrix::fromJsonFile($matrixPath);
 
         $expected = [
-            'laravel' => ['package' => 'laravel/framework', 'version' => '13.29.0', 'constraint' => '13.29.0'],
+            'laravel' => ['package' => 'laravel/framework', 'version' => '13.30.0', 'constraint' => '13.30.0'],
             'symfony' => ['package' => 'symfony/http-kernel', 'version' => '8.1.5', 'constraint' => '8.1.5'],
             'slim' => ['package' => 'slim/slim', 'version' => '4.15.2', 'constraint' => '4.15.2'],
             'phalcon' => ['package' => 'ext-phalcon', 'version' => '5.20.3', 'constraint' => 'suggest ext-phalcon 5.20.3'],

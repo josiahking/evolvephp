@@ -77,13 +77,13 @@
       "id": "laravel",
       "name": "Laravel",
       "framework_package": "laravel/framework",
-      "framework_version": "13.29.0",
-      "composer_constraint": "13.29.0",
+      "framework_version": "13.30.0",
+      "composer_constraint": "13.30.0",
       "fixture_version": 1,
       "fixture_path": "laravel",
       "fixture_bootstrap": "laravel/bootstrap.php",
       "lock_path": "laravel/composer.lock",
-      "lock_sha256": "33b4d04706fa39dffc1d71a7d2d03f09651555afead629e31f9229adcdc86354",
+      "lock_sha256": "b8881ac8e90b1667329ab712d2e0f3e29c2b76a2bee943d5bfa1d5dffa3898f9",
       "implementation_model": "pure-php",
       "availability": "always",
       "configuration": {
@@ -100,7 +100,7 @@
         "http_not_found",
         "http_repeated_warm"
       ],
-      "notes": "Laravel 13.29.0 is exactly pinned as the accepted current-stable comparator version."
+      "notes": "Laravel 13.30.0 is exactly pinned for the Phase 10.4.5B comparator security closure."
     },
     {
       "id": "symfony",
