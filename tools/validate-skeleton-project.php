@@ -447,6 +447,8 @@ final class SkeletonProjectValidator
             releaseValidationFail('Unable to resolve generated application path.');
         }
 
+        $escapeTarget = normalizePath($temp->child('Escape'));
+
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($temp->path, FilesystemIterator::SKIP_DOTS)
         );
@@ -462,7 +464,9 @@ final class SkeletonProjectValidator
                 continue;
             }
 
-            if (str_contains(normalizePath($realPath), '/Escape')) {
+            $normalizedRealPath = normalizePath($realPath);
+
+            if ($normalizedRealPath === $escapeTarget || str_starts_with($normalizedRealPath, $escapeTarget . '/')) {
                 releaseValidationFail('Invalid generator input created a file outside the application root.');
             }
         }
