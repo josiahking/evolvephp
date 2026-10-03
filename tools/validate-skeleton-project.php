@@ -88,7 +88,9 @@ final class SkeletonProjectValidator
         );
 
         $this->stage('[4/13] Validating installed packages');
-        $this->validateInstalledPackages($root, $application, array('contracts', 'core', 'dev-tools', 'http', 'module', 'plugin', 'testing'));
+        $this->validateInstalledPackages($root, $application, array('contracts', 'core', 'dev-tools', 'http', 'module', 'plugin', 'testing', 'view'));
+        $this->assertPackageNotInstalled($application, 'view-twig');
+        $this->assertPackageNotInstalled($application, 'view-blade');
 
         $this->stage('[5/13] Running generated Doctor');
         $this->assertCommand('[5/13] Running generated Doctor', $application, array('doctor'), 0, null, '');
@@ -340,6 +342,12 @@ final class SkeletonProjectValidator
             releaseValidationFail('Generated skeleton manifest View dependency changed.');
         }
 
+        foreach (array('evolvephp/view-twig', 'evolvephp/view-blade') as $adapter) {
+            if (isset($manifest['require'][$adapter]) || isset($manifest['require-dev'][$adapter])) {
+                releaseValidationFail('Generated skeleton manifest must not install optional view adapter ' . $adapter . '.');
+            }
+        }
+
         if (($manifest['require-dev']['evolvephp/dev-tools'] ?? null) !== '^2.0') {
             releaseValidationFail('Generated skeleton manifest DevTools development dependency changed.');
         }
@@ -439,6 +447,8 @@ final class SkeletonProjectValidator
             releaseValidationFail('Unable to resolve generated application path.');
         }
 
+        $escapeTarget = normalizePath($temp->child('Escape'));
+
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($temp->path, FilesystemIterator::SKIP_DOTS)
         );
@@ -454,7 +464,9 @@ final class SkeletonProjectValidator
                 continue;
             }
 
-            if (str_contains(normalizePath($realPath), '/Escape')) {
+            $normalizedRealPath = normalizePath($realPath);
+
+            if ($normalizedRealPath === $escapeTarget || str_starts_with($normalizedRealPath, $escapeTarget . '/')) {
                 releaseValidationFail('Invalid generator input created a file outside the application root.');
             }
         }
@@ -480,9 +492,11 @@ final class SkeletonProjectValidator
             '[11/13] Running Composer install --no-dev',
         );
 
-        $this->validateInstalledPackages($root, $application, array('contracts', 'core', 'http', 'module', 'plugin'));
+        $this->validateInstalledPackages($root, $application, array('contracts', 'core', 'http', 'module', 'plugin', 'view'));
         $this->assertPackageNotInstalled($application, 'dev-tools');
         $this->assertPackageNotInstalled($application, 'testing');
+        $this->assertPackageNotInstalled($application, 'view-twig');
+        $this->assertPackageNotInstalled($application, 'view-blade');
 
         $this->stage('[12/13] Running no-dev Doctor and route:list');
         $this->assertCommand('[12/13] Running no-dev Doctor and route:list', $application, array('doctor'), 0, null, '');

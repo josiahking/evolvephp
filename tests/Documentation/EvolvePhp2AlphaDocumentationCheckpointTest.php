@@ -173,7 +173,7 @@ final class EvolvePhp2AlphaDocumentationCheckpointTest extends TestCase
         $this->assertMatchesPattern('/Packagist.*not.*available|no public Packagist/is', $content);
         $this->assertMatchesPattern('/SAPI|web runtime/i', $content);
         $this->assertMatchesPattern('/## Implemented.*Experimental server-rendered View/is', $content);
-        $this->assertMatchesPattern('/## Deferred.*Twig\/Blade/is', $content);
+        $this->assertMatchesPattern('/## Implemented.*Optional Twig and Blade View adapters/is', $content);
         $this->assertMatchesPattern('/## Deferred.*localization/is', $content);
         $this->assertMatchesPattern('/## Deferred.*Complete concrete web runtime/is', $content);
         $this->assertMatchesPattern('/no automatic migration|automatic migration.*not/is', $content);

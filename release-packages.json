@@ -70,6 +70,14 @@
             "directory": "packages/view"
         },
         {
+            "name": "evolvephp/view-twig",
+            "directory": "packages/view-twig"
+        },
+        {
+            "name": "evolvephp/view-blade",
+            "directory": "packages/view-blade"
+        },
+        {
             "name": "evolvephp/insight",
             "directory": "packages/insight"
         },

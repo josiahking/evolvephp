@@ -120,6 +120,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
                 'PsrHttpMessage' => '^Psr\\\\Http\\\\Message\\\\.*',
                 'PsrHttpClient' => '^Psr\\\\Http\\\\Client\\\\.*',
                 'PsrHttpServer' => '^Psr\\\\Http\\\\Server\\\\.*',
+                'TwigEngine' => '^Twig\\\\(Environment|Source|Loader\\\\LoaderInterface|Error\\\\LoaderError)$',
+                'IlluminateViewEngine' => '^Illuminate\\\\(Container\\\\Container|Contracts\\\\Support\\\\Arrayable|Events\\\\Dispatcher|Filesystem\\\\Filesystem|View\\\\.*)$',
                 'OpenTelemetryApi' => '^OpenTelemetry\\\\(API|Context)\\\\.*',
                 'OpenTelemetrySdk' => '^OpenTelemetry\\\\SDK\\\\.*',
                 'OpenTelemetrySemConv' => '^OpenTelemetry\\\\SemConv\\\\.*',
@@ -270,6 +272,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'Scheduler' => 'packages/scheduler/src/.*',
             'Migration' => 'packages/migration/src/.*',
             'View' => 'packages/view/src/.*',
+            'ViewTwig' => 'packages/view-twig/src/.*',
+            'ViewBlade' => 'packages/view-blade/src/.*',
             'Insight' => 'packages/insight/src/.*',
             'Observe' => 'packages/observe/src/.*',
             'DevTools' => 'packages/dev-tools/src/.*',
@@ -309,6 +313,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'PsrHttpMessage' => array(),
             'PsrHttpClient' => array(),
             'PsrHttpServer' => array(),
+            'TwigEngine' => array(),
+            'IlluminateViewEngine' => array(),
             'OpenTelemetryApi' => array(),
             'OpenTelemetrySdk' => array(),
             'OpenTelemetrySemConv' => array(),
@@ -317,6 +323,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'Scheduler' => array('Core', 'LockContracts', 'QueueContracts', 'PsrClock', 'CronExpression'),
             'Migration' => array('Contracts', 'Core', 'DatabaseContracts', 'LockContracts'),
             'View' => array(),
+            'ViewTwig' => array('View', 'TwigEngine'),
+            'ViewBlade' => array('View', 'IlluminateViewEngine'),
             'Insight' => array('Core'),
             'Observe' => array('Core', 'Http', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'PsrHttpMessage', 'PsrHttpServer'),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
@@ -384,6 +392,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'psrHttpMessage' => 'PsrHttpMessage',
             'psrHttpClient' => 'PsrHttpClient',
             'psrHttpServer' => 'PsrHttpServer',
+            'twigEngine' => 'TwigEngine',
+            'illuminateViewEngine' => 'IlluminateViewEngine',
             'openTelemetryApi' => 'OpenTelemetryApi',
             'openTelemetrySdk' => 'OpenTelemetrySdk',
             'openTelemetrySemConv' => 'OpenTelemetrySemConv',
@@ -392,6 +402,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'scheduler' => 'Scheduler',
             'migration' => 'Migration',
             'view' => 'View',
+            'viewTwig' => 'ViewTwig',
+            'viewBlade' => 'ViewBlade',
             'insight' => 'Insight',
             'observe' => 'Observe',
             'devTools' => 'DevTools',
@@ -409,7 +421,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|queueContracts|storageContracts|storageLocal|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|cronExpression|psrHttpMessage|psrHttpClient|psrHttpServer|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|laravelHost|symfonyHost|core|job|scheduler|view|insight|observe|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|queueContracts|storageContracts|storageLocal|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|cronExpression|psrHttpMessage|psrHttpClient|psrHttpServer|twigEngine|illuminateViewEngine|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|laravelHost|symfonyHost|core|job|scheduler|viewTwig|viewBlade|view|insight|observe|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
@@ -460,6 +472,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/scheduler/src' => 'Evolve\\Scheduler\\',
             'packages/migration/src' => 'Evolve\\Migration\\',
             'packages/view/src' => 'Evolve\\View\\',
+            'packages/view-twig/src' => 'Evolve\\View\\Twig\\',
+            'packages/view-blade/src' => 'Evolve\\View\\Blade\\',
             'packages/insight/src' => 'Evolve\\Insight\\',
             'packages/observe/src' => 'Evolve\\Observe\\',
             'packages/dev-tools/src' => 'Evolve\\DevTools\\',
@@ -493,6 +507,8 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/scheduler/composer.json',
             'packages/migration/composer.json',
             'packages/view/composer.json',
+            'packages/view-twig/composer.json',
+            'packages/view-blade/composer.json',
             'packages/insight/composer.json',
             'packages/dev-tools/composer.json',
             'packages/http/composer.json',

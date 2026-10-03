@@ -350,7 +350,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array($path));
 
             $this->assertSame('full', $decision['mode'], $path . ' must force full validation.');
-            $this->assertSame(29, count($decision['packages']), $path . ' must keep the complete package map.');
+            $this->assertSame(31, count($decision['packages']), $path . ' must keep the complete package map.');
         }
 
         $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array('docs/release-notes.md', 'README.md'));
@@ -638,7 +638,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertStringContainsString("'COMPOSER_DISABLE_NETWORK' => '1'", $content);
     }
 
-    public function testSharedReleasePackageLoaderAcceptsCanonicalTwentyNinePackageMap(): void
+    public function testSharedReleasePackageLoaderAcceptsCanonicalThirtyOnePackageMap(): void
     {
         require_once $this->path('tools/release-validation-common.php');
 
@@ -648,7 +648,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $coreIndex = array_search('evolvephp/core', $packageNames, true);
 
         $this->assertIsInt($coreIndex);
-        $this->assertCount(29, $packages);
+        $this->assertCount(31, $packages);
         $this->assertContains('evolvephp/insight', $packageNames);
         $this->assertSame(
             array('name' => 'evolvephp/database-contracts', 'directory' => 'packages/database-contracts'),
@@ -706,13 +706,15 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             array('name' => 'evolvephp/view', 'directory' => 'packages/view'),
             $packages[$coreIndex + 4]
         );
+        $this->assertSame(array('name' => 'evolvephp/view-twig', 'directory' => 'packages/view-twig'), $packages[$coreIndex + 5]);
+        $this->assertSame(array('name' => 'evolvephp/view-blade', 'directory' => 'packages/view-blade'), $packages[$coreIndex + 6]);
         $this->assertSame(
             array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
-            $packages[$coreIndex + 5]
+            $packages[$coreIndex + 7]
         );
         $this->assertSame(
             array('name' => 'evolvephp/observe', 'directory' => 'packages/observe'),
-            $packages[$coreIndex + 10]
+            $packages[$coreIndex + 12]
         );
         $this->assertSame($map['packages'], $packages);
     }
@@ -965,7 +967,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $map = $this->readJsonFile('release-packages.json');
 
         $this->assertSame(1, $map['version']);
-        $this->assertCount(29, $map['packages']);
+        $this->assertCount(31, $map['packages']);
 
         return $map['packages'];
     }

@@ -1,0 +1,20 @@
+{
+    "name": "evolvephp/view-blade",
+    "description": "Optional Blade view renderer adapter for EvolvePHP 2.",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "require": {
+        "php": "^8.4",
+        "evolvephp/view": "^2.0",
+        "illuminate/container": "^13.0",
+        "illuminate/events": "^13.0",
+        "illuminate/filesystem": "^13.0",
+        "illuminate/view": "^13.0"
+    },
+    "autoload": {
+        "psr-4": {"Evolve\\View\\Blade\\": "src/"}
+    },
+    "autoload-dev": {
+        "psr-4": {"Evolve\\View\\Blade\\Tests\\": "tests/"}
+    }
+}

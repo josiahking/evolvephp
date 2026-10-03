@@ -994,6 +994,22 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array('php' => '^8.4'),
             ),
             array(
+                'manifest' => 'packages/view-twig/composer.json',
+                'src' => 'packages/view-twig/src',
+                'name' => 'evolvephp/view-twig',
+                'description' => 'Optional Twig view renderer adapter for EvolvePHP 2.',
+                'namespace' => 'Evolve\\View\\Twig\\',
+                'require' => array('php' => '^8.4', 'evolvephp/view' => '^2.0', 'twig/twig' => '^3.30'),
+            ),
+            array(
+                'manifest' => 'packages/view-blade/composer.json',
+                'src' => 'packages/view-blade/src',
+                'name' => 'evolvephp/view-blade',
+                'description' => 'Optional Blade view renderer adapter for EvolvePHP 2.',
+                'namespace' => 'Evolve\\View\\Blade\\',
+                'require' => array('php' => '^8.4', 'evolvephp/view' => '^2.0', 'illuminate/container' => '^13.0', 'illuminate/events' => '^13.0', 'illuminate/filesystem' => '^13.0', 'illuminate/view' => '^13.0'),
+            ),
+            array(
                 'manifest' => 'packages/insight/composer.json',
                 'src' => 'packages/insight/src',
                 'name' => 'evolvephp/insight',
@@ -1356,6 +1372,17 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'ViewPathResolver.php',
                 'ViewRenderer.php',
                 'ViewSource.php',
+            ),
+            'packages/view-twig/src' => array(
+                'TwigViewLoader.php',
+                'TwigViewPathResolver.php',
+                'TwigViewRenderer.php',
+            ),
+            'packages/view-blade/src' => array(
+                'BladeViewPathResolver.php',
+                'BladeViewRenderer.php',
+                'Exception/InvalidBladeCachePath.php',
+                'Internal/BladeViewFinder.php',
             ),
             'packages/insight/src' => array(
                 'Access/DiagnosticAccessDenied.php',
