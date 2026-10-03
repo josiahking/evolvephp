@@ -74,6 +74,12 @@
         <testsuite name="view">
             <directory suffix="Test.php">packages/view/tests</directory>
         </testsuite>
+        <testsuite name="view-twig">
+            <directory suffix="Test.php">packages/view-twig/tests</directory>
+        </testsuite>
+        <testsuite name="view-blade">
+            <directory suffix="Test.php">packages/view-blade/tests</directory>
+        </testsuite>
         <testsuite name="insight">
             <directory suffix="Test.php">packages/insight/tests</directory>
         </testsuite>
@@ -122,6 +128,8 @@
             <directory suffix=".php">packages/scheduler/src</directory>
             <directory suffix=".php">packages/migration/src</directory>
             <directory suffix=".php">packages/view/src</directory>
+            <directory suffix=".php">packages/view-twig/src</directory>
+            <directory suffix=".php">packages/view-blade/src</directory>
             <directory suffix=".php">packages/insight/src</directory>
             <directory suffix=".php">packages/observe/src</directory>
             <directory suffix=".php">packages/dev-tools/src</directory>

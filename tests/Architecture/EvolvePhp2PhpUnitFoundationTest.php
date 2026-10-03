@@ -290,6 +290,14 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
                 'tests' => 'packages/view/tests',
                 'smokeTest' => 'packages/view/tests/Unit/PackageManifestTest.php',
             ),
+            'view-twig' => array(
+                'tests' => 'packages/view-twig/tests',
+                'smokeTest' => 'packages/view-twig/tests/Unit/PackageManifestTest.php',
+            ),
+            'view-blade' => array(
+                'tests' => 'packages/view-blade/tests',
+                'smokeTest' => 'packages/view-blade/tests/Unit/PackageManifestTest.php',
+            ),
             'insight' => array(
                 'tests' => 'packages/insight/tests',
                 'smokeTest' => 'packages/insight/tests/Unit/PackageManifestTest.php',
@@ -348,6 +356,8 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test:scheduler' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite scheduler',
             'test:migration' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite migration',
             'test:view' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite view',
+            'test:view-twig' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite view-twig',
+            'test:view-blade' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite view-blade',
             'test:database-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite database-contracts',
             'test:database-pdo' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite database-pdo',
             'test:dev-tools' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools',
@@ -385,6 +395,8 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'evolvephp/scheduler',
             'evolvephp/migration',
             'evolvephp/view',
+            'evolvephp/view-blade',
+            'evolvephp/view-twig',
             'evolvephp/dev-tools',
             'evolvephp/http',
             'evolvephp/http-client',

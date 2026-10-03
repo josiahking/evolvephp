@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "909502700ce4af66c147e19135651e91",
+    "content-hash": "8b0cb8f8c2e92f2e40a67eb9180b4d2e",
     "packages": [
         {
             "name": "evolvephp/contracts",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/contracts",
-                "reference": "601a6a5331fe30d3a4305dc6eb1d5a7bdec5f562"
+                "reference": "7f9b549030f3c3142dc7acd3794621b7f4840c89"
             },
             "require": {
                 "php": "^8.4",
@@ -38,7 +38,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "c0703334230f0eb1af2ff68dc6e8a9042b99497c"
+                "reference": "486d295d144cd9d4f466de97430d800cafe35c82"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -71,7 +71,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/http",
-                "reference": "e32f0f765b8718cd425037543901effeaa737c36"
+                "reference": "83199694c5e0e55d1cb511a7dd8a1d4be45791fd"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -102,7 +102,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/module",
-                "reference": "7c31666a6e3304052fba1332ea878dbbb3682bc2"
+                "reference": "91130a65f949be8d72d206812d8a44ca6108dd96"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -128,7 +128,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/plugin",
-                "reference": "3d2dd94061bbde24fb70bb559b23dd29535db040"
+                "reference": "cd904184fa35dcae0185b0537ae68e2eb558a7e4"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -154,7 +154,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/view",
-                "reference": "e2befc6ab3465358575f29ee109cda3fcaaa13bd"
+                "reference": "eafc89691cfe4f5143f956bf88547bc267a1bcd6"
             },
             "require": {
                 "php": "^8.4"
@@ -1280,7 +1280,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-contracts",
-                "reference": "2eed5c3fb951bb4f59b895e4a2fde3805e8a31b6"
+                "reference": "ae4b131d380b93bef895ce35dbef2e1d18302d27"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1306,7 +1306,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-laravel",
-                "reference": "c93ca502dc3d9222fc83807d27e0f7031924d8fb"
+                "reference": "3d4b4214324ba4bba537d410136be437f826d5b0"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1337,7 +1337,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-psr",
-                "reference": "2bcbd6a8e07fd1cbe82bd954d3bc932eeab565b1"
+                "reference": "297d4336645e0dc921b4f06b265e89088176780c"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1366,7 +1366,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-remote",
-                "reference": "221f9c7de025a4246526fa618070eba1c76186b8"
+                "reference": "c7fc20c64e64f1c89fc33c14d6d7691fbcf3a385"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1397,7 +1397,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-symfony",
-                "reference": "70d940cf63f0aceb479bf3ebb6b875f27cb42445"
+                "reference": "44c048b4f094ee1468ac266ec3f0d279bce5f98e"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1428,7 +1428,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/cache-memory",
-                "reference": "04e62edab7e3dd0e9e5bb7f4dca1c0d1ea012e39"
+                "reference": "e0b252bee227d4712d32199a54f0fd437cbf2956"
             },
             "require": {
                 "php": "^8.4",
@@ -1481,7 +1481,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/database-contracts",
-                "reference": "7b1be4a62acdce99b1b7efb6b6e2071626872412"
+                "reference": "d962c76ebd7429f26b9ce900804d55e79656ef4d"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1507,7 +1507,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/database-pdo",
-                "reference": "d6cb4e239fb72abc877b049514e12e81831ed9ee"
+                "reference": "8fb40adc7b833626e0405eace644ec6235ce5fba"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1557,7 +1557,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/dev-tools",
-                "reference": "07e23ec65fc5b508a2a7d0a8ac50ee5113c118ef"
+                "reference": "1de264aab9e0536fa29853fe524cc0e79ddc3142"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1590,7 +1590,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/http-client",
-                "reference": "60451914094ae2fd452e28eb560e5f184f45bd91"
+                "reference": "ab5e96d910674db90097e3d388da2f39d17df2c3"
             },
             "require": {
                 "php": "^8.4",
@@ -1622,7 +1622,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/insight",
-                "reference": "3fc6137dd4094453f23e3517449c1adf9b799899"
+                "reference": "de6845e1f1bc8397330da0d7acfe067e23b8f01e"
             },
             "require": {
                 "evolvephp/core": "^2.0",
@@ -1648,7 +1648,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/job",
-                "reference": "38d10d17c501cb670a2306c84f82072011b7e8cc"
+                "reference": "71a566e2e865cc1f37ad7ef9a64c4c9a0450072e"
             },
             "require": {
                 "evolvephp/core": "^2.0",
@@ -1680,7 +1680,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/lock-contracts",
-                "reference": "8c9496ce847445dc8efb29b2e0638ecdc4d0230c"
+                "reference": "f77fbcc928d883300f9977f0a433ebce344a27f9"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1711,7 +1711,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/migration",
-                "reference": "3eb8a0b0940701a56a0f57a2b639da95cfa7a054"
+                "reference": "e0601d084531fe02b781a92a559bc4e6b02482d3"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1745,7 +1745,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/observe",
-                "reference": "ed49997b00aa8885d9ea32079d941b2c77b6b2c8"
+                "reference": "8f36df0327e95c3cb628d4510e0c3abfb314d9e4"
             },
             "require": {
                 "evolvephp/core": "^2.0",
@@ -1780,7 +1780,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/queue-contracts",
-                "reference": "83660f6664e3f8bfbeac8cec0d4522fd9f290f79"
+                "reference": "d7f439831a6037fd1d05493f7a56fcc6967ea75c"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1811,7 +1811,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/queue-memory",
-                "reference": "2ddaa9d91f0e0edfa0eaaa8814f1656e2815c853"
+                "reference": "34171b363317544ca4baaa64ca05bbbf8db6f441"
             },
             "require": {
                 "evolvephp/queue-contracts": "^2.0",
@@ -1842,7 +1842,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/scheduler",
-                "reference": "7b8bd909a3c1017c7961ab715a28e45511b7b100"
+                "reference": "b8b72e8301d8d96874bdf81d37f8468ec3bc509d"
             },
             "require": {
                 "dragonmantank/cron-expression": "^3.6",
@@ -1877,7 +1877,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/secret-contracts",
-                "reference": "6b4bf1d4f0289d32c6a76fd2080a288415930e19"
+                "reference": "fb361f6ce267b9a229f3f2e884d2cb7808956ee0"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1926,7 +1926,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/session-contracts",
-                "reference": "04ae6c93f83ed53cbdfa45d722e6cbec4c842332"
+                "reference": "d6b5b8301b3a97bf692f6ff7ffa27de59940c0f0"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1957,7 +1957,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/storage-contracts",
-                "reference": "df7a96ab06caa992480c665d3fc7ce158d393f90"
+                "reference": "e5165c5bea3251b389118f1ea30143e6537ba5a9"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -2006,7 +2006,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/storage-local",
-                "reference": "86533f227f7e778c011f5001833d05fd1734aa88"
+                "reference": "6bf04c6f70de56c5ecb7049728c7cbf02f193007"
             },
             "require": {
                 "evolvephp/storage-contracts": "^2.0",
@@ -2055,7 +2055,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/testing",
-                "reference": "b9c8de2ea806cf0e81d11d2234682a4ecfdcfb43"
+                "reference": "ac4120898063b757620745d85a250702003bbcaf"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -2076,6 +2076,73 @@
                 "BSD-3-Clause"
             ],
             "description": "Testing utilities for EvolvePHP 2 packages and applications.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "evolvephp/view-blade",
+            "version": "2.0.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "packages/view-blade",
+                "reference": "b7e0d7843a149625640777cdf24021b84d44e04a"
+            },
+            "require": {
+                "evolvephp/view": "^2.0",
+                "illuminate/container": "^13.0",
+                "illuminate/events": "^13.0",
+                "illuminate/filesystem": "^13.0",
+                "illuminate/view": "^13.0",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\View\\Blade\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Evolve\\View\\Blade\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Optional Blade view renderer adapter for EvolvePHP 2.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "evolvephp/view-twig",
+            "version": "2.0.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "packages/view-twig",
+                "reference": "b5b41c4c5c7736ab52ec1a1a81177c0361bb4701"
+            },
+            "require": {
+                "evolvephp/view": "^2.0",
+                "php": "^8.4",
+                "twig/twig": "^3.30"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\View\\Twig\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Evolve\\View\\Twig\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Optional Twig view renderer adapter for EvolvePHP 2.",
             "transport-options": {
                 "relative": true
             }
@@ -2776,6 +2843,60 @@
             "time": "2026-08-24T17:13:02+00:00"
         },
         {
+            "name": "illuminate/bus",
+            "version": "v13.34.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/bus.git",
+                "reference": "c50d1537555b0c2d7cc1fe7c6aeae60366600b51"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/bus/zipball/c50d1537555b0c2d7cc1fe7c6aeae60366600b51",
+                "reference": "c50d1537555b0c2d7cc1fe7c6aeae60366600b51",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/collections": "^13.0",
+                "illuminate/conditionable": "^13.0",
+                "illuminate/contracts": "^13.0",
+                "illuminate/pipeline": "^13.0",
+                "illuminate/support": "^13.0",
+                "php": "^8.3"
+            },
+            "suggest": {
+                "illuminate/queue": "Required to use closures when chaining jobs (^13.0)."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "13.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Bus\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Bus package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2026-09-20T13:29:10+00:00"
+        },
+        {
             "name": "illuminate/collections",
             "version": "v13.31.0",
             "source": {
@@ -2882,6 +3003,68 @@
             "time": "2026-02-25T16:07:55+00:00"
         },
         {
+            "name": "illuminate/container",
+            "version": "v13.34.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/container.git",
+                "reference": "3cd79c13d89ba8ef04a40c5cf45fd7c13e71f44d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/container/zipball/3cd79c13d89ba8ef04a40c5cf45fd7c13e71f44d",
+                "reference": "3cd79c13d89ba8ef04a40c5cf45fd7c13e71f44d",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^13.0",
+                "illuminate/reflection": "^13.0",
+                "php": "^8.3",
+                "psr/container": "^1.1.1 || ^2.0.1",
+                "symfony/polyfill-php84": "^1.36",
+                "symfony/polyfill-php85": "^1.36"
+            },
+            "provide": {
+                "psr/container-implementation": "1.1 || 2.0"
+            },
+            "suggest": {
+                "illuminate/auth": "Required to use the Auth attribute",
+                "illuminate/cache": "Required to use the Cache attribute",
+                "illuminate/config": "Required to use the Config attribute",
+                "illuminate/database": "Required to use the DB attribute",
+                "illuminate/filesystem": "Required to use the Storage attribute",
+                "illuminate/log": "Required to use the Log or Context attributes"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "13.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Container\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Container package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2026-09-06T21:12:06+00:00"
+        },
+        {
             "name": "illuminate/contracts",
             "version": "v13.31.0",
             "source": {
@@ -2928,6 +3111,62 @@
                 "source": "https://github.com/laravel/framework"
             },
             "time": "2026-09-06T21:12:06+00:00"
+        },
+        {
+            "name": "illuminate/events",
+            "version": "v13.34.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/events.git",
+                "reference": "f1c94930eb75b7aa5206eda4e0c89a22166006a6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/events/zipball/f1c94930eb75b7aa5206eda4e0c89a22166006a6",
+                "reference": "f1c94930eb75b7aa5206eda4e0c89a22166006a6",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/bus": "^13.0",
+                "illuminate/collections": "^13.0",
+                "illuminate/container": "^13.0",
+                "illuminate/contracts": "^13.0",
+                "illuminate/macroable": "^13.0",
+                "illuminate/reflection": "^13.0",
+                "illuminate/support": "^13.0",
+                "php": "^8.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "13.0.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "functions.php"
+                ],
+                "psr-4": {
+                    "Illuminate\\Events\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Events package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2026-08-13T15:21:29+00:00"
         },
         {
             "name": "illuminate/filesystem",
@@ -3109,6 +3348,59 @@
                 "source": "https://github.com/laravel/framework"
             },
             "time": "2026-04-29T09:35:06+00:00"
+        },
+        {
+            "name": "illuminate/pipeline",
+            "version": "v13.34.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/pipeline.git",
+                "reference": "9ee04593b932a6d7dca255e3217584b896621b99"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/pipeline/zipball/9ee04593b932a6d7dca255e3217584b896621b99",
+                "reference": "9ee04593b932a6d7dca255e3217584b896621b99",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/conditionable": "^13.0",
+                "illuminate/contracts": "^13.0",
+                "illuminate/macroable": "^13.0",
+                "illuminate/support": "^13.0",
+                "php": "^8.3"
+            },
+            "suggest": {
+                "illuminate/database": "Required to use database transactions (^13.0)."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "13.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Pipeline\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Pipeline package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2026-08-04T14:02:13+00:00"
         },
         {
             "name": "illuminate/reflection",
@@ -3296,6 +3588,62 @@
                 "source": "https://github.com/laravel/framework"
             },
             "time": "2026-09-07T12:04:08+00:00"
+        },
+        {
+            "name": "illuminate/view",
+            "version": "v13.34.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/view.git",
+                "reference": "61948ef8c688eb48f1533db461ee0a9a76f536ac"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/view/zipball/61948ef8c688eb48f1533db461ee0a9a76f536ac",
+                "reference": "61948ef8c688eb48f1533db461ee0a9a76f536ac",
+                "shasum": ""
+            },
+            "require": {
+                "ext-tokenizer": "*",
+                "illuminate/collections": "^13.0",
+                "illuminate/conditionable": "^13.0",
+                "illuminate/container": "^13.0",
+                "illuminate/contracts": "^13.0",
+                "illuminate/events": "^13.0",
+                "illuminate/filesystem": "^13.0",
+                "illuminate/macroable": "^13.0",
+                "illuminate/reflection": "^13.0",
+                "illuminate/support": "^13.0",
+                "php": "^8.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "13.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\View\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate View package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2026-09-26T14:58:05+00:00"
         },
         {
             "name": "jetbrains/phpstorm-stubs",
@@ -10259,6 +10607,86 @@
             "time": "2025-12-08T11:19:18+00:00"
         },
         {
+            "name": "twig/twig",
+            "version": "v3.30.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/twigphp/Twig.git",
+                "reference": "8c737079b726af72ff8ef3c595be9f6a810ea1ef"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/8c737079b726af72ff8ef3c595be9f6a810ea1ef",
+                "reference": "8c737079b726af72ff8ef3c595be9f6a810ea1ef",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1.0",
+                "symfony/deprecation-contracts": "^2.5|^3",
+                "symfony/polyfill-ctype": "^1.8",
+                "symfony/polyfill-mbstring": "^1.3"
+            },
+            "require-dev": {
+                "php-cs-fixer/shim": "^3.0@stable",
+                "phpstan/phpstan": "^2.0@stable",
+                "psr/container": "^1.0|^2.0",
+                "symfony/phpunit-bridge": "^5.4.9|^6.4|^7.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/Resources/core.php",
+                    "src/Resources/debug.php",
+                    "src/Resources/escaper.php",
+                    "src/Resources/string_loader.php"
+                ],
+                "psr-4": {
+                    "Twig\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com",
+                    "homepage": "http://fabien.potencier.org",
+                    "role": "Lead Developer"
+                },
+                {
+                    "name": "Twig Team",
+                    "role": "Contributors"
+                },
+                {
+                    "name": "Armin Ronacher",
+                    "email": "armin.ronacher@active-4.com",
+                    "role": "Project Founder"
+                }
+            ],
+            "description": "Twig, the flexible, fast, and secure template language for PHP",
+            "homepage": "https://twig.symfony.com",
+            "keywords": [
+                "templating"
+            ],
+            "support": {
+                "issues": "https://github.com/twigphp/Twig/issues",
+                "source": "https://github.com/twigphp/Twig/tree/v3.30.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/twig/twig",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-09-25T13:20:01+00:00"
+        },
+        {
             "name": "voku/portable-ascii",
             "version": "2.1.1",
             "source": {
@@ -10364,7 +10792,9 @@
         "evolvephp/storage-contracts": 20,
         "evolvephp/storage-local": 20,
         "evolvephp/testing": 20,
-        "evolvephp/view": 20
+        "evolvephp/view": 20,
+        "evolvephp/view-blade": 20,
+        "evolvephp/view-twig": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

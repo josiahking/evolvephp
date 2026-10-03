@@ -706,8 +706,8 @@ function loadReleasePackages(string $root): array
         releaseValidationFail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 29) {
-        releaseValidationFail('release-packages.json must contain exactly twenty-nine package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 31) {
+        releaseValidationFail('release-packages.json must contain exactly thirty-one package entries.');
     }
 
     $expected = array(
@@ -728,6 +728,8 @@ function loadReleasePackages(string $root): array
         array('name' => 'evolvephp/scheduler', 'directory' => 'packages/scheduler'),
         array('name' => 'evolvephp/migration', 'directory' => 'packages/migration'),
         array('name' => 'evolvephp/view', 'directory' => 'packages/view'),
+        array('name' => 'evolvephp/view-twig', 'directory' => 'packages/view-twig'),
+        array('name' => 'evolvephp/view-blade', 'directory' => 'packages/view-blade'),
         array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
         array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
         array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),

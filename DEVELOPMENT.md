@@ -84,6 +84,8 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/scheduler`
 - `evolvephp/migration`
 - `evolvephp/view`
+- `evolvephp/view-twig`
+- `evolvephp/view-blade`
 - `evolvephp/insight`
 - `evolvephp/dev-tools`
 - `evolvephp/http`
@@ -157,6 +159,8 @@ composer test:job
 composer test:scheduler
 composer test:migration
 composer test:view
+composer test:view-twig
+composer test:view-blade
 composer test:insight
 composer test:observe
 composer test:dev-tools
@@ -268,7 +272,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains twenty-nine packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, migration, view, insight, module, plugin, http, http-client, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains thirty-one packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, migration, view, view-twig, view-blade, insight, module, plugin, http, http-client, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -438,6 +442,8 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `scheduler` | `packages/scheduler/tests` |
 | `migration` | `packages/migration/tests` |
 | `view` | `packages/view/tests` |
+| `view-twig` | `packages/view-twig/tests` |
+| `view-blade` | `packages/view-blade/tests` |
 | `insight` | `packages/insight/tests` |
 | `observe` | `packages/observe/tests` |
 | `dev-tools` | `packages/dev-tools/tests` |

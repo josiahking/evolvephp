@@ -46,6 +46,10 @@ parameters:
         - packages/migration/tests
         - packages/view/src
         - packages/view/tests
+        - packages/view-twig/src
+        - packages/view-twig/tests
+        - packages/view-blade/src
+        - packages/view-blade/tests
         - packages/insight/src
         - packages/insight/tests
         - packages/observe/src
