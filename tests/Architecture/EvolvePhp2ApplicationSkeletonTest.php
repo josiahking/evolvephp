@@ -22,6 +22,7 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
         $this->assertSame('^2.0', $manifest['require']['evolvephp/contracts']);
         $this->assertSame('^2.0', $manifest['require']['evolvephp/core']);
         $this->assertSame('^2.0', $manifest['require']['evolvephp/http']);
+        $this->assertSame('^2.0', $manifest['require']['evolvephp/i18n']);
         $this->assertSame('^2.0', $manifest['require']['evolvephp/module']);
         $this->assertSame('^2.0', $manifest['require']['evolvephp/plugin']);
         $this->assertSame('^2.0', $manifest['require']['evolvephp/view']);
@@ -136,7 +137,7 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
         $coreManifest = $this->readJsonFile('packages/core/composer.json');
         $skeletonManifest = $this->readJsonFile('skeleton/composer.json');
 
-        $this->assertCount(31, $map['packages']);
+        $this->assertCount(32, $map['packages']);
         $this->assertNotContains('evolvephp/skeleton', $packageNames);
         $this->assertNotContains('skeleton', $packageDirectories);
         $this->assertStringNotContainsString('skeleton', $deptrac);

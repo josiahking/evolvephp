@@ -78,6 +78,10 @@
             "directory": "packages/view-blade"
         },
         {
+            "name": "evolvephp/i18n",
+            "directory": "packages/i18n"
+        },
+        {
             "name": "evolvephp/insight",
             "directory": "packages/insight"
         },

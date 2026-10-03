@@ -151,6 +151,8 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
     {
         $job = $this->extractJob('workspace-quality');
 
+        $this->assertStringContainsString('extensions: intl', $this->extractStep($job, 'Set up PHP'));
+
         $this->assertMatchesPattern('/name:\s*Workspace quality \(PHP \$\{\{ matrix\.php \}\}\)/', $job);
         $this->assertMatchesPattern('/strategy:\s*\R\s{6}fail-fast:\s*false/', $job);
         $this->assertMatchesPattern('/php:\s*\R\s{10}- \'8\.4\'\s*\R\s{10}- \'8\.5\'/m', $job);

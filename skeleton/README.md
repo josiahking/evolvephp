@@ -6,6 +6,8 @@ The skeleton uses the application namespace `App\` with the PSR-4 mapping `App\ 
 
 The production manifest includes `evolvephp/view` for explicit application-owned server-rendered templates. The native PHP renderer is the zero-third-party-dependency default. Optional `evolvephp/view-twig` and `evolvephp/view-blade` adapters require explicit installation and selection; neither is installed by default or required by Insight. View source registration remains application configuration; the skeleton has no default view roots or HTTP view helper.
 
+The manifest also includes `evolvephp/i18n`. Applications choose supported locales and register message sources explicitly; the skeleton supplies no default locale list, automatic negotiation or template translator global. The ordinary PHP-array translation path does not require Intl.
+
 For current Alpha onboarding, see [Alpha getting started](../docs/alpha/getting-started.md) and [Application foundations](../docs/alpha/application-foundations.md). Those guides describe the skeleton as the accepted application template while package publication and public create-project installation remain unclaimed.
 
 ## CLI

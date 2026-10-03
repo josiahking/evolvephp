@@ -88,7 +88,7 @@ final class SkeletonProjectValidator
         );
 
         $this->stage('[4/13] Validating installed packages');
-        $this->validateInstalledPackages($root, $application, array('contracts', 'core', 'dev-tools', 'http', 'module', 'plugin', 'testing', 'view'));
+        $this->validateInstalledPackages($root, $application, array('contracts', 'core', 'dev-tools', 'http', 'i18n', 'module', 'plugin', 'testing', 'view'));
         $this->assertPackageNotInstalled($application, 'view-twig');
         $this->assertPackageNotInstalled($application, 'view-blade');
 
@@ -330,6 +330,10 @@ final class SkeletonProjectValidator
             releaseValidationFail('Generated skeleton manifest HTTP dependency changed.');
         }
 
+        if (($manifest['require']['evolvephp/i18n'] ?? null) !== '^2.0') {
+            releaseValidationFail('Generated skeleton manifest I18n dependency changed.');
+        }
+
         if (($manifest['require']['evolvephp/module'] ?? null) !== '^2.0') {
             releaseValidationFail('Generated skeleton manifest Module dependency changed.');
         }
@@ -492,7 +496,7 @@ final class SkeletonProjectValidator
             '[11/13] Running Composer install --no-dev',
         );
 
-        $this->validateInstalledPackages($root, $application, array('contracts', 'core', 'http', 'module', 'plugin', 'view'));
+        $this->validateInstalledPackages($root, $application, array('contracts', 'core', 'http', 'i18n', 'module', 'plugin', 'view'));
         $this->assertPackageNotInstalled($application, 'dev-tools');
         $this->assertPackageNotInstalled($application, 'testing');
         $this->assertPackageNotInstalled($application, 'view-twig');

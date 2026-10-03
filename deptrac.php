@@ -34,6 +34,7 @@ return static function (DeptracConfig $config): void {
             'packages/view/src',
             'packages/view-twig/src',
             'packages/view-blade/src',
+            'packages/i18n/src',
             'packages/insight/src',
             'packages/observe/src',
             'packages/dev-tools/src',
@@ -142,6 +143,12 @@ return static function (DeptracConfig $config): void {
             $viewBlade = Layer::withName('ViewBlade')->collectors(
                 DirectoryConfig::create('packages/view-blade/src/.*'),
             ),
+            $i18n = Layer::withName('I18n')->collectors(
+                DirectoryConfig::create('packages/i18n/src/.*'),
+            ),
+            $phpIntl = Layer::withName('PhpIntl')->collectors(
+                ClassLikeConfig::create('^(IntlDateFormatter|MessageFormatter|NumberFormatter)$'),
+            ),
             $twigEngine = Layer::withName('TwigEngine')->collectors(
                 ClassLikeConfig::create('^Twig\\(Environment|Source|Loader\\LoaderInterface|Error\\LoaderError)$'),
             ),
@@ -215,6 +222,8 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($view),
             Ruleset::forLayer($viewTwig)->accesses($view, $twigEngine),
             Ruleset::forLayer($viewBlade)->accesses($view, $illuminateViewEngine),
+            Ruleset::forLayer($i18n)->accesses($core, $phpIntl),
+            Ruleset::forLayer($phpIntl),
             Ruleset::forLayer($twigEngine),
             Ruleset::forLayer($illuminateViewEngine),
             Ruleset::forLayer($insight)->accesses($core),

@@ -80,6 +80,9 @@
         <testsuite name="view-blade">
             <directory suffix="Test.php">packages/view-blade/tests</directory>
         </testsuite>
+        <testsuite name="i18n">
+            <directory suffix="Test.php">packages/i18n/tests</directory>
+        </testsuite>
         <testsuite name="insight">
             <directory suffix="Test.php">packages/insight/tests</directory>
         </testsuite>
@@ -130,6 +133,7 @@
             <directory suffix=".php">packages/view/src</directory>
             <directory suffix=".php">packages/view-twig/src</directory>
             <directory suffix=".php">packages/view-blade/src</directory>
+            <directory suffix=".php">packages/i18n/src</directory>
             <directory suffix=".php">packages/insight/src</directory>
             <directory suffix=".php">packages/observe/src</directory>
             <directory suffix=".php">packages/dev-tools/src</directory>
