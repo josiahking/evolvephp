@@ -19,7 +19,7 @@ final class DiagnosticCaptureFilterTest extends TestCase
 
     public function testExactDisabledCategoryRejectsEntry(): void
     {
-        $filter = new DiagnosticCaptureFilter(disabledCategories: array('http'));
+        $filter = new DiagnosticCaptureFilter(disabledCategories: ['http']);
 
         self::assertFalse($filter->allows($this->entry('http', 'request')));
         self::assertTrue($filter->allows($this->entry('database', 'request')));
@@ -27,7 +27,7 @@ final class DiagnosticCaptureFilterTest extends TestCase
 
     public function testExactDisabledNameRejectsEntry(): void
     {
-        $filter = new DiagnosticCaptureFilter(disabledNames: array('request'));
+        $filter = new DiagnosticCaptureFilter(disabledNames: ['request']);
 
         self::assertFalse($filter->allows($this->entry('http', 'request')));
         self::assertTrue($filter->allows($this->entry('http', 'query')));
@@ -37,7 +37,7 @@ final class DiagnosticCaptureFilterTest extends TestCase
     {
         $entry = $this->entry('http', 'request');
 
-        self::assertFalse((new DiagnosticCaptureFilter(disabledCategories: array('http')))->allows($entry));
+        self::assertFalse((new DiagnosticCaptureFilter(disabledCategories: ['http']))->allows($entry));
 
         self::assertSame('http', $entry->category());
         self::assertSame('request', $entry->name());
@@ -50,7 +50,7 @@ final class DiagnosticCaptureFilterTest extends TestCase
             'execution-1',
             $category,
             $name,
-            array(new DiagnosticAttribute('route', DiagnosticDataClassification::PublicOperationalMetadata, 'users.show')),
+            [new DiagnosticAttribute('route', DiagnosticDataClassification::PublicOperationalMetadata, 'users.show')],
         );
     }
 }

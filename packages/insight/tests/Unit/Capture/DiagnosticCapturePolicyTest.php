@@ -19,14 +19,14 @@ final class DiagnosticCapturePolicyTest extends TestCase
     public function testEmptyExecutionIdentifierCategoryAndNameAreRejected(): void
     {
         foreach (
-            array(
-                array('', 'http', 'request'),
-                array('execution-1', '', 'request'),
-                array('execution-1', 'http', ''),
-            ) as $arguments
+            [
+                ['', 'http', 'request'],
+                ['execution-1', '', 'request'],
+                ['execution-1', 'http', ''],
+            ] as $arguments
         ) {
             try {
-                new DiagnosticEntry($arguments[0], $arguments[1], $arguments[2], array());
+                new DiagnosticEntry($arguments[0], $arguments[1], $arguments[2], []);
                 self::fail('Expected empty diagnostic entry field to be rejected.');
             } catch (\InvalidArgumentException) {
                 self::addToAssertionCount(1);
@@ -40,13 +40,13 @@ final class DiagnosticCapturePolicyTest extends TestCase
             'execution-1',
             'http',
             'request',
-            array(
+            [
                 new DiagnosticAttribute('string', DiagnosticDataClassification::PublicOperationalMetadata, 'value'),
                 new DiagnosticAttribute('int', DiagnosticDataClassification::PublicOperationalMetadata, 1),
                 new DiagnosticAttribute('float', DiagnosticDataClassification::PublicOperationalMetadata, 1.25),
                 new DiagnosticAttribute('bool', DiagnosticDataClassification::PublicOperationalMetadata, true),
                 new DiagnosticAttribute('null', DiagnosticDataClassification::PublicOperationalMetadata, null),
-            ),
+            ],
         );
 
         self::assertCount(5, $entry->attributes());
@@ -72,11 +72,11 @@ final class DiagnosticCapturePolicyTest extends TestCase
     public function testEmptyAndOversizedNamesOrStringValuesAreRejected(): void
     {
         foreach (
-            array(
-                static fn (): DiagnosticAttribute => new DiagnosticAttribute('', DiagnosticDataClassification::PublicOperationalMetadata, 'value'),
-                static fn (): DiagnosticAttribute => new DiagnosticAttribute(str_repeat('a', DiagnosticAttribute::MAX_NAME_LENGTH + 1), DiagnosticDataClassification::PublicOperationalMetadata, 'value'),
-                static fn (): DiagnosticAttribute => new DiagnosticAttribute('payload', DiagnosticDataClassification::PublicOperationalMetadata, str_repeat('a', DiagnosticAttribute::MAX_STRING_VALUE_LENGTH + 1)),
-            ) as $factory
+            [
+                static fn(): DiagnosticAttribute => new DiagnosticAttribute('', DiagnosticDataClassification::PublicOperationalMetadata, 'value'),
+                static fn(): DiagnosticAttribute => new DiagnosticAttribute(str_repeat('a', DiagnosticAttribute::MAX_NAME_LENGTH + 1), DiagnosticDataClassification::PublicOperationalMetadata, 'value'),
+                static fn(): DiagnosticAttribute => new DiagnosticAttribute('payload', DiagnosticDataClassification::PublicOperationalMetadata, str_repeat('a', DiagnosticAttribute::MAX_STRING_VALUE_LENGTH + 1)),
+            ] as $factory
         ) {
             try {
                 $factory();
@@ -100,17 +100,17 @@ final class DiagnosticCapturePolicyTest extends TestCase
             'execution-1',
             'http',
             'request',
-            array(
+            [
                 new DiagnosticAttribute('route', DiagnosticDataClassification::PublicOperationalMetadata, 'users.show'),
                 new DiagnosticAttribute('worker', DiagnosticDataClassification::InternalOperationalMetadata, 'worker-1'),
                 new DiagnosticAttribute('email', DiagnosticDataClassification::PersonalData, 'person@example.com'),
                 new DiagnosticAttribute('invoice', DiagnosticDataClassification::BusinessSensitivePayload, 'invoice-1'),
                 new DiagnosticAttribute('diagnosis', DiagnosticDataClassification::RegulatedData, 'regulated'),
-            ),
+            ],
         ));
 
         self::assertNotNull($accepted);
-        self::assertSame(array('route', 'worker'), $this->attributeNames($accepted));
+        self::assertSame(['route', 'worker'], $this->attributeNames($accepted));
     }
 
     public function testSecretAndAuthenticationValuesAreNeverAcceptedRaw(): void
@@ -119,15 +119,15 @@ final class DiagnosticCapturePolicyTest extends TestCase
             'execution-1',
             'http',
             'request',
-            array(
+            [
                 new DiagnosticAttribute('api_key', DiagnosticDataClassification::SecretData, 'secret-value'),
                 new DiagnosticAttribute('authorization', DiagnosticDataClassification::AuthenticationData, 'Bearer token'),
                 new DiagnosticAttribute('route', DiagnosticDataClassification::PublicOperationalMetadata, 'users.show'),
-            ),
+            ],
         ));
 
         self::assertNotNull($accepted);
-        self::assertSame(array('route'), $this->attributeNames($accepted));
+        self::assertSame(['route'], $this->attributeNames($accepted));
         self::assertSame('users.show', $accepted->attributes()[0]->value());
     }
 
@@ -139,16 +139,16 @@ final class DiagnosticCapturePolicyTest extends TestCase
             'execution-1',
             'http',
             'request',
-            array(
+            [
                 new DiagnosticAttribute('secret', DiagnosticDataClassification::PublicOperationalMetadata, 'candidate-secret'),
                 new DiagnosticAttribute('authentication', DiagnosticDataClassification::PublicOperationalMetadata, 'candidate-authentication'),
                 new DiagnosticAttribute('personal', DiagnosticDataClassification::PublicOperationalMetadata, 'candidate-personal'),
                 new DiagnosticAttribute('route', DiagnosticDataClassification::PublicOperationalMetadata, 'users.show'),
-            ),
+            ],
         ));
 
         self::assertNotNull($accepted);
-        self::assertSame(array('route'), $this->attributeNames($accepted));
+        self::assertSame(['route'], $this->attributeNames($accepted));
         self::assertSame('users.show', $accepted->attributes()[0]->value());
         self::assertNotContains('returned-secret', $this->attributeValues($accepted));
         self::assertNotContains('returned-authentication', $this->attributeValues($accepted));
@@ -163,17 +163,17 @@ final class DiagnosticCapturePolicyTest extends TestCase
             'execution-1',
             'http',
             'request',
-            array(
+            [
                 new DiagnosticAttribute('first', DiagnosticDataClassification::PublicOperationalMetadata, 'one'),
                 new DiagnosticAttribute('second', DiagnosticDataClassification::PublicOperationalMetadata, 'two'),
                 new DiagnosticAttribute('second', DiagnosticDataClassification::PublicOperationalMetadata, 'replacement'),
                 new DiagnosticAttribute('third', DiagnosticDataClassification::InternalOperationalMetadata, 'three'),
                 new DiagnosticAttribute('fourth', DiagnosticDataClassification::PublicOperationalMetadata, 'four'),
-            ),
+            ],
         ));
 
         self::assertNotNull($accepted);
-        self::assertSame(array('first', 'second', 'third'), $this->attributeNames($accepted));
+        self::assertSame(['first', 'second', 'third'], $this->attributeNames($accepted));
         self::assertSame('two', $accepted->attributes()[1]->value());
     }
 
@@ -185,15 +185,15 @@ final class DiagnosticCapturePolicyTest extends TestCase
             'execution-1',
             'http',
             'request',
-            array(
+            [
                 new DiagnosticAttribute('drop', DiagnosticDataClassification::PublicOperationalMetadata, 'drop-value'),
                 new DiagnosticAttribute('throw', DiagnosticDataClassification::PublicOperationalMetadata, 'throw-value'),
                 new DiagnosticAttribute('keep', DiagnosticDataClassification::PublicOperationalMetadata, 'safe'),
-            ),
+            ],
         ));
 
         self::assertNotNull($accepted);
-        self::assertSame(array('keep'), $this->attributeNames($accepted));
+        self::assertSame(['keep'], $this->attributeNames($accepted));
         self::assertSame('safe', $accepted->attributes()[0]->value());
     }
 
@@ -203,13 +203,13 @@ final class DiagnosticCapturePolicyTest extends TestCase
             'execution-1',
             'http',
             'request',
-            array(new DiagnosticAttribute('email', DiagnosticDataClassification::PersonalData, 'person@example.com')),
+            [new DiagnosticAttribute('email', DiagnosticDataClassification::PersonalData, 'person@example.com')],
         )));
     }
 
     public function testFilterAndSamplingRejectionReturnNull(): void
     {
-        $filtered = new DiagnosticCapturePolicy(filter: new DiagnosticCaptureFilter(disabledCategories: array('http')));
+        $filtered = new DiagnosticCapturePolicy(filter: new DiagnosticCaptureFilter(disabledCategories: ['http']));
         $unsampled = new DiagnosticCapturePolicy(sampler: new DeterministicDiagnosticSampler(0));
         $entry = $this->safeEntry('execution-1', 'http', 'request');
 
@@ -223,17 +223,17 @@ final class DiagnosticCapturePolicyTest extends TestCase
             'execution-1',
             'http',
             'request',
-            array(
+            [
                 new DiagnosticAttribute('authorization', DiagnosticDataClassification::PublicOperationalMetadata, 'Bearer token'),
                 new DiagnosticAttribute('email', DiagnosticDataClassification::PersonalData, 'person@example.com'),
                 new DiagnosticAttribute('route', DiagnosticDataClassification::PublicOperationalMetadata, 'users.show'),
-            ),
+            ],
         );
 
         $accepted = $this->defaultPolicy()->apply($candidate);
 
         self::assertNotNull($accepted);
-        self::assertSame(array('authorization', 'route'), $this->attributeNames($accepted));
+        self::assertSame(['authorization', 'route'], $this->attributeNames($accepted));
         self::assertSame(DefaultDiagnosticRedactor::REDACTION_MARKER, $accepted->attributes()[0]->value());
         self::assertSame('Bearer token', $candidate->attributes()[0]->value());
         self::assertSame('person@example.com', $candidate->attributes()[1]->value());
@@ -256,7 +256,7 @@ final class DiagnosticCapturePolicyTest extends TestCase
     private function nonPrimitiveValue(string $kind): mixed
     {
         if ($kind === 'array') {
-            return array('nested' => 'value');
+            return ['nested' => 'value'];
         }
 
         return new \stdClass();
@@ -268,7 +268,7 @@ final class DiagnosticCapturePolicyTest extends TestCase
             $identifier,
             $category,
             $name,
-            array(new DiagnosticAttribute('route', DiagnosticDataClassification::PublicOperationalMetadata, 'users.show')),
+            [new DiagnosticAttribute('route', DiagnosticDataClassification::PublicOperationalMetadata, 'users.show')],
         );
     }
 
@@ -278,7 +278,7 @@ final class DiagnosticCapturePolicyTest extends TestCase
     private function attributeNames(DiagnosticEntry $entry): array
     {
         return array_map(
-            static fn (DiagnosticAttribute $attribute): string => $attribute->name(),
+            static fn(DiagnosticAttribute $attribute): string => $attribute->name(),
             $entry->attributes(),
         );
     }
@@ -289,7 +289,7 @@ final class DiagnosticCapturePolicyTest extends TestCase
     private function attributeValues(DiagnosticEntry $entry): array
     {
         return array_map(
-            static fn (DiagnosticAttribute $attribute): string|int|float|bool|null => $attribute->value(),
+            static fn(DiagnosticAttribute $attribute): string|int|float|bool|null => $attribute->value(),
             $entry->attributes(),
         );
     }

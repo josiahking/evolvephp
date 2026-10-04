@@ -8,15 +8,15 @@ final class DiagnosticBatchSnapshotCodec
 {
     private const int VERSION = 2;
 
-    private const array VERSION_ONE_PAYLOAD_KEYS = array(
+    private const array VERSION_ONE_PAYLOAD_KEYS = [
         'version',
         'execution_identifier',
         'execution_kind',
         'observations',
         'dropped_observation_count',
-    );
+    ];
 
-    private const array VERSION_TWO_PAYLOAD_KEYS = array(
+    private const array VERSION_TWO_PAYLOAD_KEYS = [
         'version',
         'execution_identifier',
         'execution_kind',
@@ -24,73 +24,73 @@ final class DiagnosticBatchSnapshotCodec
         'dropped_observation_count',
         'diagnostic_entries',
         'dropped_diagnostic_entry_count',
-    );
+    ];
 
-    private const array OBSERVATION_KEYS = array(
+    private const array OBSERVATION_KEYS = [
         'type',
         'outcome',
         'error_type',
         'reuse_decision',
-    );
+    ];
 
-    private const array DIAGNOSTIC_ENTRY_KEYS = array(
+    private const array DIAGNOSTIC_ENTRY_KEYS = [
         'category',
         'name',
         'attributes',
-    );
+    ];
 
-    private const array DIAGNOSTIC_ATTRIBUTE_KEYS = array(
+    private const array DIAGNOSTIC_ATTRIBUTE_KEYS = [
         'name',
         'value',
-    );
+    ];
 
-    private const array EXECUTION_KINDS = array(
+    private const array EXECUTION_KINDS = [
         'http-request',
         'queue-message',
         'scheduled-job',
         'cli-command',
         'worker-task',
-    );
+    ];
 
-    private const array OBSERVATION_TYPES = array(
+    private const array OBSERVATION_TYPES = [
         'execution-started',
         'handler-completed',
         'scope-close-started',
         'scope-close-completed',
         'quarantine-required',
         'execution-completed',
-    );
+    ];
 
-    private const array OBSERVATION_OUTCOMES = array(
+    private const array OBSERVATION_OUTCOMES = [
         'succeeded',
         'failed',
-    );
+    ];
 
-    private const array REUSE_DECISIONS = array(
+    private const array REUSE_DECISIONS = [
         'reusable',
         'quarantine-required',
-    );
+    ];
 
     public function encode(DiagnosticBatchSnapshot $snapshot): string
     {
         $this->requireAllowedValue($snapshot->executionKind(), self::EXECUTION_KINDS, 'Execution kind');
 
         return json_encode(
-            array(
+            [
                 'version' => self::VERSION,
                 'execution_identifier' => $snapshot->executionIdentifier(),
                 'execution_kind' => $snapshot->executionKind(),
                 'observations' => array_map(
-                    fn (DiagnosticObservationSnapshot $observation): array => $this->encodeObservation($observation),
+                    fn(DiagnosticObservationSnapshot $observation): array => $this->encodeObservation($observation),
                     $snapshot->observations(),
                 ),
                 'dropped_observation_count' => $snapshot->droppedObservationCount(),
                 'diagnostic_entries' => array_map(
-                    fn (DiagnosticEntrySnapshot $entry): array => $this->encodeEntry($entry),
+                    fn(DiagnosticEntrySnapshot $entry): array => $this->encodeEntry($entry),
                     $snapshot->diagnosticEntries(),
                 ),
                 'dropped_diagnostic_entry_count' => $snapshot->droppedDiagnosticEntryCount(),
-            ),
+            ],
             JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION,
         );
     }
@@ -112,12 +112,12 @@ final class DiagnosticBatchSnapshotCodec
             $this->requireAllowedValue($reuseDecision, self::REUSE_DECISIONS, 'Process reuse decision');
         }
 
-        return array(
+        return [
             'type' => $observation->type(),
             'outcome' => $outcome,
             'error_type' => $observation->errorType(),
             'reuse_decision' => $reuseDecision,
-        );
+        ];
     }
 
     /**
@@ -125,14 +125,14 @@ final class DiagnosticBatchSnapshotCodec
      */
     private function encodeEntry(DiagnosticEntrySnapshot $entry): array
     {
-        return array(
+        return [
             'category' => $entry->category(),
             'name' => $entry->name(),
             'attributes' => array_map(
-                fn (DiagnosticEntryAttributeSnapshot $attribute): array => $this->encodeAttribute($attribute),
+                fn(DiagnosticEntryAttributeSnapshot $attribute): array => $this->encodeAttribute($attribute),
                 $entry->attributes(),
             ),
-        );
+        ];
     }
 
     /**
@@ -140,10 +140,10 @@ final class DiagnosticBatchSnapshotCodec
      */
     private function encodeAttribute(DiagnosticEntryAttributeSnapshot $attribute): array
     {
-        return array(
+        return [
             'name' => $attribute->name(),
             'value' => $attribute->value(),
-        );
+        ];
     }
 
     public function decode(string $payload): DiagnosticBatchSnapshot
@@ -182,7 +182,7 @@ final class DiagnosticBatchSnapshotCodec
 
         return $this->decodeSnapshot(
             $decoded,
-            array(),
+            [],
             0,
         );
     }
@@ -206,7 +206,7 @@ final class DiagnosticBatchSnapshotCodec
         return $this->decodeSnapshot(
             $decoded,
             array_map(
-                fn (mixed $entry): DiagnosticEntrySnapshot => $this->decodeEntry($entry),
+                fn(mixed $entry): DiagnosticEntrySnapshot => $this->decodeEntry($entry),
                 $decoded['diagnostic_entries'],
             ),
             $droppedDiagnosticEntryCount,
@@ -240,7 +240,7 @@ final class DiagnosticBatchSnapshotCodec
             $identifier,
             $kind,
             array_map(
-                fn (mixed $observation): DiagnosticObservationSnapshot => $this->decodeObservation($observation),
+                fn(mixed $observation): DiagnosticObservationSnapshot => $this->decodeObservation($observation),
                 $decoded['observations'],
             ),
             $droppedObservationCount,
@@ -294,7 +294,7 @@ final class DiagnosticBatchSnapshotCodec
             $this->requireString($entry['category'], 'Diagnostic entry category'),
             $this->requireString($entry['name'], 'Diagnostic entry name'),
             array_map(
-                fn (mixed $attribute): DiagnosticEntryAttributeSnapshot => $this->decodeAttribute($attribute),
+                fn(mixed $attribute): DiagnosticEntryAttributeSnapshot => $this->decodeAttribute($attribute),
                 $entry['attributes'],
             ),
         );

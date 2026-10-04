@@ -20,12 +20,12 @@ final class DiagnosticBatchProjector
             $batch->identifier()->value(),
             $batch->kind()->value,
             array_map(
-                fn (Observation $observation): DiagnosticObservationSnapshot => $this->projectObservation($observation),
+                fn(Observation $observation): DiagnosticObservationSnapshot => $this->projectObservation($observation),
                 $batch->observations(),
             ),
             $batch->droppedObservationCount(),
             array_map(
-                fn (DiagnosticEntry $entry): DiagnosticEntrySnapshot => $this->projectEntry($entry),
+                fn(DiagnosticEntry $entry): DiagnosticEntrySnapshot => $this->projectEntry($entry),
                 $batch->diagnosticEntries(),
             ),
             $batch->droppedDiagnosticEntryCount(),
@@ -78,7 +78,7 @@ final class DiagnosticBatchProjector
             $entry->category(),
             $entry->name(),
             array_map(
-                fn (DiagnosticAttribute $attribute): DiagnosticEntryAttributeSnapshot => new DiagnosticEntryAttributeSnapshot(
+                fn(DiagnosticAttribute $attribute): DiagnosticEntryAttributeSnapshot => new DiagnosticEntryAttributeSnapshot(
                     $attribute->name(),
                     $attribute->value(),
                 ),

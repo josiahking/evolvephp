@@ -8,6 +8,19 @@ Local diagnostic capture, persistence, query and access-policy foundation for Ev
 
 Evolve Insight consumes safe Core execution observations and explicitly submitted diagnostic candidates, then collects them into immutable, bounded diagnostic batches. This package provides the storage-neutral `DiagnosticBatchSink` contract, immutable `DiagnosticBatch` values, `DiagnosticBatchCollector`, which implements Core's `ObservationSink` boundary, an explicit `DiagnosticPipeline` composition helper for applications that opt in to collection plus persistence, and a storage-neutral read/query foundation guarded by an application-supplied access policy.
 
+Applications may also explicitly wrap accepted database, cache, queue, storage and outbound HTTP interfaces with Insight-owned diagnostic decorators. The decorators submit candidates through `DiagnosticEntrySink`, which `DiagnosticPipeline` and `DiagnosticBatchCollector` implement, so the existing capture policy remains the sole admission path. Application code supplies one `ExecutionCorrelation` to Core's `ExecutionOrchestrator` as an `ExecutionContextAttacher` and to a `DiagnosticRecorder` alongside the chosen sink. Correlation retains only the active execution identifier value and bounded statement-repeat counts; detaching clears them. An operation outside an attached execution creates no infrastructure entry. Insight does not discover infrastructure services or register decorators globally.
+
+## Infrastructure diagnostics
+
+- `DatabaseDiagnosticDecorator` records operation, outcome, monotonic duration when available, bounded statement fingerprint, parameter count and types, optional operation name, affected-row count for `execute()`, bounded repeat occurrence and normalized failure details. A query result iterable is returned untouched; rows are not consumed to count them. Repeat counts group the database operation kind, bounded SQL fingerprint and developer operation name when present; the grouping does not prove semantic query equivalence or diagnose N+1 behavior. The repeat group map is limited to 64 groups per execution and resets on detach. Transaction callbacks receive a decorator around the active connection supplied by the adapter, so operations invoked through that connection enter the same diagnostic batch.
+- `DatabaseDiagnosticPolicy` accepts an explicit positive slow threshold in nanoseconds. An operation is marked slow at or above that threshold; no default threshold is inferred. Optional raw SQL inspection is disabled by default and, when enabled, truncates SQL at a configured maximum. Its `sql` attribute is classified as `BusinessSensitivePayload`, so persistence also requires the application's `DiagnosticCapturePolicy` to accept that classification. Bound parameter values and names are never captured.
+- `CacheDiagnosticDecorator` wraps all PSR-16 operations without recording keys, values, defaults, TTL details or iterable contents. It does not pre-consume iterable inputs or returned results.
+- `QueuePublisherDiagnosticDecorator` and `QueueReceiverDiagnosticDecorator` record publication and receive attempts. A received delivery is wrapped to record acknowledge and reject only while its originating execution remains attached; its message and settlement behavior remain delegated to the original delivery. Queue names, payloads and message metadata are excluded.
+- `StorageDiagnosticDecorator` wraps put, open and delete; a returned reader is wrapped for read and close only while its originating execution remains attached. Storage keys and object bytes are excluded. Write chunks are not pre-consumed, reads are not expanded, and repeated close calls remain delegated to the reader.
+- `HttpClientDiagnosticDecorator` wraps PSR-18 requests and records a conservative HTTP method, response status, outcome and duration when available. A 4xx or 5xx response remains a returned response. Request and response bodies, headers, cookies, full URIs, paths, queries, user-info and credentials are excluded; streams are never read or rewound and no tracing headers are injected.
+
+All infrastructure recording is best effort: diagnostic clock, metadata, sink or capture failures do not change the underlying operation's result, replace its throwable or retry it. Infrastructure diagnostics remain local Insight evidence, not OpenTelemetry export.
+
 Insight also provides a storage-neutral projection boundary for finalized diagnostic batches. `DiagnosticBatchProjector` detaches a `DiagnosticBatch` into a primitive-only `DiagnosticBatchSnapshot` made of string-backed execution identity, execution kind, ordered `DiagnosticObservationSnapshot` values, ordered accepted diagnostic-entry snapshots and separate dropped observation and diagnostic-entry counts. Snapshots do not retain Core `Observation`, execution identifier, diagnostic-entry objects, diagnostic-attribute objects, request, response, container, throwable or execution-scope objects.
 
 Insight includes a detached diagnostic capture-policy foundation for diagnostic sources. `DiagnosticEntry` and `DiagnosticAttribute` represent bounded primitive-only diagnostic data: execution identifier value, diagnostic category, diagnostic name and ordered attributes whose values are limited to `string`, `int`, `float`, `bool` or `null`. Attribute names, entry identifiers, categories, names and string values are bounded, and non-finite floats, arrays, objects, resources and callables are not accepted.
@@ -109,6 +122,12 @@ PHP `^8.4`
 ## Dependencies
 
 - `evolvephp/core`
+- `evolvephp/database-contracts`
+- `evolvephp/queue-contracts`
+- `evolvephp/storage-contracts`
+- `psr/simple-cache`
+- `psr/http-client`
+- `psr/http-message`
 
 ## Publication Status
 
@@ -118,7 +137,7 @@ https://github.com/josiahking/evolvephp
 
 ## Current Limitations
 
-This package does not provide time-based retention, timestamp or range queries, rich HTTP/database/cache/log/event/queue/plugin/module/service-resolution/worker-memory/tenant diagnostic watchers, native dashboards, routes, UI rendering, authentication, user or role management, default access policies, OpenTelemetry, Evolve Observe, trace propagation, runtime composition, automatic registration, application database integration, production telemetry export or production-ready diagnostics. The current scope-close and quarantine diagnostics are generic runtime signals only; they do not prove a specific request-scope leak, tenant leak or memory leak.
+This package does not provide time-based retention, timestamp or range queries, log/event/plugin/module/service-resolution/worker-memory/tenant diagnostic watchers, native dashboards, routes, UI rendering, authentication, user or role management, default access policies, OpenTelemetry, Evolve Observe, trace propagation, automatic registration, application database integration, production telemetry export or production-ready diagnostics. The current scope-close and quarantine diagnostics are generic runtime signals only; they do not prove a specific request-scope leak, tenant leak or memory leak.
 
 ## Licence
 

@@ -27,12 +27,12 @@ final class ExecutionLifecycleDiagnosticWatcher implements ObservationDiagnostic
                 'evolve.runtime',
                 'scope-close-failed',
             ),
-            ObservationType::QuarantineRequired => array($this->entry(
+            ObservationType::QuarantineRequired => [$this->entry(
                 $observation,
                 'evolve.runtime',
                 'quarantine-required',
-            )),
-            default => array(),
+            )],
+            default => [],
         };
     }
 
@@ -45,21 +45,21 @@ final class ExecutionLifecycleDiagnosticWatcher implements ObservationDiagnostic
         string $name,
     ): array {
         if ($observation->outcome() !== ObservationOutcome::Failed) {
-            return array();
+            return [];
         }
 
-        return array($this->entry($observation, $category, $name));
+        return [$this->entry($observation, $category, $name)];
     }
 
     private function entry(Observation $observation, string $category, string $name): DiagnosticEntry
     {
-        $attributes = array(
+        $attributes = [
             new DiagnosticAttribute(
                 'execution_kind',
                 DiagnosticDataClassification::PublicOperationalMetadata,
                 $observation->kind()->value,
             ),
-        );
+        ];
 
         if ($observation->errorType() !== null) {
             $attributes[] = new DiagnosticAttribute(

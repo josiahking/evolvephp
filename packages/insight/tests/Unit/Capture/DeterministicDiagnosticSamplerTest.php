@@ -55,7 +55,7 @@ final class DeterministicDiagnosticSamplerTest extends TestCase
     public function testImplementationUsesNoAmbientRandomnessOrTime(): void
     {
         $sampler = new DeterministicDiagnosticSampler(50);
-        $decisions = array();
+        $decisions = [];
 
         for ($i = 0; $i < 10; $i++) {
             $decisions[] = $sampler->accepts('execution-ambient');
@@ -70,7 +70,7 @@ final class DeterministicDiagnosticSamplerTest extends TestCase
             $identifier,
             $category,
             $name,
-            array(new DiagnosticAttribute($attributeName, DiagnosticDataClassification::PublicOperationalMetadata, 'value')),
+            [new DiagnosticAttribute($attributeName, DiagnosticDataClassification::PublicOperationalMetadata, 'value')],
         );
     }
 }

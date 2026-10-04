@@ -628,7 +628,7 @@ BridgeSymfony -> BridgeContracts, BridgePsr, PsrHttpMessage, SymfonyHost
 BridgeRemote -> BridgeContracts, BridgePsr, PsrHttpMessage, PsrHttpClient, PsrHttpServer
 Core      -> Contracts
 Job       -> Core, QueueContracts
-Insight   -> Core
+Insight   -> Core, DatabaseContracts, QueueContracts, StorageContracts, PsrSimpleCache, PsrHttpClient, PsrHttpMessage
 Observe   -> Core, Http, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PsrHttpMessage, PsrHttpServer
 DevTools  -> Contracts, Core, Module, Plugin
 Http      -> Contracts, Core

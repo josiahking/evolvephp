@@ -36,8 +36,8 @@ final class DefaultDiagnosticRedactor implements DiagnosticRedactor
 
     private function isSensitiveMachineName(string $name): bool
     {
-        $normalizedName = strtolower(str_replace(array('.', '_', '-', ' ', '/'), '', $name));
-        if (in_array($normalizedName, array(
+        $normalizedName = strtolower(str_replace(['.', '_', '-', ' ', '/'], '', $name));
+        if (in_array($normalizedName, [
             'token',
             'accesstoken',
             'refreshtoken',
@@ -45,29 +45,29 @@ final class DefaultDiagnosticRedactor implements DiagnosticRedactor
             'sessionid',
             'sessionidentifier',
             'setcookie',
-        ), true)) {
+        ], true)) {
             return true;
         }
 
         $segments = array_values(array_filter(
-            preg_split('/[._\\-\\s\\/]+/', strtolower($name)) ?: array(),
-            static fn (string $segment): bool => $segment !== '',
+            preg_split('/[._\\-\\s\\/]+/', strtolower($name)) ?: [],
+            static fn(string $segment): bool => $segment !== '',
         ));
 
         foreach ($segments as $segment) {
-            if (in_array($segment, array('authorization', 'authentication', 'password', 'passwd', 'cookie', 'secret', 'session'), true)) {
+            if (in_array($segment, ['authorization', 'authentication', 'password', 'passwd', 'cookie', 'secret', 'session'], true)) {
                 return true;
             }
         }
 
-        $pairs = array(
-            array('set', 'cookie'),
-            array('access', 'token'),
-            array('refresh', 'token'),
-            array('api', 'key'),
-            array('session', 'id'),
-            array('session', 'identifier'),
-        );
+        $pairs = [
+            ['set', 'cookie'],
+            ['access', 'token'],
+            ['refresh', 'token'],
+            ['api', 'key'],
+            ['session', 'id'],
+            ['session', 'identifier'],
+        ];
 
         foreach ($pairs as $pair) {
             for ($index = 0, $count = count($segments) - 1; $index < $count; $index++) {

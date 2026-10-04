@@ -32,7 +32,7 @@ final class StoringDiagnosticBatchSinkTest extends TestCase
         $batch = new DiagnosticBatch(
             $identifier,
             ExecutionKind::ScheduledJob,
-            array(new Observation(ObservationType::ExecutionStarted, $identifier, ExecutionKind::ScheduledJob)),
+            [new Observation(ObservationType::ExecutionStarted, $identifier, ExecutionKind::ScheduledJob)],
             1,
         );
 
@@ -51,7 +51,7 @@ final class StoringDiagnosticBatchSinkTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('store failed');
 
-        $sink->accept(new DiagnosticBatch(ExecutionIdentifier::generate(), ExecutionKind::HttpRequest, array(), 0));
+        $sink->accept(new DiagnosticBatch(ExecutionIdentifier::generate(), ExecutionKind::HttpRequest, [], 0));
     }
 
     public function testProjectorStoreCollaborationDoesNotMutateOriginalBatch(): void
@@ -60,13 +60,13 @@ final class StoringDiagnosticBatchSinkTest extends TestCase
         $sink = new StoringDiagnosticBatchSink(new DiagnosticBatchProjector(), $store);
         $identifier = ExecutionIdentifier::generate();
         $observation = new Observation(ObservationType::ExecutionCompleted, $identifier, ExecutionKind::QueueMessage);
-        $batch = new DiagnosticBatch($identifier, ExecutionKind::QueueMessage, array($observation), 4);
+        $batch = new DiagnosticBatch($identifier, ExecutionKind::QueueMessage, [$observation], 4);
 
         $sink->accept($batch);
 
         self::assertSame($identifier, $batch->identifier());
         self::assertSame(ExecutionKind::QueueMessage, $batch->kind());
-        self::assertSame(array($observation), $batch->observations());
+        self::assertSame([$observation], $batch->observations());
         self::assertSame(4, $batch->droppedObservationCount());
     }
 }
@@ -87,6 +87,6 @@ final class ThrowingDiagnosticBatchStore implements DiagnosticBatchStore
 
     public function latest(int $limit): array
     {
-        return array();
+        return [];
     }
 }

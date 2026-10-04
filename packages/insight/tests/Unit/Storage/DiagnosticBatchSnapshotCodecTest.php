@@ -33,9 +33,9 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
         $snapshot = new DiagnosticBatchSnapshot(
             'execution-1',
             'queue-message',
-            array(
+            [
                 new DiagnosticObservationSnapshot('handler-completed', 'failed', 'RuntimeException', 'quarantine-required'),
-            ),
+            ],
             4,
         );
 
@@ -48,21 +48,21 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
         $snapshot = new DiagnosticBatchSnapshot(
             'execution-1',
             'worker-task',
-            array(
+            [
                 new DiagnosticObservationSnapshot('execution-started', null, null, null),
                 new DiagnosticObservationSnapshot('scope-close-started', null, null, null),
                 new DiagnosticObservationSnapshot('scope-close-completed', 'succeeded', null, 'reusable'),
                 new DiagnosticObservationSnapshot('execution-completed', 'succeeded', null, 'reusable'),
-            ),
+            ],
             0,
         );
 
         $roundTripped = $codec->decode($codec->encode($snapshot));
 
         self::assertSame(
-            array('execution-started', 'scope-close-started', 'scope-close-completed', 'execution-completed'),
+            ['execution-started', 'scope-close-started', 'scope-close-completed', 'execution-completed'],
             array_map(
-                static fn (DiagnosticObservationSnapshot $observation): string => $observation->type(),
+                static fn(DiagnosticObservationSnapshot $observation): string => $observation->type(),
                 $roundTripped->observations(),
             ),
         );
@@ -74,7 +74,7 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
         $snapshot = new DiagnosticBatchSnapshot(
             'execution-1',
             'scheduled-job',
-            array(new DiagnosticObservationSnapshot('quarantine-required', null, null, null)),
+            [new DiagnosticObservationSnapshot('quarantine-required', null, null, null)],
             7,
         );
 
@@ -92,21 +92,21 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
         $snapshot = new DiagnosticBatchSnapshot(
             'execution-1',
             'http-request',
-            array(),
+            [],
             0,
-            array(
+            [
                 new DiagnosticEntrySnapshot(
                     'database',
                     'query',
-                    array(
+                    [
                         new DiagnosticEntryAttributeSnapshot('statement', 'select-user'),
                         new DiagnosticEntryAttributeSnapshot('duration_ms', 12),
                         new DiagnosticEntryAttributeSnapshot('sample_rate', 1.0),
                         new DiagnosticEntryAttributeSnapshot('cached', true),
                         new DiagnosticEntryAttributeSnapshot('tenant', null),
-                    ),
+                    ],
                 ),
-            ),
+            ],
             2,
         );
 
@@ -124,7 +124,7 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
             '{"version":1,"execution_identifier":"execution-1","execution_kind":"http-request","observations":[],"dropped_observation_count":0}',
         );
 
-        self::assertSame(array(), $snapshot->diagnosticEntries());
+        self::assertSame([], $snapshot->diagnosticEntries());
         self::assertSame(0, $snapshot->droppedDiagnosticEntryCount());
     }
 
@@ -190,7 +190,7 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
         $attributes = array_fill(
             0,
             DiagnosticEntry::MAX_ATTRIBUTE_COUNT + 1,
-            array('name' => 'attribute', 'value' => 'value'),
+            ['name' => 'attribute', 'value' => 'value'],
         );
 
         $this->expectDecodeRejection($this->payloadWithEntry(attributes: $attributes));
@@ -198,16 +198,16 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
 
     public function testOversizedDiagnosticEntryAttributeNameIsRejectedDuringDecode(): void
     {
-        $this->expectDecodeRejection($this->payloadWithEntry(attributes: array(
-            array('name' => str_repeat('a', DiagnosticAttribute::MAX_NAME_LENGTH + 1), 'value' => 'value'),
-        )));
+        $this->expectDecodeRejection($this->payloadWithEntry(attributes: [
+            ['name' => str_repeat('a', DiagnosticAttribute::MAX_NAME_LENGTH + 1), 'value' => 'value'],
+        ]));
     }
 
     public function testOversizedDiagnosticEntryAttributeStringValueIsRejectedDuringDecode(): void
     {
-        $this->expectDecodeRejection($this->payloadWithEntry(attributes: array(
-            array('name' => 'payload', 'value' => str_repeat('v', DiagnosticAttribute::MAX_STRING_VALUE_LENGTH + 1)),
-        )));
+        $this->expectDecodeRejection($this->payloadWithEntry(attributes: [
+            ['name' => 'payload', 'value' => str_repeat('v', DiagnosticAttribute::MAX_STRING_VALUE_LENGTH + 1)],
+        ]));
     }
 
     public function testEncodeRejectsUnsupportedExecutionKind(): void
@@ -215,7 +215,7 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
         $this->expectEncodeRejection(new DiagnosticBatchSnapshot(
             'execution-1',
             'unsupported-kind',
-            array(),
+            [],
             0,
         ));
     }
@@ -225,7 +225,7 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
         $this->expectEncodeRejection(new DiagnosticBatchSnapshot(
             'execution-1',
             'http-request',
-            array(new DiagnosticObservationSnapshot('unsupported-type', null, null, null)),
+            [new DiagnosticObservationSnapshot('unsupported-type', null, null, null)],
             0,
         ));
     }
@@ -235,7 +235,7 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
         $this->expectEncodeRejection(new DiagnosticBatchSnapshot(
             'execution-1',
             'http-request',
-            array(new DiagnosticObservationSnapshot('execution-started', 'unsupported-outcome', null, null)),
+            [new DiagnosticObservationSnapshot('execution-started', 'unsupported-outcome', null, null)],
             0,
         ));
     }
@@ -245,7 +245,7 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
         $this->expectEncodeRejection(new DiagnosticBatchSnapshot(
             'execution-1',
             'http-request',
-            array(new DiagnosticObservationSnapshot('execution-started', null, null, 'unsupported-decision')),
+            [new DiagnosticObservationSnapshot('execution-started', null, null, 'unsupported-decision')],
             0,
         ));
     }
@@ -270,22 +270,22 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
     private function payloadWithEntry(
         string $category = 'database',
         string $name = 'query',
-        array $attributes = array(array('name' => 'statement', 'value' => 'select-user')),
+        array $attributes = [['name' => 'statement', 'value' => 'select-user']],
     ): string {
         return json_encode(
-            array(
+            [
                 'version' => 2,
                 'execution_identifier' => 'execution-1',
                 'execution_kind' => 'http-request',
-                'observations' => array(),
+                'observations' => [],
                 'dropped_observation_count' => 0,
-                'diagnostic_entries' => array(array(
+                'diagnostic_entries' => [[
                     'category' => $category,
                     'name' => $name,
                     'attributes' => $attributes,
-                )),
+                ]],
                 'dropped_diagnostic_entry_count' => 0,
-            ),
+            ],
             JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION,
         );
     }
@@ -295,7 +295,7 @@ final class DiagnosticBatchSnapshotCodecTest extends TestCase
         return new DiagnosticBatchSnapshot(
             'execution-1',
             'http-request',
-            array(new DiagnosticObservationSnapshot('execution-started', null, null, null)),
+            [new DiagnosticObservationSnapshot('execution-started', null, null, null)],
             0,
         );
     }

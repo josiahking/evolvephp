@@ -24,12 +24,12 @@ final readonly class DiagnosticBatchSummary
             throw new \InvalidArgumentException('Diagnostic batch summary execution kind must not be empty.');
         }
 
-        foreach (array(
+        foreach ([
             $this->observationCount,
             $this->diagnosticEntryCount,
             $this->droppedObservationCount,
             $this->droppedDiagnosticEntryCount,
-        ) as $count) {
+        ] as $count) {
             if ($count < 0) {
                 throw new \InvalidArgumentException('Diagnostic batch summary counts must not be negative.');
             }

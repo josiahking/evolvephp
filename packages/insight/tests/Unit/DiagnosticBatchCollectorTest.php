@@ -45,7 +45,7 @@ final class DiagnosticBatchCollectorTest extends TestCase
         $collector->observe($this->observation(ObservationType::HandlerCompleted));
         $collector->observe($this->observation(ObservationType::ExecutionCompleted));
 
-        self::assertSame(array(), $sink->batches);
+        self::assertSame([], $sink->batches);
     }
 
     public function testExecutionStartedStartsCollectionAndCompletionFinalizesOnce(): void
@@ -62,7 +62,7 @@ final class DiagnosticBatchCollectorTest extends TestCase
         self::assertSame($identifier, $sink->batches[0]->identifier());
         self::assertSame(ExecutionKind::CliCommand, $sink->batches[0]->kind());
         self::assertSame(
-            array(ObservationType::ExecutionStarted, ObservationType::ExecutionCompleted),
+            [ObservationType::ExecutionStarted, ObservationType::ExecutionCompleted],
             $this->types($sink->batches[0]),
         );
     }
@@ -73,26 +73,26 @@ final class DiagnosticBatchCollectorTest extends TestCase
         $collector = new DiagnosticBatchCollector($sink, 10);
         $identifier = ExecutionIdentifier::generate();
 
-        foreach (array(
+        foreach ([
             ObservationType::ExecutionStarted,
             ObservationType::HandlerCompleted,
             ObservationType::ScopeCloseStarted,
             ObservationType::ScopeCloseCompleted,
             ObservationType::QuarantineRequired,
             ObservationType::ExecutionCompleted,
-        ) as $type) {
+        ] as $type) {
             $collector->observe($this->observation($type, $identifier, ExecutionKind::WorkerTask));
         }
 
         self::assertSame(
-            array(
+            [
                 ObservationType::ExecutionStarted,
                 ObservationType::HandlerCompleted,
                 ObservationType::ScopeCloseStarted,
                 ObservationType::ScopeCloseCompleted,
                 ObservationType::QuarantineRequired,
                 ObservationType::ExecutionCompleted,
-            ),
+            ],
             $this->types($sink->batches[0]),
         );
     }
@@ -109,7 +109,7 @@ final class DiagnosticBatchCollectorTest extends TestCase
 
         self::assertCount(1, $sink->batches);
         self::assertSame(
-            array(ObservationType::ExecutionStarted, ObservationType::ExecutionCompleted),
+            [ObservationType::ExecutionStarted, ObservationType::ExecutionCompleted],
             $this->types($sink->batches[0]),
         );
     }
@@ -128,7 +128,7 @@ final class DiagnosticBatchCollectorTest extends TestCase
 
         self::assertCount(1, $sink->batches);
         self::assertSame(
-            array(ObservationType::ExecutionStarted, ObservationType::ExecutionCompleted),
+            [ObservationType::ExecutionStarted, ObservationType::ExecutionCompleted],
             $this->types($sink->batches[0]),
         );
     }
@@ -149,9 +149,9 @@ final class DiagnosticBatchCollectorTest extends TestCase
 
         self::assertCount(2, $sink->batches);
         self::assertSame($first, $sink->batches[0]->identifier());
-        self::assertSame(array(ObservationType::ExecutionStarted, ObservationType::HandlerCompleted, ObservationType::ExecutionCompleted), $this->types($sink->batches[0]));
+        self::assertSame([ObservationType::ExecutionStarted, ObservationType::HandlerCompleted, ObservationType::ExecutionCompleted], $this->types($sink->batches[0]));
         self::assertSame($second, $sink->batches[1]->identifier());
-        self::assertSame(array(ObservationType::ExecutionStarted, ObservationType::ScopeCloseStarted, ObservationType::ExecutionCompleted), $this->types($sink->batches[1]));
+        self::assertSame([ObservationType::ExecutionStarted, ObservationType::ScopeCloseStarted, ObservationType::ExecutionCompleted], $this->types($sink->batches[1]));
     }
 
     public function testDuplicateExecutionStartedDoesNotResetExistingState(): void
@@ -167,12 +167,12 @@ final class DiagnosticBatchCollectorTest extends TestCase
 
         self::assertSame(ExecutionKind::HttpRequest, $sink->batches[0]->kind());
         self::assertSame(
-            array(
+            [
                 ObservationType::ExecutionStarted,
                 ObservationType::HandlerCompleted,
                 ObservationType::ExecutionStarted,
                 ObservationType::ExecutionCompleted,
-            ),
+            ],
             $this->types($sink->batches[0]),
         );
     }
@@ -188,7 +188,7 @@ final class DiagnosticBatchCollectorTest extends TestCase
         $collector->observe($this->observation(ObservationType::ScopeCloseStarted, $identifier));
         $collector->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
 
-        self::assertSame(array(ObservationType::ExecutionStarted, ObservationType::HandlerCompleted), $this->types($sink->batches[0]));
+        self::assertSame([ObservationType::ExecutionStarted, ObservationType::HandlerCompleted], $this->types($sink->batches[0]));
         self::assertSame(2, $sink->batches[0]->droppedObservationCount());
     }
 
@@ -201,7 +201,7 @@ final class DiagnosticBatchCollectorTest extends TestCase
         $collector->observe($this->observation(ObservationType::ExecutionStarted, $identifier));
         $collector->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
 
-        self::assertSame(array(ObservationType::ExecutionStarted, ObservationType::ExecutionCompleted), $this->types($sink->batches[0]));
+        self::assertSame([ObservationType::ExecutionStarted, ObservationType::ExecutionCompleted], $this->types($sink->batches[0]));
         self::assertSame(0, $sink->batches[0]->droppedObservationCount());
     }
 
@@ -220,11 +220,11 @@ final class DiagnosticBatchCollectorTest extends TestCase
         $collector->observe($this->observation(ObservationType::ExecutionCompleted, $first));
 
         self::assertSame($second, $sink->batches[0]->identifier());
-        self::assertSame(array(ObservationType::ExecutionStarted, ObservationType::ExecutionCompleted), $this->types($sink->batches[0]));
+        self::assertSame([ObservationType::ExecutionStarted, ObservationType::ExecutionCompleted], $this->types($sink->batches[0]));
         self::assertSame(0, $sink->batches[0]->droppedObservationCount());
 
         self::assertSame($first, $sink->batches[1]->identifier());
-        self::assertSame(array(ObservationType::ExecutionStarted, ObservationType::HandlerCompleted), $this->types($sink->batches[1]));
+        self::assertSame([ObservationType::ExecutionStarted, ObservationType::HandlerCompleted], $this->types($sink->batches[1]));
         self::assertSame(2, $sink->batches[1]->droppedObservationCount());
     }
 
@@ -284,9 +284,9 @@ final class DiagnosticBatchCollectorTest extends TestCase
         $identifier = ExecutionIdentifier::generate();
 
         $collector->observe($this->observation(ObservationType::ExecutionStarted, $identifier));
-        $collector->capture($this->entry($identifier, 'database', 'query', array(
+        $collector->capture($this->entry($identifier, 'database', 'query', [
             new DiagnosticAttribute('statement_name', DiagnosticDataClassification::PublicOperationalMetadata, 'select-user'),
-        )));
+        ]));
         $collector->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
 
         self::assertCount(1, $sink->batches[0]->diagnosticEntries());
@@ -300,7 +300,7 @@ final class DiagnosticBatchCollectorTest extends TestCase
         $collector = new DiagnosticBatchCollector(
             $sink,
             5,
-            new DiagnosticCapturePolicy(filter: new DiagnosticCaptureFilter(disabledNames: array('ignored'))),
+            new DiagnosticCapturePolicy(filter: new DiagnosticCaptureFilter(disabledNames: ['ignored'])),
         );
         $identifier = ExecutionIdentifier::generate();
 
@@ -311,7 +311,7 @@ final class DiagnosticBatchCollectorTest extends TestCase
         $collector->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
         $collector->capture($this->entry($identifier, 'database', 'finalized'));
 
-        self::assertSame(array('accepted'), $this->entryNames($sink->batches[0]));
+        self::assertSame(['accepted'], $this->entryNames($sink->batches[0]));
         self::assertSame(0, $sink->batches[0]->droppedDiagnosticEntryCount());
     }
 
@@ -331,9 +331,9 @@ final class DiagnosticBatchCollectorTest extends TestCase
         $collector->observe($this->observation(ObservationType::ExecutionCompleted, $second, ExecutionKind::QueueMessage));
 
         self::assertSame($first, $sink->batches[0]->identifier());
-        self::assertSame(array('first-1', 'first-2'), $this->entryNames($sink->batches[0]));
+        self::assertSame(['first-1', 'first-2'], $this->entryNames($sink->batches[0]));
         self::assertSame($second, $sink->batches[1]->identifier());
-        self::assertSame(array('second-1'), $this->entryNames($sink->batches[1]));
+        self::assertSame(['second-1'], $this->entryNames($sink->batches[1]));
     }
 
     public function testDiagnosticEntryBoundDroppedCountAndExecutionIsolationAreExact(): void
@@ -352,9 +352,9 @@ final class DiagnosticBatchCollectorTest extends TestCase
         $collector->observe($this->observation(ObservationType::ExecutionCompleted, $second, ExecutionKind::CliCommand));
         $collector->observe($this->observation(ObservationType::ExecutionCompleted, $first));
 
-        self::assertSame(array('second-1'), $this->entryNames($sink->batches[0]));
+        self::assertSame(['second-1'], $this->entryNames($sink->batches[0]));
         self::assertSame(0, $sink->batches[0]->droppedDiagnosticEntryCount());
-        self::assertSame(array('first-1', 'first-2'), $this->entryNames($sink->batches[1]));
+        self::assertSame(['first-1', 'first-2'], $this->entryNames($sink->batches[1]));
         self::assertSame(1, $sink->batches[1]->droppedDiagnosticEntryCount());
     }
 
@@ -373,7 +373,7 @@ final class DiagnosticBatchCollectorTest extends TestCase
         $collector->capture($this->entry($identifier, 'database', 'sampled-out'));
         $collector->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
 
-        self::assertSame(array(), $sink->batches[0]->diagnosticEntries());
+        self::assertSame([], $sink->batches[0]->diagnosticEntries());
         self::assertSame(0, $sink->batches[0]->droppedDiagnosticEntryCount());
     }
 
@@ -405,7 +405,7 @@ final class DiagnosticBatchCollectorTest extends TestCase
      */
     private function types(DiagnosticBatch $batch): array
     {
-        return array_map(static fn (Observation $observation): ObservationType => $observation->type(), $batch->observations());
+        return array_map(static fn(Observation $observation): ObservationType => $observation->type(), $batch->observations());
     }
 
     private function observation(
@@ -429,9 +429,9 @@ final class DiagnosticBatchCollectorTest extends TestCase
             $identifier->value(),
             $category,
             $name,
-            $attributes ?? array(
+            $attributes ?? [
                 new DiagnosticAttribute('name', DiagnosticDataClassification::PublicOperationalMetadata, $name),
-            ),
+            ],
         );
     }
 
@@ -440,7 +440,7 @@ final class DiagnosticBatchCollectorTest extends TestCase
      */
     private function entryNames(DiagnosticBatch $batch): array
     {
-        return array_map(static fn (DiagnosticEntry $entry): string => $entry->name(), $batch->diagnosticEntries());
+        return array_map(static fn(DiagnosticEntry $entry): string => $entry->name(), $batch->diagnosticEntries());
     }
 }
 
@@ -449,7 +449,7 @@ class RecordingBatchSink implements DiagnosticBatchSink
     /**
      * @var list<DiagnosticBatch>
      */
-    public array $batches = array();
+    public array $batches = [];
 
     public function accept(DiagnosticBatch $batch): void
     {

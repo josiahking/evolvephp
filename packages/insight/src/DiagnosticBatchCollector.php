@@ -11,13 +11,14 @@ use Evolve\Core\Instrumentation\ObservationSink;
 use Evolve\Core\Instrumentation\ObservationType;
 use Evolve\Insight\Capture\DiagnosticCapturePolicy;
 use Evolve\Insight\Capture\DiagnosticEntry;
+use Evolve\Insight\Capture\DiagnosticEntrySink;
 
-final class DiagnosticBatchCollector implements ObservationSink
+final class DiagnosticBatchCollector implements ObservationSink, DiagnosticEntrySink
 {
     /**
      * @var array<string, array{identifier: ExecutionIdentifier, kind: ExecutionKind, observations: list<Observation>, dropped: int, diagnosticEntries: list<DiagnosticEntry>, droppedDiagnosticEntries: int}>
      */
-    private array $activeBatches = array();
+    private array $activeBatches = [];
 
     /**
      * @var \WeakMap<ExecutionIdentifier, true>
@@ -53,14 +54,14 @@ final class DiagnosticBatchCollector implements ObservationSink
         $identifierValue = $observation->identifier()->value();
 
         if ($observation->type() === ObservationType::ExecutionStarted && !isset($this->activeBatches[$identifierValue])) {
-            $this->activeBatches[$identifierValue] = array(
+            $this->activeBatches[$identifierValue] = [
                 'identifier' => $observation->identifier(),
                 'kind' => $observation->kind(),
-                'observations' => array(),
+                'observations' => [],
                 'dropped' => 0,
-                'diagnosticEntries' => array(),
+                'diagnosticEntries' => [],
                 'droppedDiagnosticEntries' => 0,
-            );
+            ];
         }
 
         if (!isset($this->activeBatches[$identifierValue])) {

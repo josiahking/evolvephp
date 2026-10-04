@@ -4,17 +4,26 @@ declare(strict_types=1);
 
 namespace Evolve\Insight\Tests\Integration;
 
+use Evolve\Core\Container\ServiceRegistry;
 use Evolve\Core\Execution\ExecutionIdentifier;
 use Evolve\Core\Execution\ExecutionKind;
+use Evolve\Core\Execution\ExecutionOrchestrator;
 use Evolve\Core\Instrumentation\Observation;
 use Evolve\Core\Instrumentation\ObservationOutcome;
 use Evolve\Core\Instrumentation\ObservationType;
+use Evolve\Database\Contracts\DatabaseConnection;
+use Evolve\Database\Contracts\DatabaseStatement;
 use Evolve\Insight\Access\DiagnosticAccessOperation;
 use Evolve\Insight\Access\DiagnosticAccessPolicy;
 use Evolve\Insight\Capture\DiagnosticAttribute;
+use Evolve\Insight\Capture\DiagnosticCapturePolicy;
 use Evolve\Insight\Capture\DiagnosticDataClassification;
 use Evolve\Insight\Capture\DiagnosticEntry;
 use Evolve\Insight\DiagnosticPipeline;
+use Evolve\Insight\Infrastructure\DatabaseDiagnosticDecorator;
+use Evolve\Insight\Infrastructure\DatabaseDiagnosticPolicy;
+use Evolve\Insight\Infrastructure\DiagnosticRecorder;
+use Evolve\Insight\Infrastructure\ExecutionCorrelation;
 use Evolve\Insight\Query\DiagnosticBatchQuery;
 use Evolve\Insight\Query\DiagnosticQueryService;
 use Evolve\Insight\Storage\InMemoryDiagnosticBatchStore;
@@ -24,6 +33,73 @@ use PHPUnit\Framework\TestCase;
 
 final class InsightMvpAcceptanceTest extends TestCase
 {
+    public function testInfrastructureEntriesShareNormalBatchesAndResetBetweenExecutions(): void
+    {
+        $store = new InMemoryDiagnosticBatchStore(5);
+        $pipeline = DiagnosticPipeline::storing($store, 10, 10);
+        $correlation = new ExecutionCorrelation();
+        $connection = $this->createMock(DatabaseConnection::class);
+        $connection->expects(self::exactly(3))->method('execute')->willReturn(1);
+        $database = new DatabaseDiagnosticDecorator($connection, new DiagnosticRecorder($pipeline, $correlation), new DatabaseDiagnosticPolicy(captureSql: true));
+        $statement = new DatabaseStatement('SELECT private_value', ['bound-secret']);
+        self::assertSame(1, $database->execute($statement));
+        $services = new ServiceRegistry();
+        $services->freeze();
+        $orchestrator = new ExecutionOrchestrator($services, $pipeline, [$correlation]);
+        $first = $orchestrator->execute(ExecutionKind::WorkerTask, static function () use ($database, $statement): void {
+            $database->execute($statement);
+        });
+        $second = $orchestrator->execute(ExecutionKind::WorkerTask, static function () use ($database, $statement): void {
+            $database->execute($statement);
+        });
+        self::assertTrue($first->primarySucceeded());
+        self::assertTrue($second->primarySucceeded());
+        self::assertNotSame($first->identifier()->value(), $second->identifier()->value());
+        self::assertNull($correlation->identifier());
+        foreach ([$first, $second] as $outcome) {
+            $snapshot = $store->find($outcome->identifier()->value());
+            self::assertNotNull($snapshot);
+            self::assertCount(1, $snapshot->diagnosticEntries());
+            $values = [];
+            foreach ($snapshot->diagnosticEntries()[0]->attributes() as $attribute) {
+                $values[$attribute->name()] = $attribute->value();
+            }
+            self::assertSame(1, $values['repeat_occurrence']);
+            self::assertArrayNotHasKey('sql', $values);
+            self::assertNotContains('bound-secret', $values);
+        }
+    }
+
+    public function testSqlInspectionRequiresBothDatabaseAndCapturePolicyOptIn(): void
+    {
+        $store = new InMemoryDiagnosticBatchStore(2);
+        $policy = new DiagnosticCapturePolicy(acceptedClassifications: [
+            DiagnosticDataClassification::PublicOperationalMetadata,
+            DiagnosticDataClassification::InternalOperationalMetadata,
+            DiagnosticDataClassification::BusinessSensitivePayload,
+        ]);
+        $pipeline = DiagnosticPipeline::storing($store, 10, 10, $policy);
+        $correlation = new ExecutionCorrelation();
+        $connection = $this->createMock(DatabaseConnection::class);
+        $connection->expects(self::once())->method('execute')->willReturn(1);
+        $database = new DatabaseDiagnosticDecorator($connection, new DiagnosticRecorder($pipeline, $correlation), new DatabaseDiagnosticPolicy(captureSql: true, maximumSqlLength: 8));
+        $services = new ServiceRegistry();
+        $services->freeze();
+        $orchestrator = new ExecutionOrchestrator($services, $pipeline, [$correlation]);
+        $outcome = $orchestrator->execute(ExecutionKind::WorkerTask, static function () use ($database): void {
+            $database->execute(new DatabaseStatement('SELECT private_column', ['bound-secret']));
+        });
+        $snapshot = $store->find($outcome->identifier()->value());
+        self::assertNotNull($snapshot);
+        $values = [];
+        foreach ($snapshot->diagnosticEntries()[0]->attributes() as $attribute) {
+            $values[$attribute->name()] = $attribute->value();
+        }
+        self::assertSame('SELECT p', $values['sql']);
+        self::assertTrue($values['sql_truncated']);
+        self::assertNotContains('bound-secret', $values);
+    }
+
     public function testInsightMvpCapturesPersistsQueriesAndReadsThroughExplicitAccessPolicy(): void
     {
         $store = new InMemoryDiagnosticBatchStore(5);
@@ -31,10 +107,10 @@ final class InsightMvpAcceptanceTest extends TestCase
             $store,
             10,
             10,
-            observationWatchers: array(
+            observationWatchers: [
                 new ExecutionLifecycleDiagnosticWatcher(),
                 new SensitiveOperationalWatcher(),
-            ),
+            ],
         );
         $identifier = ExecutionIdentifier::generate();
         $rawSensitiveValue = SensitiveOperationalWatcher::RAW_VALUE;
@@ -63,10 +139,10 @@ final class InsightMvpAcceptanceTest extends TestCase
         self::assertSame($identifier->value(), $page->items()[0]->executionIdentifier());
         self::assertNull($page->nextCursor());
         self::assertNotNull($detail);
-        self::assertSame(array(
-            array(DiagnosticAccessOperation::List, null),
-            array(DiagnosticAccessOperation::Detail, $identifier->value()),
-        ), $accessPolicy->calls);
+        self::assertSame([
+            [DiagnosticAccessOperation::List, null],
+            [DiagnosticAccessOperation::Detail, $identifier->value()],
+        ], $accessPolicy->calls);
 
         $entries = $detail->diagnosticEntries();
         self::assertTrue($this->containsEntry($entries, 'evolve.execution', 'handler-failed'));
@@ -98,10 +174,10 @@ final class InsightMvpAcceptanceTest extends TestCase
      */
     private function entryAttributeValues(array $entries): array
     {
-        $values = array();
+        $values = [];
 
         foreach ($entries as $entry) {
-            $entryValues = array();
+            $entryValues = [];
 
             foreach ($entry->attributes() as $attribute) {
                 $entryValues[$attribute->name()] = $attribute->value();
@@ -121,19 +197,19 @@ final class SensitiveOperationalWatcher implements ObservationDiagnosticWatcher
     public function watch(Observation $observation): array
     {
         if ($observation->type() !== ObservationType::HandlerCompleted) {
-            return array();
+            return [];
         }
 
-        return array(new DiagnosticEntry(
+        return [new DiagnosticEntry(
             $observation->identifier()->value(),
             'test.sensitive',
             'redaction-probe',
-            array(new DiagnosticAttribute(
+            [new DiagnosticAttribute(
                 'accessToken',
                 DiagnosticDataClassification::PublicOperationalMetadata,
                 self::RAW_VALUE,
-            )),
-        ));
+            )],
+        )];
     }
 }
 
@@ -142,11 +218,11 @@ final class AllowingDiagnosticAccessPolicy implements DiagnosticAccessPolicy
     /**
      * @var list<array{DiagnosticAccessOperation, ?string}>
      */
-    public array $calls = array();
+    public array $calls = [];
 
     public function allows(DiagnosticAccessOperation $operation, ?string $executionIdentifier = null): bool
     {
-        $this->calls[] = array($operation, $executionIdentifier);
+        $this->calls[] = [$operation, $executionIdentifier];
 
         return true;
     }

@@ -10,9 +10,9 @@ use Evolve\Core\Instrumentation\Observation;
 use Evolve\Core\Instrumentation\ObservationType;
 use Evolve\Insight\Capture\DefaultDiagnosticRedactor;
 use Evolve\Insight\Capture\DeterministicDiagnosticSampler;
+use Evolve\Insight\Capture\DiagnosticAttribute;
 use Evolve\Insight\Capture\DiagnosticCaptureFilter;
 use Evolve\Insight\Capture\DiagnosticCapturePolicy;
-use Evolve\Insight\Capture\DiagnosticAttribute;
 use Evolve\Insight\Capture\DiagnosticDataClassification;
 use Evolve\Insight\Capture\DiagnosticEntry;
 use Evolve\Insight\DiagnosticPipeline;
@@ -46,18 +46,18 @@ final class DiagnosticPipelineTest extends TestCase
         $pipeline = DiagnosticPipeline::storing($store, 5, 5);
         $identifier = ExecutionIdentifier::generate();
 
-        self::assertSame(array(), $store->saved);
+        self::assertSame([], $store->saved);
 
         $pipeline->observe($this->observation(ObservationType::ExecutionStarted, $identifier));
         $pipeline->capture(new DiagnosticEntry(
             $identifier->value(),
             'database',
             'query',
-            array(new DiagnosticAttribute(
+            [new DiagnosticAttribute(
                 'statement',
                 DiagnosticDataClassification::PublicOperationalMetadata,
                 'select-user',
-            )),
+            )],
         ));
         $pipeline->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
 
@@ -71,14 +71,14 @@ final class DiagnosticPipelineTest extends TestCase
     public function testZeroWatcherCompositionPreservesBackwardCompatibility(): void
     {
         $store = new RecordingSnapshotStore();
-        $pipeline = DiagnosticPipeline::storing($store, 5, 5, observationWatchers: array());
+        $pipeline = DiagnosticPipeline::storing($store, 5, 5, observationWatchers: []);
         $identifier = ExecutionIdentifier::generate();
 
         $pipeline->observe($this->observation(ObservationType::ExecutionStarted, $identifier));
         $pipeline->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
 
         self::assertCount(1, $store->saved);
-        self::assertSame(array(), $store->saved[0]->diagnosticEntries());
+        self::assertSame([], $store->saved[0]->diagnosticEntries());
     }
 
     public function testItRejectsInvalidWatcherConfigurationDuringComposition(): void
@@ -86,7 +86,7 @@ final class DiagnosticPipelineTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Observation diagnostic watchers must be observation diagnostic watchers.');
 
-        DiagnosticPipeline::storing(new RecordingSnapshotStore(), 5, 5, observationWatchers: array(new \stdClass()));
+        DiagnosticPipeline::storing(new RecordingSnapshotStore(), 5, 5, observationWatchers: [new \stdClass()]);
     }
 
     public function testConfiguredWatchersAndProducedEntriesKeepDeterministicOrder(): void
@@ -96,10 +96,10 @@ final class DiagnosticPipelineTest extends TestCase
             $store,
             5,
             6,
-            observationWatchers: array(
-                new StaticObservationWatcher('first', array('one', 'two')),
-                new StaticObservationWatcher('second', array('three')),
-            ),
+            observationWatchers: [
+                new StaticObservationWatcher('first', ['one', 'two']),
+                new StaticObservationWatcher('second', ['three']),
+            ],
         );
         $identifier = ExecutionIdentifier::generate();
 
@@ -107,8 +107,8 @@ final class DiagnosticPipelineTest extends TestCase
         $pipeline->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
 
         self::assertSame(
-            array('one', 'two', 'three', 'one', 'two', 'three'),
-            array_map(static fn ($entry): string => $entry->name(), $store->saved[0]->diagnosticEntries()),
+            ['one', 'two', 'three', 'one', 'two', 'three'],
+            array_map(static fn($entry): string => $entry->name(), $store->saved[0]->diagnosticEntries()),
         );
     }
 
@@ -119,7 +119,7 @@ final class DiagnosticPipelineTest extends TestCase
             $store,
             5,
             5,
-            observationWatchers: array(new StaticObservationWatcher('execution', array('started-candidate'))),
+            observationWatchers: [new StaticObservationWatcher('execution', ['started-candidate'])],
         );
         $identifier = ExecutionIdentifier::generate();
 
@@ -136,7 +136,7 @@ final class DiagnosticPipelineTest extends TestCase
             $store,
             5,
             5,
-            observationWatchers: array(new CompletionOnlyWatcher()),
+            observationWatchers: [new CompletionOnlyWatcher()],
         );
         $identifier = ExecutionIdentifier::generate();
 
@@ -155,7 +155,7 @@ final class DiagnosticPipelineTest extends TestCase
             $store,
             5,
             5,
-            observationWatchers: array(new HandlerMismatchedObservationWatcher($second->value())),
+            observationWatchers: [new HandlerMismatchedObservationWatcher($second->value())],
         );
 
         $pipeline->observe($this->observation(ObservationType::ExecutionStarted, $first));
@@ -172,7 +172,7 @@ final class DiagnosticPipelineTest extends TestCase
 
         self::assertCount(1, $store->saved);
         self::assertSame($second->value(), $store->saved[0]->executionIdentifier());
-        self::assertSame(array(), $store->saved[0]->diagnosticEntries());
+        self::assertSame([], $store->saved[0]->diagnosticEntries());
     }
 
     public function testWatcherCandidatesFlowThroughCapturePolicyAndCapacityAccounting(): void
@@ -183,10 +183,10 @@ final class DiagnosticPipelineTest extends TestCase
             5,
             1,
             new DiagnosticCapturePolicy(
-                filter: new DiagnosticCaptureFilter(disabledNames: array('filtered')),
+                filter: new DiagnosticCaptureFilter(disabledNames: ['filtered']),
                 sampler: new DeterministicDiagnosticSampler(100),
             ),
-            observationWatchers: array(new PolicyExerciseWatcher()),
+            observationWatchers: [new PolicyExerciseWatcher()],
         );
         $identifier = ExecutionIdentifier::generate();
 
@@ -194,7 +194,7 @@ final class DiagnosticPipelineTest extends TestCase
         $pipeline->observe($this->observation(ObservationType::HandlerCompleted, $identifier));
         $pipeline->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
 
-        self::assertSame(array('accepted'), array_map(static fn ($entry): string => $entry->name(), $store->saved[0]->diagnosticEntries()));
+        self::assertSame(['accepted'], array_map(static fn($entry): string => $entry->name(), $store->saved[0]->diagnosticEntries()));
         self::assertSame(1, $store->saved[0]->droppedDiagnosticEntryCount());
     }
 
@@ -205,7 +205,7 @@ final class DiagnosticPipelineTest extends TestCase
             $store,
             5,
             5,
-            observationWatchers: array(new SensitiveOperationalAttributeWatcher()),
+            observationWatchers: [new SensitiveOperationalAttributeWatcher()],
         );
         $identifier = ExecutionIdentifier::generate();
 
@@ -218,10 +218,10 @@ final class DiagnosticPipelineTest extends TestCase
         self::assertCount(1, $entries);
         self::assertSame('redaction-candidate', $entries[0]->name());
         self::assertSame(
-            array(
+            [
                 'authorization' => DefaultDiagnosticRedactor::REDACTION_MARKER,
                 'kind' => 'http-request',
-            ),
+            ],
             $this->snapshotAttributeValues($entries[0]->attributes()),
         );
         self::assertStringNotContainsString(
@@ -239,7 +239,7 @@ final class DiagnosticPipelineTest extends TestCase
             5,
             5,
             new DiagnosticCapturePolicy(sampler: new DeterministicDiagnosticSampler(0)),
-            observationWatchers: array(new HandlerDiagnosticWatcher('sampled-out')),
+            observationWatchers: [new HandlerDiagnosticWatcher('sampled-out')],
         );
         $identifier = ExecutionIdentifier::generate();
 
@@ -247,7 +247,7 @@ final class DiagnosticPipelineTest extends TestCase
         $pipeline->observe($this->observation(ObservationType::HandlerCompleted, $identifier));
         $pipeline->observe($this->observation(ObservationType::ExecutionCompleted, $identifier));
 
-        self::assertSame(array(), $store->saved[0]->diagnosticEntries());
+        self::assertSame([], $store->saved[0]->diagnosticEntries());
         self::assertSame(0, $store->saved[0]->droppedDiagnosticEntryCount());
     }
 
@@ -258,7 +258,7 @@ final class DiagnosticPipelineTest extends TestCase
             $store,
             5,
             5,
-            observationWatchers: array(new HandlerDiagnosticWatcher('handler-produced')),
+            observationWatchers: [new HandlerDiagnosticWatcher('handler-produced')],
         );
         $first = ExecutionIdentifier::generate();
         $second = ExecutionIdentifier::generate();
@@ -277,8 +277,8 @@ final class DiagnosticPipelineTest extends TestCase
         self::assertNotNull($secondSnapshot);
         self::assertSame($first->value(), $firstSnapshot->executionIdentifier());
         self::assertSame($second->value(), $secondSnapshot->executionIdentifier());
-        self::assertSame(array('http-request'), $this->snapshotEntryAttributeValues($firstSnapshot, 'kind'));
-        self::assertSame(array('queue-message'), $this->snapshotEntryAttributeValues($secondSnapshot, 'kind'));
+        self::assertSame(['http-request'], $this->snapshotEntryAttributeValues($firstSnapshot, 'kind'));
+        self::assertSame(['queue-message'], $this->snapshotEntryAttributeValues($secondSnapshot, 'kind'));
     }
 
     public function testWatcherFailureDuringCompletionStillFinalizesAndDoesNotResurrectState(): void
@@ -288,7 +288,7 @@ final class DiagnosticPipelineTest extends TestCase
             $store,
             5,
             5,
-            observationWatchers: array(new ThrowingCompletionWatcher()),
+            observationWatchers: [new ThrowingCompletionWatcher()],
         );
         $identifier = ExecutionIdentifier::generate();
 
@@ -305,20 +305,19 @@ final class DiagnosticPipelineTest extends TestCase
             $identifier->value(),
             'runtime',
             'late',
-            array(new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, 'ignored')),
+            [new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, 'ignored')],
         ));
         $pipeline->observe($this->observation(ObservationType::ExecutionStarted, $identifier));
 
         self::assertCount(1, $store->saved);
-        self::assertSame(array(), $store->saved[0]->diagnosticEntries());
+        self::assertSame([], $store->saved[0]->diagnosticEntries());
     }
 
     private function observation(
         ObservationType $type,
         ExecutionIdentifier $identifier,
         ExecutionKind $kind = ExecutionKind::HttpRequest,
-    ): Observation
-    {
+    ): Observation {
         return new Observation($type, $identifier, $kind);
     }
 
@@ -329,7 +328,7 @@ final class DiagnosticPipelineTest extends TestCase
      */
     private function snapshotAttributeValues(array $attributes): array
     {
-        $values = array();
+        $values = [];
 
         foreach ($attributes as $attribute) {
             $values[$attribute->name()] = $attribute->value();
@@ -343,7 +342,7 @@ final class DiagnosticPipelineTest extends TestCase
      */
     private function snapshotEntryAttributeValues(DiagnosticBatchSnapshot $snapshot, string $attributeName): array
     {
-        $values = array();
+        $values = [];
 
         foreach ($snapshot->diagnosticEntries() as $entry) {
             foreach ($entry->attributes() as $attribute) {
@@ -367,11 +366,11 @@ final class StaticObservationWatcher implements ObservationDiagnosticWatcher
     public function watch(Observation $observation): array
     {
         return array_map(
-            fn (string $name): DiagnosticEntry => new DiagnosticEntry(
+            fn(string $name): DiagnosticEntry => new DiagnosticEntry(
                 $observation->identifier()->value(),
                 $this->category,
                 $name,
-                array(new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)),
+                [new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)],
             ),
             $this->names,
         );
@@ -383,15 +382,15 @@ final class CompletionOnlyWatcher implements ObservationDiagnosticWatcher
     public function watch(Observation $observation): array
     {
         if ($observation->type() !== ObservationType::ExecutionCompleted) {
-            return array();
+            return [];
         }
 
-        return array(new DiagnosticEntry(
+        return [new DiagnosticEntry(
             $observation->identifier()->value(),
             'execution',
             'completion-candidate',
-            array(new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)),
-        ));
+            [new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)],
+        )];
     }
 }
 
@@ -402,15 +401,15 @@ final class HandlerMismatchedObservationWatcher implements ObservationDiagnostic
     public function watch(Observation $observation): array
     {
         if ($observation->type() !== ObservationType::HandlerCompleted) {
-            return array();
+            return [];
         }
 
-        return array(new DiagnosticEntry(
+        return [new DiagnosticEntry(
             $this->executionIdentifier,
             'execution',
             'mismatched',
-            array(new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)),
-        ));
+            [new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)],
+        )];
     }
 }
 
@@ -419,35 +418,35 @@ final class PolicyExerciseWatcher implements ObservationDiagnosticWatcher
     public function watch(Observation $observation): array
     {
         if ($observation->type() !== ObservationType::HandlerCompleted) {
-            return array();
+            return [];
         }
 
-        return array(
+        return [
             new DiagnosticEntry(
                 $observation->identifier()->value(),
                 'runtime',
                 'filtered',
-                array(new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)),
+                [new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)],
             ),
             new DiagnosticEntry(
                 $observation->identifier()->value(),
                 'runtime',
                 'suppressed',
-                array(new DiagnosticAttribute('payload', DiagnosticDataClassification::PersonalData, 'person@example.test')),
+                [new DiagnosticAttribute('payload', DiagnosticDataClassification::PersonalData, 'person@example.test')],
             ),
             new DiagnosticEntry(
                 $observation->identifier()->value(),
                 'runtime',
                 'accepted',
-                array(new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)),
+                [new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)],
             ),
             new DiagnosticEntry(
                 $observation->identifier()->value(),
                 'runtime',
                 'over-capacity',
-                array(new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)),
+                [new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)],
             ),
-        );
+        ];
     }
 }
 
@@ -456,22 +455,22 @@ final class SensitiveOperationalAttributeWatcher implements ObservationDiagnosti
     public function watch(Observation $observation): array
     {
         if ($observation->type() !== ObservationType::HandlerCompleted) {
-            return array();
+            return [];
         }
 
-        return array(new DiagnosticEntry(
+        return [new DiagnosticEntry(
             $observation->identifier()->value(),
             'runtime',
             'redaction-candidate',
-            array(
+            [
                 new DiagnosticAttribute(
                     'authorization',
                     DiagnosticDataClassification::PublicOperationalMetadata,
                     'Bearer original-sensitive-value',
                 ),
                 new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value),
-            ),
-        ));
+            ],
+        )];
     }
 }
 
@@ -482,15 +481,15 @@ final class HandlerDiagnosticWatcher implements ObservationDiagnosticWatcher
     public function watch(Observation $observation): array
     {
         if ($observation->type() !== ObservationType::HandlerCompleted) {
-            return array();
+            return [];
         }
 
-        return array(new DiagnosticEntry(
+        return [new DiagnosticEntry(
             $observation->identifier()->value(),
             'runtime',
             $this->name,
-            array(new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)),
-        ));
+            [new DiagnosticAttribute('kind', DiagnosticDataClassification::PublicOperationalMetadata, $observation->kind()->value)],
+        )];
     }
 }
 
@@ -502,7 +501,7 @@ final class ThrowingCompletionWatcher implements ObservationDiagnosticWatcher
             throw new \RuntimeException('watcher failed');
         }
 
-        return array();
+        return [];
     }
 }
 
@@ -511,7 +510,7 @@ final class RecordingSnapshotStore implements DiagnosticBatchStore
     /**
      * @var list<DiagnosticBatchSnapshot>
      */
-    public array $saved = array();
+    public array $saved = [];
 
     public function save(DiagnosticBatchSnapshot $snapshot): void
     {

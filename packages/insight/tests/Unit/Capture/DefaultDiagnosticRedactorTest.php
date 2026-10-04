@@ -64,7 +64,7 @@ final class DefaultDiagnosticRedactorTest extends TestCase
      */
     private function sensitiveMachineNames(): array
     {
-        return array(
+        return [
             'authorization',
             'authentication',
             'password',
@@ -83,6 +83,6 @@ final class DefaultDiagnosticRedactorTest extends TestCase
             'sessionId',
             'sessionIdentifier',
             'setCookie',
-        );
+        ];
     }
 }

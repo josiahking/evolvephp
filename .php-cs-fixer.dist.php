@@ -52,6 +52,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/view-blade/tests',
         'packages/i18n/src',
         'packages/i18n/tests',
+        'packages/insight/src',
+        'packages/insight/tests',
         'packages/observe/src',
         'packages/observe/tests',
         'packages/dev-tools/src',

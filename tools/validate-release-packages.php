@@ -187,7 +187,7 @@ function expectedGraph(): array
         'evolvephp/view-twig' => array('evolvephp/view'),
         'evolvephp/view-blade' => array('evolvephp/view'),
         'evolvephp/i18n' => array('evolvephp/core'),
-        'evolvephp/insight' => array('evolvephp/core'),
+        'evolvephp/insight' => array('evolvephp/core', 'evolvephp/database-contracts', 'evolvephp/queue-contracts', 'evolvephp/storage-contracts'),
         'evolvephp/observe' => array('evolvephp/core', 'evolvephp/http'),
         'evolvephp/module' => array('evolvephp/contracts'),
         'evolvephp/plugin' => array('evolvephp/contracts'),
