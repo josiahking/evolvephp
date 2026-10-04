@@ -10,6 +10,7 @@ EvolvePHP 2 is Alpha/pre-release software. It is not production-ready and is not
 - HTTP foundations for middleware, routing, routed dispatch, HTTP execution, response resolution and explicit response emission boundary.
 - Experimental server-rendered View contract, explicit source resolution and native trusted-PHP templates with escaping helpers, layouts, partials and sections.
 - Optional Twig and Blade View adapters with explicit installation and selection; neither is a default skeleton dependency or an Insight prerequisite.
+- First-party i18n foundation with explicit PHP-array catalogs, deterministic locale fallback and optional explicitly selected Intl formatting.
 - Module and plugin descriptors, dependency/capability graph support, restricted service registration, Composer plugin discovery and application-controlled enablement.
 - Development-time Audit, adoption planning declarations, Doctor support, `route:list` and optional starter generators.
 - Bridge contracts, PSR, Laravel, Symfony, remote protocol/client/server foundations and the isolated legacy HTTP client.
@@ -23,7 +24,7 @@ EvolvePHP 2 is Alpha/pre-release software. It is not production-ready and is not
 ## Deferred
 
 - Complete concrete web runtime and concrete SAPI adapter support.
-- Localization for View remains deferred; no HTTP response/view helper is implemented.
+- Automatic locale negotiation, built-in View translation wiring and validation-specific localization remain deferred; no HTTP response/view helper is implemented.
 - SAPI request creation, concrete response emission, production web bootstrap and deployment scaffolding.
 - Public package publication and public Packagist installation.
 - Automatic migration, automatic cutover and automatic rollback.

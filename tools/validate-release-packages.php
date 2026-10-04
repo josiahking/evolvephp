@@ -100,6 +100,7 @@ function expectedPackages(): array
         'evolvephp/view' => array('name' => 'evolvephp/view', 'directory' => 'packages/view'),
         'evolvephp/view-twig' => array('name' => 'evolvephp/view-twig', 'directory' => 'packages/view-twig'),
         'evolvephp/view-blade' => array('name' => 'evolvephp/view-blade', 'directory' => 'packages/view-blade'),
+        'evolvephp/i18n' => array('name' => 'evolvephp/i18n', 'directory' => 'packages/i18n'),
         'evolvephp/insight' => array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
         'evolvephp/module' => array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
         'evolvephp/plugin' => array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
@@ -144,6 +145,7 @@ function expectedNamespaces(): array
         'evolvephp/view' => 'Evolve\\View\\',
         'evolvephp/view-twig' => 'Evolve\\View\\Twig\\',
         'evolvephp/view-blade' => 'Evolve\\View\\Blade\\',
+        'evolvephp/i18n' => 'Evolve\\I18n\\',
         'evolvephp/insight' => 'Evolve\\Insight\\',
         'evolvephp/observe' => 'Evolve\\Observe\\',
         'evolvephp/dev-tools' => 'Evolve\\DevTools\\',
@@ -184,6 +186,7 @@ function expectedGraph(): array
         'evolvephp/view' => array(),
         'evolvephp/view-twig' => array('evolvephp/view'),
         'evolvephp/view-blade' => array('evolvephp/view'),
+        'evolvephp/i18n' => array('evolvephp/core'),
         'evolvephp/insight' => array('evolvephp/core'),
         'evolvephp/observe' => array('evolvephp/core', 'evolvephp/http'),
         'evolvephp/module' => array('evolvephp/contracts'),
@@ -215,8 +218,8 @@ function validateMap(string $root): array
         fail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 31) {
-        fail('release-packages.json must contain exactly thirty-one package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 32) {
+        fail('release-packages.json must contain exactly thirty-two package entries.');
     }
 
     $expectedPackages = array_values(expectedPackages());
@@ -385,12 +388,16 @@ function validateManifest(array $package, array $manifest, array $mappedNames): 
         fail($label . ' must require PHP ^8.4.');
     }
 
-    $adapterDependencies = array(
+    $fixedDependencies = array(
         'evolvephp/view-twig' => array('php' => '^8.4', 'evolvephp/view' => '^2.0', 'twig/twig' => '^3.30'),
         'evolvephp/view-blade' => array('php' => '^8.4', 'evolvephp/view' => '^2.0', 'illuminate/container' => '^13.0', 'illuminate/events' => '^13.0', 'illuminate/filesystem' => '^13.0', 'illuminate/view' => '^13.0'),
+        'evolvephp/i18n' => array('php' => '^8.4', 'evolvephp/core' => '^2.0'),
     );
-    if (isset($adapterDependencies[$package['name']]) && $manifest['require'] !== $adapterDependencies[$package['name']]) {
-        fail($label . ' adapter dependencies do not match the accepted runtime set.');
+    if (isset($fixedDependencies[$package['name']]) && $manifest['require'] !== $fixedDependencies[$package['name']]) {
+        fail($label . ' dependencies do not match the accepted runtime set.');
+    }
+    if ($package['name'] === 'evolvephp/i18n' && (!isset($manifest['suggest']['ext-intl']) || !is_string($manifest['suggest']['ext-intl']))) {
+        fail($label . ' must describe optional Intl capability without requiring ext-intl.');
     }
 
     if (array_key_exists('version', $manifest)) {

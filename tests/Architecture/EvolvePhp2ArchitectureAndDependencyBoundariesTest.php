@@ -120,6 +120,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
                 'PsrHttpMessage' => '^Psr\\\\Http\\\\Message\\\\.*',
                 'PsrHttpClient' => '^Psr\\\\Http\\\\Client\\\\.*',
                 'PsrHttpServer' => '^Psr\\\\Http\\\\Server\\\\.*',
+                'PhpIntl' => '^(IntlDateFormatter|MessageFormatter|NumberFormatter)$',
                 'TwigEngine' => '^Twig\\\\(Environment|Source|Loader\\\\LoaderInterface|Error\\\\LoaderError)$',
                 'IlluminateViewEngine' => '^Illuminate\\\\(Container\\\\Container|Contracts\\\\Support\\\\Arrayable|Events\\\\Dispatcher|Filesystem\\\\Filesystem|View\\\\.*)$',
                 'OpenTelemetryApi' => '^OpenTelemetry\\\\(API|Context)\\\\.*',
@@ -274,6 +275,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'View' => 'packages/view/src/.*',
             'ViewTwig' => 'packages/view-twig/src/.*',
             'ViewBlade' => 'packages/view-blade/src/.*',
+            'I18n' => 'packages/i18n/src/.*',
             'Insight' => 'packages/insight/src/.*',
             'Observe' => 'packages/observe/src/.*',
             'DevTools' => 'packages/dev-tools/src/.*',
@@ -315,6 +317,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'PsrHttpServer' => array(),
             'TwigEngine' => array(),
             'IlluminateViewEngine' => array(),
+            'PhpIntl' => array(),
             'OpenTelemetryApi' => array(),
             'OpenTelemetrySdk' => array(),
             'OpenTelemetrySemConv' => array(),
@@ -325,6 +328,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'View' => array(),
             'ViewTwig' => array('View', 'TwigEngine'),
             'ViewBlade' => array('View', 'IlluminateViewEngine'),
+            'I18n' => array('Core', 'PhpIntl'),
             'Insight' => array('Core'),
             'Observe' => array('Core', 'Http', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'PsrHttpMessage', 'PsrHttpServer'),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
@@ -394,6 +398,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'psrHttpServer' => 'PsrHttpServer',
             'twigEngine' => 'TwigEngine',
             'illuminateViewEngine' => 'IlluminateViewEngine',
+            'phpIntl' => 'PhpIntl',
             'openTelemetryApi' => 'OpenTelemetryApi',
             'openTelemetrySdk' => 'OpenTelemetrySdk',
             'openTelemetrySemConv' => 'OpenTelemetrySemConv',
@@ -404,6 +409,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'view' => 'View',
             'viewTwig' => 'ViewTwig',
             'viewBlade' => 'ViewBlade',
+            'i18n' => 'I18n',
             'insight' => 'Insight',
             'observe' => 'Observe',
             'devTools' => 'DevTools',
@@ -421,7 +427,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|queueContracts|storageContracts|storageLocal|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|cronExpression|psrHttpMessage|psrHttpClient|psrHttpServer|twigEngine|illuminateViewEngine|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|laravelHost|symfonyHost|core|job|scheduler|viewTwig|viewBlade|view|insight|observe|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|queueContracts|storageContracts|storageLocal|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|cronExpression|psrHttpMessage|psrHttpClient|psrHttpServer|twigEngine|illuminateViewEngine|phpIntl|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|laravelHost|symfonyHost|core|job|scheduler|viewTwig|viewBlade|view|i18n|insight|observe|devTools|http|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
@@ -474,6 +480,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/view/src' => 'Evolve\\View\\',
             'packages/view-twig/src' => 'Evolve\\View\\Twig\\',
             'packages/view-blade/src' => 'Evolve\\View\\Blade\\',
+            'packages/i18n/src' => 'Evolve\\I18n\\',
             'packages/insight/src' => 'Evolve\\Insight\\',
             'packages/observe/src' => 'Evolve\\Observe\\',
             'packages/dev-tools/src' => 'Evolve\\DevTools\\',
@@ -509,6 +516,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/view/composer.json',
             'packages/view-twig/composer.json',
             'packages/view-blade/composer.json',
+            'packages/i18n/composer.json',
             'packages/insight/composer.json',
             'packages/dev-tools/composer.json',
             'packages/http/composer.json',

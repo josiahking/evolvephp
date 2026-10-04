@@ -25,7 +25,7 @@ final class PackageManifestTest extends TestCase
         self::assertArrayNotHasKey('require-dev', $package);
         $inventory = json_decode((string) file_get_contents(dirname(__DIR__, 4) . '/release-packages.json'), true, flags: JSON_THROW_ON_ERROR);
         $names = array_column($inventory['packages'], 'name');
-        self::assertCount(31, $names);
-        self::assertSame(['evolvephp/job', 'evolvephp/scheduler', 'evolvephp/migration', 'evolvephp/view', 'evolvephp/view-twig', 'evolvephp/view-blade', 'evolvephp/insight'], array_slice($names, array_search('evolvephp/job', $names, true), 7));
+        self::assertCount(32, $names);
+        self::assertSame(['evolvephp/job', 'evolvephp/scheduler', 'evolvephp/migration', 'evolvephp/view', 'evolvephp/view-twig', 'evolvephp/view-blade', 'evolvephp/i18n', 'evolvephp/insight'], array_slice($names, array_search('evolvephp/job', $names, true), 8));
     }
 }

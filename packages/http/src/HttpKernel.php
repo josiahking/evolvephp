@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Evolve\Http;
 
 use Evolve\Core\Execution\ExecutionContext;
+use Evolve\Core\Execution\ExecutionContextValues;
 use Evolve\Core\Execution\ExecutionKind;
 use Evolve\Core\Execution\ExecutionOrchestrator;
 use Evolve\Core\Execution\ExecutionOutcome;
@@ -20,7 +21,7 @@ final readonly class HttpKernel
         private ExecutionOrchestrator $executions,
     ) {}
 
-    public function handle(ServerRequestInterface $request): ExecutionOutcome
+    public function handle(ServerRequestInterface $request, ?ExecutionContextValues $values = null): ExecutionOutcome
     {
         return $this->executions->execute(
             ExecutionKind::HttpRequest,
@@ -31,6 +32,7 @@ final readonly class HttpKernel
 
                 return $this->handler->handle($executionRequest);
             },
+            $values,
         );
     }
 }

@@ -50,6 +50,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/view-twig/tests',
         'packages/view-blade/src',
         'packages/view-blade/tests',
+        'packages/i18n/src',
+        'packages/i18n/tests',
         'packages/observe/src',
         'packages/observe/tests',
         'packages/dev-tools/src',

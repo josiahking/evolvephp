@@ -11,6 +11,7 @@ use Evolve\Core\Container\ServiceRegistry;
 use Evolve\Core\Exception\ExecutionResetFailed;
 use Evolve\Core\Exception\ExecutionStartFailed;
 use Evolve\Core\Execution\ExecutionContext;
+use Evolve\Core\Execution\ExecutionContextValues;
 use Evolve\Core\Execution\ExecutionIdentifier;
 use Evolve\Core\Execution\ExecutionKind;
 use Evolve\Core\Execution\ExecutionOrchestrator;
@@ -44,6 +45,21 @@ use WeakReference;
 
 final class HttpKernelTest extends TestCase
 {
+    public function test_explicit_execution_values_propagate_without_sequential_leak(): void
+    {
+        $handler = new RecordingKernelHandler($this->response());
+        $kernel = new HttpKernel($handler, $this->orchestrator());
+        $kernel->handle($this->request('GET', '/first'), new ExecutionContextValues('en_NG', 'Africa/Lagos'));
+        $kernel->handle($this->request('GET', '/second'), new ExecutionContextValues('fr_FR', 'Europe/Paris'));
+        $kernel->handle($this->request('GET', '/third'));
+        self::assertSame('en_NG', $handler->requests[0]->getAttribute(ExecutionContext::class)->locale());
+        self::assertSame('Africa/Lagos', $handler->requests[0]->getAttribute(ExecutionContext::class)->timezone());
+        self::assertSame('fr_FR', $handler->requests[1]->getAttribute(ExecutionContext::class)->locale());
+        self::assertSame('Europe/Paris', $handler->requests[1]->getAttribute(ExecutionContext::class)->timezone());
+        self::assertNull($handler->requests[2]->getAttribute(ExecutionContext::class)->locale());
+        self::assertNull($handler->requests[2]->getAttribute(ExecutionContext::class)->timezone());
+    }
+
     public function test_public_api_is_final_readonly_and_returns_execution_outcome_not_psr_15(): void
     {
         $reflection = new ReflectionClass(HttpKernel::class);

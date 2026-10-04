@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Added the experimental `evolvephp/view` package with an engine-neutral renderer contract, explicit confined view sources, trusted native PHP templates, escaping helpers, layouts, partials, sections and per-render isolation. Added a recording renderer in `evolvephp/testing`; localization remains deferred.
+- Added the experimental `evolvephp/view` package with an engine-neutral renderer contract, explicit confined view sources, trusted native PHP templates, escaping helpers, layouts, partials, sections and per-render isolation. Added a recording renderer in `evolvephp/testing`.
+- Added the experimental `evolvephp/i18n` package with explicit locale policy and fallback, PHP-array message catalogs, contextual translation and opt-in Intl message and locale formatting. Applications register sources and compose translators with View explicitly; validation-specific consumers remain future work.
 - Added optional `evolvephp/view-twig` and `evolvephp/view-blade` adapters with explicit source registration, engine-native escaping, and per-render cleanup. The native PHP renderer remains the zero-third-party-dependency default; neither adapter is installed by the application skeleton or required by Insight.
 - Added the experimental `evolvephp/migration` one-shot runtime with explicit contributors, deterministic planning, storage-neutral applied history, optional database transactions, non-blocking lock protection and a Core `migrate` command adapter.
 - Added the experimental `evolvephp/scheduler` one-tick runtime with explicit timezone cron evaluation, bounded catch-up, direct command execution, queue publication, optional overlap leases and Core-owned execution outcomes.

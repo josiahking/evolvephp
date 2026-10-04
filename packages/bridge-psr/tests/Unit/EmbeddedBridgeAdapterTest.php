@@ -39,6 +39,25 @@ use WeakReference;
 
 final class EmbeddedBridgeAdapterTest extends TestCase
 {
+    public function test_host_locale_values_reach_execution_and_invalid_values_return_safe_validation_error(): void
+    {
+        $handler = new BridgeRecordingHandler(new BridgeResponse(200));
+        $adapter = $this->adapter($handler);
+        $adapter->invoke($this->request('GET', '/first'), new BridgeContext('a', 'b', locale: 'en_NG', timezone: 'Africa/Lagos'));
+        $adapter->invoke($this->request('GET', '/second'), $this->context());
+        self::assertSame('en_NG', $handler->requests[0]->getAttribute(ExecutionContext::class)->locale());
+        self::assertSame('Africa/Lagos', $handler->requests[0]->getAttribute(ExecutionContext::class)->timezone());
+        self::assertNull($handler->requests[1]->getAttribute(ExecutionContext::class)->locale());
+        foreach ([new BridgeContext('a', 'b', locale: 'en/../x'), new BridgeContext('a', 'b', timezone: 'Bad/Zone')] as $context) {
+            $result = $adapter->invoke($this->request('GET', '/invalid'), $context);
+            self::assertNull($result->response());
+            self::assertSame(BridgeErrorKind::Validation, $result->error()?->kind());
+            self::assertSame('embedded_invalid_execution_context', $result->error()->code());
+            self::assertFalse($result->error()->isRetryable());
+        }
+        self::assertCount(2, $handler->requests);
+    }
+
     public function test_not_ready_prevents_kernel_execution_and_returns_safe_boot_error(): void
     {
         $handler = new BridgeRecordingHandler(new BridgeResponse(200));

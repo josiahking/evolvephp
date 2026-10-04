@@ -12,6 +12,8 @@ EvolvePHP is a modernization-first PHP framework project for building modular ap
 
 The current EvolvePHP 2 repository contains package boundaries, runtime-neutral foundations, HTTP foundations, Bridge foundations, developer tooling and root quality-tooling foundations. EvolvePHP 2 is under development and not production-ready. Runtime framework implementation is not yet complete, framework development is pre-release, and the packages are not yet published.
 
+The first-party `evolvephp/i18n` foundation provides explicit localization policy, PHP-array message catalogs and contextual translation. Applications register sources and select locales; optional Intl formatters require explicit selection. View composition is application-owned, and templates remain responsible for escaping translated text.
+
 EvolvePHP 2 requires PHP 8.4. The current root quality pipeline is verified by GitHub Actions on PHP 8.4 and PHP 8.5 for the current root, tooling and package foundation.
 
 ## Current Status

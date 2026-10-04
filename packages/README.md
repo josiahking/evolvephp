@@ -10,7 +10,7 @@ All package manifests require PHP `^8.4`.
 
 EvolvePHP 2 packages continue to require PHP `^8.4`. `compat/legacy-http-client` is a separate isolated remote compatibility artifact for legacy applications whose initial official legacy runtime evidence is PHP 7.4.
 
-The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 31-package release map.
+The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 32-package release map.
 
 The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge endpoint. It does not enable embedded or same-process EvolvePHP on PHP 7, lower Core or package requirements, share sessions or cookies, provide automatic retries or fallback routing, or perform modernization cutover or data migration.
 
@@ -41,6 +41,7 @@ The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge e
 | `evolvephp/view` | `Evolve\View\` | Experimental view contract, explicit source resolver and trusted native PHP renderer. |
 | `evolvephp/view-twig` | `Evolve\View\Twig\` | Optional Twig renderer for explicit `.html.twig` sources. |
 | `evolvephp/view-blade` | `Evolve\View\Blade\` | Optional Blade renderer for explicit `.blade.php` sources and a caller-provided compilation cache. |
+| `evolvephp/i18n` | `Evolve\I18n\` | Explicit locale policy, confined PHP-array catalogs, contextual translation and optional Intl formatting. |
 | `evolvephp/insight` | `Evolve\Insight\` | Optional diagnostic-batch collection foundation that consumes safe Core execution observations and finalizes immutable bounded per-execution batches for caller-owned storage-neutral sinks. |
 | `evolvephp/observe` | `Evolve\Observe\` | Optional OpenTelemetry composition, generic execution tracing and metrics, explicit HTTP SERVER tracing and metrics, structured-log correlation, bounded SDK export-processing integration, remote Bridge W3C continuity boundary and application-owned providers/exporters/transports with the final package boundary intentionally closed to first-party Bridge and Insight dependencies. |
 | `evolvephp/dev-tools` | `Evolve\DevTools\` | Development-only tooling boundary with public experimental `module:new` and `plugin:new` command adapters, read-only Audit APIs and the standalone `evolve-audit` binary for root Composer, resolved lockfile, PHP source coupling and lexical source-structure evidence, plus adoption-planning models for explicit migration declarations. |

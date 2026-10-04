@@ -46,6 +46,7 @@
                     "evolvephp/dev-tools": "2.0.x-dev",
                     "evolvephp/http": "2.0.x-dev",
                     "evolvephp/http-client": "2.0.x-dev",
+                    "evolvephp/i18n": "2.0.x-dev",
                     "evolvephp/insight": "2.0.x-dev",
                     "evolvephp/job": "2.0.x-dev",
                     "evolvephp/scheduler": "2.0.x-dev",
@@ -72,6 +73,7 @@
         "evolvephp/contracts": "^2.0@dev",
         "evolvephp/core": "^2.0@dev",
         "evolvephp/http": "^2.0@dev",
+        "evolvephp/i18n": "^2.0@dev",
         "evolvephp/module": "^2.0@dev",
         "evolvephp/plugin": "^2.0@dev",
         "evolvephp/view": "^2.0@dev"
@@ -145,6 +147,7 @@
         "test:dev-tools": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite dev-tools",
         "test:http": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http",
         "test:http-client": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite http-client",
+        "test:i18n": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite i18n",
         "test:insight": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite insight",
         "test:job": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite job",
         "test:scheduler": "@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite scheduler",

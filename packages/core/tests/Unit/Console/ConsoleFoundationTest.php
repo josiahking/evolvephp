@@ -13,6 +13,10 @@ use Evolve\Core\Console\CommandRunner;
 use Evolve\Core\Container\ServiceRegistry;
 use Evolve\Core\Exception\CommandNotFound;
 use Evolve\Core\Exception\InvalidCommandDefinition;
+use Evolve\Core\Execution\ExecutionContext;
+use Evolve\Core\Execution\ExecutionContextAttacher;
+use Evolve\Core\Execution\ExecutionContextAttachment;
+use Evolve\Core\Execution\ExecutionContextValues;
 use Evolve\Core\Execution\ExecutionKind;
 use Evolve\Core\Execution\ExecutionOrchestrator;
 use Evolve\Core\Execution\ProcessReuseDecision;
@@ -29,6 +33,26 @@ use Throwable;
 
 final class ConsoleFoundationTest extends TestCase
 {
+    public function test_runner_passes_optional_execution_values_and_keeps_legacy_calls(): void
+    {
+        $attacher = new class implements ExecutionContextAttacher {
+            /** @var list<array{?string, ?string}> */
+            public array $seen = [];
+            public function attach(ExecutionContext $context): ExecutionContextAttachment
+            {
+                $this->seen[] = [$context->locale(), $context->timezone()];
+                return new class implements ExecutionContextAttachment {
+                    public function detach(): void {}
+                };
+            }
+        };
+        $registry = $this->frozenRegistry();
+        $runner = new CommandRunner(new CommandRegistry([new RecordingCommand('doctor', 'Inspect.', new CommandResult(0))]), new ExecutionOrchestrator($registry, executionContextAttachers: [$attacher]));
+        $runner->run('doctor', new CommandInput(), new InMemoryCommandOutput(), new ExecutionContextValues('en_NG', 'Africa/Lagos'));
+        $runner->run('doctor', new CommandInput(), new InMemoryCommandOutput());
+        self::assertSame([['en_NG', 'Africa/Lagos'], [null, null]], $attacher->seen);
+    }
+
     public function test_command_input_accepts_empty_and_preserves_ordered_string_tokens(): void
     {
         self::assertSame([], (new CommandInput())->tokens());
