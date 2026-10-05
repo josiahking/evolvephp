@@ -49,7 +49,7 @@ final class DiagnosticObservationSnapshotTest extends TestCase
         );
 
         self::assertSame(
-            array('errorType', 'outcome', 'reuseDecision', 'type'),
+            ['errorType', 'outcome', 'reuseDecision', 'type'],
             $this->publicMethods($snapshot),
         );
     }
@@ -60,12 +60,12 @@ final class DiagnosticObservationSnapshotTest extends TestCase
     private function publicMethods(object $object): array
     {
         $methods = array_map(
-            static fn (\ReflectionMethod $method): string => $method->getName(),
+            static fn(\ReflectionMethod $method): string => $method->getName(),
             (new \ReflectionClass($object))->getMethods(\ReflectionMethod::IS_PUBLIC),
         );
         $methods = array_values(array_filter(
             $methods,
-            static fn (string $method): bool => $method !== '__construct',
+            static fn(string $method): bool => $method !== '__construct',
         ));
         sort($methods);
 

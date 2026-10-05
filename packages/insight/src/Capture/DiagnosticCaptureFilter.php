@@ -9,18 +9,18 @@ final class DiagnosticCaptureFilter
     /**
      * @var array<string, true>
      */
-    private array $disabledCategories = array();
+    private array $disabledCategories = [];
 
     /**
      * @var array<string, true>
      */
-    private array $disabledNames = array();
+    private array $disabledNames = [];
 
     /**
      * @param list<string> $disabledCategories
      * @param list<string> $disabledNames
      */
-    public function __construct(array $disabledCategories = array(), array $disabledNames = array())
+    public function __construct(array $disabledCategories = [], array $disabledNames = [])
     {
         foreach ($disabledCategories as $category) {
             DiagnosticAttribute::assertBoundedNonEmptyString($category, 'Disabled diagnostic category', DiagnosticEntry::MAX_CATEGORY_LENGTH);

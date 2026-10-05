@@ -33,21 +33,21 @@ final class ExecutionLifecycleDiagnosticWatcherTest extends TestCase
         self::assertSame('evolve.execution', $entries[0]->category());
         self::assertSame('handler-failed', $entries[0]->name());
         self::assertSame(
-            array(
+            [
                 'execution_kind' => 'http-request',
                 'error_type' => \RuntimeException::class,
-            ),
+            ],
             $this->attributeValues($entries[0]->attributes()),
         );
         self::assertSame(
-            array(
+            [
                 'execution_kind' => DiagnosticDataClassification::PublicOperationalMetadata,
                 'error_type' => DiagnosticDataClassification::InternalOperationalMetadata,
-            ),
+            ],
             $this->attributeClassifications($entries[0]->attributes()),
         );
 
-        self::assertSame(array(), $this->watcher()->watch(new Observation(
+        self::assertSame([], $this->watcher()->watch(new Observation(
             ObservationType::HandlerCompleted,
             $identifier,
             ExecutionKind::HttpRequest,
@@ -71,11 +71,11 @@ final class ExecutionLifecycleDiagnosticWatcherTest extends TestCase
         self::assertSame('evolve.runtime', $entries[0]->category());
         self::assertSame('scope-close-failed', $entries[0]->name());
         self::assertSame(
-            array(
+            [
                 'execution_kind' => 'queue-message',
                 'error_type' => \LogicException::class,
                 'reuse_decision' => 'quarantine-required',
-            ),
+            ],
             $this->attributeValues($entries[0]->attributes()),
         );
     }
@@ -94,19 +94,19 @@ final class ExecutionLifecycleDiagnosticWatcherTest extends TestCase
         self::assertSame('evolve.runtime', $entries[0]->category());
         self::assertSame('quarantine-required', $entries[0]->name());
         self::assertSame(
-            array(
+            [
                 'execution_kind' => 'worker-task',
                 'reuse_decision' => 'quarantine-required',
-            ),
+            ],
             $this->attributeValues($entries[0]->attributes()),
         );
 
         foreach ($entries[0]->attributes() as $attribute) {
-            self::assertContains($attribute->classification(), array(
+            self::assertContains($attribute->classification(), [
                 DiagnosticDataClassification::PublicOperationalMetadata,
                 DiagnosticDataClassification::InternalOperationalMetadata,
-            ));
-            self::assertContains(gettype($attribute->value()), array('string', 'integer', 'double', 'boolean', 'NULL'));
+            ]);
+            self::assertContains(gettype($attribute->value()), ['string', 'integer', 'double', 'boolean', 'NULL']);
         }
     }
 
@@ -115,15 +115,15 @@ final class ExecutionLifecycleDiagnosticWatcherTest extends TestCase
         $identifier = ExecutionIdentifier::generate();
         $watcher = $this->watcher();
 
-        foreach (array(
+        foreach ([
             ObservationType::ExecutionStarted,
             ObservationType::ScopeCloseStarted,
             ObservationType::ExecutionCompleted,
-        ) as $type) {
-            self::assertSame(array(), $watcher->watch(new Observation($type, $identifier, ExecutionKind::CliCommand)));
+        ] as $type) {
+            self::assertSame([], $watcher->watch(new Observation($type, $identifier, ExecutionKind::CliCommand)));
         }
 
-        self::assertSame(array(), $watcher->watch(new Observation(
+        self::assertSame([], $watcher->watch(new Observation(
             ObservationType::ScopeCloseCompleted,
             $identifier,
             ExecutionKind::CliCommand,
@@ -144,7 +144,7 @@ final class ExecutionLifecycleDiagnosticWatcherTest extends TestCase
      */
     private function attributeValues(array $attributes): array
     {
-        $values = array();
+        $values = [];
 
         foreach ($attributes as $attribute) {
             $values[$attribute->name()] = $attribute->value();
@@ -160,7 +160,7 @@ final class ExecutionLifecycleDiagnosticWatcherTest extends TestCase
      */
     private function attributeClassifications(array $attributes): array
     {
-        $classifications = array();
+        $classifications = [];
 
         foreach ($attributes as $attribute) {
             $classifications[$attribute->name()] = $attribute->classification();

@@ -30,18 +30,18 @@ final class DiagnosticBatch
         private ExecutionKind $kind,
         array $observations,
         private int $droppedObservationCount,
-        array $diagnosticEntries = array(),
+        array $diagnosticEntries = [],
         private int $droppedDiagnosticEntryCount = 0,
     ) {
         if ($this->droppedObservationCount < 0) {
             throw new \InvalidArgumentException(
-                'Dropped observation count must not be negative.'
+                'Dropped observation count must not be negative.',
             );
         }
 
         if ($this->droppedDiagnosticEntryCount < 0) {
             throw new \InvalidArgumentException(
-                'Dropped diagnostic entry count must not be negative.'
+                'Dropped diagnostic entry count must not be negative.',
             );
         }
 

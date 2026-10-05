@@ -45,20 +45,20 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore, Diagnost
         $this->pruneOldestSnapshotsForIncomingSave();
 
         $statement = $this->prepare(
-            'INSERT INTO ' . self::TABLE . ' (execution_identifier, snapshot_payload) VALUES (:execution_identifier, :snapshot_payload)'
+            'INSERT INTO ' . self::TABLE . ' (execution_identifier, snapshot_payload) VALUES (:execution_identifier, :snapshot_payload)',
         );
-        $this->execute($statement, array(
+        $this->execute($statement, [
             'execution_identifier' => $identifier,
             'snapshot_payload' => $payload,
-        ));
+        ]);
     }
 
     public function find(string $executionIdentifier): ?DiagnosticBatchSnapshot
     {
         $statement = $this->prepare(
-            'SELECT execution_identifier, snapshot_payload FROM ' . self::TABLE . ' WHERE execution_identifier = :execution_identifier'
+            'SELECT execution_identifier, snapshot_payload FROM ' . self::TABLE . ' WHERE execution_identifier = :execution_identifier',
         );
-        $this->execute($statement, array('execution_identifier' => $executionIdentifier));
+        $this->execute($statement, ['execution_identifier' => $executionIdentifier]);
 
         $row = $statement->fetch(\PDO::FETCH_ASSOC);
         if ($row === false) {
@@ -75,7 +75,7 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore, Diagnost
         }
 
         $statement = $this->prepare(
-            'SELECT execution_identifier, snapshot_payload FROM ' . self::TABLE . ' ORDER BY sequence DESC LIMIT :limit'
+            'SELECT execution_identifier, snapshot_payload FROM ' . self::TABLE . ' ORDER BY sequence DESC LIMIT :limit',
         );
         $statement->bindValue('limit', $limit, \PDO::PARAM_INT);
 
@@ -83,7 +83,7 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore, Diagnost
             throw new \RuntimeException('Failed to read latest diagnostic batch snapshots.');
         }
 
-        $snapshots = array();
+        $snapshots = [];
 
         while (($row = $statement->fetch(\PDO::FETCH_ASSOC)) !== false) {
             $snapshots[] = $this->decodeRow($row);
@@ -118,7 +118,7 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore, Diagnost
             throw new \RuntimeException('Failed to read diagnostic batch query results.');
         }
 
-        $items = array();
+        $items = [];
         $hasOlderMatch = false;
 
         while (($row = $statement->fetch(\PDO::FETCH_ASSOC)) !== false) {
@@ -140,7 +140,7 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore, Diagnost
 
         return new DiagnosticBatchPage(
             $items,
-            $hasOlderMatch && $items !== array() ? $items[array_key_last($items)]->executionIdentifier() : null,
+            $hasOlderMatch && $items !== [] ? $items[array_key_last($items)]->executionIdentifier() : null,
         );
     }
 
@@ -151,20 +151,20 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore, Diagnost
                 sequence INTEGER PRIMARY KEY AUTOINCREMENT,
                 execution_identifier TEXT NOT NULL UNIQUE,
                 snapshot_payload TEXT NOT NULL
-            )'
+            )',
         );
         $this->exec(
             'CREATE INDEX IF NOT EXISTS insight_diagnostic_batches_execution_identifier_idx
-                ON ' . self::TABLE . ' (execution_identifier)'
+                ON ' . self::TABLE . ' (execution_identifier)',
         );
     }
 
     private function identifierExists(string $identifier): bool
     {
         $statement = $this->prepare(
-            'SELECT 1 FROM ' . self::TABLE . ' WHERE execution_identifier = :execution_identifier'
+            'SELECT 1 FROM ' . self::TABLE . ' WHERE execution_identifier = :execution_identifier',
         );
-        $this->execute($statement, array('execution_identifier' => $identifier));
+        $this->execute($statement, ['execution_identifier' => $identifier]);
 
         return $statement->fetchColumn() !== false;
     }
@@ -184,7 +184,7 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore, Diagnost
                     SELECT sequence FROM ' . self::TABLE . '
                     ORDER BY sequence ASC
                     LIMIT :delete_count
-                )'
+                )',
         );
         $statement->bindValue('delete_count', $deleteCount, \PDO::PARAM_INT);
 
@@ -196,7 +196,7 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore, Diagnost
     private function storedBatchCount(): int
     {
         $statement = $this->prepare('SELECT COUNT(*) FROM ' . self::TABLE);
-        $this->execute($statement, array());
+        $this->execute($statement, []);
 
         return (int) $statement->fetchColumn();
     }
@@ -204,9 +204,9 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore, Diagnost
     private function sequenceForCursor(string $cursor): int
     {
         $statement = $this->prepare(
-            'SELECT sequence FROM ' . self::TABLE . ' WHERE execution_identifier = :execution_identifier'
+            'SELECT sequence FROM ' . self::TABLE . ' WHERE execution_identifier = :execution_identifier',
         );
-        $this->execute($statement, array('execution_identifier' => $cursor));
+        $this->execute($statement, ['execution_identifier' => $cursor]);
 
         $sequence = $statement->fetchColumn();
 

@@ -215,7 +215,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'SessionContracts -> Contracts',
             'LockContracts -> Contracts',
             'Core      -> Contracts',
-            'Insight   -> Core',
+            'Insight   -> Core, DatabaseContracts, QueueContracts, StorageContracts, PsrSimpleCache, PsrHttpClient, PsrHttpMessage',
             'BridgePsr -> BridgeContracts, Core, Http',
             'DevTools  -> Contracts, Core, Module, Plugin',
             'Http      -> Contracts, Core',
@@ -329,7 +329,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'ViewTwig' => array('View', 'TwigEngine'),
             'ViewBlade' => array('View', 'IlluminateViewEngine'),
             'I18n' => array('Core', 'PhpIntl'),
-            'Insight' => array('Core'),
+            'Insight' => array('Core', 'DatabaseContracts', 'QueueContracts', 'StorageContracts', 'PsrSimpleCache', 'PsrHttpClient', 'PsrHttpMessage'),
             'Observe' => array('Core', 'Http', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'PsrHttpMessage', 'PsrHttpServer'),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
             'Http' => array('Contracts', 'Core', 'PsrHttpMessage', 'PsrHttpServer'),
@@ -445,11 +445,12 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $this->assertNotContains('PsrContainer', $rulesets[$layerName], $layerName . ' must not access PsrContainer directly without an approved boundary.');
         }
 
-        foreach (array('Contracts', 'DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'BridgeContracts', 'Core', 'Insight', 'DevTools', 'Module', 'Plugin', 'Testing') as $layerName) {
+        foreach (array('Contracts', 'DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'BridgeContracts', 'Core', 'DevTools', 'Module', 'Plugin', 'Testing') as $layerName) {
             $this->assertNotContains('PsrHttpMessage', $rulesets[$layerName], $layerName . ' must not access PSR-7 HTTP message interfaces directly.');
             $this->assertNotContains('PsrHttpClient', $rulesets[$layerName], $layerName . ' must not access PSR-18 HTTP client interfaces directly.');
             $this->assertNotContains('PsrHttpServer', $rulesets[$layerName], $layerName . ' must not access PSR-15 HTTP server interfaces directly.');
         }
+        $this->assertNotContains('PsrHttpServer', $rulesets['Insight'], 'Insight must not access PSR-15 HTTP server interfaces.');
 
         return $rulesets;
     }

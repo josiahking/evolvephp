@@ -14,12 +14,12 @@ final class InMemoryDiagnosticBatchStore implements DiagnosticBatchStore, Diagno
     /**
      * @var array<string, DiagnosticBatchSnapshot>
      */
-    private array $snapshotsByIdentifier = array();
+    private array $snapshotsByIdentifier = [];
 
     /**
      * @var list<string>
      */
-    private array $insertionOrder = array();
+    private array $insertionOrder = [];
 
     public function __construct(private int $maximumStoredBatchCount)
     {
@@ -56,7 +56,7 @@ final class InMemoryDiagnosticBatchStore implements DiagnosticBatchStore, Diagno
         $identifiers = array_slice(array_reverse($this->insertionOrder), 0, $limit);
 
         return array_map(
-            fn (string $identifier): DiagnosticBatchSnapshot => $this->snapshotsByIdentifier[$identifier],
+            fn(string $identifier): DiagnosticBatchSnapshot => $this->snapshotsByIdentifier[$identifier],
             $identifiers,
         );
     }
@@ -76,7 +76,7 @@ final class InMemoryDiagnosticBatchStore implements DiagnosticBatchStore, Diagno
             $startIndex = $cursorIndex + 1;
         }
 
-        $items = array();
+        $items = [];
         $hasOlderMatch = false;
 
         for ($index = $startIndex, $count = count($newestFirstIdentifiers); $index < $count; $index++) {
@@ -98,7 +98,7 @@ final class InMemoryDiagnosticBatchStore implements DiagnosticBatchStore, Diagno
 
         return new DiagnosticBatchPage(
             $items,
-            $hasOlderMatch && $items !== array() ? $items[array_key_last($items)]->executionIdentifier() : null,
+            $hasOlderMatch && $items !== [] ? $items[array_key_last($items)]->executionIdentifier() : null,
         );
     }
 

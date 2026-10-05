@@ -17,7 +17,7 @@ final class DiagnosticCapturePolicy
     /**
      * @var array<string, true>
      */
-    private array $acceptedClassifications = array();
+    private array $acceptedClassifications = [];
 
     /**
      * @param list<DiagnosticDataClassification>|null $acceptedClassifications
@@ -51,8 +51,8 @@ final class DiagnosticCapturePolicy
 
     public function apply(DiagnosticEntry $candidate): ?DiagnosticEntry
     {
-        $attributes = array();
-        $acceptedNames = array();
+        $attributes = [];
+        $acceptedNames = [];
 
         foreach ($candidate->attributes() as $attribute) {
             if (!isset($this->acceptedClassifications[$attribute->classification()->value])) {
@@ -81,7 +81,7 @@ final class DiagnosticCapturePolicy
             }
         }
 
-        if ($attributes === array()) {
+        if ($attributes === []) {
             return null;
         }
 
@@ -108,9 +108,9 @@ final class DiagnosticCapturePolicy
      */
     private function defaultAcceptedClassifications(): array
     {
-        return array(
+        return [
             DiagnosticDataClassification::PublicOperationalMetadata,
             DiagnosticDataClassification::InternalOperationalMetadata,
-        );
+        ];
     }
 }

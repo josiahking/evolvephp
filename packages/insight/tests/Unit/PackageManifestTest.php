@@ -30,5 +30,15 @@ final class PackageManifestTest extends TestCase
             ['Evolve\\Insight\\' => 'src/'],
             $manifest['autoload']['psr-4'],
         );
+        self::assertSame([
+            'php' => '^8.4',
+            'evolvephp/core' => '^2.0',
+            'evolvephp/database-contracts' => '^2.0',
+            'evolvephp/queue-contracts' => '^2.0',
+            'evolvephp/storage-contracts' => '^2.0',
+            'psr/simple-cache' => '^3.0',
+            'psr/http-client' => '^1.0',
+            'psr/http-message' => '^1.1 || ^2.0',
+        ], $manifest['require']);
     }
 }

@@ -34,7 +34,7 @@ final class DiagnosticBatchProjectorTest extends TestCase
             null,
             ProcessReuseDecision::Reusable,
         );
-        $batch = new DiagnosticBatch($identifier, ExecutionKind::CliCommand, array($first, $second), 3);
+        $batch = new DiagnosticBatch($identifier, ExecutionKind::CliCommand, [$first, $second], 3);
 
         $snapshot = (new DiagnosticBatchProjector())->project($batch);
 
@@ -42,10 +42,10 @@ final class DiagnosticBatchProjectorTest extends TestCase
         self::assertSame('cli-command', $snapshot->executionKind());
         self::assertSame(3, $snapshot->droppedObservationCount());
         self::assertEquals(
-            array(
+            [
                 new DiagnosticObservationSnapshot('execution-started', null, null, null),
                 new DiagnosticObservationSnapshot('execution-completed', 'succeeded', null, 'reusable'),
-            ),
+            ],
             $snapshot->observations(),
         );
     }
@@ -57,7 +57,7 @@ final class DiagnosticBatchProjectorTest extends TestCase
             $identifier,
             ExecutionKind::WorkerTask,
             array_map(
-                static fn (ObservationType $type): Observation => new Observation($type, $identifier, ExecutionKind::WorkerTask),
+                static fn(ObservationType $type): Observation => new Observation($type, $identifier, ExecutionKind::WorkerTask),
                 ObservationType::cases(),
             ),
             0,
@@ -66,16 +66,16 @@ final class DiagnosticBatchProjectorTest extends TestCase
         $snapshot = (new DiagnosticBatchProjector())->project($batch);
 
         self::assertSame(
-            array(
+            [
                 'execution-started',
                 'handler-completed',
                 'scope-close-started',
                 'scope-close-completed',
                 'quarantine-required',
                 'execution-completed',
-            ),
+            ],
             array_map(
-                static fn (DiagnosticObservationSnapshot $observation): string => $observation->type(),
+                static fn(DiagnosticObservationSnapshot $observation): string => $observation->type(),
                 $snapshot->observations(),
             ),
         );
@@ -87,7 +87,7 @@ final class DiagnosticBatchProjectorTest extends TestCase
         $batch = new DiagnosticBatch(
             $identifier,
             ExecutionKind::HttpRequest,
-            array(new Observation(ObservationType::HandlerCompleted, $identifier, ExecutionKind::HttpRequest)),
+            [new Observation(ObservationType::HandlerCompleted, $identifier, ExecutionKind::HttpRequest)],
             0,
         );
 
@@ -104,7 +104,7 @@ final class DiagnosticBatchProjectorTest extends TestCase
         $batch = new DiagnosticBatch(
             $identifier,
             ExecutionKind::HttpRequest,
-            array(
+            [
                 new Observation(
                     ObservationType::HandlerCompleted,
                     $identifier,
@@ -113,7 +113,7 @@ final class DiagnosticBatchProjectorTest extends TestCase
                     'LogicException',
                     ProcessReuseDecision::QuarantineRequired,
                 ),
-            ),
+            ],
             0,
         );
 
@@ -131,20 +131,20 @@ final class DiagnosticBatchProjectorTest extends TestCase
             $identifier->value(),
             'database',
             'query',
-            array(
+            [
                 new DiagnosticAttribute('statement', DiagnosticDataClassification::PublicOperationalMetadata, 'select-user'),
                 new DiagnosticAttribute('duration_ms', DiagnosticDataClassification::InternalOperationalMetadata, 12),
                 new DiagnosticAttribute('sample_rate', DiagnosticDataClassification::InternalOperationalMetadata, 1.0),
                 new DiagnosticAttribute('cached', DiagnosticDataClassification::InternalOperationalMetadata, false),
                 new DiagnosticAttribute('tenant', DiagnosticDataClassification::InternalOperationalMetadata, null),
-            ),
+            ],
         );
         $batch = new DiagnosticBatch(
             $identifier,
             ExecutionKind::HttpRequest,
-            array(new Observation(ObservationType::ExecutionStarted, $identifier, ExecutionKind::HttpRequest)),
+            [new Observation(ObservationType::ExecutionStarted, $identifier, ExecutionKind::HttpRequest)],
             0,
-            array($entry),
+            [$entry],
             2,
         );
 
@@ -152,19 +152,19 @@ final class DiagnosticBatchProjectorTest extends TestCase
 
         self::assertSame(2, $snapshot->droppedDiagnosticEntryCount());
         self::assertEquals(
-            array(
+            [
                 new DiagnosticEntrySnapshot(
                     'database',
                     'query',
-                    array(
+                    [
                         new DiagnosticEntryAttributeSnapshot('statement', 'select-user'),
                         new DiagnosticEntryAttributeSnapshot('duration_ms', 12),
                         new DiagnosticEntryAttributeSnapshot('sample_rate', 1.0),
                         new DiagnosticEntryAttributeSnapshot('cached', false),
                         new DiagnosticEntryAttributeSnapshot('tenant', null),
-                    ),
+                    ],
                 ),
-            ),
+            ],
             $snapshot->diagnosticEntries(),
         );
     }
@@ -175,7 +175,7 @@ final class DiagnosticBatchProjectorTest extends TestCase
         $batch = new DiagnosticBatch(
             $identifier,
             ExecutionKind::QueueMessage,
-            array(new Observation(ObservationType::ExecutionStarted, $identifier, ExecutionKind::QueueMessage)),
+            [new Observation(ObservationType::ExecutionStarted, $identifier, ExecutionKind::QueueMessage)],
             0,
         );
 
@@ -183,7 +183,7 @@ final class DiagnosticBatchProjectorTest extends TestCase
 
         self::assertContainsOnlyInstancesOf(DiagnosticObservationSnapshot::class, $snapshot->observations());
         self::assertSame(
-            array('diagnosticEntries', 'droppedDiagnosticEntryCount', 'droppedObservationCount', 'executionIdentifier', 'executionKind', 'observations'),
+            ['diagnosticEntries', 'droppedDiagnosticEntryCount', 'droppedObservationCount', 'executionIdentifier', 'executionKind', 'observations'],
             $this->publicMethods($snapshot),
         );
     }
@@ -194,14 +194,14 @@ final class DiagnosticBatchProjectorTest extends TestCase
         $batch = new DiagnosticBatch(
             $identifier,
             ExecutionKind::HttpRequest,
-            array(),
+            [],
             0,
-            array(new DiagnosticEntry(
+            [new DiagnosticEntry(
                 $identifier->value(),
                 'database',
                 'query',
-                array(new DiagnosticAttribute('statement', DiagnosticDataClassification::PublicOperationalMetadata, 'select-user')),
-            )),
+                [new DiagnosticAttribute('statement', DiagnosticDataClassification::PublicOperationalMetadata, 'select-user')],
+            )],
             0,
         );
 
@@ -217,12 +217,12 @@ final class DiagnosticBatchProjectorTest extends TestCase
     private function publicMethods(object $object): array
     {
         $methods = array_map(
-            static fn (\ReflectionMethod $method): string => $method->getName(),
+            static fn(\ReflectionMethod $method): string => $method->getName(),
             (new \ReflectionClass($object))->getMethods(\ReflectionMethod::IS_PUBLIC),
         );
         $methods = array_values(array_filter(
             $methods,
-            static fn (string $method): bool => $method !== '__construct',
+            static fn(string $method): bool => $method !== '__construct',
         ));
         sort($methods);
 

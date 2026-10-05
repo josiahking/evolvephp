@@ -37,7 +37,7 @@ final class DiagnosticEntry
             throw new \InvalidArgumentException('Diagnostic entry attribute count is too large.');
         }
 
-        $validatedAttributes = array();
+        $validatedAttributes = [];
 
         foreach ($attributes as $attribute) {
             if (!$attribute instanceof DiagnosticAttribute) {

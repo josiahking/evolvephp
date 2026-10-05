@@ -37,6 +37,8 @@
 
 ### Insight
 
+- Added explicit local infrastructure diagnostic decorators for accepted database, cache, queue, storage and outbound HTTP interfaces. Execution correlation is attached per Core execution; existing Insight capture policy controls retained entries. SQL inspection requires explicit opt-in and business-sensitive capture permission. Diagnostic failures preserve primary infrastructure behavior and lazy values are not consumed for inspection.
+
 - Added `evolvephp/insight` as a public experimental diagnostic-batch collection foundation. The package consumes Core execution observations through the existing observation sink boundary, collects immutable bounded per-execution batches and keeps dashboards, watchers, OpenTelemetry, Evolve Observe, runtime wiring and independent package release deferred.
 - Added storage-neutral Insight batch snapshots, projection from finalized diagnostic batches, a minimal diagnostic batch store contract, an in-memory store for tests and short-lived local development, and a sink adapter that projects and stores accepted batches while keeping runtime wiring deferred.
 - Added a versioned primitive diagnostic batch snapshot codec and an optional SQLite diagnostic batch store for explicit local-development persistence through caller-supplied SQLite `PDO` connections, while keeping application database integration deferred.

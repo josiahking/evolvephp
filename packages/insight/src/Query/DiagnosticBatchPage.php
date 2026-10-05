@@ -26,7 +26,7 @@ final class DiagnosticBatchPage
             throw new \InvalidArgumentException('Diagnostic batch page must not contain more than 100 items.');
         }
 
-        $validated = array();
+        $validated = [];
 
         foreach ($items as $item) {
             if (!$item instanceof DiagnosticBatchSummary) {

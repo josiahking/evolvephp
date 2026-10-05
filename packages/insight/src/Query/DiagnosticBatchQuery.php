@@ -8,13 +8,13 @@ final readonly class DiagnosticBatchQuery
 {
     private const int MAX_PAGE_SIZE = 100;
 
-    private const array EXECUTION_KINDS = array(
+    private const array EXECUTION_KINDS = [
         'http-request',
         'queue-message',
         'scheduled-job',
         'cli-command',
         'worker-task',
-    );
+    ];
 
     public function __construct(
         private int $pageSize,

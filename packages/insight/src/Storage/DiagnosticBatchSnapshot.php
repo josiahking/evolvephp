@@ -25,7 +25,7 @@ final class DiagnosticBatchSnapshot
         private string $executionKind,
         array $observations,
         private int $droppedObservationCount,
-        array $diagnosticEntries = array(),
+        array $diagnosticEntries = [],
         private int $droppedDiagnosticEntryCount = 0,
     ) {
         if ($this->executionIdentifier === '') {
@@ -40,7 +40,7 @@ final class DiagnosticBatchSnapshot
             throw new \InvalidArgumentException('Dropped diagnostic entry count must not be negative.');
         }
 
-        $validatedObservations = array();
+        $validatedObservations = [];
 
         foreach ($observations as $observation) {
             if (!$observation instanceof DiagnosticObservationSnapshot) {
@@ -50,7 +50,7 @@ final class DiagnosticBatchSnapshot
             $validatedObservations[] = $observation;
         }
 
-        $validatedDiagnosticEntries = array();
+        $validatedDiagnosticEntries = [];
 
         foreach ($diagnosticEntries as $entry) {
             if (!$entry instanceof DiagnosticEntrySnapshot) {

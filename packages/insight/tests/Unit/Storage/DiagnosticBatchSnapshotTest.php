@@ -22,13 +22,13 @@ final class DiagnosticBatchSnapshotTest extends TestCase
         $snapshot = new DiagnosticBatchSnapshot(
             'execution-123',
             'http-request',
-            array($first, $second),
+            [$first, $second],
             2,
         );
 
         self::assertSame('execution-123', $snapshot->executionIdentifier());
         self::assertSame('http-request', $snapshot->executionKind());
-        self::assertSame(array($first, $second), $snapshot->observations());
+        self::assertSame([$first, $second], $snapshot->observations());
         self::assertSame(2, $snapshot->droppedObservationCount());
 
         self::assertContainsOnlyInstancesOf(DiagnosticObservationSnapshot::class, $snapshot->observations());
@@ -40,14 +40,14 @@ final class DiagnosticBatchSnapshotTest extends TestCase
         $snapshot = new DiagnosticBatchSnapshot(
             'execution-123',
             'http-request',
-            array($first),
+            [$first],
             0,
         );
 
         $observations = $snapshot->observations();
         $observations[] = new DiagnosticObservationSnapshot('execution-completed', null, null, null);
 
-        self::assertSame(array($first), $snapshot->observations());
+        self::assertSame([$first], $snapshot->observations());
     }
 
     public function testInvalidObservationObjectIsRejected(): void
@@ -55,7 +55,7 @@ final class DiagnosticBatchSnapshotTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Diagnostic observations must be diagnostic observation snapshots.');
 
-        new DiagnosticBatchSnapshot('execution-123', 'http-request', array(new \stdClass()), 0);
+        new DiagnosticBatchSnapshot('execution-123', 'http-request', [new \stdClass()], 0);
     }
 
     public function testObservationInputIsReindexedAsAList(): void
@@ -64,11 +64,11 @@ final class DiagnosticBatchSnapshotTest extends TestCase
         $snapshot = new DiagnosticBatchSnapshot(
             'execution-123',
             'http-request',
-            array(5 => $first),
+            [5 => $first],
             0,
         );
 
-        self::assertSame(array($first), $snapshot->observations());
+        self::assertSame([$first], $snapshot->observations());
     }
 
     public function testDiagnosticEntryOrderAttributesAndDroppedCountArePreserved(): void
@@ -76,44 +76,44 @@ final class DiagnosticBatchSnapshotTest extends TestCase
         $entry = new DiagnosticEntrySnapshot(
             'database',
             'query',
-            array(
+            [
                 new DiagnosticEntryAttributeSnapshot('statement', 'select-user'),
                 new DiagnosticEntryAttributeSnapshot('duration_ms', 12),
                 new DiagnosticEntryAttributeSnapshot('sample_rate', 1.0),
                 new DiagnosticEntryAttributeSnapshot('cached', false),
                 new DiagnosticEntryAttributeSnapshot('tenant', null),
-            ),
+            ],
         );
 
         $snapshot = new DiagnosticBatchSnapshot(
             'execution-123',
             'http-request',
-            array(),
+            [],
             0,
-            array($entry),
+            [$entry],
             3,
         );
 
-        self::assertSame(array($entry), $snapshot->diagnosticEntries());
+        self::assertSame([$entry], $snapshot->diagnosticEntries());
         self::assertSame(3, $snapshot->droppedDiagnosticEntryCount());
     }
 
     public function testDiagnosticEntryCollectionsDoNotExposeMutableInternalState(): void
     {
-        $entry = new DiagnosticEntrySnapshot('database', 'query', array());
+        $entry = new DiagnosticEntrySnapshot('database', 'query', []);
         $snapshot = new DiagnosticBatchSnapshot(
             'execution-123',
             'http-request',
-            array(),
+            [],
             0,
-            array($entry),
+            [$entry],
             0,
         );
 
         $entries = $snapshot->diagnosticEntries();
-        $entries[] = new DiagnosticEntrySnapshot('cache', 'hit', array());
+        $entries[] = new DiagnosticEntrySnapshot('cache', 'hit', []);
 
-        self::assertSame(array($entry), $snapshot->diagnosticEntries());
+        self::assertSame([$entry], $snapshot->diagnosticEntries());
     }
 
     public function testOversizedDiagnosticEntryCategoryIsRejected(): void
@@ -121,7 +121,7 @@ final class DiagnosticBatchSnapshotTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Diagnostic entry category is too long.');
 
-        new DiagnosticEntrySnapshot(str_repeat('c', DiagnosticEntry::MAX_CATEGORY_LENGTH + 1), 'query', array());
+        new DiagnosticEntrySnapshot(str_repeat('c', DiagnosticEntry::MAX_CATEGORY_LENGTH + 1), 'query', []);
     }
 
     public function testOversizedDiagnosticEntryNameIsRejected(): void
@@ -129,7 +129,7 @@ final class DiagnosticBatchSnapshotTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Diagnostic entry name is too long.');
 
-        new DiagnosticEntrySnapshot('database', str_repeat('n', DiagnosticEntry::MAX_NAME_LENGTH + 1), array());
+        new DiagnosticEntrySnapshot('database', str_repeat('n', DiagnosticEntry::MAX_NAME_LENGTH + 1), []);
     }
 
     public function testExcessiveDiagnosticEntryAttributeCountIsRejected(): void
@@ -153,7 +153,7 @@ final class DiagnosticBatchSnapshotTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Diagnostic entry snapshot attributes must be diagnostic entry attribute snapshots.');
 
-        new DiagnosticEntrySnapshot('database', 'query', array(new \stdClass()));
+        new DiagnosticEntrySnapshot('database', 'query', [new \stdClass()]);
     }
 
     public function testOversizedDiagnosticEntryAttributeNameIsRejected(): void
@@ -185,7 +185,7 @@ final class DiagnosticBatchSnapshotTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Dropped diagnostic entry count must not be negative.');
 
-        new DiagnosticBatchSnapshot('execution-123', 'http-request', array(), 0, array(), -1);
+        new DiagnosticBatchSnapshot('execution-123', 'http-request', [], 0, [], -1);
     }
 
     public function testNegativeDroppedCountIsRejected(): void
@@ -193,7 +193,7 @@ final class DiagnosticBatchSnapshotTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Dropped observation count must not be negative.');
 
-        new DiagnosticBatchSnapshot('execution-123', 'http-request', array(), -1);
+        new DiagnosticBatchSnapshot('execution-123', 'http-request', [], -1);
     }
 
     public function testEmptyIdentifierIsRejected(): void
@@ -201,6 +201,6 @@ final class DiagnosticBatchSnapshotTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Execution identifier must not be empty.');
 
-        new DiagnosticBatchSnapshot('', 'http-request', array(), 0);
+        new DiagnosticBatchSnapshot('', 'http-request', [], 0);
     }
 }

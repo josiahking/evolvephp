@@ -18,14 +18,14 @@ final class DiagnosticBatchTest extends TestCase
         $identifier = ExecutionIdentifier::generate();
         $started = $this->observation(ObservationType::ExecutionStarted, $identifier, ExecutionKind::HttpRequest);
         $completed = $this->observation(ObservationType::ExecutionCompleted, $identifier, ExecutionKind::HttpRequest);
-        $observations = array($started, $completed);
+        $observations = [$started, $completed];
 
         $batch = new DiagnosticBatch($identifier, ExecutionKind::HttpRequest, $observations, 3);
         $observations[] = $this->observation(ObservationType::HandlerCompleted, $identifier, ExecutionKind::HttpRequest);
 
         self::assertSame($identifier, $batch->identifier());
         self::assertSame(ExecutionKind::HttpRequest, $batch->kind());
-        self::assertSame(array($started, $completed), $batch->observations());
+        self::assertSame([$started, $completed], $batch->observations());
         self::assertSame(3, $batch->droppedObservationCount());
     }
 
@@ -37,7 +37,7 @@ final class DiagnosticBatchTest extends TestCase
         new DiagnosticBatch(
             ExecutionIdentifier::generate(),
             ExecutionKind::CliCommand,
-            array(),
+            [],
             -1,
         );
     }

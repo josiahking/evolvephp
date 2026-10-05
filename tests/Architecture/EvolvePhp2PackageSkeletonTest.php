@@ -330,7 +330,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/component identity vocabulary|shared identity vocabulary/i', $content);
         $this->assertMatchesPattern('/experimental shared identity vocabulary|shared experimental identity vocabulary/i', $content);
         $this->assertMatchesPattern('/ComponentIdentifier.*ComponentType|ComponentType.*ComponentIdentifier/is', $content);
-        $this->assertMatchesPattern('/identity value objects.*do not.*descriptor.*discovery.*registration.*lifecycle|do not.*descriptor.*discovery.*registration.*lifecycle.*identity value objects/is', $content);
+        $this->assertStringContainsString(
+    'The identity value objects do not themselves implement descriptor behavior, discovery, registration or lifecycle callbacks.',
+    $content
+);
         $this->assertMatchesPattern('/Module\/Plugin entry points.*implemented by separate lifecycle contracts|entry points.*separate lifecycle contracts/is', $content);
         $this->assertMatchesPattern('/descriptors?.*separate package|separate package.*descriptors?/i', $content);
         $this->assertMatchesPattern('/registration.*Core|Core.*registration/i', $content);
@@ -1024,7 +1027,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'name' => 'evolvephp/insight',
                 'description' => 'Local diagnostic capture, persistence, query and access-policy foundation for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Insight\\',
-                'require' => array('php' => '^8.4', 'evolvephp/core' => '^2.0'),
+                'require' => array('php' => '^8.4', 'evolvephp/core' => '^2.0', 'evolvephp/database-contracts' => '^2.0', 'evolvephp/queue-contracts' => '^2.0', 'evolvephp/storage-contracts' => '^2.0', 'psr/simple-cache' => '^3.0', 'psr/http-client' => '^1.0', 'psr/http-message' => '^1.1 || ^2.0'),
             ),
             array(
                 'manifest' => 'packages/observe/composer.json',
@@ -1430,11 +1433,23 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Capture/DiagnosticCapturePolicy.php',
                 'Capture/DiagnosticDataClassification.php',
                 'Capture/DiagnosticEntry.php',
+                'Capture/DiagnosticEntrySink.php',
                 'Capture/DiagnosticRedactor.php',
                 'DiagnosticBatch.php',
                 'DiagnosticBatchCollector.php',
                 'DiagnosticBatchSink.php',
                 'DiagnosticPipeline.php',
+                'Infrastructure/CacheDiagnosticDecorator.php',
+                'Infrastructure/DatabaseDiagnosticDecorator.php',
+                'Infrastructure/DatabaseDiagnosticPolicy.php',
+                'Infrastructure/DiagnosticDelivery.php',
+                'Infrastructure/DiagnosticReadableObject.php',
+                'Infrastructure/DiagnosticRecorder.php',
+                'Infrastructure/ExecutionCorrelation.php',
+                'Infrastructure/HttpClientDiagnosticDecorator.php',
+                'Infrastructure/QueuePublisherDiagnosticDecorator.php',
+                'Infrastructure/QueueReceiverDiagnosticDecorator.php',
+                'Infrastructure/StorageDiagnosticDecorator.php',
                 'Query/DiagnosticBatchPage.php',
                 'Query/DiagnosticBatchQuery.php',
                 'Query/DiagnosticBatchReader.php',

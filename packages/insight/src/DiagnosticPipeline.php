@@ -8,12 +8,13 @@ use Evolve\Core\Instrumentation\Observation;
 use Evolve\Core\Instrumentation\ObservationSink;
 use Evolve\Insight\Capture\DiagnosticCapturePolicy;
 use Evolve\Insight\Capture\DiagnosticEntry;
+use Evolve\Insight\Capture\DiagnosticEntrySink;
 use Evolve\Insight\Storage\DiagnosticBatchProjector;
 use Evolve\Insight\Storage\DiagnosticBatchStore;
 use Evolve\Insight\Storage\StoringDiagnosticBatchSink;
 use Evolve\Insight\Watcher\ObservationDiagnosticWatcher;
 
-final readonly class DiagnosticPipeline implements ObservationSink
+final readonly class DiagnosticPipeline implements ObservationSink, DiagnosticEntrySink
 {
     /**
      * @var list<ObservationDiagnosticWatcher>
@@ -25,7 +26,7 @@ final readonly class DiagnosticPipeline implements ObservationSink
      */
     public function __construct(
         private DiagnosticBatchCollector $collector,
-        array $observationWatchers = array(),
+        array $observationWatchers = [],
     ) {
         $this->observationWatchers = self::validateObservationWatchers($observationWatchers);
     }
@@ -39,7 +40,7 @@ final readonly class DiagnosticPipeline implements ObservationSink
         int $maximumRetainedDiagnosticEntryCount,
         ?DiagnosticCapturePolicy $capturePolicy = null,
         ?DiagnosticBatchProjector $projector = null,
-        array $observationWatchers = array(),
+        array $observationWatchers = [],
     ): self {
         return self::collecting(
             new StoringDiagnosticBatchSink($projector ?? new DiagnosticBatchProjector(), $store),
@@ -58,7 +59,7 @@ final readonly class DiagnosticPipeline implements ObservationSink
         int $maximumRetainedObservationCount,
         int $maximumRetainedDiagnosticEntryCount,
         ?DiagnosticCapturePolicy $capturePolicy = null,
-        array $observationWatchers = array(),
+        array $observationWatchers = [],
     ): self {
         return new self(new DiagnosticBatchCollector(
             $sink,
@@ -104,7 +105,7 @@ final readonly class DiagnosticPipeline implements ObservationSink
      */
     private static function validateObservationWatchers(array $watchers): array
     {
-        $validated = array();
+        $validated = [];
 
         foreach ($watchers as $watcher) {
             if (!$watcher instanceof ObservationDiagnosticWatcher) {

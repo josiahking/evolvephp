@@ -14,6 +14,7 @@ EvolvePHP 2 is Alpha/pre-release software. It is not production-ready and is not
 - Module and plugin descriptors, dependency/capability graph support, restricted service registration, Composer plugin discovery and application-controlled enablement.
 - Development-time Audit, adoption planning declarations, Doctor support, `route:list` and optional starter generators.
 - Bridge contracts, PSR, Laravel, Symfony, remote protocol/client/server foundations and the isolated legacy HTTP client.
+- Optional local Insight diagnostics for explicitly wrapped database, PSR-16 cache, queue, object-storage and PSR-18 HTTP interfaces, with execution-local correlation and capture-policy filtering. SQL inspection requires separate application and policy opt-ins; sensitive values remain excluded.
 
 ## Experimental
 

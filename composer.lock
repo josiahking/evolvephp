@@ -1656,11 +1656,17 @@
             "dist": {
                 "type": "path",
                 "url": "packages/insight",
-                "reference": "70847ce0182dc5dda52ec4f7dfd5d1422da7af04"
+                "reference": "6aa0bd594863623e70f23ff9eb3d368f8d26a601"
             },
             "require": {
                 "evolvephp/core": "^2.0",
-                "php": "^8.4"
+                "evolvephp/database-contracts": "^2.0",
+                "evolvephp/queue-contracts": "^2.0",
+                "evolvephp/storage-contracts": "^2.0",
+                "php": "^8.4",
+                "psr/http-client": "^1.0",
+                "psr/http-message": "^1.1 || ^2.0",
+                "psr/simple-cache": "^3.0"
             },
             "type": "library",
             "autoload": {
