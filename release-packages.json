@@ -82,10 +82,6 @@
             "directory": "packages/i18n"
         },
         {
-            "name": "evolvephp/insight",
-            "directory": "packages/insight"
-        },
-        {
             "name": "evolvephp/module",
             "directory": "packages/module"
         },
@@ -96,6 +92,10 @@
         {
             "name": "evolvephp/http",
             "directory": "packages/http"
+        },
+        {
+            "name": "evolvephp/insight",
+            "directory": "packages/insight"
         },
         {
             "name": "evolvephp/http-client",

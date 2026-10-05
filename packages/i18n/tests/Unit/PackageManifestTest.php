@@ -17,6 +17,6 @@ final class PackageManifestTest extends TestCase
         self::assertArrayHasKey('ext-intl', $package['suggest']);
         self::assertSame(['Evolve\\I18n\\' => 'src/'], $package['autoload']['psr-4']);
         $names = array_column($release['packages'], 'name');
-        self::assertSame(['evolvephp/view-blade', 'evolvephp/i18n', 'evolvephp/insight'], array_slice($names, array_search('evolvephp/view-blade', $names, true), 3));
+        self::assertSame(['evolvephp/view-blade', 'evolvephp/i18n', 'evolvephp/module', 'evolvephp/plugin', 'evolvephp/http', 'evolvephp/insight', 'evolvephp/http-client'], array_slice($names, array_search('evolvephp/view-blade', $names, true), 7));
     }
 }
