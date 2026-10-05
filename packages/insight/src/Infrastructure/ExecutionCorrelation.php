@@ -39,9 +39,13 @@ final class ExecutionCorrelation implements ExecutionContextAttacher
 
     public function identifier(): ?string
     {
-        $frame = $this->frames[array_key_last($this->frames)] ?? null;
+        $index = array_key_last($this->frames);
 
-        return $frame['identifier'] ?? null;
+        if ($index === null) {
+            return null;
+        }
+
+        return $this->frames[$index]['identifier'];
     }
 
     public function repeat(string $fingerprint): ?int
