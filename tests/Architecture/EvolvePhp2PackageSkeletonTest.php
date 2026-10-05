@@ -330,7 +330,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/component identity vocabulary|shared identity vocabulary/i', $content);
         $this->assertMatchesPattern('/experimental shared identity vocabulary|shared experimental identity vocabulary/i', $content);
         $this->assertMatchesPattern('/ComponentIdentifier.*ComponentType|ComponentType.*ComponentIdentifier/is', $content);
-        $this->assertMatchesPattern('/identity value objects.*do not.*descriptor.*discovery.*registration.*lifecycle|do not.*descriptor.*discovery.*registration.*lifecycle.*identity value objects/is', $content);
+        $this->assertStringContainsString(
+    'The identity value objects do not themselves implement descriptor behavior, discovery, registration or lifecycle callbacks.',
+    $content
+);
         $this->assertMatchesPattern('/Module\/Plugin entry points.*implemented by separate lifecycle contracts|entry points.*separate lifecycle contracts/is', $content);
         $this->assertMatchesPattern('/descriptors?.*separate package|separate package.*descriptors?/i', $content);
         $this->assertMatchesPattern('/registration.*Core|Core.*registration/i', $content);
