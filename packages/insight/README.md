@@ -10,6 +10,30 @@ Evolve Insight consumes safe Core execution observations and explicitly submitte
 
 Applications may also explicitly wrap accepted database, cache, queue, storage and outbound HTTP interfaces with Insight-owned diagnostic decorators. The decorators submit candidates through `DiagnosticEntrySink`, which `DiagnosticPipeline` and `DiagnosticBatchCollector` implement, so the existing capture policy remains the sole admission path. Application code supplies one `ExecutionCorrelation` to Core's `ExecutionOrchestrator` as an `ExecutionContextAttacher` and to a `DiagnosticRecorder` alongside the chosen sink. Correlation retains only the active execution identifier value and bounded statement-repeat counts; detaching clears them. An operation outside an attached execution creates no infrastructure entry. Insight does not discover infrastructure services or register decorators globally.
 
+## Incoming HTTP server diagnostics
+
+HTTP server diagnostics are explicit opt-in PSR-15 composition. Use one ExecutionCorrelation for both the ExecutionOrchestrator and Insight's HTTP middleware. Install HttpServerDiagnosticMiddleware outside RoutingRequestHandler so route-not-found, method-not-allowed and routing exceptions are included. Install MatchedRouteDiagnosticMiddleware early in the routing middleware list, after routing has attached RouteMatch. An outer middleware installed further inward can miss failures raised before it.
+
+~~~php
+$correlation = new ExecutionCorrelation();
+$pipeline = DiagnosticPipeline::collecting(
+    $batchSink,
+    maximumRetainedObservationCount: 100,
+    maximumRetainedDiagnosticEntryCount: 100,
+);
+$routing = new RoutingRequestHandler(
+    $matcher,
+    [new MatchedRouteDiagnosticMiddleware(), ...$applicationRoutingMiddleware],
+);
+$handler = new MiddlewarePipeline(
+    [new HttpServerDiagnosticMiddleware($pipeline, $correlation), ...$applicationOuterMiddleware],
+    $routing,
+);
+$executions = new ExecutionOrchestrator($services, $pipeline, [$correlation]);
+$kernel = new HttpKernel($handler, $executions);
+~~~
+
+The outer middleware records one evolve.http.server/request entry per active execution. The inner middleware copies only the declared route template from RouteMatch into request-local state. The entry may contain a bounded method, declared route template up to the diagnostic string limit, returned status code, outcome, monotonic duration and throwable class. Missing or oversized route templates are omitted. A returned 4xx or 5xx status is a successful returned operation. Insight does not read URI paths, queries, route parameter values, headers, cookies, bodies, identities or trace headers for this entry. The same capture policy, redaction, sampling and retention bounds apply through DiagnosticPipeline. Diagnostic failures do not change the response or throwable and do not retry the handler.
 ## Infrastructure diagnostics
 
 - `DatabaseDiagnosticDecorator` records operation, outcome, monotonic duration when available, bounded statement fingerprint, parameter count and types, optional operation name, affected-row count for `execute()`, bounded repeat occurrence and normalized failure details. A query result iterable is returned untouched; rows are not consumed to count them. Repeat counts group the database operation kind, bounded SQL fingerprint and developer operation name when present; the grouping does not prove semantic query equivalence or diagnose N+1 behavior. The repeat group map is limited to 64 groups per execution and resets on detach. Transaction callbacks receive a decorator around the active connection supplied by the adapter, so operations invoked through that connection enter the same diagnostic batch.
@@ -123,11 +147,14 @@ PHP `^8.4`
 
 - `evolvephp/core`
 - `evolvephp/database-contracts`
+- `evolvephp/http`
 - `evolvephp/queue-contracts`
 - `evolvephp/storage-contracts`
 - `psr/simple-cache`
 - `psr/http-client`
 - `psr/http-message`
+- `psr/http-server-handler`
+- `psr/http-server-middleware`
 
 ## Publication Status
 

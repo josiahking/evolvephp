@@ -1027,7 +1027,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'name' => 'evolvephp/insight',
                 'description' => 'Local diagnostic capture, persistence, query and access-policy foundation for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Insight\\',
-                'require' => array('php' => '^8.4', 'evolvephp/core' => '^2.0', 'evolvephp/database-contracts' => '^2.0', 'evolvephp/queue-contracts' => '^2.0', 'evolvephp/storage-contracts' => '^2.0', 'psr/simple-cache' => '^3.0', 'psr/http-client' => '^1.0', 'psr/http-message' => '^1.1 || ^2.0'),
+                'require' => array('php' => '^8.4', 'evolvephp/core' => '^2.0', 'evolvephp/database-contracts' => '^2.0', 'evolvephp/http' => '^2.0', 'evolvephp/queue-contracts' => '^2.0', 'evolvephp/storage-contracts' => '^2.0', 'psr/simple-cache' => '^3.0', 'psr/http-client' => '^1.0', 'psr/http-message' => '^1.1 || ^2.0', 'psr/http-server-handler' => '^1.0', 'psr/http-server-middleware' => '^1.0'),
             ),
             array(
                 'manifest' => 'packages/observe/composer.json',
@@ -1439,6 +1439,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'DiagnosticBatchCollector.php',
                 'DiagnosticBatchSink.php',
                 'DiagnosticPipeline.php',
+                'Http/HttpServerDiagnosticMiddleware.php',
+                'Http/HttpServerDiagnosticState.php',
+                'Http/MatchedRouteDiagnosticMiddleware.php',
                 'Infrastructure/CacheDiagnosticDecorator.php',
                 'Infrastructure/DatabaseDiagnosticDecorator.php',
                 'Infrastructure/DatabaseDiagnosticPolicy.php',
