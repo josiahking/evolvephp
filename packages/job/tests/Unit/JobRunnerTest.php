@@ -9,10 +9,13 @@ use Evolve\Core\Container\ServiceRegistry;
 use Evolve\Core\Exception\ExecutionStartFailed;
 use Evolve\Core\Execution\ExecutionContext;
 use Evolve\Core\Execution\ExecutionContextValues;
+use Evolve\Core\Execution\ExecutionIdentifier;
 use Evolve\Core\Execution\ExecutionKind;
 use Evolve\Core\Execution\ExecutionOrchestrator;
+use Evolve\Core\Execution\ExecutionOutcome;
 use Evolve\Core\Execution\ExecutionScope;
 use Evolve\Core\Execution\ProcessReuseDecision;
+use Evolve\Job\JobExecutionContext;
 use Evolve\Job\JobRunner;
 use Evolve\Job\JobSettlementState;
 use Evolve\Queue\Contracts\Delivery;
@@ -216,6 +219,273 @@ final class JobRunnerTest extends TestCase
         } catch (ExecutionStartFailed $later) {
             self::assertNotSame($caught, $later);
         }
+    }
+
+    public function test_context_wrapper_surrounds_one_core_execution_and_settles_after_exit(): void
+    {
+        $events = [];
+        $message = new MessageEnvelope('opaque');
+        $delivery = $this->delivery($message, $events);
+        $produced = null;
+        $wrapper = $this->context(static function (MessageEnvelope $received, callable $execute) use ($message, &$events, &$produced): ExecutionOutcome {
+            self::assertSame($message, $received);
+            $events[] = 'enter';
+            $produced = $execute();
+            $events[] = 'exit';
+            return $produced;
+        });
+        $runner = new JobRunner($this->receiver(static function () use ($delivery, &$events): Delivery {
+            $events[] = 'receive';
+            return $delivery;
+        }), $this->orchestrator(), $wrapper);
+
+        $outcome = $runner->runOnce(new QueueName('jobs'), function (MessageEnvelope $received, ExecutionContext $context, ExecutionScope $scope) use ($message, &$events): void {
+            self::assertSame($message, $received);
+            $events[] = 'handle';
+            $scope->registerResetParticipant('marker', $this->participant(static function () use (&$events): void {
+                $events[] = 'cleanup';
+            }));
+        });
+
+        self::assertSame(['receive', 'enter', 'handle', 'cleanup', 'exit', 'acknowledge'], $events);
+        self::assertSame($produced, $outcome->executionOutcome());
+        self::assertSame(JobSettlementState::Acknowledged, $outcome->settlement());
+    }
+
+    public function test_context_wrapper_failure_execution_rejects_only_after_exit(): void
+    {
+        $events = [];
+        $failure = new RuntimeException('handler');
+        $delivery = $this->delivery(new MessageEnvelope('opaque'), $events);
+        $wrapper = $this->context(static function (MessageEnvelope $message, callable $execute) use (&$events): ExecutionOutcome {
+            $events[] = 'enter';
+            $outcome = $execute();
+            $events[] = 'exit';
+            return $outcome;
+        });
+        $runner = new JobRunner($this->receiver(static fn(): Delivery => $delivery), $this->orchestrator(), $wrapper);
+        $outcome = $runner->runOnce(new QueueName('jobs'), function (MessageEnvelope $message, ExecutionContext $context, ExecutionScope $scope) use ($failure, &$events): never {
+            $events[] = 'handle';
+            $scope->registerResetParticipant('marker', $this->participant(static function () use (&$events): void {
+                $events[] = 'cleanup';
+            }));
+            throw $failure;
+        });
+
+        self::assertSame(['enter', 'handle', 'cleanup', 'exit', 'reject'], $events);
+        self::assertSame($failure, $outcome->executionOutcome()->primaryThrowable());
+        self::assertSame(JobSettlementState::Rejected, $outcome->settlement());
+    }
+
+    public function test_context_wrapper_cannot_skip_execution_and_fabricate_outcome(): void
+    {
+        $events = [];
+        $delivery = $this->delivery(new MessageEnvelope('opaque'), $events);
+        $wrapper = $this->context(static fn(MessageEnvelope $message, callable $execute): ExecutionOutcome => ExecutionOutcome::succeeded(
+            ExecutionIdentifier::generate(),
+            ExecutionKind::QueueMessage,
+            null,
+            null,
+        ));
+        $runner = new JobRunner($this->receiver(static fn(): Delivery => $delivery), $this->orchestrator(), $wrapper);
+
+        try {
+            $runner->runOnce(new QueueName('jobs'), static function () use (&$events): void {
+                $events[] = 'handle';
+            });
+            self::fail('Skipped Core execution must be rejected.');
+        } catch (\LogicException) {
+            self::assertSame([], $events);
+            $this->expectQuarantined($runner);
+        }
+    }
+
+    public function test_caught_second_invocation_still_quarantines_without_second_core_execution(): void
+    {
+        $events = [];
+        $delivery = $this->delivery(new MessageEnvelope('opaque'), $events);
+        $wrapper = $this->context(static function (MessageEnvelope $message, callable $execute): ExecutionOutcome {
+            $outcome = $execute();
+            try {
+                $execute();
+            } catch (\LogicException) {
+                // A wrapper cannot clear a detected contract violation.
+            }
+            return $outcome;
+        });
+        $runner = new JobRunner($this->receiver(static fn(): Delivery => $delivery), $this->orchestrator(), $wrapper);
+
+        try {
+            $runner->runOnce(new QueueName('jobs'), static function () use (&$events): void {
+                $events[] = 'handle';
+            });
+            self::fail('A second execution attempt must be rejected.');
+        } catch (\LogicException) {
+            self::assertSame(['handle'], $events);
+            $this->expectQuarantined($runner);
+        }
+    }
+
+    public function test_escaped_context_callable_cannot_start_core_after_wrapper_exits(): void
+    {
+        $events = [];
+        $handled = new class {
+            public int $count = 0;
+        };
+        $saved = new class {
+            public ?\Closure $execution = null;
+        };
+        $delivery = $this->delivery(new MessageEnvelope('opaque'), $events);
+        $wrapper = $this->context(static function (MessageEnvelope $message, callable $execution) use ($saved): ExecutionOutcome {
+            $saved->execution = \Closure::fromCallable($execution);
+            return ExecutionOutcome::succeeded(ExecutionIdentifier::generate(), ExecutionKind::QueueMessage, null, null);
+        });
+        $runner = new JobRunner($this->receiver(static fn(): Delivery => $delivery), $this->orchestrator(), $wrapper);
+
+        try {
+            $runner->runOnce(new QueueName('jobs'), static function () use ($handled): void {
+                ++$handled->count;
+            });
+            self::fail('Skipped Core execution must be rejected.');
+        } catch (\LogicException) {
+            self::assertSame([], $events);
+        }
+
+        self::assertNotNull($saved->execution);
+        try {
+            ($saved->execution)();
+            self::fail('Escaped callable must be closed when the wrapper exits.');
+        } catch (\LogicException) {
+            self::assertSame(0, $handled->count);
+            $this->expectQuarantined($runner);
+        }
+    }
+
+    public function test_context_wrapper_cannot_substitute_another_valid_outcome(): void
+    {
+        $events = [];
+        $delivery = $this->delivery(new MessageEnvelope('opaque'), $events);
+        $wrapper = $this->context(static function (MessageEnvelope $message, callable $execute): ExecutionOutcome {
+            $execute();
+            return ExecutionOutcome::succeeded(ExecutionIdentifier::generate(), ExecutionKind::QueueMessage, null, null);
+        });
+        $runner = new JobRunner($this->receiver(static fn(): Delivery => $delivery), $this->orchestrator(), $wrapper);
+
+        try {
+            $runner->runOnce(new QueueName('jobs'), static function () use (&$events): void {
+                $events[] = 'handle';
+            });
+            self::fail('A substituted outcome must be rejected.');
+        } catch (\LogicException) {
+            self::assertSame(['handle'], $events);
+            $this->expectQuarantined($runner);
+        }
+    }
+
+    public function test_context_wrapper_failures_before_and_after_core_prevent_settlement(): void
+    {
+        foreach ([false, true] as $afterCore) {
+            $events = [];
+            $failure = new RuntimeException($afterCore ? 'exit failed' : 'entry failed');
+            $delivery = $this->delivery(new MessageEnvelope('opaque'), $events);
+            $wrapper = $this->context(static function (MessageEnvelope $message, callable $execute) use ($afterCore, $failure): ExecutionOutcome {
+                if ($afterCore) {
+                    $execute();
+                }
+                throw $failure;
+            });
+            $runner = new JobRunner($this->receiver(static fn(): Delivery => $delivery), $this->orchestrator(), $wrapper);
+
+            try {
+                $runner->runOnce(new QueueName('jobs'), static function () use (&$events): void {
+                    $events[] = 'handle';
+                });
+                self::fail('Wrapper failure must propagate.');
+            } catch (RuntimeException $caught) {
+                self::assertSame($failure, $caught);
+                self::assertSame($afterCore ? ['handle'] : [], $events);
+                $this->expectQuarantined($runner);
+            }
+        }
+    }
+
+    public function test_core_start_failure_propagates_exactly_through_context_wrapper(): void
+    {
+        $events = [];
+        $seen = new class {
+            public ?ExecutionStartFailed $failure = null;
+        };
+        $delivery = $this->delivery(new MessageEnvelope('opaque'), $events);
+        $wrapper = $this->context(static function (MessageEnvelope $message, callable $execute) use ($seen): ExecutionOutcome {
+            try {
+                return $execute();
+            } catch (ExecutionStartFailed $failure) {
+                $seen->failure = $failure;
+                throw $failure;
+            }
+        });
+        $runner = new JobRunner($this->receiver(static fn(): Delivery => $delivery), new ExecutionOrchestrator(new ServiceRegistry()), $wrapper);
+
+        try {
+            $runner->runOnce(new QueueName('jobs'), static function () use (&$events): void {
+                $events[] = 'handle';
+            });
+            self::fail('Core start failure expected.');
+        } catch (ExecutionStartFailed $caught) {
+            self::assertSame($seen->failure, $caught);
+            self::assertSame([], $events);
+            $this->expectQuarantined($runner);
+        }
+    }
+
+    public function test_repeated_context_wrappers_use_independent_scopes_and_fresh_core_executions(): void
+    {
+        $events = [];
+        $active = new class {
+            public bool $value = false;
+        };
+        $seen = [];
+        $delivery = $this->delivery(new MessageEnvelope('opaque'), $events);
+        $wrapper = $this->context(static function (MessageEnvelope $message, callable $execute) use ($active, &$events): ExecutionOutcome {
+            self::assertFalse($active->value);
+            $active->value = true;
+            $events[] = 'enter';
+            try {
+                return $execute();
+            } finally {
+                $active->value = false;
+                $events[] = 'exit';
+            }
+        });
+        $runner = new JobRunner($this->receiver(static fn(): Delivery => $delivery), $this->orchestrator(), $wrapper);
+        $handler = static function (MessageEnvelope $message, ExecutionContext $context, ExecutionScope $scope) use ($active, &$seen, &$events): void {
+            self::assertTrue($active->value);
+            $events[] = 'handle';
+            $seen[] = [$context->identifier()->value(), $scope];
+        };
+
+        $first = $runner->runOnce(new QueueName('jobs'), $handler);
+        self::assertFalse($active->value);
+        $second = $runner->runOnce(new QueueName('jobs'), $handler);
+
+        self::assertFalse($active->value);
+        self::assertSame(['enter', 'handle', 'exit', 'acknowledge', 'enter', 'handle', 'exit', 'acknowledge'], $events);
+        self::assertNotSame($seen[0][0], $seen[1][0]);
+        self::assertNotSame($seen[0][1], $seen[1][1]);
+        self::assertNotSame($first->executionOutcome(), $second->executionOutcome());
+    }
+
+    /** @param callable(MessageEnvelope, callable(): ExecutionOutcome): ExecutionOutcome $callback */
+    private function context(callable $callback): JobExecutionContext
+    {
+        return new class (\Closure::fromCallable($callback)) implements JobExecutionContext {
+            public function __construct(private \Closure $callback) {}
+
+            public function run(MessageEnvelope $message, callable $execution): ExecutionOutcome
+            {
+                return ($this->callback)($message, $execution);
+            }
+        };
     }
 
     private function orchestrator(): ExecutionOrchestrator
