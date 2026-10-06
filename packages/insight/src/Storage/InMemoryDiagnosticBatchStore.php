@@ -8,6 +8,7 @@ use Evolve\Insight\Query\DiagnosticBatchPage;
 use Evolve\Insight\Query\DiagnosticBatchQuery;
 use Evolve\Insight\Query\DiagnosticBatchReader;
 use Evolve\Insight\Query\DiagnosticBatchSummary;
+use Evolve\Insight\Query\DiagnosticQueryCursorUnavailable;
 
 final class InMemoryDiagnosticBatchStore implements DiagnosticBatchStore, DiagnosticBatchReader
 {
@@ -70,7 +71,7 @@ final class InMemoryDiagnosticBatchStore implements DiagnosticBatchStore, Diagno
             $cursorIndex = array_search($query->cursor(), $newestFirstIdentifiers, true);
 
             if ($cursorIndex === false) {
-                throw new \InvalidArgumentException('Diagnostic query cursor does not reference a retained batch.');
+                throw new DiagnosticQueryCursorUnavailable();
             }
 
             $startIndex = $cursorIndex + 1;

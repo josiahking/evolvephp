@@ -6,6 +6,7 @@ namespace Evolve\Insight\Tests\Unit\Storage;
 
 use Evolve\Insight\Query\DiagnosticBatchQuery;
 use Evolve\Insight\Query\DiagnosticBatchSummary;
+use Evolve\Insight\Query\DiagnosticQueryCursorUnavailable;
 use Evolve\Insight\Storage\DiagnosticBatchSnapshot;
 use Evolve\Insight\Storage\DiagnosticEntryAttributeSnapshot;
 use Evolve\Insight\Storage\DiagnosticEntrySnapshot;
@@ -300,7 +301,7 @@ final class InMemoryDiagnosticBatchStoreTest extends TestCase
         $store->save($this->snapshot('execution-2'));
         $store->save($this->snapshot('execution-3'));
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(DiagnosticQueryCursorUnavailable::class);
         $this->expectExceptionMessage('Diagnostic query cursor does not reference a retained batch.');
 
         $store->query(new DiagnosticBatchQuery(1, 'execution-1'));
@@ -315,7 +316,7 @@ final class InMemoryDiagnosticBatchStoreTest extends TestCase
 
         self::assertSame(['execution-1'], $this->summaryIdentifiers($store->query(new DiagnosticBatchQuery(10, 'execution-2'))->items()));
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(DiagnosticQueryCursorUnavailable::class);
         $this->expectExceptionMessage('Diagnostic query cursor does not reference a retained batch.');
 
         $store->query(new DiagnosticBatchQuery(1, 'missing-execution'));

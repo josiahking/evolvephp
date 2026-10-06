@@ -139,6 +139,16 @@ Operational characteristics:
 - local Insight diagnostics are framework-owned diagnostic evidence, not production telemetry export
 - Core remains independent of Insight, and Insight remains independent of OpenTelemetry and Evolve Observe
 
+## Native Dashboard
+
+The first-party native PHP dashboard is optional and caller composed. Build a `DiagnosticQueryService` from a caller-owned `DiagnosticBatchReader` and an explicit `DiagnosticAccessPolicy`, then call `DashboardRoutes::native($queries, $responseFactory, $localizationContext, DashboardExposure::localDevelopment())`. The returned `RouteCollection` contains only `GET /__evolve/insight` and `GET /__evolve/insight/{execution}` by default; the caller adds those routes to its Evolve HTTP routing composition. A validated route prefix can be passed as the fifth argument. Both `native()` and `compose()` require a caller-selected `DashboardExposure`. Installing Insight alone does not register routes, construct storage, render views or inspect the environment.
+
+`DashboardRoutes::native` composes the framework-owned PHP templates through `ViewSource`, `FilesystemViewPathResolver` and `NativePhpViewRenderer`. `DashboardRoutes::compose` accepts a caller-supplied `ViewRenderer` and `Translator` instead. Framework copy uses the Insight `en` PHP message catalog through standard i18n `LocalizationContext` fallback. Neither Twig nor Blade is required. Persisted and request-derived values pass through native View escaping; no diagnostic value is trusted HTML. Pages use only bundled inline styling and request no external assets.
+
+The list defaults to `page_size=25`. Accepted parameters are `page_size` (1 to 100), `cursor`, `execution_kind`, `category` and `name`; filters are exact and the newest-first next link retains active filters with an exclusive cursor. Malformed accepted values, unknown query keys or unknown/pruned cursors yield HTTP 400. An authorized missing execution yields 404. Denied list and detail reads yield 403 through `DiagnosticQueryService` before storage access, so denied detail does not reveal existence. HTML responses include `Content-Type: text/html; charset=UTF-8` and `Cache-Control: no-store`, including errors.
+
+Dashboard exposure is a separate caller choice from diagnostic authorization. Call `DashboardExposure::localDevelopment()` for local or development composition. There is no implicit exposure default. Production exposure requires the deliberate `DashboardExposure::productionAuthorized()` choice; no host, IP, environment variable or global is consulted. Neither exposure choice supplies or bypasses `DiagnosticAccessPolicy`. The dashboard reads only detached persisted snapshots and cannot restore values removed by capture policy. Authentication, user and role management, automatic registration, dashboard access audit emission, aggregation, offset pagination and production telemetry export are outside this dashboard.
+
 ## Requirements
 
 PHP `^8.4`
@@ -148,10 +158,13 @@ PHP `^8.4`
 - `evolvephp/core`
 - `evolvephp/database-contracts`
 - `evolvephp/http`
+- `evolvephp/i18n`
+- `evolvephp/view`
 - `evolvephp/queue-contracts`
 - `evolvephp/storage-contracts`
 - `psr/simple-cache`
 - `psr/http-client`
+- `psr/http-factory`
 - `psr/http-message`
 - `psr/http-server-handler`
 - `psr/http-server-middleware`
@@ -164,7 +177,7 @@ https://github.com/josiahking/evolvephp
 
 ## Current Limitations
 
-This package does not provide time-based retention, timestamp or range queries, log/event/plugin/module/service-resolution/worker-memory/tenant diagnostic watchers, native dashboards, routes, UI rendering, authentication, user or role management, default access policies, OpenTelemetry, Evolve Observe, trace propagation, automatic registration, application database integration, production telemetry export or production-ready diagnostics. The current scope-close and quarantine diagnostics are generic runtime signals only; they do not prove a specific request-scope leak, tenant leak or memory leak.
+This package does not provide time-based retention, timestamp or range queries, log/event/plugin/module/service-resolution/worker-memory/tenant diagnostic watchers, authentication, user or role management, default access policies, OpenTelemetry, Evolve Observe, trace propagation, automatic registration, application database integration, production telemetry export or production-ready diagnostics. The current scope-close and quarantine diagnostics are generic runtime signals only; they do not prove a specific request-scope leak, tenant leak or memory leak.
 
 ## Licence
 

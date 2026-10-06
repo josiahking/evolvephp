@@ -8,6 +8,7 @@ use Evolve\Insight\Query\DiagnosticBatchPage;
 use Evolve\Insight\Query\DiagnosticBatchQuery;
 use Evolve\Insight\Query\DiagnosticBatchReader;
 use Evolve\Insight\Query\DiagnosticBatchSummary;
+use Evolve\Insight\Query\DiagnosticQueryCursorUnavailable;
 
 final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore, DiagnosticBatchReader
 {
@@ -211,7 +212,7 @@ final class SqliteDiagnosticBatchStore implements DiagnosticBatchStore, Diagnost
         $sequence = $statement->fetchColumn();
 
         if ($sequence === false) {
-            throw new \InvalidArgumentException('Diagnostic query cursor does not reference a retained batch.');
+            throw new DiagnosticQueryCursorUnavailable();
         }
 
         return (int) $sequence;

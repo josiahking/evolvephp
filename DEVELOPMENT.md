@@ -181,7 +181,7 @@ Applications may explicitly configure ordered execution-context attachers for ca
 
 `ExecutionContext` may carry immutable `ExecutionContextValues` for an already-resolved locale and timezone belonging to that one execution. Either value may be absent and remains `null`; Core does not infer PHP's current locale or default timezone, create an ambient current execution, call process-global locale/timezone mutation APIs or implement translation, formatting, locale negotiation or fallback policy. Application localization code can consume the explicit context values when it owns those higher-level policies.
 
-Insight diagnostic reads use `DiagnosticBatchReader` and `DiagnosticQueryService`, not additional methods on `DiagnosticBatchStore`. `DiagnosticBatchStore` remains the save/find/latest persistence boundary; `DiagnosticBatchReader` owns exact detail lookup and bounded cursor queries over detached snapshots. Applications must supply a `DiagnosticAccessPolicy`; Insight does not install a default policy, routes, UI, dashboard rendering, authentication, users or roles. Query support is limited to bounded cursor pagination and exact persisted execution-kind/category/name filters over detached snapshots.
+Insight diagnostic reads use `DiagnosticBatchReader` and `DiagnosticQueryService`, not additional methods on `DiagnosticBatchStore`. `DiagnosticBatchStore` remains the save/find/latest persistence boundary; `DiagnosticBatchReader` owns exact detail lookup and bounded cursor queries over detached snapshots. Applications must supply a `DiagnosticAccessPolicy`; Insight provides `DashboardRoutes::native` for explicit native PHP list/detail route composition with caller-owned PSR responses, `ViewRenderer`, i18n catalogs and localization context. It does not install a default policy or automatically register routes, create storage, authenticate users or define roles. Route composition requires an explicit `DashboardExposure::localDevelopment()` or `DashboardExposure::productionAuthorized()` choice, and every read still uses `DiagnosticAccessPolicy`. Query support is limited to bounded cursor pagination and exact persisted execution-kind/category/name filters over detached snapshots.
 
 First-party stores use count-bounded retention. The in-memory store is suitable for tests and short-lived local development, while the SQLite store uses caller-supplied `PDO` local-development persistence. Local Insight diagnostics are not production observability export, OpenTelemetry or Evolve Observe. Sensitive operational machine names such as token, access-token, API-key, session and set-cookie fields are redacted before accepted diagnostic values are persisted.
 
@@ -628,7 +628,7 @@ BridgeSymfony -> BridgeContracts, BridgePsr, PsrHttpMessage, SymfonyHost
 BridgeRemote -> BridgeContracts, BridgePsr, PsrHttpMessage, PsrHttpClient, PsrHttpServer
 Core      -> Contracts
 Job       -> Core, QueueContracts
-Insight   -> Core, DatabaseContracts, Http, QueueContracts, StorageContracts, PsrSimpleCache, PsrHttpClient, PsrHttpMessage, PsrHttpServer
+Insight   -> Core, DatabaseContracts, Http, View, I18n, QueueContracts, StorageContracts, PsrSimpleCache, PsrHttpClient, PsrHttpMessage, PsrHttpServer
 Observe   -> Core, Http, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PsrHttpMessage, PsrHttpServer
 DevTools  -> Contracts, Core, Module, Plugin
 Http      -> Contracts, Core
