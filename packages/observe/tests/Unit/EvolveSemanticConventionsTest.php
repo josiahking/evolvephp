@@ -12,6 +12,20 @@ use ReflectionClass;
 
 final class EvolveSemanticConventionsTest extends TestCase
 {
+    public function testQueueVocabularyIsFixed(): void
+    {
+        $constants = $this->constants();
+        $this->assertSame('evolve.queue.produce', $constants['SPAN_NAME_QUEUE_PRODUCE']);
+        $this->assertSame('evolve.queue.consume', $constants['SPAN_NAME_QUEUE_CONSUME']);
+        $this->assertSame('evolve.queue.role', $constants['ATTRIBUTE_QUEUE_ROLE']);
+        $this->assertSame('evolve.queue.failure.category', $constants['ATTRIBUTE_QUEUE_FAILURE_CATEGORY']);
+        $this->assertSame('producer', $constants['QUEUE_ROLE_PRODUCER']);
+        $this->assertSame('consumer', $constants['QUEUE_ROLE_CONSUMER']);
+        $this->assertSame('evolve.queue.message.duration', $constants['METRIC_QUEUE_MESSAGE_DURATION']);
+        $this->assertSame('evolve.queue.message.count', $constants['METRIC_QUEUE_MESSAGE_COUNT']);
+        $this->assertSame('evolve.queue.message.failures', $constants['METRIC_QUEUE_MESSAGE_FAILURES']);
+    }
+
     public function testConventionsClassIsFinalAndDeclarative(): void
     {
         $reflection = new ReflectionClass(EvolveSemanticConventions::class);

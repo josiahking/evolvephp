@@ -8,6 +8,24 @@ use Evolve\Core\Execution\ExecutionKind;
 
 final class EvolveSemanticConventions
 {
+    public const SPAN_NAME_QUEUE_PRODUCE = 'evolve.queue.produce';
+
+    public const SPAN_NAME_QUEUE_CONSUME = 'evolve.queue.consume';
+
+    public const ATTRIBUTE_QUEUE_ROLE = 'evolve.queue.role';
+
+    public const ATTRIBUTE_QUEUE_FAILURE_CATEGORY = 'evolve.queue.failure.category';
+
+    public const QUEUE_ROLE_PRODUCER = 'producer';
+
+    public const QUEUE_ROLE_CONSUMER = 'consumer';
+
+    public const METRIC_QUEUE_MESSAGE_DURATION = 'evolve.queue.message.duration';
+
+    public const METRIC_QUEUE_MESSAGE_COUNT = 'evolve.queue.message.count';
+
+    public const METRIC_QUEUE_MESSAGE_FAILURES = 'evolve.queue.message.failures';
+
     public const SPAN_NAME_EXECUTION = 'evolve.execution';
 
     public const ATTRIBUTE_EXECUTION_ID = 'evolve.execution.id';

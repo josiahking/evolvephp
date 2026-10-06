@@ -1791,11 +1791,13 @@
             "dist": {
                 "type": "path",
                 "url": "packages/observe",
-                "reference": "ce954c3a3415d98c6181bbaed495cc41429339d6"
+                "reference": "172bf1c43d51835fa8e95284f2adba6e5e52cf23"
             },
             "require": {
                 "evolvephp/core": "^2.0",
                 "evolvephp/http": "^2.0",
+                "evolvephp/job": "^2.0",
+                "evolvephp/queue-contracts": "^2.0",
                 "open-telemetry/api": "^1.10",
                 "open-telemetry/sem-conv": "^1.44",
                 "php": "^8.4",
@@ -1815,7 +1817,7 @@
             "license": [
                 "BSD-3-Clause"
             ],
-            "description": "OpenTelemetry composition, execution and HTTP server tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.",
+            "description": "OpenTelemetry composition, execution, HTTP and infrastructure tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.",
             "transport-options": {
                 "relative": true
             }

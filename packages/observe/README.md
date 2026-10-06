@@ -2,15 +2,15 @@
 
 `evolvephp/observe`
 
-OpenTelemetry composition, generic execution tracing, explicit HTTP SERVER tracing, bounded metrics, structured-log correlation and bounded export-processing integration foundation for EvolvePHP 2.
+OpenTelemetry composition, execution, HTTP and infrastructure tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.
 
 ## Operational ownership
 
-Observe owns only the composition boundary and local execution/export lifecycle surfaces described in this package. Applications remain responsible for provider setup, exporters, transports, Collector wiring, backend routing, retry policy, timing policy, and all outbound HTTP or database/cache/queue infrastructure telemetry beyond the accepted Evolve Core and HTTP boundaries.
+Observe owns only the composition boundary and local execution/export lifecycle surfaces described in this package. Applications remain responsible for provider setup, exporters, transports, Collector wiring, backend routing, retry policy, timing policy, and all infrastructure telemetry beyond the explicit queue producer and Job consumer boundaries described below.
 
 ## Responsibility
 
-Evolve Observe provides a small boundary for application-owned OpenTelemetry providers, explicit SDK resource identity, generic Core execution tracing and metrics, explicit HTTP SERVER tracing and metrics, structured-log correlation snapshots and optional bounded SDK export-processing integration. It consumes Core's generic lifecycle contracts through `ExecutionContextAttacher` and `ObservationSink`, and it consumes Evolve HTTP routing state only for route-template span enrichment.
+Evolve Observe provides a small boundary for application-owned OpenTelemetry providers, explicit SDK resource identity, generic Core execution tracing and metrics, explicit HTTP SERVER tracing and bounded metrics, structured-log correlation snapshots and optional bounded SDK export-processing integration. It consumes Core's generic lifecycle contracts through `ExecutionContextAttacher` and `ObservationSink`, and it consumes Evolve HTTP routing state only for route-template span enrichment.
 
 Observe is disabled by default. Disabled composition keeps all provider, resource and sampler references null, even when optional objects are supplied to the factory, and execution tracing creates no span or OpenTelemetry context state.
 
@@ -75,9 +75,19 @@ When callers pass a meter provider to the processing factory, Observe forwards i
 
 Applications own OpenTelemetry setup. They create providers, exporters, transports, resources, sampling policy, transport request timeouts, retry policy, shutdown behavior, backend configuration and any Collector deployment outside this package. Production deployments should prefer sending OTLP to an OpenTelemetry Collector that owns backend routing, buffering and exporter policy. With OpenTelemetry PHP SDK 1.15.x, the SDK batch processor `exportTimeoutMillis` constructor argument and stock PSR transport do not provide a portable hard wall-clock flush deadline; applications must configure finite caller-owned transport timeout and retry policy.
 
-Observe does not register global OpenTelemetry state, call OpenTelemetry globals, read environment configuration, discover resources, create providers, create exporters, configure SDK builders, install automatic runtime wiring, install shutdown hooks, create retry queues, manage Collector processes or provide backend routing/fan-out. It does not own endpoints, authorization headers, API keys, TLS certificates, HTTP clients, gRPC clients or exporter transport selection, and it does not provide infrastructure telemetry.
+Observe does not register global OpenTelemetry state, call OpenTelemetry globals, read environment configuration, discover resources, create providers, create exporters, configure SDK builders, install automatic runtime wiring, install shutdown hooks, create retry queues, manage Collector processes or provide backend routing/fan-out. It does not own endpoints, authorization headers, API keys, TLS certificates, HTTP clients, gRPC clients or exporter transport selection, and it does not provide infrastructure telemetry beyond the queue producer and Job consumer boundaries described here.
 
-Observe depends on Core for generic lifecycle contracts and on HTTP for public route-template state. Core and HTTP themselves remain OpenTelemetry-neutral. Observe has no dependency on Insight.
+Observe depends on Core for generic lifecycle contracts, HTTP for public route-template state, Job for the execution-context seam and QueueContracts for the publisher and immutable envelope contracts. Core, Job, QueueContracts and HTTP remain OpenTelemetry-neutral. Observe has no dependency on Insight.
+
+## Queue producer and Job consumer telemetry
+
+`QueuePublisherInstrumentation` decorates the existing `QueuePublisher` contract. With tracing enabled it starts one fixed-name PRODUCER span, `evolve.queue.produce`, and injects W3C `traceparent` and conditional `tracestate` into a new immutable `MessageEnvelope`. Existing case variants of those two keys are replaced with canonical lowercase keys. The payload and all other metadata remain opaque and unchanged. The original envelope is passed through unchanged when Observe is disabled. Producer tracing uses an explicit context and does not activate a producer scope.
+
+`JobExecutionContextInstrumentation` implements the Job execution-context seam. It extracts only W3C Trace Context, starts one fixed-name CONSUMER span, `evolve.queue.consume`, and activates it around the one-shot Core execution. The existing `evolve.execution` span and metrics remain Core-owned; that span becomes a child of the consumer span. A message without valid remote context starts a fresh trace. Each invocation has its own context and metric state, including in persistent workers. Observe does not change Job settlement.
+
+Both boundaries record `evolve.queue.message.duration` (histogram, unit `s`), `evolve.queue.message.count` (counter, unit `{message}`) and `evolve.queue.message.failures` (counter, unit `{message}`). Every queue metric has exactly one dimension, `evolve.queue.role`, with only `producer` or `consumer` as its value. The structural budget is two series per queue metric. Span errors use only a safe throwable class, and producer queue failures may add the bounded queue failure category. Neither spans nor metrics record queue names, payloads, arbitrary metadata, exception messages or stacks.
+
+Observe does not extract, inject or interpret baggage. A `baggage` metadata entry remains opaque application metadata. Applications own OpenTelemetry providers, resources, exporters and transport configuration. Telemetry setup, recording and span-ending failures do not replace publication or Core results. A failed consumer context detach is an isolation failure; it is surfaced to `JobRunner`, which quarantines and skips settlement. If Core start and context detach both fail, the detach failure takes precedence so isolation safety is visible.
 
 ## Requirements
 
@@ -87,13 +97,15 @@ PHP `^8.4`
 
 - `evolvephp/core`
 - `evolvephp/http`
+- `evolvephp/job`
+- `evolvephp/queue-contracts`
 - `open-telemetry/api`
 - `open-telemetry/sem-conv`
 - `psr/http-message`
 - `psr/http-server-handler`
 - `psr/http-server-middleware`
 
-`evolvephp/core`, `evolvephp/http`, `open-telemetry/api`, `open-telemetry/sem-conv`, `psr/http-message`, `psr/http-server-handler` and `psr/http-server-middleware`; optional SDK resource, sampler, export-processing, reader and lifecycle integration is supported when applications install `open-telemetry/sdk`.
+`evolvephp/core`, `evolvephp/http`, `evolvephp/job`, `evolvephp/queue-contracts`, `open-telemetry/api`, `open-telemetry/sem-conv`, `psr/http-message`, `psr/http-server-handler` and `psr/http-server-middleware`; optional SDK resource, sampler, export-processing, reader and lifecycle integration is supported when applications install `open-telemetry/sdk`.
 
 ## Optional SDK Support
 
@@ -107,9 +119,9 @@ https://github.com/josiahking/evolvephp
 
 ## Current Limitations
 
-This package does not implement baggage, outbound HTTP-client spans or metrics, outbound HTTP injection, trace headers on responses, queue/message metrics beyond generic execution-kind metrics, scheduled-job transport propagation, database metrics, cache metrics, storage metrics, worker/process/runtime metrics, an `EvolveLogger`, logger facades, PSR-3 adapters, Monolog adapters, logger decorators, mandatory OpenTelemetry logging, Evolve-owned exporters, endpoint configuration, transport configuration, Collector setup, retries, durable buffering, automatic flush, shutdown hooks, OpenTelemetry auto-instrumentation, global OpenTelemetry registration, environment interpretation, provider builders or resource detectors.
+This package does not implement baggage, outbound HTTP-client spans or metrics, outbound HTTP injection, trace headers on responses, scheduled-job transport propagation, database metrics, cache metrics, storage metrics, worker/process/runtime metrics, an `EvolveLogger`, logger facades, PSR-3 adapters, Monolog adapters, logger decorators, mandatory OpenTelemetry logging, Evolve-owned exporters, endpoint configuration, transport configuration, Collector setup, retries, durable buffering, automatic flush, shutdown hooks, OpenTelemetry auto-instrumentation, global OpenTelemetry registration, environment interpretation, provider builders or resource detectors.
 
-Outbound propagation beyond the bounded Remote Bridge trace carrier, logger adapters, telemetry drop-health metrics beyond the narrow exporter failure tracker and infrastructure telemetry remain deferred.
+Outbound HTTP propagation beyond the bounded Remote Bridge trace carrier, logger adapters, telemetry drop-health metrics beyond the narrow exporter failure tracker and infrastructure telemetry outside the queue producer and Job consumer boundaries remain deferred.
 
 ## Licence
 

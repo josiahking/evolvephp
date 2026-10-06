@@ -160,6 +160,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'php' => '^8.4',
                 'evolvephp/core' => '^2.0',
                 'evolvephp/http' => '^2.0',
+                'evolvephp/job' => '^2.0',
+                'evolvephp/queue-contracts' => '^2.0',
                 'open-telemetry/api' => '^1.10',
                 'open-telemetry/sem-conv' => '^1.44',
                 'psr/http-message' => '^1.1 || ^2.0',
@@ -169,7 +171,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $manifest['require']
         );
         $this->assertSame(
-            'OpenTelemetry composition, execution and HTTP server tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.',
+            'OpenTelemetry composition, execution, HTTP and infrastructure tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.',
             $manifest['description']
         );
         $this->assertSame(
@@ -178,7 +180,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
 
         foreach (array_keys(array_merge($manifest['require'], $manifest['suggest'])) as $packageName) {
-            if ($packageName !== 'evolvephp/core' && $packageName !== 'evolvephp/http') {
+            if (!in_array($packageName, ['evolvephp/core', 'evolvephp/http', 'evolvephp/job', 'evolvephp/queue-contracts'], true)) {
                 $this->assertFalse(str_starts_with($packageName, 'evolvephp/'), 'Observe must not require unapproved first-party Evolve packages.');
             }
 
@@ -1033,12 +1035,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'manifest' => 'packages/observe/composer.json',
                 'src' => 'packages/observe/src',
                 'name' => 'evolvephp/observe',
-                'description' => 'OpenTelemetry composition, execution and HTTP server tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.',
+                'description' => 'OpenTelemetry composition, execution, HTTP and infrastructure tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Observe\\',
                 'require' => array(
                     'php' => '^8.4',
                     'evolvephp/core' => '^2.0',
                     'evolvephp/http' => '^2.0',
+                    'evolvephp/job' => '^2.0',
+                    'evolvephp/queue-contracts' => '^2.0',
                     'open-telemetry/api' => '^1.10',
                     'open-telemetry/sem-conv' => '^1.44',
                     'psr/http-message' => '^1.1 || ^2.0',
@@ -1500,6 +1504,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'ObserveConfiguration.php',
                 'OpenTelemetryComposition.php',
                 'OpenTelemetryCompositionFactory.php',
+                'Queue/JobExecutionContextInstrumentation.php',
+                'Queue/MessageEnvelopeTraceContext.php',
+                'Queue/QueuePublisherInstrumentation.php',
             ),
             'packages/dev-tools/src' => array(
                 'Adoption/AdoptionPlan.php',

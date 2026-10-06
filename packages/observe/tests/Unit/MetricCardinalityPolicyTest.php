@@ -15,6 +15,19 @@ use ReflectionClass;
 
 final class MetricCardinalityPolicyTest extends TestCase
 {
+    public function testQueueMetricsHaveExactlyTwoClosedRoleSeries(): void
+    {
+        $this->assertSame(2, MetricCardinalityPolicy::queueMessageCardinalityBudget());
+        $this->assertSame(
+            [EvolveSemanticConventions::ATTRIBUTE_QUEUE_ROLE => EvolveSemanticConventions::QUEUE_ROLE_PRODUCER],
+            MetricCardinalityPolicy::queueProducerAttributes(),
+        );
+        $this->assertSame(
+            [EvolveSemanticConventions::ATTRIBUTE_QUEUE_ROLE => EvolveSemanticConventions::QUEUE_ROLE_CONSUMER],
+            MetricCardinalityPolicy::queueConsumerAttributes(),
+        );
+    }
+
     public function testPolicyIsFinalAndStateless(): void
     {
         $reflection = new ReflectionClass(MetricCardinalityPolicy::class);

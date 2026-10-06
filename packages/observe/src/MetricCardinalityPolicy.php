@@ -87,5 +87,22 @@ final class MetricCardinalityPolicy
         return count(self::HTTP_METHODS) + 1;
     }
 
+    /** @return array<string, string> */
+    public static function queueProducerAttributes(): array
+    {
+        return [EvolveSemanticConventions::ATTRIBUTE_QUEUE_ROLE => EvolveSemanticConventions::QUEUE_ROLE_PRODUCER];
+    }
+
+    /** @return array<string, string> */
+    public static function queueConsumerAttributes(): array
+    {
+        return [EvolveSemanticConventions::ATTRIBUTE_QUEUE_ROLE => EvolveSemanticConventions::QUEUE_ROLE_CONSUMER];
+    }
+
+    public static function queueMessageCardinalityBudget(): int
+    {
+        return 2;
+    }
+
     private function __construct() {}
 }

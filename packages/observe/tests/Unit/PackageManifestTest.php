@@ -18,7 +18,7 @@ final class PackageManifestTest extends TestCase
         );
 
         $this->assertSame('evolvephp/observe', $manifest['name']);
-        $this->assertSame('OpenTelemetry composition, execution and HTTP server tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.', $manifest['description']);
+        $this->assertSame('OpenTelemetry composition, execution, HTTP and infrastructure tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.', $manifest['description']);
         $this->assertSame('library', $manifest['type']);
         $this->assertSame('BSD-3-Clause', $manifest['license']);
         $this->assertSame(
@@ -26,6 +26,8 @@ final class PackageManifestTest extends TestCase
                 'php' => '^8.4',
                 'evolvephp/core' => '^2.0',
                 'evolvephp/http' => '^2.0',
+                'evolvephp/job' => '^2.0',
+                'evolvephp/queue-contracts' => '^2.0',
                 'open-telemetry/api' => '^1.10',
                 'open-telemetry/sem-conv' => '^1.44',
                 'psr/http-message' => '^1.1 || ^2.0',
@@ -47,7 +49,7 @@ final class PackageManifestTest extends TestCase
         $this->assertArrayNotHasKey('open-telemetry/exporter-otlp', $manifest['suggest']);
 
         foreach (array_keys($manifest['require']) as $packageName) {
-            if ($packageName !== 'evolvephp/core' && $packageName !== 'evolvephp/http') {
+            if (!in_array($packageName, ['evolvephp/core', 'evolvephp/http', 'evolvephp/job', 'evolvephp/queue-contracts'], true)) {
                 $this->assertFalse(str_starts_with($packageName, 'evolvephp/'));
             }
         }
