@@ -1334,6 +1334,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Lifecycle/ApplicationState.php',
             ),
             'packages/job/src' => array(
+                'JobExecutionContext.php',
                 'JobRunOutcome.php',
                 'JobRunner.php',
                 'JobSettlementState.php',
