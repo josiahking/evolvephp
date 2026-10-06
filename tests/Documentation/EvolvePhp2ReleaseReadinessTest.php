@@ -80,6 +80,9 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             $this->assertMatchesPattern('/canonical source.*EvolvePHP monorepo/i', $content);
             $this->assertStringContainsString('https://github.com/josiahking/evolvephp', $content);
             $this->assertStringContainsString($package['dependencies'], $content);
+            if ($package['name'] === 'evolvephp/observe') {
+                $this->assertStringNotContainsString('`evolvephp/queue-memory`', $content);
+            }
             $this->assertStringContainsString('BSD-3-Clause', $content);
             $this->assertStringContainsString('`LICENSE.md`', $content);
             $this->assertDoesNotMatchPattern('/composer require/i', $content);
@@ -349,8 +352,8 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'name' => 'evolvephp/observe',
                 'directory' => 'packages/observe',
                 'human' => 'EvolvePHP Observe',
-                'responsibility' => 'OpenTelemetry composition, generic execution tracing, explicit HTTP SERVER tracing, bounded metrics, structured-log correlation and bounded export-processing integration foundation for EvolvePHP 2.',
-                'dependencies' => '`evolvephp/core`, `evolvephp/http`, `open-telemetry/api`, `open-telemetry/sem-conv`, `psr/http-message`, `psr/http-server-handler` and `psr/http-server-middleware`; optional SDK resource, sampler, export-processing, reader and lifecycle integration is supported when applications install `open-telemetry/sdk`.',
+                'responsibility' => 'OpenTelemetry composition, execution, HTTP and infrastructure tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.',
+                'dependencies' => '`evolvephp/core`, `evolvephp/http`, `evolvephp/job`, `evolvephp/queue-contracts`, `open-telemetry/api`, `open-telemetry/sem-conv`, `psr/http-message`, `psr/http-server-handler` and `psr/http-server-middleware`; optional SDK resource, sampler, export-processing, reader and lifecycle integration is supported when applications install `open-telemetry/sdk`.',
             ),
             array(
                 'name' => 'evolvephp/dev-tools',

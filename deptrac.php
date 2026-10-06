@@ -227,7 +227,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($twigEngine),
             Ruleset::forLayer($illuminateViewEngine),
             Ruleset::forLayer($insight)->accesses($core, $databaseContracts, $http, $view, $i18n, $queueContracts, $storageContracts, $psrSimpleCache, $psrHttpClient, $psrHttpMessage, $psrHttpServer),
-            Ruleset::forLayer($observe)->accesses($core, $http, $openTelemetryApi, $openTelemetrySdk, $openTelemetrySemConv, $psrHttpMessage, $psrHttpServer),
+            Ruleset::forLayer($observe)->accesses($core, $http, $job, $queueContracts, $openTelemetryApi, $openTelemetrySdk, $openTelemetrySemConv, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($openTelemetryApi),
             Ruleset::forLayer($openTelemetrySdk),
             Ruleset::forLayer($openTelemetrySemConv),
