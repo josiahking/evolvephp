@@ -310,6 +310,43 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $this->assertDoesNotMatchPattern('/does not provide dashboards|dashboard functionality.*deferred/i', $packages);
         $this->assertDoesNotMatchPattern('/does not install a default policy, routes, UI, dashboard rendering/i', $development);
     }
+
+    public function testInsightOperationsGuideKeepsCompositionAndSafetyBoundariesVisible(): void
+    {
+        $guide = $this->readProjectFile('docs/alpha/insight.md');
+        $root = $this->readProjectFile('README.md');
+        $package = $this->readProjectFile('packages/insight/README.md');
+
+        foreach (array(
+            'DiagnosticPipeline::storing',
+            'DiagnosticCapturePolicy',
+            'SqliteDiagnosticBatchStore',
+            'DiagnosticQueryService',
+            'DiagnosticAccessPolicy',
+            'DashboardRoutes::native',
+            'DashboardExposure::localDevelopment',
+            'DashboardExposure::productionAuthorized',
+            'ExecutionCorrelation',
+            'dropped diagnostic entries',
+            'caller-owned',
+            'count-bounded',
+            'Evolve Observe',
+            'OpenTelemetry',
+        ) as $claim) {
+            $this->assertStringContainsString($claim, $guide);
+        }
+
+        $this->assertStringContainsString('dashboard access auditing is deferred', strtolower($guide));
+        $this->assertStringContainsString('separate from business storage', strtolower($guide));
+        $this->assertStringContainsString('not automatically', strtolower($guide));
+        $this->assertStringContainsString('no live connection remains', strtolower($guide));
+        $this->assertStringContainsString('remote or non-local access', strtolower($guide));
+        $this->assertStringNotContainsString('close it', strtolower($guide));
+        $this->assertStringNotContainsString('any deployed route', strtolower($guide));
+        $this->assertStringContainsString('[Insight operations](docs/alpha/insight.md)', $root);
+        $this->assertStringContainsString('[Insight operations](../../docs/alpha/insight.md)', $package);
+    }
+
     private function expectedArchitectureMatrixLines()
     {
         return array(
@@ -339,6 +376,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'AGENTS.md',
             'README.md',
             'DEVELOPMENT.md',
+            'docs/alpha/insight.md',
             'packages/README.md',
             'packages/bridge-contracts/README.md',
             'packages/bridge-laravel/README.md',

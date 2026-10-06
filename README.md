@@ -86,6 +86,7 @@ Use [DEVELOPMENT.md](DEVELOPMENT.md) for detailed Composer, PHPUnit, PHPStan, PH
 
 - [Alpha getting started](docs/alpha/getting-started.md)
 - [Application foundations](docs/alpha/application-foundations.md)
+- [Insight operations](docs/alpha/insight.md)
 - [Modernization and Bridge](docs/alpha/modernization-and-bridge.md)
 - [Status and limitations](docs/alpha/status-and-limitations.md)
 - [2.0.0-alpha.1 release notes](docs/releases/2.0.0-alpha.1.md)

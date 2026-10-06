@@ -257,6 +257,7 @@ final class EvolvePhp2AlphaDocumentationCheckpointTest extends TestCase
         return array(
             'docs/alpha/getting-started.md',
             'docs/alpha/application-foundations.md',
+            'docs/alpha/insight.md',
             'docs/alpha/modernization-and-bridge.md',
             'docs/alpha/status-and-limitations.md',
         );
