@@ -4,6 +4,8 @@
 
 Local diagnostic capture, persistence, query and access-policy foundation for EvolvePHP 2.
 
+For practical composition and operational boundaries, see [Insight operations](../../docs/alpha/insight.md).
+
 ## Responsibility
 
 Evolve Insight consumes safe Core execution observations and explicitly submitted diagnostic candidates, then collects them into immutable, bounded diagnostic batches. This package provides the storage-neutral `DiagnosticBatchSink` contract, immutable `DiagnosticBatch` values, `DiagnosticBatchCollector`, which implements Core's `ObservationSink` boundary, an explicit `DiagnosticPipeline` composition helper for applications that opt in to collection plus persistence, and a storage-neutral read/query foundation guarded by an application-supplied access policy.
