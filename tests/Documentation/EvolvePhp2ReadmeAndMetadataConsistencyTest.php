@@ -286,6 +286,30 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         }
     }
 
+    public function testInsightDashboardDocumentationMatchesExplicitNativeComposition(): void
+    {
+        $insight = $this->readProjectFile('packages/insight/README.md');
+        $packages = $this->readProjectFile('packages/README.md');
+        $development = $this->readProjectFile('DEVELOPMENT.md');
+
+        foreach (array(
+            'DashboardRoutes::native',
+            'DashboardExposure::localDevelopment',
+            'DashboardExposure::productionAuthorized',
+            'DiagnosticQueryService',
+            'page_size',
+            'cursor',
+            'ViewRenderer',
+            'LocalizationContext',
+            'no-store',
+        ) as $claim) {
+            $this->assertStringContainsString($claim, $insight);
+        }
+        $this->assertStringContainsString('native PHP dashboard', $packages);
+        $this->assertStringContainsString('DashboardRoutes::native', $development);
+        $this->assertDoesNotMatchPattern('/does not provide dashboards|dashboard functionality.*deferred/i', $packages);
+        $this->assertDoesNotMatchPattern('/does not install a default policy, routes, UI, dashboard rendering/i', $development);
+    }
     private function expectedArchitectureMatrixLines()
     {
         return array(
@@ -299,7 +323,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'BridgeLaravel -> BridgeContracts, BridgePsr, PsrHttpMessage, LaravelHost',
             'BridgeSymfony -> BridgeContracts, BridgePsr, PsrHttpMessage, SymfonyHost',
             'Core      -> Contracts',
-            'Insight   -> Core, DatabaseContracts, Http, QueueContracts, StorageContracts, PsrSimpleCache, PsrHttpClient, PsrHttpMessage, PsrHttpServer',
+            'Insight   -> Core, DatabaseContracts, Http, View, I18n, QueueContracts, StorageContracts, PsrSimpleCache, PsrHttpClient, PsrHttpMessage, PsrHttpServer',
             'Observe   -> Core, Http, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PsrHttpMessage, PsrHttpServer',
             'DevTools  -> Contracts, Core, Module, Plugin',
             'Http      -> Contracts, Core',
