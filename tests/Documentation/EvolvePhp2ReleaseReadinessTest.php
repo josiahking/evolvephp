@@ -353,7 +353,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'directory' => 'packages/observe',
                 'human' => 'EvolvePHP Observe',
                 'responsibility' => 'OpenTelemetry composition, execution, HTTP and infrastructure tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.',
-                'dependencies' => '`evolvephp/core`, `evolvephp/http`, `evolvephp/job`, `evolvephp/queue-contracts`, `open-telemetry/api`, `open-telemetry/sem-conv`, `psr/http-message`, `psr/http-server-handler` and `psr/http-server-middleware`; optional SDK resource, sampler, export-processing, reader and lifecycle integration is supported when applications install `open-telemetry/sdk`.',
+                'dependencies' => '`evolvephp/core`, `evolvephp/database-contracts`, `evolvephp/http`, `evolvephp/http-client`, `evolvephp/job`, `evolvephp/queue-contracts`, `evolvephp/storage-contracts`, `open-telemetry/api`, `open-telemetry/sem-conv`, `psr/http-client`, `psr/http-message`, `psr/http-server-handler`, `psr/http-server-middleware` and `psr/simple-cache`; optional SDK resource, sampler, export-processing, reader and lifecycle integration is supported when applications install `open-telemetry/sdk`.',
             ),
             array(
                 'name' => 'evolvephp/dev-tools',

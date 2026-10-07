@@ -8,6 +8,33 @@ use Evolve\Core\Execution\ExecutionKind;
 
 final class EvolveSemanticConventions
 {
+    public const SPAN_NAME_DATABASE = 'evolve.database';
+    public const SPAN_NAME_CACHE = 'evolve.cache';
+    public const SPAN_NAME_STORAGE = 'evolve.storage';
+    public const SPAN_NAME_HTTP_CLIENT = 'evolve.http.client';
+
+    public const ATTRIBUTE_DATABASE_OPERATION = 'evolve.database.operation';
+    public const ATTRIBUTE_DATABASE_OPERATION_NAME = 'evolve.database.operation_name';
+    public const ATTRIBUTE_DATABASE_FAILURE_CATEGORY = 'evolve.database.failure.category';
+    public const ATTRIBUTE_DATABASE_SQLSTATE = 'evolve.database.sqlstate';
+    public const ATTRIBUTE_DATABASE_DRIVER = 'evolve.database.driver';
+    public const ATTRIBUTE_CACHE_OPERATION = 'evolve.cache.operation';
+    public const ATTRIBUTE_STORAGE_OPERATION = 'evolve.storage.operation';
+    public const ATTRIBUTE_STORAGE_FAILURE_CATEGORY = 'evolve.storage.failure.category';
+
+    public const METRIC_DATABASE_DURATION = 'evolve.database.operation.duration';
+    public const METRIC_DATABASE_COUNT = 'evolve.database.operation.count';
+    public const METRIC_DATABASE_FAILURES = 'evolve.database.operation.failures';
+    public const METRIC_CACHE_DURATION = 'evolve.cache.operation.duration';
+    public const METRIC_CACHE_COUNT = 'evolve.cache.operation.count';
+    public const METRIC_CACHE_FAILURES = 'evolve.cache.operation.failures';
+    public const METRIC_STORAGE_DURATION = 'evolve.storage.operation.duration';
+    public const METRIC_STORAGE_COUNT = 'evolve.storage.operation.count';
+    public const METRIC_STORAGE_FAILURES = 'evolve.storage.operation.failures';
+    public const METRIC_HTTP_CLIENT_DURATION = 'evolve.http.client.request.duration';
+    public const METRIC_HTTP_CLIENT_COUNT = 'evolve.http.client.request.count';
+    public const METRIC_HTTP_CLIENT_FAILURES = 'evolve.http.client.request.failures';
+
     public const SPAN_NAME_QUEUE_PRODUCE = 'evolve.queue.produce';
 
     public const SPAN_NAME_QUEUE_CONSUME = 'evolve.queue.consume';

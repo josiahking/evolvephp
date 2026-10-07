@@ -19,7 +19,7 @@ final class EvolvePhp2ObserveFoundationAcceptanceTest extends TestCase
 
         $this->assertSame('evolvephp/observe', $manifest['name']);
         $this->assertSame(self::DESCRIPTION, $manifest['description']);
-        $this->assertSame(['php' => '^8.4', 'evolvephp/core' => '^2.0', 'evolvephp/http' => '^2.0', 'evolvephp/job' => '^2.0', 'evolvephp/queue-contracts' => '^2.0', 'open-telemetry/api' => '^1.10', 'open-telemetry/sem-conv' => '^1.44', 'psr/http-message' => '^1.1 || ^2.0', 'psr/http-server-handler' => '^1.0', 'psr/http-server-middleware' => '^1.0'], $manifest['require']);
+        $this->assertSame(['php' => '^8.4', 'evolvephp/core' => '^2.0', 'evolvephp/database-contracts' => '^2.0', 'evolvephp/http' => '^2.0', 'evolvephp/http-client' => '^2.0', 'evolvephp/job' => '^2.0', 'evolvephp/queue-contracts' => '^2.0', 'evolvephp/storage-contracts' => '^2.0', 'open-telemetry/api' => '^1.10', 'open-telemetry/sem-conv' => '^1.44', 'psr/http-client' => '^1.0', 'psr/http-message' => '^1.1 || ^2.0', 'psr/http-server-handler' => '^1.0', 'psr/http-server-middleware' => '^1.0', 'psr/simple-cache' => '^3.0'], $manifest['require']);
         $this->assertArrayHasKey('open-telemetry/sdk', $manifest['suggest']);
         $this->assertArrayNotHasKey('open-telemetry/sdk', $manifest['require']);
         $this->assertArrayNotHasKey('open-telemetry/exporter-otlp', $manifest['require']);
@@ -39,8 +39,10 @@ final class EvolvePhp2ObserveFoundationAcceptanceTest extends TestCase
         $this->assertStringContainsString('user identity, tenant identity, session identity', $readme);
         $this->assertStringContainsString('exception messages, stack traces', $readme);
         $this->assertStringContainsString('Inbound baggage is deny-by-default', $readme);
-        $this->assertStringContainsString('database metrics, cache metrics, storage metrics', $readme);
-        $this->assertStringContainsString('outbound HTTP-client spans or metrics', $readme);
+        $this->assertStringContainsString('DatabaseConnectionInstrumentation', $readme);
+        $this->assertStringContainsString('CacheInstrumentation', $readme);
+        $this->assertStringContainsString('ObjectStorageInstrumentation', $readme);
+        $this->assertStringContainsString('HttpClientInstrumentation', $readme);
         $this->assertStringContainsString('QueuePublisherInstrumentation', $readme);
         $this->assertStringContainsString('W3C `traceparent` and conditional `tracestate`', $readme);
         $this->assertStringContainsString('JobExecutionContextInstrumentation', $readme);
@@ -53,8 +55,12 @@ final class EvolvePhp2ObserveFoundationAcceptanceTest extends TestCase
         $this->assertStringContainsString('Observe does not extract, inject or interpret baggage', $readme);
         $this->assertStringContainsString('Telemetry setup, recording and span-ending failures do not replace publication or Core results', $readme);
         $this->assertStringContainsString('it is surfaced to `JobRunner`, which quarantines and skips settlement', $readme);
-        $this->assertStringContainsString('database metrics, cache metrics, storage metrics', $readme);
-        $this->assertStringContainsString('outbound HTTP-client spans or metrics', $readme);
+        $this->assertStringContainsString('DatabaseConnectionInstrumentation', $readme);
+        $this->assertStringContainsString('CacheInstrumentation', $readme);
+        $this->assertStringContainsString('ObjectStorageInstrumentation', $readme);
+        $this->assertStringContainsString('HttpClientInstrumentation', $readme);
+        $this->assertStringNotContainsString('database metrics, cache metrics, storage metrics', $readme);
+        $this->assertStringNotContainsString('outbound HTTP-client spans or metrics', $readme);
         $this->assertStringNotContainsString('Phase 9.9', $readme);
     }
 }
