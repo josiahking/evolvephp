@@ -15,12 +15,14 @@ EvolvePHP 2 is Alpha/pre-release software. It is not production-ready and is not
 - Development-time Audit, adoption planning declarations, Doctor support, `route:list` and optional starter generators.
 - Bridge contracts, PSR, Laravel, Symfony, remote protocol/client/server foundations and the isolated legacy HTTP client.
 - Optional local Insight diagnostics for explicitly wrapped database, PSR-16 cache, queue, object-storage and PSR-18 HTTP interfaces, with execution-local correlation and capture-policy filtering. SQL inspection requires separate application and policy opt-ins; sensitive values remain excluded.
+- Optional experimental Observe composition for Core execution, incoming HTTP, queue/Job, database, PSR-16 cache, object storage and outbound PSR-18 HTTP tracing and bounded metrics. Applications own providers, resources, exporters and transports; see the [Observe operations](observe.md) guide. SERVER spans may include the caller-owned URI path as `url.path`, while `http.route` and the final span name use the declared route template.
 
 ## Experimental
 
 - Public APIs remain experimental.
 - Bridge compatibility depends on documented and tested combinations. This documentation does not claim a compatibility matrix broader than the repository proves.
 - Adoption planning evidence is declarative and review-oriented.
+- Observe requires explicit wiring and does not provide automatic runtime instrumentation, exporter transport or production deployment certification.
 
 ## Deferred
 

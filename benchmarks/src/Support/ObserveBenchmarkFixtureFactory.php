@@ -100,6 +100,173 @@ final class ObserveBenchmarkFixtureFactory
         });
     }
 
+    public function queueJobFixture(string $mode, ?TracerProviderInterface $tracerProvider = null): ObserveBenchmarkFixture
+    {
+        $composition = $this->composition($mode, $this->resource('observe-benchmark-queue-job'), $tracerProvider);
+        $receiver = new class implements \Evolve\Queue\Contracts\QueuePublisher {
+            public ?\Evolve\Queue\Contracts\MessageEnvelope $last = null;
+
+            public function publish(\Evolve\Queue\Contracts\QueueName $queue, \Evolve\Queue\Contracts\MessageEnvelope $message): void
+            {
+                $this->last = $message;
+            }
+        };
+        $publisher = $mode === 'bare' ? $receiver : new \Evolve\Observe\Queue\QueuePublisherInstrumentation($composition, $receiver);
+        $consumer = new \Evolve\Observe\Queue\JobExecutionContextInstrumentation($composition);
+        $trace = new ExecutionTraceInstrumentation($composition);
+        $registry = new ServiceRegistry();
+        $registry->freeze();
+        $core = $mode === 'bare'
+            ? new ExecutionOrchestrator($registry)
+            : new ExecutionOrchestrator($registry, $trace, [$trace]);
+        $queue = new \Evolve\Queue\Contracts\QueueName('benchmark');
+        $message = new \Evolve\Queue\Contracts\MessageEnvelope('payload');
+        $activeDuringOperation = false;
+
+        return new ObserveBenchmarkFixture(
+            function () use ($mode, $publisher, $receiver, $consumer, $core, $queue, $message, &$activeDuringOperation): string {
+                $publisher->publish($queue, $message);
+                $execution = function () use ($core, &$activeDuringOperation): \Evolve\Core\Execution\ExecutionOutcome {
+                    return $core->execute(ExecutionKind::QueueMessage, static function () use (&$activeDuringOperation): string {
+                        $activeDuringOperation = Span::getCurrent()->getContext()->isValid();
+
+                        return 'ok';
+                    });
+                };
+                $outcome = $mode === 'bare' ? $execution() : $consumer->run($receiver->last, $execution);
+
+                return $outcome->primaryResult();
+            },
+            static function () use (&$activeDuringOperation): bool {
+                return $activeDuringOperation;
+            },
+        );
+    }
+
+    public function databaseFixture(string $mode, ?TracerProviderInterface $tracerProvider = null): ObserveBenchmarkFixture
+    {
+        $composition = $this->composition($mode, $this->resource('observe-benchmark-database'), $tracerProvider);
+        $connection = new class implements \Evolve\Database\Contracts\DatabaseConnection {
+            public function execute(\Evolve\Database\Contracts\DatabaseStatement $statement): int
+            {
+                return 7;
+            }
+            public function query(\Evolve\Database\Contracts\DatabaseStatement $statement): iterable
+            {
+                return [];
+            }
+            public function transaction(callable $operation): mixed
+            {
+                return $operation($this);
+            }
+        };
+        $active = $mode === 'bare' ? $connection : new \Evolve\Observe\Database\DatabaseConnectionInstrumentation($composition, $connection);
+        $statement = new \Evolve\Database\Contracts\DatabaseStatement('SELECT 1');
+
+        return new ObserveBenchmarkFixture(
+            static fn(): int => $active->execute($statement),
+            static fn(): bool => false,
+        );
+    }
+
+    public function cacheFixture(string $mode, ?TracerProviderInterface $tracerProvider = null): ObserveBenchmarkFixture
+    {
+        $composition = $this->composition($mode, $this->resource('observe-benchmark-cache'), $tracerProvider);
+        $cache = new class implements \Psr\SimpleCache\CacheInterface {
+            public function get(string $key, mixed $default = null): mixed
+            {
+                return 'cached';
+            }
+            public function set(string $key, mixed $value, int|\DateInterval|null $ttl = null): bool
+            {
+                return true;
+            }
+            public function delete(string $key): bool
+            {
+                return true;
+            }
+            public function clear(): bool
+            {
+                return true;
+            }
+            public function getMultiple(iterable $keys, mixed $default = null): iterable
+            {
+                return [];
+            }
+            public function setMultiple(iterable $values, int|\DateInterval|null $ttl = null): bool
+            {
+                return true;
+            }
+            public function deleteMultiple(iterable $keys): bool
+            {
+                return true;
+            }
+            public function has(string $key): bool
+            {
+                return true;
+            }
+        };
+        $active = $mode === 'bare' ? $cache : new \Evolve\Observe\Cache\CacheInstrumentation($composition, $cache);
+
+        return new ObserveBenchmarkFixture(
+            static fn(): mixed => $active->get('benchmark-key'),
+            static fn(): bool => false,
+        );
+    }
+
+    public function storageFixture(string $mode, ?TracerProviderInterface $tracerProvider = null): ObserveBenchmarkFixture
+    {
+        $composition = $this->composition($mode, $this->resource('observe-benchmark-storage'), $tracerProvider);
+        $reader = new class implements \Evolve\Storage\Contracts\ReadableObject {
+            public function read(int $maxBytes): string
+            {
+                return 'bytes';
+            }
+            public function close(): void {}
+        };
+        $storage = new class ($reader) implements \Evolve\Storage\Contracts\ObjectStorage {
+            public function __construct(private \Evolve\Storage\Contracts\ReadableObject $reader) {}
+            public function put(\Evolve\Storage\Contracts\StorageKey $key, iterable $chunks): void {}
+            public function open(\Evolve\Storage\Contracts\StorageKey $key): \Evolve\Storage\Contracts\ReadableObject
+            {
+                return $this->reader;
+            }
+            public function delete(\Evolve\Storage\Contracts\StorageKey $key): void {}
+        };
+        $active = $mode === 'bare' ? $storage : new \Evolve\Observe\Storage\ObjectStorageInstrumentation($composition, $storage);
+        $key = new \Evolve\Storage\Contracts\StorageKey('benchmark-key');
+
+        return new ObserveBenchmarkFixture(
+            static function () use ($active, $key): ?string {
+                $opened = $active->open($key);
+                $value = $opened?->read(16);
+                $opened?->close();
+
+                return $value;
+            },
+            static fn(): bool => false,
+        );
+    }
+
+    public function httpClientFixture(string $mode, ?TracerProviderInterface $tracerProvider = null): ObserveBenchmarkFixture
+    {
+        $composition = $this->composition($mode, $this->resource('observe-benchmark-http-client'), $tracerProvider);
+        $client = new class implements \Psr\Http\Client\ClientInterface {
+            public function sendRequest(\Psr\Http\Message\RequestInterface $request): \Psr\Http\Message\ResponseInterface
+            {
+                return new \Nyholm\Psr7\Response(204);
+            }
+        };
+        $middleware = new \Evolve\Observe\Http\HttpClientInstrumentation($composition);
+        $request = new \Nyholm\Psr7\Request('GET', 'https://example.test/benchmark');
+
+        return new ObserveBenchmarkFixture(
+            static fn(): int => ($mode === 'bare'
+                ? $client->sendRequest($request)
+                : $middleware->process($request, $client))->getStatusCode(),
+            static fn(): bool => false,
+        );
+    }
     private function composition(
         string $mode,
         ResourceInfo $resource,

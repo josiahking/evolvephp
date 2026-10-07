@@ -2,6 +2,8 @@
 
 `evolvephp/observe`
 
+See the [Observe operations](../../docs/alpha/observe.md) guide for application composition, telemetry boundaries and export ownership.
+
 OpenTelemetry composition, execution, HTTP and infrastructure tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.
 
 ## Operational ownership
@@ -26,7 +28,7 @@ Observe records bounded execution attributes and bounded lifecycle events only. 
 
 HTTP server span names are low-cardinality. Before routing, the span name is the bounded HTTP method token. Recognised methods use the same value for `http.request.method` and the span-name method token. Case-normalised recognised methods also record `http.request.method_original`. Unexpected methods record `http.request.method = _OTHER` and `http.request.method_original`, but use `HTTP` as the span-name method token so arbitrary raw method values never appear in span names.
 
-SERVER spans record only the accepted bounded HTTP and URL attributes: `http.request.method`, optional `http.request.method_original`, `http.response.status_code`, `error.type` for safe status or throwable classification, `url.path` from the caller-owned PSR URI path and `url.scheme` when the caller-owned PSR URI exposes a scheme. Observe does not inspect `Forwarded`, `X-Forwarded-*` or `Host` headers to invent server-address policy. It does not record query strings, full URLs, request bodies, response bodies, authorization, cookies or arbitrary headers.
+SERVER spans record only the accepted bounded HTTP and URL attributes: `http.request.method`, optional `http.request.method_original`, `http.response.status_code`, `error.type` for safe status or throwable classification, `url.path` from the caller-owned PSR URI path and `url.scheme` when the caller-owned PSR URI exposes a scheme. Observe does not inspect `Forwarded`, `X-Forwarded-*` or `Host` headers to invent server-address policy. The caller-owned URI path can contain application-level identifiers; applications should account for that when designing routes and exporter policy. The declared route template supplies low-cardinality `http.route` and final span naming, while concrete paths and URLs are excluded from metric dimensions. Observe does not record query strings, full URLs, request bodies, response bodies, authorization, cookies or arbitrary headers.
 
 `HttpRouteSpanMiddleware` may be placed in the existing routed middleware stack after `RouteMatch` is attached; it reads the Evolve route template, sets `http.route` and updates the SERVER span name to `METHOD /route/{template}`. Route naming always uses the route template and never substitutes the concrete URI path. Unmatched and method-not-allowed requests without an authoritative `RouteMatch` remain method-only. The middleware never creates a second span, and telemetry enrichment failure cannot fail the downstream request.
 
