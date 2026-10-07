@@ -203,6 +203,32 @@
             }
         },
         {
+            "name": "evolvephp/database-contracts",
+            "version": "2.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "../packages/database-contracts",
+                "reference": "7b44cc383ad9f2812e0f16cf367d44d96cf0964d"
+            },
+            "require": {
+                "evolvephp/contracts": "^2.0",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\Database\\Contracts\\": "src/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Portable SQL database statement and transaction contracts for EvolvePHP 2.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
             "name": "evolvephp/http",
             "version": "2.0.x-dev",
             "dist": {
@@ -229,6 +255,70 @@
                 "BSD-3-Clause"
             ],
             "description": "HTTP lifecycle, routing and middleware foundations for EvolvePHP 2.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "evolvephp/http-client",
+            "version": "2.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "../packages/http-client",
+                "reference": "e4bf68c85e571e6c6cb3d02c74150ebdbb3504e1"
+            },
+            "require": {
+                "php": "^8.4",
+                "psr/http-client": "^1.0",
+                "psr/http-message": "^1.1 || ^2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\Http\\Client\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Evolve\\Http\\Client\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "PSR-18 outbound HTTP client composition foundation for EvolvePHP 2.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "evolvephp/job",
+            "version": "2.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "../packages/job",
+                "reference": "d88c90276d38da2e63c223e1a39f2ecbb61e1a73"
+            },
+            "require": {
+                "evolvephp/core": "^2.0",
+                "evolvephp/queue-contracts": "^2.0",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\Job\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Evolve\\Job\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "One-shot queue job execution runtime for EvolvePHP 2.",
             "transport-options": {
                 "relative": true
             }
@@ -265,17 +355,24 @@
             "dist": {
                 "type": "path",
                 "url": "../packages/observe",
-                "reference": "8998718941b11ee807dd04bd843c89a79bc71ead"
+                "reference": "a333a20bea601c015455d93d23495405c4b032a5"
             },
             "require": {
                 "evolvephp/core": "^2.0",
+                "evolvephp/database-contracts": "^2.0",
                 "evolvephp/http": "^2.0",
+                "evolvephp/http-client": "^2.0",
+                "evolvephp/job": "^2.0",
+                "evolvephp/queue-contracts": "^2.0",
+                "evolvephp/storage-contracts": "^2.0",
                 "open-telemetry/api": "^1.10",
                 "open-telemetry/sem-conv": "^1.44",
                 "php": "^8.4",
+                "psr/http-client": "^1.0",
                 "psr/http-message": "^1.1 || ^2.0",
                 "psr/http-server-handler": "^1.0",
-                "psr/http-server-middleware": "^1.0"
+                "psr/http-server-middleware": "^1.0",
+                "psr/simple-cache": "^3.0"
             },
             "suggest": {
                 "open-telemetry/sdk": "Allows applications to use Observe's optional SDK resource, sampler, export-processing, reader and lifecycle integration surfaces."
@@ -289,7 +386,7 @@
             "license": [
                 "BSD-3-Clause"
             ],
-            "description": "OpenTelemetry composition, execution and HTTP server tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.",
+            "description": "OpenTelemetry composition, execution, HTTP and infrastructure tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.",
             "transport-options": {
                 "relative": true
             }
@@ -321,12 +418,92 @@
             }
         },
         {
+            "name": "evolvephp/queue-contracts",
+            "version": "2.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "../packages/queue-contracts",
+                "reference": "cd6d7c0439ef9d3a8fbbbe87aec505ebd8a0f11b"
+            },
+            "require": {
+                "evolvephp/contracts": "^2.0",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\Queue\\Contracts\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Evolve\\Queue\\Contracts\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Runtime-neutral queue transport contracts for EvolvePHP 2.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "evolvephp/storage-contracts",
+            "version": "2.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "../packages/storage-contracts",
+                "reference": "6cccc84ca0e81528563ee51845d8b77d711ac075"
+            },
+            "require": {
+                "evolvephp/contracts": "^2.0",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\Storage\\Contracts\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Evolve\\Storage\\Contracts\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Josiah King",
+                    "email": "josiahaccounts@gmail.com",
+                    "homepage": "https://github.com/josiahking"
+                },
+                {
+                    "name": "EvolvePHP Community"
+                }
+            ],
+            "description": "Vendor-neutral object storage contracts for EvolvePHP 2.",
+            "homepage": "https://github.com/josiahking/evolvephp",
+            "keywords": [
+                "evolvephp",
+                "framework",
+                "object-storage",
+                "php",
+                "storage-contracts"
+            ],
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
             "name": "evolvephp/testing",
             "version": "2.0.x-dev",
             "dist": {
                 "type": "path",
                 "url": "../packages/testing",
-                "reference": "83952d4852baa08c16e9cb5097c34cccf31bf140"
+                "reference": "a75afafe57c68efa73012606089bc1e7eb0f0697"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -334,6 +511,7 @@
                 "evolvephp/http": "^2.0",
                 "evolvephp/module": "^2.0",
                 "evolvephp/plugin": "^2.0",
+                "evolvephp/view": "^2.0",
                 "php": "^8.4"
             },
             "type": "library",
@@ -346,6 +524,36 @@
                 "BSD-3-Clause"
             ],
             "description": "Testing utilities for EvolvePHP 2 packages and applications.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
+            "name": "evolvephp/view",
+            "version": "2.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "../packages/view",
+                "reference": "de6492a4a109d238885549f356e5142f63287a6a"
+            },
+            "require": {
+                "php": "^8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\View\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Evolve\\View\\Tests\\": "tests/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Server-rendered view contracts and native PHP renderer for EvolvePHP 2.",
             "transport-options": {
                 "relative": true
             }
@@ -1234,6 +1442,57 @@
                 "source": "https://github.com/php-fig/log/tree/3.0.2"
             },
             "time": "2024-09-11T13:17:53+00:00"
+        },
+        {
+            "name": "psr/simple-cache",
+            "version": "3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/simple-cache.git",
+                "reference": "764e0b3939f5ca87cb904f570ef9be2d78a07865"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/simple-cache/zipball/764e0b3939f5ca87cb904f570ef9be2d78a07865",
+                "reference": "764e0b3939f5ca87cb904f570ef9be2d78a07865",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\SimpleCache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interfaces for simple caching",
+            "keywords": [
+                "cache",
+                "caching",
+                "psr",
+                "psr-16",
+                "simple-cache"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/simple-cache/tree/3.0.0"
+            },
+            "time": "2021-10-29T13:26:27+00:00"
         },
         {
             "name": "ramsey/collection",

@@ -159,14 +159,19 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             array(
                 'php' => '^8.4',
                 'evolvephp/core' => '^2.0',
+                'evolvephp/database-contracts' => '^2.0',
                 'evolvephp/http' => '^2.0',
+                'evolvephp/http-client' => '^2.0',
                 'evolvephp/job' => '^2.0',
                 'evolvephp/queue-contracts' => '^2.0',
+                'evolvephp/storage-contracts' => '^2.0',
                 'open-telemetry/api' => '^1.10',
                 'open-telemetry/sem-conv' => '^1.44',
+                'psr/http-client' => '^1.0',
                 'psr/http-message' => '^1.1 || ^2.0',
                 'psr/http-server-handler' => '^1.0',
                 'psr/http-server-middleware' => '^1.0',
+                'psr/simple-cache' => '^3.0',
             ),
             $manifest['require']
         );
@@ -180,7 +185,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         );
 
         foreach (array_keys(array_merge($manifest['require'], $manifest['suggest'])) as $packageName) {
-            if (!in_array($packageName, ['evolvephp/core', 'evolvephp/http', 'evolvephp/job', 'evolvephp/queue-contracts'], true)) {
+            if (!in_array($packageName, ['evolvephp/core', 'evolvephp/database-contracts', 'evolvephp/http', 'evolvephp/http-client', 'evolvephp/job', 'evolvephp/queue-contracts', 'evolvephp/storage-contracts'], true)) {
                 $this->assertFalse(str_starts_with($packageName, 'evolvephp/'), 'Observe must not require unapproved first-party Evolve packages.');
             }
 
@@ -1040,14 +1045,19 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => array(
                     'php' => '^8.4',
                     'evolvephp/core' => '^2.0',
+                    'evolvephp/database-contracts' => '^2.0',
                     'evolvephp/http' => '^2.0',
+                    'evolvephp/http-client' => '^2.0',
                     'evolvephp/job' => '^2.0',
                     'evolvephp/queue-contracts' => '^2.0',
+                    'evolvephp/storage-contracts' => '^2.0',
                     'open-telemetry/api' => '^1.10',
                     'open-telemetry/sem-conv' => '^1.44',
+                    'psr/http-client' => '^1.0',
                     'psr/http-message' => '^1.1 || ^2.0',
                     'psr/http-server-handler' => '^1.0',
                     'psr/http-server-middleware' => '^1.0',
+                    'psr/simple-cache' => '^3.0',
                 ),
                 'suggest' => array('open-telemetry/sdk' => 'Allows applications to pass SDK resource and sampler objects into Observe composition values.'),
             ),
@@ -1482,6 +1492,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Watcher/ObservationDiagnosticWatcher.php',
             ),
             'packages/observe/src' => array(
+                'Cache/CacheInstrumentation.php',
+                'Database/DatabaseConnectionInstrumentation.php',
                 'EvolveSemanticConventions.php',
                 'Exception/OpenTelemetryContextDetachFailed.php',
                 'ExecutionMetricsInstrumentation.php',
@@ -1491,6 +1503,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Export/ExporterFailureTracker.php',
                 'Export/OpenTelemetryExportLifecycle.php',
                 'Export/OpenTelemetryExportProcessingFactory.php',
+                'Http/HttpClientInstrumentation.php',
                 'Http/HttpRouteSpanMiddleware.php',
                 'Http/HttpServerMetricsInstrumentation.php',
                 'Http/HttpServerTraceInstrumentation.php',
@@ -1507,6 +1520,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Queue/JobExecutionContextInstrumentation.php',
                 'Queue/MessageEnvelopeTraceContext.php',
                 'Queue/QueuePublisherInstrumentation.php',
+                'Storage/ObjectStorageInstrumentation.php',
+                'Storage/ReadableObjectInstrumentation.php',
             ),
             'packages/dev-tools/src' => array(
                 'Adoption/AdoptionPlan.php',

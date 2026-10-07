@@ -15,6 +15,41 @@ use ReflectionClass;
 
 final class MetricCardinalityPolicyTest extends TestCase
 {
+    public function testInfrastructureDimensionsAreClosed(): void
+    {
+        self::assertSame(['evolve.database.operation' => 'execute'], MetricCardinalityPolicy::databaseAttributes('execute'));
+        self::assertSame(['evolve.cache.operation' => 'getMultiple'], MetricCardinalityPolicy::cacheAttributes('getMultiple'));
+        self::assertSame(['evolve.storage.operation' => 'close'], MetricCardinalityPolicy::storageAttributes('close'));
+        self::assertSame([HttpAttributes::HTTP_REQUEST_METHOD => HttpAttributes::HTTP_REQUEST_METHOD_VALUE_OTHER], MetricCardinalityPolicy::httpClientAttributes('secret-method'));
+        self::assertSame(3, MetricCardinalityPolicy::databaseCardinalityBudget());
+        self::assertSame(8, MetricCardinalityPolicy::cacheCardinalityBudget());
+        self::assertSame(5, MetricCardinalityPolicy::storageCardinalityBudget());
+        foreach (['execute', 'query', 'transaction'] as $operation) {
+            self::assertSame(['evolve.database.operation' => $operation], MetricCardinalityPolicy::databaseAttributes($operation));
+        }
+        foreach (['get', 'set', 'delete', 'clear', 'getMultiple', 'setMultiple', 'deleteMultiple', 'has'] as $operation) {
+            self::assertSame(['evolve.cache.operation' => $operation], MetricCardinalityPolicy::cacheAttributes($operation));
+        }
+        foreach (['put', 'open', 'read', 'delete', 'close'] as $operation) {
+            self::assertSame(['evolve.storage.operation' => $operation], MetricCardinalityPolicy::storageAttributes($operation));
+        }
+        self::assertSame([HttpAttributes::HTTP_REQUEST_METHOD => 'GET'], MetricCardinalityPolicy::httpClientAttributes('get'));
+    }
+
+    #[DataProvider('infrastructurePolicies')]
+    public function testInfrastructureOperationPoliciesRejectUnboundedValues(string $method): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        MetricCardinalityPolicy::$method('private-token');
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function infrastructurePolicies(): iterable
+    {
+        yield 'database' => ['databaseAttributes'];
+        yield 'cache' => ['cacheAttributes'];
+        yield 'storage' => ['storageAttributes'];
+    }
     public function testQueueMetricsHaveExactlyTwoClosedRoleSeries(): void
     {
         $this->assertSame(2, MetricCardinalityPolicy::queueMessageCardinalityBudget());

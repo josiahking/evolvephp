@@ -25,14 +25,19 @@ final class PackageManifestTest extends TestCase
             [
                 'php' => '^8.4',
                 'evolvephp/core' => '^2.0',
+                'evolvephp/database-contracts' => '^2.0',
                 'evolvephp/http' => '^2.0',
+                'evolvephp/http-client' => '^2.0',
                 'evolvephp/job' => '^2.0',
                 'evolvephp/queue-contracts' => '^2.0',
+                'evolvephp/storage-contracts' => '^2.0',
                 'open-telemetry/api' => '^1.10',
                 'open-telemetry/sem-conv' => '^1.44',
+                'psr/http-client' => '^1.0',
                 'psr/http-message' => '^1.1 || ^2.0',
                 'psr/http-server-handler' => '^1.0',
                 'psr/http-server-middleware' => '^1.0',
+                'psr/simple-cache' => '^3.0',
             ],
             $manifest['require'],
         );
@@ -49,7 +54,7 @@ final class PackageManifestTest extends TestCase
         $this->assertArrayNotHasKey('open-telemetry/exporter-otlp', $manifest['suggest']);
 
         foreach (array_keys($manifest['require']) as $packageName) {
-            if (!in_array($packageName, ['evolvephp/core', 'evolvephp/http', 'evolvephp/job', 'evolvephp/queue-contracts'], true)) {
+            if (!in_array($packageName, ['evolvephp/core', 'evolvephp/database-contracts', 'evolvephp/http', 'evolvephp/http-client', 'evolvephp/job', 'evolvephp/queue-contracts', 'evolvephp/storage-contracts'], true)) {
                 $this->assertFalse(str_starts_with($packageName, 'evolvephp/'));
             }
         }

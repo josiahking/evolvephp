@@ -12,6 +12,14 @@ use ReflectionClass;
 
 final class EvolveSemanticConventionsTest extends TestCase
 {
+    public function testInfrastructureVocabularyIsFixed(): void
+    {
+        $constants = $this->constants();
+        foreach (['SPAN_NAME_DATABASE' => 'evolve.database', 'SPAN_NAME_CACHE' => 'evolve.cache', 'SPAN_NAME_STORAGE' => 'evolve.storage', 'SPAN_NAME_HTTP_CLIENT' => 'evolve.http.client', 'ATTRIBUTE_DATABASE_OPERATION' => 'evolve.database.operation', 'ATTRIBUTE_DATABASE_OPERATION_NAME' => 'evolve.database.operation_name', 'ATTRIBUTE_DATABASE_FAILURE_CATEGORY' => 'evolve.database.failure.category', 'ATTRIBUTE_DATABASE_SQLSTATE' => 'evolve.database.sqlstate', 'ATTRIBUTE_DATABASE_DRIVER' => 'evolve.database.driver', 'ATTRIBUTE_CACHE_OPERATION' => 'evolve.cache.operation', 'ATTRIBUTE_STORAGE_OPERATION' => 'evolve.storage.operation', 'ATTRIBUTE_STORAGE_FAILURE_CATEGORY' => 'evolve.storage.failure.category', 'METRIC_DATABASE_DURATION' => 'evolve.database.operation.duration', 'METRIC_DATABASE_COUNT' => 'evolve.database.operation.count', 'METRIC_DATABASE_FAILURES' => 'evolve.database.operation.failures', 'METRIC_CACHE_DURATION' => 'evolve.cache.operation.duration', 'METRIC_CACHE_COUNT' => 'evolve.cache.operation.count', 'METRIC_CACHE_FAILURES' => 'evolve.cache.operation.failures', 'METRIC_STORAGE_DURATION' => 'evolve.storage.operation.duration', 'METRIC_STORAGE_COUNT' => 'evolve.storage.operation.count', 'METRIC_STORAGE_FAILURES' => 'evolve.storage.operation.failures', 'METRIC_HTTP_CLIENT_DURATION' => 'evolve.http.client.request.duration', 'METRIC_HTTP_CLIENT_COUNT' => 'evolve.http.client.request.count', 'METRIC_HTTP_CLIENT_FAILURES' => 'evolve.http.client.request.failures'] as $name => $value) {
+            self::assertSame($value, $constants[$name] ?? null, $name);
+        }
+    }
+
     public function testQueueVocabularyIsFixed(): void
     {
         $constants = $this->constants();
