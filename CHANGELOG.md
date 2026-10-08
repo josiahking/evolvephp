@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Consolidated the experimental Observe product across execution, incoming HTTP, queue producer/Job consumer propagation, database, PSR-16 cache, object storage and outbound HTTP client telemetry. Added an operations guide, composed acceptance coverage and equivalent bare/disabled/enabled overhead benchmarks. Providers, exporters, transports and logging remain application-owned; SERVER spans retain the caller-owned URI path while route templates govern low-cardinality routing identity and concrete paths remain absent from metric dimensions.
+
 - Added the experimental `evolvephp/view` package with an engine-neutral renderer contract, explicit confined view sources, trusted native PHP templates, escaping helpers, layouts, partials, sections and per-render isolation. Added a recording renderer in `evolvephp/testing`.
 - Added the experimental `evolvephp/i18n` package with explicit locale policy and fallback, PHP-array message catalogs, contextual translation and opt-in Intl message and locale formatting. Applications register sources and compose translators with View explicitly; validation-specific consumers remain future work.
 - Added optional `evolvephp/view-twig` and `evolvephp/view-blade` adapters with explicit source registration, engine-native escaping, and per-render cleanup. The native PHP renderer remains the zero-third-party-dependency default; neither adapter is installed by the application skeleton or required by Insight.

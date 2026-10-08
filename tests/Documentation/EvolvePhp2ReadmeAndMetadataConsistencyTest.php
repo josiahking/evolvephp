@@ -60,6 +60,18 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         );
     }
 
+    public function testObserveGuideIsLinkedFromPublicEntrypoints(): void
+    {
+        $root = $this->readProjectFile('README.md');
+        $package = $this->readProjectFile('packages/observe/README.md');
+        $guide = $this->readProjectFile('docs/alpha/observe.md');
+
+        $this->assertStringContainsString('[Observe operations](docs/alpha/observe.md)', $root);
+        $this->assertStringContainsString('[Observe operations](../../docs/alpha/observe.md)', $package);
+        $this->assertStringContainsString('application-owned', $guide);
+        $this->assertStringContainsString('sensitive', $guide);
+        $this->assertDoesNotMatchPattern($this->roadmapIdentifierPattern(), $guide);
+    }
     public function testRootReadmeIdentifiesEvolvePhp2BranchAndLegacyMasterLine(): void
     {
         $content = $this->readProjectFile('README.md');
@@ -377,6 +389,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'README.md',
             'DEVELOPMENT.md',
             'docs/alpha/insight.md',
+            'docs/alpha/observe.md',
             'packages/README.md',
             'packages/bridge-contracts/README.md',
             'packages/bridge-laravel/README.md',

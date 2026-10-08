@@ -231,6 +231,34 @@ final class EvolvePhp2AlphaDocumentationCheckpointTest extends TestCase
         $this->assertMatchesPattern('/##\s+2\.0\.0-alpha\.1\s+-\s+2026-09-13.*Alpha documentation/is', $changelog);
     }
 
+    public function testObserveGuideDescribesPublicOwnershipAndSafetyBoundaries(): void
+    {
+        $guide = $this->readProjectFile('docs/alpha/observe.md');
+        $package = $this->readProjectFile('packages/observe/README.md');
+        $status = $this->readProjectFile('docs/alpha/status-and-limitations.md');
+
+        foreach (array(
+            'OpenTelemetry',
+            'traceparent',
+            'tracestate',
+            'baggage',
+            'queue',
+            'database',
+            'cache',
+            'storage',
+            'outbound HTTP',
+            'low-cardinality',
+            'force-flush',
+            'shutdown',
+            'Remote Bridge',
+        ) as $boundary) {
+            $this->assertStringContainsString($boundary, $guide);
+        }
+        $this->assertStringContainsString('../../docs/alpha/observe.md', $package);
+        $this->assertStringContainsString('Observe', $status);
+        $this->assertDoesNotMatchPattern('/production[- ]ready|Observe provides automatic instrumentation|Observe propagates baggage automatically/i', $guide);
+        $this->assertDoesNotMatchPattern('/Phase\s+\d|Notion|Codex|ChatGPT|coding.agent|assistant review/i', $guide);
+    }
     public function testPublicAlphaDocumentationAvoidsInternalWorkflowTerms(): void
     {
         foreach ($this->publicCheckpointDocumentationFiles() as $path) {
@@ -258,6 +286,7 @@ final class EvolvePhp2AlphaDocumentationCheckpointTest extends TestCase
             'docs/alpha/getting-started.md',
             'docs/alpha/application-foundations.md',
             'docs/alpha/insight.md',
+            'docs/alpha/observe.md',
             'docs/alpha/modernization-and-bridge.md',
             'docs/alpha/status-and-limitations.md',
         );
