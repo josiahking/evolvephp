@@ -580,6 +580,44 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/\\b(?:shell_exec|exec|passthru|system)\\s*\\(/', $content);
     }
 
+    public function testVendorQualifiedPackagesRemainInOfflineRuntimeCatalogue(): void
+    {
+        require_once $this->path('tools/release-validation-common.php');
+
+        foreach (array('php', 'hhvm', 'php-64bit', 'php-ipv6', 'ext-fileinfo', 'lib-curl', 'composer-plugin-api', 'composer-runtime-api') as $name) {
+            $this->assertTrue(isPlatformPackageName($name), $name . ' must remain a platform requirement.');
+        }
+
+        foreach (array('php-http/discovery', 'composer-tools/example', 'ext-tools/example', 'lib-tools/example') as $name) {
+            $this->assertFalse(isPlatformPackageName($name), $name . ' is a vendor-qualified Composer package.');
+        }
+
+        $this->assertTrue(isReleaseExternalPackageName('php-http/discovery'));
+
+        $lock = $this->readJsonFile('composer.lock');
+        $locked = array_merge(
+            $this->lockedPackagesByName($lock['packages']),
+            $this->lockedPackagesByName($lock['packages-dev'])
+        );
+        $fixtures = loadLockedRuntimePackageRepositoryPackages($this->root);
+        $fixtureNames = array_column($fixtures, 'name');
+        $fixturesByName = array_column($fixtures, null, 'name');
+
+        foreach (array('mcp/sdk', 'php-http/discovery') as $name) {
+            $this->assertArrayHasKey($name, $locked, $name . ' must exist in composer.lock.');
+            $this->assertContains($name, $fixtureNames, $name . ' must be available to offline consumers.');
+            $this->assertSame($locked[$name]['version'], $fixturesByName[$name]['version'], $name . ' must retain its locked version.');
+        }
+
+        foreach (array('php', 'hhvm', 'php-64bit', 'php-ipv6', 'ext-fileinfo', 'lib-curl', 'composer-plugin-api', 'composer-runtime-api') as $name) {
+            $this->assertNotContains($name, $fixtureNames, $name . ' must not be an offline package repository entry.');
+        }
+
+        $consumer = $this->readProjectFile('tools/validate-prerelease-consumers.php');
+        $this->assertStringContainsString("'packagist.org' => false", $consumer);
+        $this->assertStringContainsString("'COMPOSER_DISABLE_NETWORK' => '1'", $consumer);
+    }
+
     public function testConsumerValidatorUsesLockedRuntimePackagesForOfflineThirdPartyResolution(): void
     {
         require_once $this->path('tools/release-validation-common.php');

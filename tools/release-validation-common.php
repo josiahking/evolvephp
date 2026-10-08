@@ -672,6 +672,10 @@ function isReleaseExternalPackageName(string $name): bool
 
 function isPlatformPackageName(string $name): bool
 {
+    if (str_contains($name, '/')) {
+        return false;
+    }
+
     return $name === 'php'
         || $name === 'hhvm'
         || str_starts_with($name, 'composer-')
