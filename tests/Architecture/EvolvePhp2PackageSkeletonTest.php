@@ -32,6 +32,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'bridge-remote' => null,
             'insight' => null,
             'observe' => null,
+            'mcp' => null,
             'http' => null,
             'http-client' => null,
             'module' => null,
@@ -1062,6 +1063,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'suggest' => array('open-telemetry/sdk' => 'Allows applications to pass SDK resource and sampler objects into Observe composition values.'),
             ),
             array(
+                'manifest' => 'packages/mcp/composer.json',
+                'src' => 'packages/mcp/src',
+                'name' => 'evolvephp/mcp',
+                'description' => 'Optional experimental MCP package and official PHP MCP SDK dependency foundation for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Mcp\\',
+                'require' => array('php' => '^8.4', 'mcp/sdk' => '^0.8.1'),
+            ),
+            array(
                 'manifest' => 'packages/dev-tools/composer.json',
                 'src' => 'packages/dev-tools/src',
                 'name' => 'evolvephp/dev-tools',
@@ -1523,6 +1532,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Storage/ObjectStorageInstrumentation.php',
                 'Storage/ReadableObjectInstrumentation.php',
             ),
+            'packages/mcp/src' => array(),
             'packages/dev-tools/src' => array(
                 'Adoption/AdoptionPlan.php',
                 'Adoption/DataMigrationState.php',

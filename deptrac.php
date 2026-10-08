@@ -37,6 +37,7 @@ return static function (DeptracConfig $config): void {
             'packages/i18n/src',
             'packages/insight/src',
             'packages/observe/src',
+            'packages/mcp/src',
             'packages/dev-tools/src',
             'packages/http/src',
             'packages/http-client/src',
@@ -161,6 +162,12 @@ return static function (DeptracConfig $config): void {
             $observe = Layer::withName('Observe')->collectors(
                 DirectoryConfig::create('packages/observe/src/.*'),
             ),
+            $mcp = Layer::withName('Mcp')->collectors(
+                DirectoryConfig::create('packages/mcp/src/.*'),
+            ),
+            $mcpSdk = Layer::withName('McpSdk')->collectors(
+                ClassLikeConfig::create('^Mcp\\.*'),
+            ),
             $openTelemetryApi = Layer::withName('OpenTelemetryApi')->collectors(
                 ClassLikeConfig::create('^OpenTelemetry\\(API|Context)\\.*'),
             ),
@@ -228,6 +235,8 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($illuminateViewEngine),
             Ruleset::forLayer($insight)->accesses($core, $databaseContracts, $http, $view, $i18n, $queueContracts, $storageContracts, $psrSimpleCache, $psrHttpClient, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($observe)->accesses($core, $databaseContracts, $http, $httpClient, $job, $queueContracts, $storageContracts, $openTelemetryApi, $openTelemetrySdk, $openTelemetrySemConv, $psrHttpClient, $psrHttpMessage, $psrHttpServer, $psrSimpleCache),
+            Ruleset::forLayer($mcp)->accesses($mcpSdk),
+            Ruleset::forLayer($mcpSdk),
             Ruleset::forLayer($openTelemetryApi),
             Ruleset::forLayer($openTelemetrySdk),
             Ruleset::forLayer($openTelemetrySemConv),

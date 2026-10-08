@@ -1,0 +1,15 @@
+{
+    "name": "evolvephp/mcp",
+    "description": "Optional experimental MCP package and official PHP MCP SDK dependency foundation for EvolvePHP 2.",
+    "type": "library",
+    "license": "BSD-3-Clause",
+    "require": {
+        "php": "^8.4",
+        "mcp/sdk": "^0.8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Evolve\\Mcp\\": "src/"
+        }
+    }
+}

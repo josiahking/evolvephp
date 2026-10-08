@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3daf929abf48536024fe393510564eeb",
+    "content-hash": "cc1847768204fc302e33fc6b7e0b2dcc",
     "packages": [
         {
             "name": "evolvephp/contracts",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/contracts",
-                "reference": "fab7d4cbaa9c72878ac97a151eb46bc9466175ec"
+                "reference": "3120bbe7ada1d12df5c98d8fe85874a531d3dc2c"
             },
             "require": {
                 "php": "^8.4",
@@ -38,7 +38,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/core",
-                "reference": "6fa83fd5deed37810ef92ff46e3fc3dc49405018"
+                "reference": "daf9acb7304c490b7a04f1d6eae2689ce2fd85eb"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -71,7 +71,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/http",
-                "reference": "636c523c9eef12a2d2149ce9d83f8b2b6c266aee"
+                "reference": "0931cfe0cf2d5229ba3a1d69f10570a20adc23aa"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -102,7 +102,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/i18n",
-                "reference": "5065637bb6101576d9b40593cd0eac8ff002adeb"
+                "reference": "f4885421d122df15895c2cc0ba96656c0a935518"
             },
             "require": {
                 "evolvephp/core": "^2.0",
@@ -136,7 +136,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/module",
-                "reference": "0678edc8fe708f5a77ec2bdbcb253358ddd0e170"
+                "reference": "124435a8fa99049271fc852ac6fc2784728faf1e"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -162,7 +162,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/plugin",
-                "reference": "d785cb183abfb2ddcb58ddb532c0025ff7b5eb0a"
+                "reference": "d70b6e677fac47e223cc02d69f15dd04b2255a2f"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -188,7 +188,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/view",
-                "reference": "074d4e0dd03d92bcf6b349af10e2f0105545b3f2"
+                "reference": "5f8d3ddb476deaf4d1dde77c76a70324ac0a53f4"
             },
             "require": {
                 "php": "^8.4"
@@ -1314,7 +1314,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-contracts",
-                "reference": "24fb47765acc54d2eed31d0abdf7906bca7c5b5d"
+                "reference": "16eb07b9effc8a750dcb181797728f925803a2aa"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1340,7 +1340,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-laravel",
-                "reference": "a91ac48dfab41c42dda7ed923aa1371874d5be66"
+                "reference": "5a8d83848dc01b1311a0146fa700ba0171a21866"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1371,7 +1371,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-psr",
-                "reference": "77209cef85e923b72c51366ca6cd31951ec95b2a"
+                "reference": "3b068933970ec6294921f13e5830b42a99668712"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1400,7 +1400,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-remote",
-                "reference": "338f3ded48abd30737ac3cd26cedddab8d196aeb"
+                "reference": "2b99cf0e8c1a84c301ca2386c4f1e7be323a7d1f"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1431,7 +1431,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/bridge-symfony",
-                "reference": "360d6ffcfc9eeca18f7f88d6a414916ea2cc4666"
+                "reference": "5fd7688c4261c95071b67a3285074bd0df3fe3da"
             },
             "require": {
                 "evolvephp/bridge-contracts": "^2.0",
@@ -1462,7 +1462,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/cache-memory",
-                "reference": "b611a69104e8a0eaca5fb09b83333e519f91277c"
+                "reference": "ba883f0022f666283b2bef81d989834911a081e7"
             },
             "require": {
                 "php": "^8.4",
@@ -1515,7 +1515,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/database-contracts",
-                "reference": "79391575a54c9063a5d100306ecefd9e8d4043b8"
+                "reference": "3efd2400dc92bf9a6d9a2c9d8e0365ff639013cb"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1541,7 +1541,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/database-pdo",
-                "reference": "513eb1e799deab302d208e5ff893d22d79f6840c"
+                "reference": "503e0338402bbae1fb5d3c9a330a102706ee909e"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1591,7 +1591,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/dev-tools",
-                "reference": "0c891bb038ac9a5e4a2668557e93ad0e39d33e2b"
+                "reference": "bae9d722772171827c3a4038ad19af309ed2a8c4"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1624,7 +1624,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/http-client",
-                "reference": "f92a3eb0fff6458d3c7508a9487073ef9a658541"
+                "reference": "a1e986948c3b4ef416a97f8ee0c3a9e74bdb791b"
             },
             "require": {
                 "php": "^8.4",
@@ -1656,7 +1656,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/insight",
-                "reference": "e320548aa0d6df00182677461825f98df9152222"
+                "reference": "0cd8eff4e7493087766aa8e93d7722e2cb1b04ee"
             },
             "require": {
                 "evolvephp/core": "^2.0",
@@ -1694,7 +1694,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/job",
-                "reference": "bd8537d925c77f8fd3cda39e287e1963aeae5520"
+                "reference": "ecbe78686795696f07ab0e1c20b6627e0189ecca"
             },
             "require": {
                 "evolvephp/core": "^2.0",
@@ -1726,7 +1726,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/lock-contracts",
-                "reference": "38a6e18917fb31ff58f134a27da802ee8e566cc5"
+                "reference": "bc88fe090bb6f631d57f3104084b8c596bfe29a7"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1752,12 +1752,38 @@
             }
         },
         {
+            "name": "evolvephp/mcp",
+            "version": "2.0.x-dev",
+            "dist": {
+                "type": "path",
+                "url": "packages/mcp",
+                "reference": "22e19883d5e4c1ce128c02bc52215d1b88d43147"
+            },
+            "require": {
+                "mcp/sdk": "^0.8.1",
+                "php": "^8.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Evolve\\Mcp\\": "src/"
+                }
+            },
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "description": "Optional experimental MCP package and official PHP MCP SDK dependency foundation for EvolvePHP 2.",
+            "transport-options": {
+                "relative": true
+            }
+        },
+        {
             "name": "evolvephp/migration",
             "version": "2.0.x-dev",
             "dist": {
                 "type": "path",
                 "url": "packages/migration",
-                "reference": "3c83573be31abe754853166d370aa5674a45c89c"
+                "reference": "2d014d98b4ad54099c7f5f9e4d921d9093928526"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1791,7 +1817,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/observe",
-                "reference": "8894435e003c53048028b5e14f0e0e0724fc317c"
+                "reference": "eb777ef72e8e1d6868a3ab36febc0bb882a80909"
             },
             "require": {
                 "evolvephp/core": "^2.0",
@@ -1833,7 +1859,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/queue-contracts",
-                "reference": "c6e6ebd4f065bced8ee4ca8164efbbef329b61e7"
+                "reference": "94075b11acfa5e012f2f54d7337c99cd3dbc0694"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1864,7 +1890,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/queue-memory",
-                "reference": "90ced0e2715162c9de2d80539f33f939f0d5f844"
+                "reference": "f24ae650b6556d63b9cd6a181c0ae0d995d324ae"
             },
             "require": {
                 "evolvephp/queue-contracts": "^2.0",
@@ -1895,7 +1921,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/scheduler",
-                "reference": "07c741343f868c3d1e7c808d91812f0f8806cd6d"
+                "reference": "ccce02ab382c0fd93ee156a1383ddfa14d36e113"
             },
             "require": {
                 "dragonmantank/cron-expression": "^3.6",
@@ -1930,7 +1956,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/secret-contracts",
-                "reference": "cae61da9d389e44d4f3aea0a65db4233dac0bf71"
+                "reference": "0ff206afcb0656dc412ea1873ca9d8bba94c73e8"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -1979,7 +2005,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/session-contracts",
-                "reference": "6205064d02042476caaa738788b74ca95c6c4346"
+                "reference": "c0cea75a9c41c519562ee1a29810f41b5a53f069"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -2010,7 +2036,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/storage-contracts",
-                "reference": "a182f882aee75ce7d80c45cf5e5c0a6dfd8fc142"
+                "reference": "ec66ebde0d3281730b64ddc38349419b0f36b922"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -2059,7 +2085,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/storage-local",
-                "reference": "4fa84f32a202af4bc100eb4feb6468b42e06c83a"
+                "reference": "804bb18df7266f374edeb4276db115c8182aafa1"
             },
             "require": {
                 "evolvephp/storage-contracts": "^2.0",
@@ -2108,7 +2134,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/testing",
-                "reference": "46d12e6ba6259f4c3983b4cd75ba85a4eeb69d40"
+                "reference": "6bec0eb87bb3272c1593d631e445e36575ed2330"
             },
             "require": {
                 "evolvephp/contracts": "^2.0",
@@ -2139,7 +2165,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/view-blade",
-                "reference": "12f2359e58646d49efff2ffbc4087a5f45f50868"
+                "reference": "fd2dcd655c7af390cad13f25ca13d9131428067b"
             },
             "require": {
                 "evolvephp/view": "^2.0",
@@ -2174,7 +2200,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/view-twig",
-                "reference": "eec3ca7914f181003e5a60eb7d88f17e93e0c1b4"
+                "reference": "ccccedcf73c0c451a147cc98060a027ce243c583"
             },
             "require": {
                 "evolvephp/view": "^2.0",
@@ -3743,6 +3769,91 @@
             "time": "2026-02-19T20:12:01+00:00"
         },
         {
+            "name": "mcp/sdk",
+            "version": "v0.8.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/modelcontextprotocol/php-sdk.git",
+                "reference": "c5dbfb64e5a2a30872ec3927b4cf13a2eb05e10e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/modelcontextprotocol/php-sdk/zipball/c5dbfb64e5a2a30872ec3927b4cf13a2eb05e10e",
+                "reference": "c5dbfb64e5a2a30872ec3927b4cf13a2eb05e10e",
+                "shasum": ""
+            },
+            "require": {
+                "ext-fileinfo": "*",
+                "opis/json-schema": "^2.4",
+                "php": "^8.1",
+                "php-http/discovery": "^1.20",
+                "phpdocumentor/reflection-docblock": "^5.6 || ^6.0",
+                "psr/clock": "^1.0",
+                "psr/container": "^1.0 || ^2.0",
+                "psr/event-dispatcher": "^1.0",
+                "psr/http-client": "^1.0",
+                "psr/http-factory": "^1.1",
+                "psr/http-message": "^1.1 || ^2.0",
+                "psr/http-server-handler": "^1.0",
+                "psr/http-server-middleware": "^1.0",
+                "psr/log": "^1.0 || ^2.0 || ^3.0",
+                "symfony/deprecation-contracts": "^2.5 || ^3.0",
+                "symfony/uid": "^5.4 || ^6.4 || ^7.3 || ^8.0"
+            },
+            "require-dev": {
+                "composer/semver": "^3.0",
+                "ext-openssl": "*",
+                "firebase/php-jwt": "^6.10 || ^7.0",
+                "laminas/laminas-httphandlerrunner": "^2.12",
+                "nyholm/psr7": "^1.8",
+                "nyholm/psr7-server": "^1.1",
+                "phar-io/composer-distributor": "^1.0.2",
+                "php-cs-fixer/shim": "^3.91",
+                "phpdocumentor/shim": "^3",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^10.5",
+                "psr/simple-cache": "^2.0 || ^3.0",
+                "symfony/cache": "^5.4 || ^6.4 || ^7.3 || ^8.0",
+                "symfony/console": "^5.4 || ^6.4 || ^7.3 || ^8.0",
+                "symfony/finder": "^5.4 || ^6.4 || ^7.3 || ^8.0",
+                "symfony/http-client": "^5.4 || ^6.4 || ^7.3 || ^8.0",
+                "symfony/process": "^5.4 || ^6.4 || ^7.3 || ^8.0"
+            },
+            "suggest": {
+                "symfony/finder": "Required for file-based discovery."
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Mcp\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Christopher Hertel",
+                    "email": "mail@christopher-hertel.de"
+                },
+                {
+                    "name": "Kyrian Obikwelu",
+                    "email": "koshnawaza@gmail.com"
+                },
+                {
+                    "name": "Tobias Nyholm",
+                    "email": "tobias.nyholm@gmail.com"
+                }
+            ],
+            "description": "Model Context Protocol SDK for Client and Server applications in PHP",
+            "support": {
+                "issues": "https://github.com/modelcontextprotocol/php-sdk/issues",
+                "source": "https://github.com/modelcontextprotocol/php-sdk/tree/v0.8.1"
+            },
+            "time": "2026-08-29T23:10:56+00:00"
+        },
+        {
             "name": "myclabs/deep-copy",
             "version": "1.13.4",
             "source": {
@@ -4444,6 +4555,196 @@
             "time": "2026-09-09T22:06:17+00:00"
         },
         {
+            "name": "opis/json-schema",
+            "version": "2.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/opis/json-schema.git",
+                "reference": "8458763e0dd0b6baa310e04f1829fc73da4e8c8a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/opis/json-schema/zipball/8458763e0dd0b6baa310e04f1829fc73da4e8c8a",
+                "reference": "8458763e0dd0b6baa310e04f1829fc73da4e8c8a",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "opis/string": "^2.1",
+                "opis/uri": "^1.0",
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "ext-bcmath": "*",
+                "ext-intl": "*",
+                "phpunit/phpunit": "^9.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Opis\\JsonSchema\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Sorin Sarca",
+                    "email": "sarca_sorin@hotmail.com"
+                },
+                {
+                    "name": "Marius Sarca",
+                    "email": "marius.sarca@gmail.com"
+                }
+            ],
+            "description": "Json Schema Validator for PHP",
+            "homepage": "https://opis.io/json-schema",
+            "keywords": [
+                "json",
+                "json-schema",
+                "schema",
+                "validation",
+                "validator"
+            ],
+            "support": {
+                "issues": "https://github.com/opis/json-schema/issues",
+                "source": "https://github.com/opis/json-schema/tree/2.6.0"
+            },
+            "time": "2025-10-17T12:46:48+00:00"
+        },
+        {
+            "name": "opis/string",
+            "version": "2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/opis/string.git",
+                "reference": "3e4d2aaff518ac518530b89bb26ed40f4503635e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/opis/string/zipball/3e4d2aaff518ac518530b89bb26ed40f4503635e",
+                "reference": "3e4d2aaff518ac518530b89bb26ed40f4503635e",
+                "shasum": ""
+            },
+            "require": {
+                "ext-iconv": "*",
+                "ext-json": "*",
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Opis\\String\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Marius Sarca",
+                    "email": "marius.sarca@gmail.com"
+                },
+                {
+                    "name": "Sorin Sarca",
+                    "email": "sarca_sorin@hotmail.com"
+                }
+            ],
+            "description": "Multibyte strings as objects",
+            "homepage": "https://opis.io/string",
+            "keywords": [
+                "multi-byte",
+                "opis",
+                "string",
+                "string manipulation",
+                "utf-8"
+            ],
+            "support": {
+                "issues": "https://github.com/opis/string/issues",
+                "source": "https://github.com/opis/string/tree/2.1.0"
+            },
+            "time": "2025-10-17T12:38:41+00:00"
+        },
+        {
+            "name": "opis/uri",
+            "version": "1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/opis/uri.git",
+                "reference": "0f3ca49ab1a5e4a6681c286e0b2cc081b93a7d5a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/opis/uri/zipball/0f3ca49ab1a5e4a6681c286e0b2cc081b93a7d5a",
+                "reference": "0f3ca49ab1a5e4a6681c286e0b2cc081b93a7d5a",
+                "shasum": ""
+            },
+            "require": {
+                "opis/string": "^2.0",
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Opis\\Uri\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Marius Sarca",
+                    "email": "marius.sarca@gmail.com"
+                },
+                {
+                    "name": "Sorin Sarca",
+                    "email": "sarca_sorin@hotmail.com"
+                }
+            ],
+            "description": "Build, parse and validate URIs and URI-templates",
+            "homepage": "https://opis.io",
+            "keywords": [
+                "URI Template",
+                "parse url",
+                "punycode",
+                "uri",
+                "uri components",
+                "url",
+                "validate uri"
+            ],
+            "support": {
+                "issues": "https://github.com/opis/uri/issues",
+                "source": "https://github.com/opis/uri/tree/1.1.0"
+            },
+            "time": "2021-05-22T15:57:08+00:00"
+        },
+        {
             "name": "phar-io/manifest",
             "version": "2.0.4",
             "source": {
@@ -4745,6 +5046,71 @@
                 "source": "https://github.com/phpDocumentor/ReflectionCommon/tree/2.x"
             },
             "time": "2020-06-27T09:03:43+00:00"
+        },
+        {
+            "name": "phpdocumentor/reflection-docblock",
+            "version": "6.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpDocumentor/ReflectionDocBlock.git",
+                "reference": "7bae67520aa9f5ecc506d646810bd40d9da54582"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpDocumentor/ReflectionDocBlock/zipball/7bae67520aa9f5ecc506d646810bd40d9da54582",
+                "reference": "7bae67520aa9f5ecc506d646810bd40d9da54582",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/deprecations": "^1.1",
+                "ext-filter": "*",
+                "php": "^7.4 || ^8.0",
+                "phpdocumentor/reflection-common": "^2.2",
+                "phpdocumentor/type-resolver": "^2.0",
+                "phpstan/phpdoc-parser": "^2.0",
+                "webmozart/assert": "^1.9.1 || ^2"
+            },
+            "require-dev": {
+                "mockery/mockery": "~1.3.5 || ~1.6.0",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan": "^1.8",
+                "phpstan/phpstan-mockery": "^1.1",
+                "phpstan/phpstan-webmozart-assert": "^1.2",
+                "phpunit/phpunit": "^9.5",
+                "psalm/phar": "^5.26",
+                "shipmonk/dead-code-detector": "^0.5.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "phpDocumentor\\Reflection\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mike van Riel",
+                    "email": "me@mikevanriel.com"
+                },
+                {
+                    "name": "Jaap van Otterdijk",
+                    "email": "opensource@ijaap.nl"
+                }
+            ],
+            "description": "With this component, a library can provide support for annotations via DocBlocks or otherwise retrieve information that is embedded in a DocBlock.",
+            "support": {
+                "issues": "https://github.com/phpDocumentor/ReflectionDocBlock/issues",
+                "source": "https://github.com/phpDocumentor/ReflectionDocBlock/tree/6.0.3"
+            },
+            "time": "2026-03-18T20:49:53+00:00"
         },
         {
             "name": "phpdocumentor/type-resolver",
@@ -9746,6 +10112,89 @@
             "time": "2026-07-02T13:42:24+00:00"
         },
         {
+            "name": "symfony/polyfill-uuid",
+            "version": "v1.43.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-uuid.git",
+                "reference": "b23ff8245cc5c4479ea2be3d0132d2e6dd433993"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-uuid/zipball/b23ff8245cc5c4479ea2be3d0132d2e6dd433993",
+                "reference": "b23ff8245cc5c4479ea2be3d0132d2e6dd433993",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2"
+            },
+            "provide": {
+                "ext-uuid": "*"
+            },
+            "suggest": {
+                "ext-uuid": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Uuid\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Grégoire Pineau",
+                    "email": "lyrixx@lyrixx.info"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for uuid functions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "uuid"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-uuid/tree/v1.43.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-09-24T05:20:52+00:00"
+        },
+        {
             "name": "symfony/process",
             "version": "v8.1.0",
             "source": {
@@ -10312,6 +10761,84 @@
             "time": "2026-06-05T06:23:12+00:00"
         },
         {
+            "name": "symfony/uid",
+            "version": "v8.1.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/uid.git",
+                "reference": "f412a0b5edd75eb3104a93bd0d11fd2ea3da34e4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/uid/zipball/f412a0b5edd75eb3104a93bd0d11fd2ea3da34e4",
+                "reference": "f412a0b5edd75eb3104a93bd0d11fd2ea3da34e4",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.4.1",
+                "symfony/polyfill-uuid": "^1.15"
+            },
+            "require-dev": {
+                "symfony/console": "^7.4|^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Uid\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Grégoire Pineau",
+                    "email": "lyrixx@lyrixx.info"
+                },
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides an object-oriented API to generate and represent UIDs",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "UID",
+                "ulid",
+                "uuid"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/uid/tree/v8.1.8"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-09-23T17:45:45+00:00"
+        },
+        {
             "name": "symfony/var-dumper",
             "version": "v8.1.6",
             "source": {
@@ -10812,6 +11339,72 @@
                 }
             ],
             "time": "2026-04-26T05:33:54+00:00"
+        },
+        {
+            "name": "webmozart/assert",
+            "version": "2.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/webmozarts/assert.git",
+                "reference": "8a163706bbcac613733dba03f51e13b5eb1bb819"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/8a163706bbcac613733dba03f51e13b5eb1bb819",
+                "reference": "8a163706bbcac613733dba03f51e13b5eb1bb819",
+                "shasum": ""
+            },
+            "require": {
+                "ext-ctype": "*",
+                "ext-date": "*",
+                "ext-filter": "*",
+                "php": "^8.2"
+            },
+            "suggest": {
+                "ext-intl": "",
+                "ext-simplexml": "",
+                "ext-spl": ""
+            },
+            "type": "library",
+            "extra": {
+                "psalm": {
+                    "pluginClass": "Webmozart\\Assert\\PsalmPlugin"
+                },
+                "branch-alias": {
+                    "dev-master": "2.0-dev",
+                    "dev-feature/2-0": "2.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Webmozart\\Assert\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Bernhard Schussek",
+                    "email": "bschussek@gmail.com"
+                },
+                {
+                    "name": "Woody Gilk",
+                    "email": "woody.gilk@gmail.com"
+                }
+            ],
+            "description": "Assertions to validate method input/output with nice error messages.",
+            "keywords": [
+                "assert",
+                "check",
+                "validate"
+            ],
+            "support": {
+                "issues": "https://github.com/webmozarts/assert/issues",
+                "source": "https://github.com/webmozarts/assert/tree/2.5.0"
+            },
+            "time": "2026-10-05T23:14:19+00:00"
         }
     ],
     "aliases": [],
@@ -10834,6 +11427,7 @@
         "evolvephp/insight": 20,
         "evolvephp/job": 20,
         "evolvephp/lock-contracts": 20,
+        "evolvephp/mcp": 20,
         "evolvephp/migration": 20,
         "evolvephp/module": 20,
         "evolvephp/observe": 20,

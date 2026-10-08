@@ -350,7 +350,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array($path));
 
             $this->assertSame('full', $decision['mode'], $path . ' must force full validation.');
-            $this->assertSame(32, count($decision['packages']), $path . ' must keep the complete package map.');
+            $this->assertSame(33, count($decision['packages']), $path . ' must keep the complete package map.');
         }
 
         $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array('docs/release-notes.md', 'README.md'));
@@ -648,7 +648,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $coreIndex = array_search('evolvephp/core', $packageNames, true);
 
         $this->assertIsInt($coreIndex);
-        $this->assertCount(32, $packages);
+        $this->assertCount(33, $packages);
         $this->assertContains('evolvephp/insight', $packageNames);
         $this->assertSame(
             array('name' => 'evolvephp/database-contracts', 'directory' => 'packages/database-contracts'),
@@ -717,6 +717,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             array('name' => 'evolvephp/observe', 'directory' => 'packages/observe'),
             $packages[$coreIndex + 13]
         );
+        $this->assertSame(array('name' => 'evolvephp/mcp', 'directory' => 'packages/mcp'), $packages[$coreIndex + 14]);
         $this->assertSame($map['packages'], $packages);
     }
 
@@ -968,7 +969,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $map = $this->readJsonFile('release-packages.json');
 
         $this->assertSame(1, $map['version']);
-        $this->assertCount(32, $map['packages']);
+        $this->assertCount(33, $map['packages']);
 
         return $map['packages'];
     }

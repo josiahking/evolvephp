@@ -92,6 +92,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/http`
 - `evolvephp/http-client`
 - `evolvephp/observe`
+- `evolvephp/mcp`
 - `evolvephp/module`
 - `evolvephp/plugin`
 - `evolvephp/testing`
@@ -165,6 +166,7 @@ composer test:view-blade
 composer test:i18n
 composer test:insight
 composer test:observe
+composer test:mcp
 composer test:dev-tools
 composer test:http
 composer test:http-client
@@ -274,7 +276,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains thirty-two packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, migration, view, view-twig, view-blade, i18n, module, plugin, http, insight, http-client, observe, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains thirty-three packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, migration, view, view-twig, view-blade, i18n, module, plugin, http, insight, http-client, observe, mcp, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -449,6 +451,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `i18n` | `packages/i18n/tests` |
 | `insight` | `packages/insight/tests` |
 | `observe` | `packages/observe/tests` |
+| `mcp` | `packages/mcp/tests` |
 | `dev-tools` | `packages/dev-tools/tests` |
 | `http` | `packages/http/tests` |
 | `http-client` | `packages/http-client/tests` |
@@ -513,6 +516,8 @@ packages/insight/src
 packages/insight/tests
 packages/observe/src
 packages/observe/tests
+packages/mcp/src
+packages/mcp/tests
 packages/dev-tools/src
 packages/dev-tools/tests
 packages/http/src
@@ -531,7 +536,7 @@ The root manually includes `phpstan/phpstan-phpunit` type-inference integration 
 
 No PHPStan baseline is allowed, and the configuration must not use `ignoreErrors`. Local PHPStan cache belongs in `.phpstan-cache/` and is ignored.
 
-Observe source/test tooling coverage is included in PHPStan and PHP-CS-Fixer through `packages/observe/src` and `packages/observe/tests`.
+Observe and MCP source/test tooling coverage is included in PHPStan and PHP-CS-Fixer through their respective `packages/observe/src`, `packages/observe/tests`, `packages/mcp/src` and `packages/mcp/tests` paths.
 
 ## Architecture Boundaries
 
@@ -567,6 +572,7 @@ packages/job/src
 packages/scheduler/src
 packages/insight/src
 packages/observe/src
+packages/mcp/src
 packages/dev-tools/src
 packages/http/src
 packages/http-client/src
@@ -599,6 +605,7 @@ Job       -> packages/job/src/.*       -> Evolve\Job\
 Scheduler -> packages/scheduler/src/.* -> Evolve\Scheduler\
 Insight   -> packages/insight/src/.*   -> Evolve\Insight\
 Observe   -> packages/observe/src/.*   -> Evolve\Observe\
+Mcp       -> packages/mcp/src/.*       -> Evolve\Mcp\
 DevTools  -> packages/dev-tools/src/.* -> Evolve\DevTools\
 Http      -> packages/http/src/.*      -> Evolve\Http\
 HttpClient -> packages/http-client/src/.* -> Evolve\Http\Client\
@@ -630,6 +637,7 @@ Core      -> Contracts
 Job       -> Core, QueueContracts
 Insight   -> Core, DatabaseContracts, Http, View, I18n, QueueContracts, StorageContracts, PsrSimpleCache, PsrHttpClient, PsrHttpMessage, PsrHttpServer
 Observe   -> Core, DatabaseContracts, Http, HttpClient, Job, QueueContracts, StorageContracts, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PsrHttpClient, PsrHttpMessage, PsrHttpServer, PsrSimpleCache
+Mcp       -> McpSdk
 DevTools  -> Contracts, Core, Module, Plugin
 Http      -> Contracts, Core
 HttpClient -> PsrHttpMessage, PsrHttpClient
@@ -665,6 +673,10 @@ PsrHttpClient
 PsrHttpMessage
 PsrHttpServer
 
+MCP external standard
+
+McpSdk
+
 Observe external standards
 OpenTelemetryApi
 OpenTelemetrySdk
@@ -693,7 +705,7 @@ PsrHttpClient
 PsrHttpServer
 ```
 
-`StorageLocal` depends on the `StorageContracts` layer and does not introduce framework or provider SDK dependencies. The `storage-local` package has no direct `evolvephp/contracts` dependency. Its internal `LocalFilesystemStorageException` implements `StorageException`, which inherits `EvolveException`, so Deptrac observes the inherited Contracts edge. The exact skip in `deptrac.baseline.yaml` permits only this class pair and does not grant the `StorageLocal` layer general access to `Contracts`. `PsrContainer` represents the approved PSR-11 interoperability layer used by Core and by Contracts for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrSimpleCache` represents the approved PSR-16 `Psr\SimpleCache` namespace used by CacheMemory as the application-facing cache contract. `PsrClock` represents the approved PSR-20 `Psr\Clock` namespace used by CacheMemory for deterministic expiration decisions. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`, by BridgePsr for caller-owned PSR request input and resolved PSR response output, by BridgeLaravel and BridgeSymfony for caller-owned PSR request construction and delegated PSR response translation, by BridgeRemote for outer and delegated PSR requests/responses plus PSR-17 factories, by Insight for bounded incoming HTTP server diagnostics, and by Observe for explicit HTTP server tracing and outbound client propagation over caller-owned PSR messages. `LaravelHost` represents the narrow Illuminate HTTP and authentication-contract layer used only by BridgeLaravel for host request and principal translation. `SymfonyHost` represents the narrow Symfony HttpFoundation and Security Core layer used only by BridgeSymfony for host request and principal translation. `PsrHttpClient` represents the approved PSR-18 `Psr\Http\Client` namespace used by BridgeRemote for host-side remote invocation transport, by Insight for outbound HTTP client diagnostics, and by Observe for outbound client middleware. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http, Insight incoming server diagnostic middleware, Observe route-enrichment middleware and the BridgeRemote endpoint. `OpenTelemetryApi` represents the OpenTelemetry API and context namespaces required by Observe for provider interfaces, propagation, spans and context scopes. `OpenTelemetrySdk` represents optional SDK resource and sampler value types supported when applications install the suggested SDK. `OpenTelemetrySemConv` represents stable semantic-convention constants used by Observe, including HTTP server attributes, `error.type` and `service.name`.
+`StorageLocal` depends on the `StorageContracts` layer and does not introduce framework or provider SDK dependencies. The `storage-local` package has no direct `evolvephp/contracts` dependency. Its internal `LocalFilesystemStorageException` implements `StorageException`, which inherits `EvolveException`, so Deptrac observes the inherited Contracts edge. The exact skip in `deptrac.baseline.yaml` permits only this class pair and does not grant the `StorageLocal` layer general access to `Contracts`. `PsrContainer` represents the approved PSR-11 interoperability layer used by Core and by Contracts for the public `ServiceDefinitionRegistrar` service-definition factory contract. Contracts remains first-party-inward and has no first-party EvolvePHP dependency; the PSR-11 reference documents the optional resolver argument accepted by component service-definition factories and does not make Contracts a container implementation. Core remains the implementation owner for the registry, frozen resolver, execution scopes and restricted registration coordinator. `PsrSimpleCache` represents the approved PSR-16 `Psr\SimpleCache` namespace used by CacheMemory as the application-facing cache contract. `PsrClock` represents the approved PSR-20 `Psr\Clock` namespace used by CacheMemory for deterministic expiration decisions. `PsrHttpMessage` represents the approved `Psr\Http\Message` namespace used by Http for PSR-7 message interfaces and PSR-17 factory interfaces, including `psr/http-message` and `psr/http-factory`, by BridgePsr for caller-owned PSR request input and resolved PSR response output, by BridgeLaravel and BridgeSymfony for caller-owned PSR request construction and delegated PSR response translation, by BridgeRemote for outer and delegated PSR requests/responses plus PSR-17 factories, by Insight for bounded incoming HTTP server diagnostics, and by Observe for explicit HTTP server tracing and outbound client propagation over caller-owned PSR messages. `LaravelHost` represents the narrow Illuminate HTTP and authentication-contract layer used only by BridgeLaravel for host request and principal translation. `SymfonyHost` represents the narrow Symfony HttpFoundation and Security Core layer used only by BridgeSymfony for host request and principal translation. `PsrHttpClient` represents the approved PSR-18 `Psr\Http\Client` namespace used by BridgeRemote for host-side remote invocation transport, by Insight for outbound HTTP client diagnostics, and by Observe for outbound client middleware. `PsrHttpServer` represents the approved PSR-15 server middleware/handler interface layer used by Http, Insight incoming server diagnostic middleware, Observe route-enrichment middleware and the BridgeRemote endpoint. `OpenTelemetryApi` represents the OpenTelemetry API and context namespaces required by Observe for provider interfaces, propagation, spans and context scopes. `OpenTelemetrySdk` represents optional SDK resource and sampler value types supported when applications install the suggested SDK. `OpenTelemetrySemConv` represents stable semantic-convention constants used by Observe, including HTTP server attributes, `error.type` and `service.name`. `McpSdk` represents the official external `Mcp\...` namespace. The optional Mcp layer may access only McpSdk in this foundation; it has no first-party EvolvePHP edge and no production PHP source yet.
 
 These PSR HTTP interfaces are external interoperability standards and do not change the first-party Evolve package dependency direction. Adding `psr/http-factory` does not require a new Deptrac external namespace layer because PSR-17 factory interfaces live under `Psr\Http\Message`. PSR-18 is tracked as its own external namespace because the client interfaces live under `Psr\Http\Client`. Http still depends inward on Contracts and Core, while BridgeLaravel, BridgeSymfony and BridgeRemote use their approved external layers only at optional Bridge boundaries.
 
@@ -709,7 +721,7 @@ PHP-CS-Fixer is the root coding-standard engine. The distributable configuration
 
 The project style is based on PHP-FIG PER Coding Style 3.0 through PHP-CS-Fixer's `@PER-CS3x0` rule set. The floating `@PER-CS` alias is not used. The project explicitly enables alphabetical `ordered_imports` and `no_unused_imports`.
 
-PHP-CS-Fixer checks Observe `src` and `tests` directories plus the existing covered package `src` and `tests` directories and the committed skeleton PHP config/bootstrap files. The extensionless skeleton executable is protected by syntax and create-project validation rather than distorting the Finder. The root architecture tests, root documentation tests, RFCs, `vendor/` and generated caches are excluded.
+PHP-CS-Fixer checks Observe and MCP `src` and `tests` directories plus the existing covered package `src` and `tests` directories and the committed skeleton PHP config/bootstrap files. The extensionless skeleton executable is protected by syntax and create-project validation rather than distorting the Finder. The root architecture tests, root documentation tests, RFCs, `vendor/` and generated caches are excluded.
 
 Risky rules are disabled. The `declare_strict_types` fixer is not enabled; strict-types policy for EvolvePHP 2 package PHP files is enforced by architecture tests.
 

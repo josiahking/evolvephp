@@ -39,6 +39,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'packages/insight/README.md',
                 'packages/job/README.md',
                 'packages/lock-contracts/README.md',
+                'packages/mcp/README.md',
                 'packages/migration/README.md',
                 'packages/module/README.md',
                 'packages/observe/README.md',
@@ -138,7 +139,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             $this->assertStringContainsString('composer ' . $script, $content);
         }
 
-        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:job', 'test:scheduler', 'test:migration', 'test:insight', 'test:observe', 'test:dev-tools', 'test:http', 'test:http-client', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:job', 'test:scheduler', 'test:migration', 'test:insight', 'test:observe', 'test:mcp', 'test:dev-tools', 'test:http', 'test:http-client', 'test:module', 'test:plugin', 'test:testing') as $script) {
             $this->assertStringContainsString('composer ' . $script, $content);
         }
     }
@@ -204,6 +205,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $content = $this->readProjectFile('packages/README.md');
 
         $this->assertStringContainsString('DEVELOPMENT.md', $content);
+        $this->assertStringContainsString('Mcp -> McpSdk', $content);
         $this->assertDoesNotMatchPattern('/Contracts\s*->\s*\.\.\/packages\/contracts\/src\/\.\*\s*->\s*Evolve\\\\Contracts\\\\/', $content);
         $this->assertDoesNotMatchPattern('/Phase 2\.[0-9].*(?:adds|now provides|creates|verifies)/i', $content);
         $this->assertDoesNotMatchPattern('/Before Phase 2\.3/i', $content);
@@ -374,6 +376,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'Core      -> Contracts',
             'Insight   -> Core, DatabaseContracts, Http, View, I18n, QueueContracts, StorageContracts, PsrSimpleCache, PsrHttpClient, PsrHttpMessage, PsrHttpServer',
             'Observe   -> Core, DatabaseContracts, Http, HttpClient, Job, QueueContracts, StorageContracts, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PsrHttpClient, PsrHttpMessage, PsrHttpServer, PsrSimpleCache',
+            'Mcp       -> McpSdk',
             'DevTools  -> Contracts, Core, Module, Plugin',
             'Http      -> Contracts, Core',
             'Module    -> Contracts',
@@ -405,6 +408,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'packages/insight/README.md',
             'packages/job/README.md',
             'packages/scheduler/README.md',
+            'packages/mcp/README.md',
             'packages/migration/README.md',
             'packages/http/README.md',
             'packages/http-client/README.md',

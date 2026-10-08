@@ -123,6 +123,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
                 'PhpIntl' => '^(IntlDateFormatter|MessageFormatter|NumberFormatter)$',
                 'TwigEngine' => '^Twig\\\\(Environment|Source|Loader\\\\LoaderInterface|Error\\\\LoaderError)$',
                 'IlluminateViewEngine' => '^Illuminate\\\\(Container\\\\Container|Contracts\\\\Support\\\\Arrayable|Events\\\\Dispatcher|Filesystem\\\\Filesystem|View\\\\.*)$',
+                'McpSdk' => '^Mcp\\\\.*',
                 'OpenTelemetryApi' => '^OpenTelemetry\\\\(API|Context)\\\\.*',
                 'OpenTelemetrySdk' => '^OpenTelemetry\\\\SDK\\\\.*',
                 'OpenTelemetrySemConv' => '^OpenTelemetry\\\\SemConv\\\\.*',
@@ -144,7 +145,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $config->toArray()['skip_violations'] ?? array(),
         );
 
-        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/storage-contracts/tests', 'packages/storage-local/tests', 'packages/secret-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/job/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/http-client/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
+        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/storage-contracts/tests', 'packages/storage-local/tests', 'packages/secret-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/job/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/mcp/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/http-client/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
             $this->assertStringNotContainsString($testPath, $content);
         }
 
@@ -278,6 +279,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'I18n' => 'packages/i18n/src/.*',
             'Insight' => 'packages/insight/src/.*',
             'Observe' => 'packages/observe/src/.*',
+            'Mcp' => 'packages/mcp/src/.*',
             'DevTools' => 'packages/dev-tools/src/.*',
             'Http' => 'packages/http/src/.*',
             'HttpClient' => 'packages/http-client/src/.*',
@@ -321,6 +323,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'OpenTelemetryApi' => array(),
             'OpenTelemetrySdk' => array(),
             'OpenTelemetrySemConv' => array(),
+            'McpSdk' => array(),
             'Core' => array('Contracts', 'PsrContainer'),
             'Job' => array('Core', 'QueueContracts'),
             'Scheduler' => array('Core', 'LockContracts', 'QueueContracts', 'PsrClock', 'CronExpression'),
@@ -331,6 +334,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'I18n' => array('Core', 'PhpIntl'),
             'Insight' => array('Core', 'DatabaseContracts', 'Http', 'View', 'I18n', 'QueueContracts', 'StorageContracts', 'PsrSimpleCache', 'PsrHttpClient', 'PsrHttpMessage', 'PsrHttpServer'),
             'Observe' => array('Core', 'DatabaseContracts', 'Http', 'HttpClient', 'Job', 'QueueContracts', 'StorageContracts', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'PsrHttpClient', 'PsrHttpMessage', 'PsrHttpServer', 'PsrSimpleCache'),
+            'Mcp' => array('McpSdk'),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
             'Http' => array('Contracts', 'Core', 'PsrHttpMessage', 'PsrHttpServer'),
             'HttpClient' => array('PsrHttpMessage', 'PsrHttpClient'),
@@ -402,6 +406,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'openTelemetryApi' => 'OpenTelemetryApi',
             'openTelemetrySdk' => 'OpenTelemetrySdk',
             'openTelemetrySemConv' => 'OpenTelemetrySemConv',
+            'mcpSdk' => 'McpSdk',
             'core' => 'Core',
             'job' => 'Job',
             'scheduler' => 'Scheduler',
@@ -412,6 +417,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'i18n' => 'I18n',
             'insight' => 'Insight',
             'observe' => 'Observe',
+            'mcp' => 'Mcp',
             'devTools' => 'DevTools',
             'http' => 'Http',
             'httpClient' => 'HttpClient',
@@ -427,7 +433,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|queueContracts|storageContracts|storageLocal|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|cronExpression|psrHttpMessage|psrHttpClient|psrHttpServer|twigEngine|illuminateViewEngine|phpIntl|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|laravelHost|symfonyHost|core|job|scheduler|viewTwig|viewBlade|view|i18n|insight|observe|devTools|http|httpClient|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|queueContracts|storageContracts|storageLocal|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|cronExpression|psrHttpMessage|psrHttpClient|psrHttpServer|twigEngine|illuminateViewEngine|phpIntl|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|mcpSdk|laravelHost|symfonyHost|core|job|scheduler|viewTwig|viewBlade|view|i18n|insight|observe|devTools|http|httpClient|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
@@ -437,11 +443,11 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $rulesets[$layerName] = $accesses;
         }
 
-        foreach (array('Contracts', 'DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'SecretContracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'PsrContainer', 'PsrSimpleCache', 'PsrClock', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'LaravelHost', 'SymfonyHost', 'Core', 'Insight', 'Observe', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
+        foreach (array('Contracts', 'DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'SecretContracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'PsrContainer', 'PsrSimpleCache', 'PsrClock', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'LaravelHost', 'SymfonyHost', 'Core', 'Insight', 'Observe', 'Mcp', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
             $this->assertNotContains('Testing', $rulesets[$productionLayer], $productionLayer . ' must not access Testing.');
         }
 
-        foreach (array('DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'SecretContracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'Insight', 'Observe', 'DevTools', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
+        foreach (array('DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'SecretContracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'Insight', 'Observe', 'Mcp', 'DevTools', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
             $this->assertNotContains('PsrContainer', $rulesets[$layerName], $layerName . ' must not access PsrContainer directly without an approved boundary.');
         }
 
@@ -484,6 +490,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/i18n/src' => 'Evolve\\I18n\\',
             'packages/insight/src' => 'Evolve\\Insight\\',
             'packages/observe/src' => 'Evolve\\Observe\\',
+            'packages/mcp/src' => 'Evolve\\Mcp\\',
             'packages/dev-tools/src' => 'Evolve\\DevTools\\',
             'packages/http/src' => 'Evolve\\Http\\',
             'packages/http-client/src' => 'Evolve\\Http\\Client\\',

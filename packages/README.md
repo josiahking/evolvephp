@@ -10,7 +10,7 @@ All package manifests require PHP `^8.4`.
 
 EvolvePHP 2 packages continue to require PHP `^8.4`. `compat/legacy-http-client` is a separate isolated remote compatibility artifact for legacy applications whose initial official legacy runtime evidence is PHP 7.4.
 
-The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 32-package release map.
+The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 33-package release map.
 
 The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge endpoint. It does not enable embedded or same-process EvolvePHP on PHP 7, lower Core or package requirements, share sessions or cookies, provide automatic retries or fallback routing, or perform modernization cutover or data migration.
 
@@ -44,6 +44,7 @@ The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge e
 | `evolvephp/i18n` | `Evolve\I18n\` | Explicit locale policy, confined PHP-array catalogs, contextual translation and optional Intl formatting. |
 | `evolvephp/insight` | `Evolve\Insight\` | Optional diagnostic-batch collection, explicit incoming HTTP server diagnostics and an opt-in native PHP dashboard over detached persisted snapshots. |
 | `evolvephp/observe` | `Evolve\Observe\` | Optional OpenTelemetry composition, generic execution tracing and metrics, explicit HTTP server and outbound client telemetry, database/cache/storage decorators, structured-log correlation, bounded SDK export-processing integration, remote Bridge W3C continuity boundary and application-owned providers/exporters/transports with the final package boundary intentionally closed to first-party Bridge and Insight dependencies. |
+| `evolvephp/mcp` | `Evolve\Mcp\` | Optional experimental package foundation using the official PHP MCP SDK, with no Evolve-owned server, client or transport API yet. |
 | `evolvephp/dev-tools` | `Evolve\DevTools\` | Development-only tooling boundary with public experimental `module:new` and `plugin:new` command adapters, read-only Audit APIs and the standalone `evolve-audit` binary for root Composer, resolved lockfile, PHP source coupling and lexical source-structure evidence, plus adoption-planning models for explicit migration declarations. |
 | `evolvephp/http` | `Evolve\Http\` | HTTP boundary with PSR HTTP interoperability, `MiddlewarePipeline`, route definitions and matching, routed handler dispatch, typed routing failures, `HttpKernel` integration with Core execution orchestration, response/error and health foundations and explicit response-emitter boundary; runtime adapters remain deferred. |
 | `evolvephp/http-client` | `Evolve\Http\Client\` | Public experimental vendor-neutral PSR-18 outbound client composition foundation with ordered middleware and application-owned concrete transports and policy. |
@@ -79,6 +80,8 @@ The package graph follows an inward dependency principle:
 - `migration` depends on `contracts`, `core`, `database-contracts` and `lock-contracts`; it adds no ORM, database adapter or automatic rollback.
 - `insight` depends on `core`, `database-contracts`, `http`, `i18n`, `queue-contracts`, `storage-contracts` and `view`, plus its declared PSR Simple Cache, HTTP client, HTTP factory, HTTP message and HTTP server interfaces. The View and I18n edges support the opt-in native PHP dashboard; Core and HTTP do not depend on Insight.
 - `observe` depends inward on `core`, `database-contracts`, `http`, `http-client`, `job`, `queue-contracts` and `storage-contracts`, plus declared PSR HTTP and Simple Cache interfaces and the external OpenTelemetry API and semantic-convention constants. Optional SDK typing is supported through the suggested OpenTelemetry SDK. The owning packages remain OpenTelemetry-neutral, and Observe has no Insight dependency.
+- `mcp` depends only on the official `mcp/sdk` at runtime; it has no first-party EvolvePHP dependency or Evolve-owned MCP API in this foundation.
+  Architecture layer: `Mcp -> McpSdk` (the external `Mcp\...` namespace).
 - `http` depends inward on `contracts` and `core`.
 - `http-client` depends only on PSR HTTP message and client interfaces and remains independent of first-party Evolve packages and concrete transports.
 - `dev-tools` may depend on `contracts`, `core`, `module` and `plugin` for development-time generators and audit tooling.
@@ -86,7 +89,9 @@ The package graph follows an inward dependency principle:
 
 There is no production dependency on Testing.
 
-Database Contracts, Database PDO, Cache Memory, Session Contracts, Bridge Contracts, Bridge PSR, Bridge Laravel, Bridge Symfony, Bridge Remote, Insight and Observe are present as optional outward packages. Observe provides caller-owned OpenTelemetry composition, generic Core execution tracing, explicit HTTP server and outbound client tracing, queue producer/Job consumer propagation, database/cache/storage decorators, bounded metrics, structured-log correlation and SDK export-processing helpers. Additional database adapters, cache backends, session adapters, exporter transports, persistent diagnostics, runtime adapters, watchers, Runtime, Deploy and other optional packages remain outside these package capabilities. Runtime adapters are deferred; Core does not contain `runtime-cli`.
+Database Contracts, Database PDO, Cache Memory, Session Contracts, Bridge Contracts, Bridge PSR, Bridge Laravel, Bridge Symfony, Bridge Remote, Insight, Observe and MCP are present as optional outward packages. Observe provides caller-owned OpenTelemetry composition, generic Core execution tracing, explicit HTTP server and outbound client tracing, queue producer/Job consumer propagation, database/cache/storage decorators, bounded metrics, structured-log correlation and SDK export-processing helpers. Additional database adapters, cache backends, session adapters, exporter transports, persistent diagnostics, runtime adapters, watchers, Runtime, Deploy and other optional packages remain outside these package capabilities. Runtime adapters are deferred; Core does not contain `runtime-cli`.
+
+MCP currently establishes the optional SDK dependency boundary only. Server composition, STDIO and Streamable HTTP integration, remote clients, component contributions, authorization and AI integration remain future work.
 
 ## Current Capabilities And Limits
 
