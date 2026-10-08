@@ -350,7 +350,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array($path));
 
             $this->assertSame('full', $decision['mode'], $path . ' must force full validation.');
-            $this->assertSame(32, count($decision['packages']), $path . ' must keep the complete package map.');
+            $this->assertSame(33, count($decision['packages']), $path . ' must keep the complete package map.');
         }
 
         $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array('docs/release-notes.md', 'README.md'));
@@ -580,6 +580,44 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/\\b(?:shell_exec|exec|passthru|system)\\s*\\(/', $content);
     }
 
+    public function testVendorQualifiedPackagesRemainInOfflineRuntimeCatalogue(): void
+    {
+        require_once $this->path('tools/release-validation-common.php');
+
+        foreach (array('php', 'hhvm', 'php-64bit', 'php-ipv6', 'ext-fileinfo', 'lib-curl', 'composer-plugin-api', 'composer-runtime-api') as $name) {
+            $this->assertTrue(isPlatformPackageName($name), $name . ' must remain a platform requirement.');
+        }
+
+        foreach (array('php-http/discovery', 'composer-tools/example', 'ext-tools/example', 'lib-tools/example') as $name) {
+            $this->assertFalse(isPlatformPackageName($name), $name . ' is a vendor-qualified Composer package.');
+        }
+
+        $this->assertTrue(isReleaseExternalPackageName('php-http/discovery'));
+
+        $lock = $this->readJsonFile('composer.lock');
+        $locked = array_merge(
+            $this->lockedPackagesByName($lock['packages']),
+            $this->lockedPackagesByName($lock['packages-dev'])
+        );
+        $fixtures = loadLockedRuntimePackageRepositoryPackages($this->root);
+        $fixtureNames = array_column($fixtures, 'name');
+        $fixturesByName = array_column($fixtures, null, 'name');
+
+        foreach (array('mcp/sdk', 'php-http/discovery') as $name) {
+            $this->assertArrayHasKey($name, $locked, $name . ' must exist in composer.lock.');
+            $this->assertContains($name, $fixtureNames, $name . ' must be available to offline consumers.');
+            $this->assertSame($locked[$name]['version'], $fixturesByName[$name]['version'], $name . ' must retain its locked version.');
+        }
+
+        foreach (array('php', 'hhvm', 'php-64bit', 'php-ipv6', 'ext-fileinfo', 'lib-curl', 'composer-plugin-api', 'composer-runtime-api') as $name) {
+            $this->assertNotContains($name, $fixtureNames, $name . ' must not be an offline package repository entry.');
+        }
+
+        $consumer = $this->readProjectFile('tools/validate-prerelease-consumers.php');
+        $this->assertStringContainsString("'packagist.org' => false", $consumer);
+        $this->assertStringContainsString("'COMPOSER_DISABLE_NETWORK' => '1'", $consumer);
+    }
+
     public function testConsumerValidatorUsesLockedRuntimePackagesForOfflineThirdPartyResolution(): void
     {
         require_once $this->path('tools/release-validation-common.php');
@@ -648,7 +686,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $coreIndex = array_search('evolvephp/core', $packageNames, true);
 
         $this->assertIsInt($coreIndex);
-        $this->assertCount(32, $packages);
+        $this->assertCount(33, $packages);
         $this->assertContains('evolvephp/insight', $packageNames);
         $this->assertSame(
             array('name' => 'evolvephp/database-contracts', 'directory' => 'packages/database-contracts'),
@@ -717,6 +755,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             array('name' => 'evolvephp/observe', 'directory' => 'packages/observe'),
             $packages[$coreIndex + 13]
         );
+        $this->assertSame(array('name' => 'evolvephp/mcp', 'directory' => 'packages/mcp'), $packages[$coreIndex + 14]);
         $this->assertSame($map['packages'], $packages);
     }
 
@@ -968,7 +1007,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $map = $this->readJsonFile('release-packages.json');
 
         $this->assertSame(1, $map['version']);
-        $this->assertCount(32, $map['packages']);
+        $this->assertCount(33, $map['packages']);
 
         return $map['packages'];
     }

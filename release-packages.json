@@ -106,6 +106,10 @@
             "directory": "packages/observe"
         },
         {
+            "name": "evolvephp/mcp",
+            "directory": "packages/mcp"
+        },
+        {
             "name": "evolvephp/bridge-psr",
             "directory": "packages/bridge-psr"
         },

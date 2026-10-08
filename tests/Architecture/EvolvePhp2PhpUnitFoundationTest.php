@@ -47,6 +47,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/insight']);
         $this->assertArrayHasKey('evolvephp/observe', $manifest['require-dev']);
         $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/observe']);
+        $this->assertSame('^2.0@dev', $manifest['require-dev']['evolvephp/mcp']);
         $this->assertArrayHasKey('open-telemetry/sdk', $manifest['require-dev']);
         $this->assertSame('^1.15', $manifest['require-dev']['open-telemetry/sdk']);
         $this->assertArrayHasKey('evolvephp/testing', $manifest['require-dev']);
@@ -177,7 +178,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $developmentGuide);
         $this->assertMatchesPattern('/PHPUnit 13.*root|root.*PHPUnit 13/i', $developmentGuide);
 
-        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:cache-memory', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:job', 'test:dev-tools', 'test:http', 'test:http-client', 'test:insight', 'test:module', 'test:observe', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:cache-memory', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:job', 'test:dev-tools', 'test:http', 'test:http-client', 'test:insight', 'test:module', 'test:observe', 'test:mcp', 'test:plugin', 'test:testing') as $script) {
             $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $developmentGuide);
         }
 
@@ -310,6 +311,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
                 'tests' => 'packages/observe/tests',
                 'smokeTest' => 'packages/observe/tests/Unit/PackageManifestTest.php',
             ),
+            'mcp' => array(
+                'tests' => 'packages/mcp/tests',
+                'smokeTest' => 'packages/mcp/tests/Unit/PackageManifestTest.php',
+            ),
             'dev-tools' => array(
                 'tests' => 'packages/dev-tools/tests',
                 'smokeTest' => 'packages/dev-tools/tests/Unit/PackageManifestTest.php',
@@ -371,6 +376,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test:insight' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite insight',
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
             'test:observe' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe',
+            'test:mcp' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite mcp',
             'test:plugin' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin',
             'test:testing' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite testing',
         );
@@ -409,6 +415,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'evolvephp/insight',
             'evolvephp/module',
             'evolvephp/observe',
+            'evolvephp/mcp',
             'evolvephp/plugin',
             'evolvephp/testing',
             'open-telemetry/api',
