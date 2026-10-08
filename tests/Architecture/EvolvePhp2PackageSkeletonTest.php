@@ -1532,7 +1532,17 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Storage/ObjectStorageInstrumentation.php',
                 'Storage/ReadableObjectInstrumentation.php',
             ),
-            'packages/mcp/src' => array(),
+            'packages/mcp/src' => array(
+                'Server/Exception/DuplicateMcpCapability.php',
+                'Server/Exception/InvalidMcpCapability.php',
+                'Server/Exception/McpServerFrozen.php',
+                'Server/McpCapabilityInvoker.php',
+                'Server/McpPromptDefinition.php',
+                'Server/McpResourceDefinition.php',
+                'Server/McpServerBuilder.php',
+                'Server/McpServerDefinition.php',
+                'Server/McpToolDefinition.php',
+            ),
             'packages/dev-tools/src' => array(
                 'Adoption/AdoptionPlan.php',
                 'Adoption/DataMigrationState.php',
