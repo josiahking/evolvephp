@@ -31,6 +31,9 @@ final class McpServerCompositionTest extends TestCase
         $definition = $builder->build();
 
         self::assertSame($definition->server(), $builder->build()->server());
+        self::assertSame($invoker, $definition->invoker());
+        self::assertInstanceOf(\Mcp\Server\Stateless\StatelessProtocol::class, $definition->statelessProtocol());
+        self::assertSame($definition->statelessProtocol(), $builder->build()->statelessProtocol());
         self::assertSame(['first', 'second'], array_map(static fn(McpToolDefinition $tool): string => $tool->name, $definition->tools()));
         self::assertSame(['example://first'], array_map(static fn(McpResourceDefinition $resource): string => $resource->uri, $definition->resources()));
         self::assertSame(['greeting'], array_map(static fn(McpPromptDefinition $prompt): string => $prompt->name, $definition->prompts()));

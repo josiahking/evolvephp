@@ -116,6 +116,8 @@ final class McpServerBuilder
             array_values($this->tools),
             array_values($this->resources),
             array_values($this->prompts),
+            $sdk->buildStateless(),
+            $this->invoker,
         );
     }
 

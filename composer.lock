@@ -1757,11 +1757,15 @@
             "dist": {
                 "type": "path",
                 "url": "packages/mcp",
-                "reference": "22e19883d5e4c1ce128c02bc52215d1b88d43147"
+                "reference": "f19dbc11d5d6c9239a9254c9563ada589012b458"
             },
             "require": {
+                "evolvephp/core": "^2.0",
                 "mcp/sdk": "^0.8.1",
-                "php": "^8.4"
+                "php": "^8.4",
+                "psr/http-factory": "^1.0",
+                "psr/http-message": "^1.1 || ^2.0",
+                "psr/http-server-handler": "^1.0"
             },
             "type": "library",
             "autoload": {
@@ -1772,7 +1776,7 @@
             "license": [
                 "BSD-3-Clause"
             ],
-            "description": "Optional experimental MCP package and official PHP MCP SDK dependency foundation for EvolvePHP 2.",
+            "description": "Optional experimental MCP server composition, STDIO and restricted JSON-only HTTP integration for EvolvePHP 2.",
             "transport-options": {
                 "relative": true
             }

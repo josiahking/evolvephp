@@ -78,6 +78,7 @@ final class McpServerLifecycleTest extends TestCase
         $builder = $this->builder();
         $definition = $builder->build();
         self::assertSame($definition, $builder->build());
+        self::assertSame($definition->statelessProtocol(), $builder->build()->statelessProtocol());
         $this->expectException(McpServerFrozen::class);
         $builder->addPrompt(new McpPromptDefinition('later', 'service'));
     }
