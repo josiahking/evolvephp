@@ -235,7 +235,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($illuminateViewEngine),
             Ruleset::forLayer($insight)->accesses($core, $databaseContracts, $http, $view, $i18n, $queueContracts, $storageContracts, $psrSimpleCache, $psrHttpClient, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($observe)->accesses($core, $databaseContracts, $http, $httpClient, $job, $queueContracts, $storageContracts, $openTelemetryApi, $openTelemetrySdk, $openTelemetrySemConv, $psrHttpClient, $psrHttpMessage, $psrHttpServer, $psrSimpleCache),
-            Ruleset::forLayer($mcp)->accesses($mcpSdk),
+            Ruleset::forLayer($mcp)->accesses($core, $mcpSdk, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($mcpSdk),
             Ruleset::forLayer($openTelemetryApi),
             Ruleset::forLayer($openTelemetrySdk),

@@ -1066,9 +1066,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'manifest' => 'packages/mcp/composer.json',
                 'src' => 'packages/mcp/src',
                 'name' => 'evolvephp/mcp',
-                'description' => 'Optional experimental MCP package and official PHP MCP SDK dependency foundation for EvolvePHP 2.',
+                'description' => 'Optional experimental MCP server composition, STDIO and restricted JSON-only HTTP integration for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Mcp\\',
-                'require' => array('php' => '^8.4', 'mcp/sdk' => '^0.8.1'),
+                'require' => array('php' => '^8.4', 'evolvephp/core' => '^2.0', 'mcp/sdk' => '^0.8.1', 'psr/http-factory' => '^1.0', 'psr/http-message' => '^1.1 || ^2.0', 'psr/http-server-handler' => '^1.0'),
             ),
             array(
                 'manifest' => 'packages/dev-tools/composer.json',
@@ -1542,6 +1542,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Server/McpServerBuilder.php',
                 'Server/McpServerDefinition.php',
                 'Server/McpToolDefinition.php',
+                'Transport/McpHttpRequestHandler.php',
+                'Transport/McpStdioCommand.php',
+                'Transport/ScopedMcpCapabilityInvoker.php',
             ),
             'packages/dev-tools/src' => array(
                 'Adoption/AdoptionPlan.php',

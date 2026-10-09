@@ -334,7 +334,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'I18n' => array('Core', 'PhpIntl'),
             'Insight' => array('Core', 'DatabaseContracts', 'Http', 'View', 'I18n', 'QueueContracts', 'StorageContracts', 'PsrSimpleCache', 'PsrHttpClient', 'PsrHttpMessage', 'PsrHttpServer'),
             'Observe' => array('Core', 'DatabaseContracts', 'Http', 'HttpClient', 'Job', 'QueueContracts', 'StorageContracts', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'PsrHttpClient', 'PsrHttpMessage', 'PsrHttpServer', 'PsrSimpleCache'),
-            'Mcp' => array('McpSdk'),
+            'Mcp' => array('Core', 'McpSdk', 'PsrHttpMessage', 'PsrHttpServer'),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
             'Http' => array('Contracts', 'Core', 'PsrHttpMessage', 'PsrHttpServer'),
             'HttpClient' => array('PsrHttpMessage', 'PsrHttpClient'),

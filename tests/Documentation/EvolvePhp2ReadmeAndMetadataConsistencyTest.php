@@ -205,7 +205,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $content = $this->readProjectFile('packages/README.md');
 
         $this->assertStringContainsString('DEVELOPMENT.md', $content);
-        $this->assertStringContainsString('Mcp -> McpSdk', $content);
+        $this->assertStringContainsString('Mcp -> Core, McpSdk, PsrHttpMessage, PsrHttpServer', $content);
         $this->assertDoesNotMatchPattern('/Contracts\s*->\s*\.\.\/packages\/contracts\/src\/\.\*\s*->\s*Evolve\\\\Contracts\\\\/', $content);
         $this->assertDoesNotMatchPattern('/Phase 2\.[0-9].*(?:adds|now provides|creates|verifies)/i', $content);
         $this->assertDoesNotMatchPattern('/Before Phase 2\.3/i', $content);
@@ -376,7 +376,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'Core      -> Contracts',
             'Insight   -> Core, DatabaseContracts, Http, View, I18n, QueueContracts, StorageContracts, PsrSimpleCache, PsrHttpClient, PsrHttpMessage, PsrHttpServer',
             'Observe   -> Core, DatabaseContracts, Http, HttpClient, Job, QueueContracts, StorageContracts, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PsrHttpClient, PsrHttpMessage, PsrHttpServer, PsrSimpleCache',
-            'Mcp       -> McpSdk',
+            'Mcp       -> Core, McpSdk, PsrHttpMessage, PsrHttpServer',
             'DevTools  -> Contracts, Core, Module, Plugin',
             'Http      -> Contracts, Core',
             'Module    -> Contracts',

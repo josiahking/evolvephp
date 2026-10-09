@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Evolve\Mcp\Server;
 
 use Mcp\Server;
+use Mcp\Server\Stateless\StatelessProtocol;
 
 final readonly class McpServerDefinition
 {
@@ -18,6 +19,8 @@ final readonly class McpServerDefinition
         private array $tools,
         private array $resources,
         private array $prompts,
+        private ?StatelessProtocol $statelessProtocol = null,
+        private ?McpCapabilityInvoker $invoker = null,
     ) {}
 
     public function server(): Server
@@ -25,6 +28,15 @@ final readonly class McpServerDefinition
         return $this->server;
     }
 
+    public function statelessProtocol(): ?StatelessProtocol
+    {
+        return $this->statelessProtocol;
+    }
+
+    public function invoker(): ?McpCapabilityInvoker
+    {
+        return $this->invoker;
+    }
     /** @return list<McpToolDefinition> */
     public function tools(): array
     {

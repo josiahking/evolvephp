@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added the optional experimental `evolvephp/mcp` package foundation with PHP `^8.4`, the official `mcp/sdk:^0.8.1` protocol dependency, and an intentionally empty Evolve-owned source boundary. Server composition, transports, clients, contributions, authorization and AI integration remain future work.
+- Added optional experimental `evolvephp/mcp` server composition, SDK STDIO and restricted modern JSON-only HTTP integration on PHP `^8.4` with `mcp/sdk:^0.8.1`. SSE, clients and component contributions remain deferred; HTTP authorization is host-owned.
 
 - Consolidated the experimental Observe product across execution, incoming HTTP, queue producer/Job consumer propagation, database, PSR-16 cache, object storage and outbound HTTP client telemetry. Added an operations guide, composed acceptance coverage and equivalent bare/disabled/enabled overhead benchmarks. Providers, exporters, transports and logging remain application-owned; SERVER spans retain the caller-owned URI path while route templates govern low-cardinality routing identity and concrete paths remain absent from metric dimensions.
 
