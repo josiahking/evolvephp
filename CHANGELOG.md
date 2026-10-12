@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- Added optional experimental `evolvephp/mcp` server composition, SDK STDIO and restricted modern JSON-only HTTP integration on PHP `^8.4` with `mcp/sdk:^0.8.1`. SSE, clients and component contributions remain deferred; HTTP authorization is host-owned.
+- Added an opt-in MCP client foundation with official SDK HTTP and Linux PHP-only STDIO transports, bounded discovery, explicit invocation, per-run secrets and scoped cleanup. HTTP is JSON-only with caller-owned destination and network policy; SSE and stateful sessions remain unsupported; native Windows PHP STDIO is deferred to Phase 13.9 for 2.1.
+
+- Added optional experimental `evolvephp/mcp` server composition, SDK STDIO and restricted modern JSON-only HTTP integration on PHP `^8.4` with `mcp/sdk:^0.8.1`. SSE and component contributions remain deferred; HTTP authorization is host-owned.
 
 - Consolidated the experimental Observe product across execution, incoming HTTP, queue producer/Job consumer propagation, database, PSR-16 cache, object storage and outbound HTTP client telemetry. Added an operations guide, composed acceptance coverage and equivalent bare/disabled/enabled overhead benchmarks. Providers, exporters, transports and logging remain application-owned; SERVER spans retain the caller-owned URI path while route templates govern low-cardinality routing identity and concrete paths remain absent from metric dimensions.
 
