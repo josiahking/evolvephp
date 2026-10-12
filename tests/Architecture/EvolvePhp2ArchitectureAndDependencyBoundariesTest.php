@@ -334,7 +334,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'I18n' => array('Core', 'PhpIntl'),
             'Insight' => array('Core', 'DatabaseContracts', 'Http', 'View', 'I18n', 'QueueContracts', 'StorageContracts', 'PsrSimpleCache', 'PsrHttpClient', 'PsrHttpMessage', 'PsrHttpServer'),
             'Observe' => array('Core', 'DatabaseContracts', 'Http', 'HttpClient', 'Job', 'QueueContracts', 'StorageContracts', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'PsrHttpClient', 'PsrHttpMessage', 'PsrHttpServer', 'PsrSimpleCache'),
-            'Mcp' => array('Core', 'McpSdk', 'PsrHttpMessage', 'PsrHttpServer'),
+            'Mcp' => array('Core', 'SecretContracts', 'McpSdk', 'PsrHttpClient', 'PsrHttpMessage', 'PsrHttpServer'),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
             'Http' => array('Contracts', 'Core', 'PsrHttpMessage', 'PsrHttpServer'),
             'HttpClient' => array('PsrHttpMessage', 'PsrHttpClient'),
@@ -433,7 +433,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $accesses = array();
 
             if (isset($match[1])) {
-                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|cacheMemory|sessionContracts|lockContracts|queueContracts|storageContracts|storageLocal|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|cronExpression|psrHttpMessage|psrHttpClient|psrHttpServer|twigEngine|illuminateViewEngine|phpIntl|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|mcpSdk|laravelHost|symfonyHost|core|job|scheduler|viewTwig|viewBlade|view|i18n|insight|observe|devTools|http|httpClient|module|plugin|testing)\\b/', $match[1], $accessMatches);
+                preg_match_all('/\\$(contracts|databaseContracts|databasePdo|secretContracts|cacheMemory|sessionContracts|lockContracts|queueContracts|storageContracts|storageLocal|bridgeContracts|bridgePsr|bridgeLaravel|bridgeSymfony|bridgeRemote|psrContainer|psrSimpleCache|psrClock|cronExpression|psrHttpMessage|psrHttpClient|psrHttpServer|twigEngine|illuminateViewEngine|phpIntl|openTelemetryApi|openTelemetrySdk|openTelemetrySemConv|mcpSdk|laravelHost|symfonyHost|core|job|scheduler|viewTwig|viewBlade|view|i18n|insight|observe|devTools|http|httpClient|module|plugin|testing)\\b/', $match[1], $accessMatches);
 
                 foreach ($accessMatches[1] as $accessVariable) {
                     $accesses[] = $variablesByLayer[$accessVariable];
