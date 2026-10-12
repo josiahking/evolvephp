@@ -637,7 +637,7 @@ Core      -> Contracts
 Job       -> Core, QueueContracts
 Insight   -> Core, DatabaseContracts, Http, View, I18n, QueueContracts, StorageContracts, PsrSimpleCache, PsrHttpClient, PsrHttpMessage, PsrHttpServer
 Observe   -> Core, DatabaseContracts, Http, HttpClient, Job, QueueContracts, StorageContracts, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PsrHttpClient, PsrHttpMessage, PsrHttpServer, PsrSimpleCache
-Mcp       -> Core, SecretContracts, McpSdk, PsrHttpClient, PsrHttpMessage, PsrHttpServer
+Mcp       -> Contracts, Core, SecretContracts, McpSdk, PsrHttpClient, PsrHttpMessage, PsrHttpServer
 DevTools  -> Contracts, Core, Module, Plugin
 Http      -> Contracts, Core
 HttpClient -> PsrHttpMessage, PsrHttpClient

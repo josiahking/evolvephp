@@ -1,10 +1,11 @@
 {
     "name": "evolvephp/mcp",
-    "description": "Optional experimental MCP server, transport and explicitly configured client foundation for EvolvePHP 2.",
+    "description": "Optional experimental MCP server, transport, component contribution and explicitly configured client foundation for EvolvePHP 2.",
     "type": "library",
     "license": "BSD-3-Clause",
     "require": {
         "php": "^8.4",
+        "evolvephp/contracts": "^2.0",
         "evolvephp/core": "^2.0",
         "evolvephp/secret-contracts": "^2.0",
         "mcp/sdk": "^0.8.1",
