@@ -22,6 +22,7 @@ final class PackageManifestTest extends TestCase
         self::assertSame('BSD-3-Clause', $manifest['license']);
         self::assertSame([
             'php' => '^8.4',
+            'evolvephp/contracts' => '^2.0',
             'evolvephp/core' => '^2.0',
             'evolvephp/secret-contracts' => '^2.0',
             'mcp/sdk' => '^0.8.1',
@@ -36,6 +37,6 @@ final class PackageManifestTest extends TestCase
         self::assertArrayNotHasKey('require-dev', $manifest);
         self::assertFileExists($package . '/README.md');
         self::assertSame(file_get_contents(dirname(__DIR__, 4) . '/LICENSE.md'), file_get_contents($package . '/LICENSE.md'));
-        self::assertSame(['Client', 'Server', 'Transport'], array_values(array_diff(scandir($package . '/src'), ['.', '..'])));
+        self::assertSame(['Client', 'Contribution', 'Server', 'Transport'], array_values(array_diff(scandir($package . '/src'), ['.', '..'])));
     }
 }

@@ -395,8 +395,8 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'name' => 'evolvephp/mcp',
                 'directory' => 'packages/mcp',
                 'human' => 'EvolvePHP MCP',
-                'responsibility' => 'Optional experimental MCP server, transport and explicitly configured client foundation for EvolvePHP 2.',
-                'dependencies' => '`evolvephp/core`, `evolvephp/secret-contracts`, `mcp/sdk`, `psr/http-client`, `psr/http-factory`, `psr/http-message` and `psr/http-server-handler`',
+                'responsibility' => 'Optional experimental MCP server, transport, component contribution and explicitly configured client foundation for EvolvePHP 2.',
+                'dependencies' => '`evolvephp/contracts`, `evolvephp/core`, `evolvephp/secret-contracts`, `mcp/sdk`, `psr/http-client`, `psr/http-factory`, `psr/http-message` and `psr/http-server-handler`',
             ),
             array(
                 'name' => 'evolvephp/bridge-psr',

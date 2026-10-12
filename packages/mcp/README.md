@@ -1,8 +1,8 @@
 # EvolvePHP MCP
 
-Optional experimental MCP server, transport and explicitly configured client foundation for EvolvePHP 2.
+Optional experimental MCP server, transport, component contribution and explicitly configured client foundation for EvolvePHP 2.
 
-`evolvephp/mcp` is an optional, experimental EvolvePHP 2 package requiring PHP `^8.4`. It composes MCP server and client facilities with the official PHP MCP SDK `mcp/sdk` at `^0.8.1`. Runtime dependencies are `evolvephp/core`, `evolvephp/secret-contracts`, `mcp/sdk`, `psr/http-client`, `psr/http-factory`, `psr/http-message` and `psr/http-server-handler`.
+`evolvephp/mcp` is an optional, experimental EvolvePHP 2 package requiring PHP `^8.4`. It composes MCP server and client facilities with the official PHP MCP SDK `mcp/sdk` at `^0.8.1`. Runtime dependencies are `evolvephp/contracts`, `evolvephp/core`, `evolvephp/secret-contracts`, `mcp/sdk`, `psr/http-client`, `psr/http-factory`, `psr/http-message` and `psr/http-server-handler`.
 
 EvolvePHP 2 is pre-release. The canonical source is the EvolvePHP monorepo at https://github.com/josiahking/evolvephp; packages are not yet independently published. This package uses the BSD-3-Clause licence in `LICENSE.md`.
 
@@ -55,6 +55,12 @@ $sdkServer = $definition->server();
 The host-supplied invoker runs on every tool call, resource read and prompt request. It receives tool and prompt arguments unchanged. Resource reads receive `['uri' => $requestedUri]`. The host is responsible for service resolution, execution scope, cleanup, authorization and policy. Composition does not resolve or cache host services.
 
 The SDK owns MCP schema validation, protocol dispatch, errors and result formatting. The server definition exposes the SDK server and modern stateless protocol. It performs no filesystem discovery or global registration.
+
+## Explicit component contributions
+
+A host may bind an enabled module or installed plugin to its exact declaration object from Core's resolved component graph using `McpComponentContribution`. Pass those bindings, the graph, and optional host definitions to `McpContributionServerComposer::compose()`. The coordinator runs callbacks in Core's dependency-first order, with declaration order retained within each callback. Components without bindings contribute nothing.
+
+Callbacks receive only `McpCapabilityRegistrar`, which registers immutable tool, resource, and prompt definitions with host-owned service IDs. The registrar expires after the callback. Duplicate identities are rejected per capability kind, including collisions with host definitions. The catalog and SDK server are returned only after all callbacks succeed. A failure identifies the component through `McpContributionFailed::component()` and retains the original throwable as its previous exception; callback side effects outside MCP are not rolled back. The host remains responsible for enablement, service resolution, authorization, and execution scopes. This path performs no discovery or runtime activation.
 
 ## STDIO transport
 

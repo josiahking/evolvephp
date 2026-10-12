@@ -1757,9 +1757,10 @@
             "dist": {
                 "type": "path",
                 "url": "packages/mcp",
-                "reference": "5522de8406aa6e4c7a8bf178e64fc7590957f781"
+                "reference": "c00e05005d8d24bfdacef8be3533f5c9f0716724"
             },
             "require": {
+                "evolvephp/contracts": "^2.0",
                 "evolvephp/core": "^2.0",
                 "evolvephp/secret-contracts": "^2.0",
                 "mcp/sdk": "^0.8.1",
@@ -1778,7 +1779,7 @@
             "license": [
                 "BSD-3-Clause"
             ],
-            "description": "Optional experimental MCP server, transport and explicitly configured client foundation for EvolvePHP 2.",
+            "description": "Optional experimental MCP server, transport, component contribution and explicitly configured client foundation for EvolvePHP 2.",
             "transport-options": {
                 "relative": true
             }
