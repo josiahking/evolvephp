@@ -18,6 +18,7 @@ final readonly class McpToolDefinition
         array $inputSchema,
         public ?string $description = null,
         public ?string $title = null,
+        public McpCapabilityExposure $exposure = McpCapabilityExposure::LocalOnly,
     ) {
         self::assertIdentifier($name, 'tool name');
         self::assertServiceId($serviceId);

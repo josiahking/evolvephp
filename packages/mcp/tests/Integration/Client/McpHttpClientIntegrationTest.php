@@ -9,8 +9,14 @@ use Evolve\Core\Execution\ExecutionOrchestrator;
 use Evolve\Core\Execution\ExecutionScope;
 use Evolve\Mcp\Client\McpClientConfiguration;
 use Evolve\Mcp\Client\McpClientFactory;
+use Evolve\Mcp\Server\McpAuthorizedServerFactory;
+use Evolve\Mcp\Server\McpCapabilityExposure;
+use Evolve\Mcp\Server\McpCapabilityKind;
+use Evolve\Mcp\Server\McpCapabilityPolicy;
+use Evolve\Mcp\Server\McpPrincipal;
 use Evolve\Mcp\Server\McpPromptDefinition;
 use Evolve\Mcp\Server\McpResourceDefinition;
+use Evolve\Mcp\Server\McpSecurityAuditSink;
 use Evolve\Mcp\Server\McpServerBuilder;
 use Evolve\Mcp\Server\McpToolDefinition;
 use Evolve\Mcp\Transport\McpHttpRequestHandler;
@@ -47,10 +53,24 @@ final class McpHttpClientIntegrationTest extends TestCase
             },
         );
         $builder = new McpServerBuilder('example', '1.0', $invoker);
-        $builder->addTool(new McpToolDefinition('echo', 'tool.echo', ['type' => 'object', 'properties' => ['text' => ['type' => 'string']], 'required' => ['text']]));
-        $builder->addResource(new McpResourceDefinition('example://document', 'document', 'resource.read'));
-        $builder->addPrompt(new McpPromptDefinition('greet', 'prompt.greet', [new PromptArgument('name', required: true)]));
-        $handler = new McpHttpRequestHandler($builder->build(), $factory, $factory, static fn(): bool => true);
+        $builder->addTool(new McpToolDefinition('echo', 'tool.echo', ['type' => 'object', 'properties' => ['text' => ['type' => 'string']], 'required' => ['text']], exposure: McpCapabilityExposure::RemoteApproved));
+        $builder->addResource(new McpResourceDefinition('example://document', 'document', 'resource.read', exposure: McpCapabilityExposure::RemoteApproved));
+        $builder->addPrompt(new McpPromptDefinition('greet', 'prompt.greet', [new PromptArgument('name', required: true)], exposure: McpCapabilityExposure::RemoteApproved));
+        $servers = new McpAuthorizedServerFactory(
+            $builder->build(),
+            new ExecutionOrchestrator($registry),
+            static fn(ExecutionScope $scope, McpPrincipal $principal, string $serviceId, array $arguments): mixed => $invoker->invoke($serviceId, $arguments),
+            new class implements McpCapabilityPolicy {
+                public function allows(McpPrincipal $principal, McpCapabilityKind $kind, string $identity): bool
+                {
+                    return true;
+                }
+            },
+            new class implements McpSecurityAuditSink {
+                public function record(McpCapabilityKind $kind, string $identity, bool $allowed, string $correlation): void {}
+            },
+        );
+        $handler = new McpHttpRequestHandler($servers, $factory, $factory, static fn(): McpPrincipal => new McpPrincipal('alice'));
 
         $http = $this->createStub(ClientInterface::class);
         $http->method('sendRequest')->willReturnCallback(static function (RequestInterface $request) use ($handler): ResponseInterface {

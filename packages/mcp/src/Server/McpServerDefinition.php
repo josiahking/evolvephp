@@ -21,7 +21,19 @@ final readonly class McpServerDefinition
         private array $prompts,
         private ?StatelessProtocol $statelessProtocol = null,
         private ?McpCapabilityInvoker $invoker = null,
+        private ?string $name = null,
+        private ?string $version = null,
     ) {}
+
+    public function name(): ?string
+    {
+        return $this->name;
+    }
+
+    public function version(): ?string
+    {
+        return $this->version;
+    }
 
     public function server(): Server
     {

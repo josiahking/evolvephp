@@ -103,4 +103,69 @@ final class McpHttpPolicyClientTest extends TestCase
         $this->expectException(\Evolve\Mcp\Client\McpClientException::class);
         $policy->sendRequest($factory->createRequest('POST', 'https://localhost/mcp'));
     }
+
+    public function test_transfer_encoding_is_rejected_before_transport_io_without_secret_disclosure(): void
+    {
+        $factory = new HttpFactory();
+        $inner = $this->createMock(ClientInterface::class);
+        $inner->expects(self::never())->method('sendRequest');
+        $policy = new McpHttpPolicyClient(
+            $inner,
+            $factory,
+            'https://localhost/mcp',
+            static fn(): bool => true,
+            128,
+            'private-bearer-secret',
+        );
+        $request = $factory->createRequest('POST', 'https://localhost/mcp')
+            ->withHeader('Transfer-Encoding', 'chunked')
+            ->withBody($factory->createStream('private-body-payload'));
+
+        try {
+            $policy->sendRequest($request);
+            self::fail('Transfer-Encoding request was forwarded.');
+        } catch (\Evolve\Mcp\Client\McpClientException $exception) {
+            self::assertSame(\Evolve\Mcp\Client\McpClientFailureCategory::Security, $exception->category);
+            self::assertStringNotContainsString('private-body-payload', $exception->getMessage());
+            self::assertStringNotContainsString('private-bearer-secret', $exception->getMessage());
+            self::assertNull($exception->getPrevious());
+        }
+    }
+
+    public function test_accepted_request_uses_buffered_content_length_without_transfer_encoding(): void
+    {
+        $factory = new HttpFactory();
+        $inner = $this->createMock(ClientInterface::class);
+        $inner->expects(self::once())->method('sendRequest')->willReturnCallback(
+            static function (RequestInterface $request) use ($factory): ResponseInterface {
+                self::assertSame('5', $request->getHeaderLine('Content-Length'));
+                self::assertFalse($request->hasHeader('Transfer-Encoding'));
+                self::assertSame('hello', (string) $request->getBody());
+                return $factory->createResponse(202);
+            },
+        );
+        $policy = new McpHttpPolicyClient($inner, $factory, 'https://localhost/mcp', static fn(): bool => true, 128);
+        $request = $factory->createRequest('POST', 'https://localhost/mcp')
+            ->withHeader('Content-Length', '999')
+            ->withBody($factory->createStream('hello'));
+
+        self::assertSame(202, $policy->sendRequest($request)->getStatusCode());
+    }
+    public function test_outbound_request_body_limit_rejects_before_transport_io(): void
+    {
+        $factory = new HttpFactory();
+        $inner = $this->createMock(ClientInterface::class);
+        $inner->expects(self::never())->method('sendRequest');
+        $policy = new McpHttpPolicyClient(
+            $inner,
+            $factory,
+            'https://localhost/mcp',
+            static fn(): bool => true,
+            128,
+            maxRequestBytes: 4,
+        );
+
+        $this->expectException(\Evolve\Mcp\Client\McpClientException::class);
+        $policy->sendRequest($factory->createRequest('POST', 'https://localhost/mcp')->withBody($factory->createStream('12345')));
+    }
 }

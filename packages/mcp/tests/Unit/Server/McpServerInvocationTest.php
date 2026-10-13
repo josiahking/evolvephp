@@ -159,6 +159,33 @@ final class McpServerInvocationTest extends TestCase
         self::assertStringNotContainsString('private-secret', json_encode($responses, JSON_THROW_ON_ERROR));
     }
 
+    public function test_policy_guard_rejects_direct_calls_for_every_capability_kind(): void
+    {
+        $calls = 0;
+        $invoker = new class ($calls) implements McpCapabilityInvoker {
+            public function __construct(private int &$calls) {}
+            public function invoke(string $serviceId, array $arguments): mixed
+            {
+                ++$this->calls;
+                return 'unexpected';
+            }
+        };
+        $builder = new McpServerBuilder('example', '1.0', $invoker, static fn(): bool => false);
+        $builder->addTool(new McpToolDefinition('blocked', 'tool.blocked', ['type' => 'object']))
+            ->addResource(new McpResourceDefinition('example://blocked', 'blocked', 'resource.blocked'))
+            ->addPrompt(new McpPromptDefinition('blocked', 'prompt.blocked'));
+        $responses = self::exchange($builder->build()->server(), [
+            ['id' => 2, 'method' => 'tools/call', 'params' => ['name' => 'blocked', 'arguments' => []]],
+            ['id' => 3, 'method' => 'resources/read', 'params' => ['uri' => 'example://blocked']],
+            ['id' => 4, 'method' => 'prompts/get', 'params' => ['name' => 'blocked']],
+        ]);
+        foreach ([2, 3, 4] as $id) {
+            self::assertArrayHasKey('error', $responses[$id]);
+            self::assertStringNotContainsString('tool.blocked', json_encode($responses[$id], JSON_THROW_ON_ERROR));
+        }
+        self::assertSame(0, $calls);
+    }
+
     /** @param array<string, mixed> $response */
     private static function assertProtocolError(array $response, int $id, int $code): void
     {
