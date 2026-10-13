@@ -11,10 +11,24 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $this->root = dirname(__DIR__, 2);
     }
 
+    public function testMcpReadmeDescribesFailClosedRemoteSecurityAndTransportLimits(): void
+    {
+        $content = $this->readProjectFile('packages/mcp/README.md');
+        $this->assertStringContainsString('McpAuthorizedServerFactory', $content);
+        $this->assertStringContainsString('McpPrincipal', $content);
+        $this->assertStringContainsString('McpCapabilityPolicy', $content);
+        $this->assertStringContainsString('McpSecurityAuditSink', $content);
+        $this->assertStringContainsString('Legacy boolean authorization, including true, is denied', $content);
+        $this->assertStringContainsString('actual connected-IP and DNS-rebinding policy', $content);
+        $this->assertStringContainsString('post-serialization limit does not bound peak service memory', $content);
+        $this->assertStringContainsString('Linux PHP only', $content);
+        $this->assertStringNotContainsString('authorization callback must return the boolean', $content);
+    }
+
     public function testTrackedReadmeInventoryIsTheExpectedCanonicalSet(): void
     {
         $this->assertSame(
-            array(
+            [
                 'DEVELOPMENT.md',
                 'README.md',
                 'benchmarks/README.md',
@@ -56,8 +70,8 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'packages/view-twig/README.md',
                 'packages/view/README.md',
                 'skeleton/README.md',
-            ),
-            $this->trackedReadmes()
+            ],
+            $this->trackedReadmes(),
         );
     }
 
@@ -118,7 +132,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
 
         $this->assertSame(
             'A modernization-first PHP framework for building modular applications and evolving existing PHP systems without a full rewrite.',
-            $manifest['description']
+            $manifest['description'],
         );
         $this->assertContains('evolvephp framework', $manifest['keywords']);
         $this->assertNotContains($misspelledKeyword, $manifest['keywords']);
@@ -135,11 +149,11 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $this->assertMatchesPattern('/update.*intentional|intentional.*update/is', $content);
         $this->assertMatchesPattern('/update.*changes dependency resolution|changes dependency resolution.*update/is', $content);
 
-        foreach (array('validate', 'test', 'analyse', 'architecture', 'style:check', 'style:fix', 'quality') as $script) {
+        foreach (['validate', 'test', 'analyse', 'architecture', 'style:check', 'style:fix', 'quality'] as $script) {
             $this->assertStringContainsString('composer ' . $script, $content);
         }
 
-        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:job', 'test:scheduler', 'test:migration', 'test:insight', 'test:observe', 'test:mcp', 'test:dev-tools', 'test:http', 'test:http-client', 'test:module', 'test:plugin', 'test:testing') as $script) {
+        foreach (['test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:job', 'test:scheduler', 'test:migration', 'test:insight', 'test:observe', 'test:mcp', 'test:dev-tools', 'test:http', 'test:http-client', 'test:module', 'test:plugin', 'test:testing'] as $script) {
             $this->assertStringContainsString('composer ' . $script, $content);
         }
     }
@@ -172,19 +186,19 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
 
     public function testCanonicalRoadmapGuardrailRecognizesInternalIdentifierForms(): void
     {
-        foreach (array(
+        foreach ([
             'Phase 2',
             'Phase 5.6B',
             'Phase 6.5B1',
             'Phase 6.5C2',
-        ) as $roadmapIdentifier) {
+        ] as $roadmapIdentifier) {
             $this->assertMatchesPattern($this->anchoredRoadmapIdentifierPattern(), $roadmapIdentifier);
         }
 
-        foreach (array(
+        foreach ([
             'registration phase',
             'boot phase',
-        ) as $technicalPhrase) {
+        ] as $technicalPhrase) {
             $this->assertDoesNotMatchPattern($this->roadmapIdentifierPattern(), $technicalPhrase);
         }
     }
@@ -241,7 +255,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             $headings = $this->markdownHeadings($this->readProjectFile($path));
             $duplicates = array_unique(array_diff_assoc($headings, array_unique($headings)));
 
-            $this->assertSame(array(), array_values($duplicates), $path . ' contains duplicate headings.');
+            $this->assertSame([], array_values($duplicates), $path . ' contains duplicate headings.');
         }
     }
 
@@ -306,7 +320,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $packages = $this->readProjectFile('packages/README.md');
         $development = $this->readProjectFile('DEVELOPMENT.md');
 
-        foreach (array(
+        foreach ([
             'DashboardRoutes::native',
             'DashboardExposure::localDevelopment',
             'DashboardExposure::productionAuthorized',
@@ -316,7 +330,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'ViewRenderer',
             'LocalizationContext',
             'no-store',
-        ) as $claim) {
+        ] as $claim) {
             $this->assertStringContainsString($claim, $insight);
         }
         $this->assertStringContainsString('native PHP dashboard', $packages);
@@ -331,7 +345,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $root = $this->readProjectFile('README.md');
         $package = $this->readProjectFile('packages/insight/README.md');
 
-        foreach (array(
+        foreach ([
             'DiagnosticPipeline::storing',
             'DiagnosticCapturePolicy',
             'SqliteDiagnosticBatchStore',
@@ -346,7 +360,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'count-bounded',
             'Evolve Observe',
             'OpenTelemetry',
-        ) as $claim) {
+        ] as $claim) {
             $this->assertStringContainsString($claim, $guide);
         }
 
@@ -363,7 +377,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
 
     private function expectedArchitectureMatrixLines()
     {
-        return array(
+        return [
             'Contracts -> none',
             'DatabaseContracts -> Contracts',
             'DatabasePdo -> Contracts, DatabaseContracts',
@@ -382,12 +396,12 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'Module    -> Contracts',
             'Plugin    -> Contracts',
             'Testing   -> Contracts, Core, Http, Module, Plugin',
-        );
+        ];
     }
 
     private function canonicalLiveDocumentationFiles()
     {
-        return array(
+        return [
             'AGENTS.md',
             'README.md',
             'DEVELOPMENT.md',
@@ -422,7 +436,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'packages/view-twig/README.md',
             'packages/dev-tools/README.md',
             'skeleton/README.md',
-        );
+        ];
     }
 
     private function roadmapIdentifierPattern()
@@ -437,7 +451,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
 
     private function trackedReadmes()
     {
-        $readmes = array();
+        $readmes = [];
 
         foreach ($this->trackedFiles() as $file) {
             if ($file === 'DEVELOPMENT.md' || preg_match('/(?:^|\/)readme(?:\.[^\/]+)?$/i', $file)) {
@@ -452,7 +466,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
 
     private function trackedFiles()
     {
-        $output = array();
+        $output = [];
         $exitCode = 0;
 
         exec('git ls-files --cached --others --exclude-standard', $output, $exitCode);
@@ -490,7 +504,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
 
     private function normalizeRelativePath($baseDirectory, $target)
     {
-        $baseParts = $baseDirectory === '.' ? array() : explode('/', $baseDirectory);
+        $baseParts = $baseDirectory === '.' ? [] : explode('/', $baseDirectory);
         $targetParts = explode('/', str_replace('\\', '/', $target));
         $resolved = $baseParts;
 

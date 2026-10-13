@@ -24,13 +24,16 @@ final readonly class McpHttpPolicyClient implements ClientInterface
         callable $approveDestination,
         private int $maxResponseBytes,
         private ?string $bearerToken = null,
+        private int $maxRequestBytes = 1048576,
     ) {
-        if ($maxResponseBytes < 1 || $maxResponseBytes > 16777216) {
+        if ($maxResponseBytes < 1 || $maxResponseBytes > 16777216
+            || $maxRequestBytes < 1 || $maxRequestBytes > 16777216) {
             throw new \InvalidArgumentException('MCP response limit is invalid.');
         }
         $this->approveDestination = \Closure::fromCallable($approveDestination);
     }
 
+    /** @throws McpClientException */
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
         $uri = (string) $request->getUri();
@@ -45,7 +48,36 @@ final readonly class McpHttpPolicyClient implements ClientInterface
         if (!$approved) {
             throw new McpClientException(McpClientFailureCategory::Security, 'MCP destination or method denied.');
         }
-        $request = $request->withHeader('Accept', 'application/json');
+        if ($request->hasHeader('Transfer-Encoding')) {
+            throw new McpClientException(McpClientFailureCategory::Security, 'MCP request transfer encoding denied.');
+        }
+        $body = $request->getBody();
+        if ($body->getSize() !== null && $body->getSize() > $this->maxRequestBytes) {
+            throw new McpClientException(McpClientFailureCategory::Security, 'MCP request body limit exceeded.');
+        }
+        if ($body->isSeekable()) {
+            $body->rewind();
+        }
+        $bytes = '';
+        try {
+            while ($body->getSize() !== 0 && !$body->eof()) {
+                $chunk = $body->read(min(8192, $this->maxRequestBytes - strlen($bytes) + 1));
+                if ($chunk === '') {
+                    throw new McpClientException(McpClientFailureCategory::Connection, 'MCP request body stalled.');
+                }
+                $bytes .= $chunk;
+                if (strlen($bytes) > $this->maxRequestBytes) {
+                    throw new McpClientException(McpClientFailureCategory::Security, 'MCP request body limit exceeded.');
+                }
+            }
+        } catch (McpClientException $exception) {
+            throw $exception;
+        } catch (Throwable) {
+            throw new McpClientException(McpClientFailureCategory::Connection, 'MCP request body read failed.');
+        }
+        $request = $request->withBody($this->streams->createStream($bytes))
+            ->withHeader('Content-Length', (string) strlen($bytes))
+            ->withHeader('Accept', 'application/json');
         if ($this->bearerToken !== null) {
             $request = $request->withHeader('Authorization', 'Bearer ' . $this->bearerToken);
         }
@@ -72,7 +104,7 @@ final readonly class McpHttpPolicyClient implements ClientInterface
         }
         $bytes = '';
         try {
-            while (!$body->eof()) {
+            while ($body->getSize() !== 0 && !$body->eof()) {
                 $chunk = $body->read(min(8192, $this->maxResponseBytes - strlen($bytes) + 1));
                 if ($chunk === '') {
                     throw new McpClientException(McpClientFailureCategory::Connection, 'MCP response body stalled.');

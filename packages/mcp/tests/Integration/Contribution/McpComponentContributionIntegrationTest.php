@@ -40,6 +40,7 @@ final class McpComponentContributionIntegrationTest extends TestCase
         })], [new McpToolDefinition('host', 'host.own', ['type' => 'object'])]);
 
         self::assertSame(['host', 'component'], array_map(static fn(McpToolDefinition $tool): string => $tool->name, $server->tools()));
+        self::assertSame(\Evolve\Mcp\Server\McpCapabilityExposure::LocalOnly, $server->tools()[1]->exposure);
         self::assertCount(1, $server->resources());
         self::assertCount(1, $server->prompts());
         self::assertSame([], $invoker->calls);

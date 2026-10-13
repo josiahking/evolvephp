@@ -19,6 +19,7 @@ final readonly class McpPromptDefinition
         public array $arguments = [],
         public ?string $description = null,
         public ?string $title = null,
+        public McpCapabilityExposure $exposure = McpCapabilityExposure::LocalOnly,
     ) {
         McpToolDefinition::assertIdentifier($name, 'prompt name');
         McpToolDefinition::assertServiceId($serviceId);

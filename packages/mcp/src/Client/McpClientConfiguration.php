@@ -34,6 +34,7 @@ final readonly class McpClientConfiguration
         public int $maxPages,
         public int $maxItems,
         public int $maxResponseBytes,
+        public int $maxRequestBytes,
         public int $retries,
         public ?string $endpoint,
         public ?ClientInterface $httpClient,
@@ -55,6 +56,7 @@ final readonly class McpClientConfiguration
             || $maxPages < 1 || $maxPages > 100
             || $maxItems < 1 || $maxItems > 10000
             || $maxResponseBytes < 1 || $maxResponseBytes > 16777216
+            || $maxRequestBytes < 1 || $maxRequestBytes > 16777216
             || $retries !== 0) {
             throw new InvalidArgumentException('MCP client limits or retry policy are invalid.');
         }
@@ -72,6 +74,7 @@ final readonly class McpClientConfiguration
         int $maxPages = 5,
         int $maxItems = 100,
         int $maxResponseBytes = 1048576,
+        int $maxRequestBytes = 1048576,
     ): self {
         $parts = parse_url($endpoint);
         if (!is_array($parts)
@@ -101,6 +104,7 @@ final readonly class McpClientConfiguration
             $maxPages,
             $maxItems,
             $maxResponseBytes,
+            $maxRequestBytes,
             0,
             $endpoint,
             $httpClient,
@@ -176,6 +180,7 @@ final readonly class McpClientConfiguration
             $requestTimeoutSeconds,
             $maxPages,
             $maxItems,
+            1048576,
             1048576,
             0,
             null,

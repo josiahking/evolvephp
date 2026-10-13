@@ -37,6 +37,11 @@ final class McpServerCompositionTest extends TestCase
         self::assertSame(['first', 'second'], array_map(static fn(McpToolDefinition $tool): string => $tool->name, $definition->tools()));
         self::assertSame(['example://first'], array_map(static fn(McpResourceDefinition $resource): string => $resource->uri, $definition->resources()));
         self::assertSame(['greeting'], array_map(static fn(McpPromptDefinition $prompt): string => $prompt->name, $definition->prompts()));
+        self::assertSame('example', $definition->name());
+        self::assertSame('1.0', $definition->version());
+        self::assertSame(\Evolve\Mcp\Server\McpCapabilityExposure::LocalOnly, $definition->tools()[0]->exposure);
+        self::assertSame(\Evolve\Mcp\Server\McpCapabilityExposure::LocalOnly, $definition->resources()[0]->exposure);
+        self::assertSame(\Evolve\Mcp\Server\McpCapabilityExposure::LocalOnly, $definition->prompts()[0]->exposure);
         self::assertSame($definition, $builder->build());
     }
 }

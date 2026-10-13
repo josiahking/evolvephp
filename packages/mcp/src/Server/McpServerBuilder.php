@@ -26,11 +26,16 @@ final class McpServerBuilder
 
     private ?McpServerDefinition $built = null;
 
+    /** @var \Closure(McpCapabilityKind, string): bool|null */
+    private ?\Closure $guard;
+
     public function __construct(
         private readonly string $name,
         private readonly string $version,
         private readonly McpCapabilityInvoker $invoker,
+        ?callable $guard = null,
     ) {
+        $this->guard = $guard === null ? null : \Closure::fromCallable($guard);
         if (trim($name) === '' || trim($name) !== $name || trim($version) === '' || trim($version) !== $version) {
             throw new InvalidMcpCapability('Invalid server name or version.');
         }
@@ -80,10 +85,14 @@ final class McpServerBuilder
         foreach ($this->tools as $definition) {
             $serviceId = $definition->serviceId;
             $invoker = $this->invoker;
-            $sdk->add($definition->sdkDefinition, new class ($invoker, $serviceId) implements ToolHandlerInterface {
-                public function __construct(private McpCapabilityInvoker $invoker, private string $serviceId) {}
+            $sdk->add($definition->sdkDefinition, new class ($invoker, $serviceId, $this->guard, $definition->name) implements ToolHandlerInterface {
+                public function __construct(private McpCapabilityInvoker $invoker, private string $serviceId, private ?\Closure $guard, private string $name) {}
                 public function execute(array $arguments, ClientGateway $gateway): mixed
                 {
+                    if ($this->guard !== null && ($this->guard)(McpCapabilityKind::Tool, $this->name) !== true) {
+                        throw new \RuntimeException('MCP capability unavailable.');
+                    }
+
                     return $this->invoker->invoke($this->serviceId, $arguments);
                 }
             });
@@ -91,10 +100,14 @@ final class McpServerBuilder
         foreach ($this->resources as $definition) {
             $serviceId = $definition->serviceId;
             $invoker = $this->invoker;
-            $sdk->add($definition->sdkDefinition, new class ($invoker, $serviceId) implements ResourceHandlerInterface {
-                public function __construct(private McpCapabilityInvoker $invoker, private string $serviceId) {}
+            $sdk->add($definition->sdkDefinition, new class ($invoker, $serviceId, $this->guard, $definition->uri) implements ResourceHandlerInterface {
+                public function __construct(private McpCapabilityInvoker $invoker, private string $serviceId, private ?\Closure $guard, private string $uri) {}
                 public function read(string $uri, ClientGateway $gateway): mixed
                 {
+                    if ($this->guard !== null && ($this->guard)(McpCapabilityKind::Resource, $this->uri) !== true) {
+                        throw new \RuntimeException('MCP capability unavailable.');
+                    }
+
                     return $this->invoker->invoke($this->serviceId, ['uri' => $uri]);
                 }
             });
@@ -102,10 +115,14 @@ final class McpServerBuilder
         foreach ($this->prompts as $definition) {
             $serviceId = $definition->serviceId;
             $invoker = $this->invoker;
-            $sdk->add($definition->sdkDefinition, new class ($invoker, $serviceId) implements PromptHandlerInterface {
-                public function __construct(private McpCapabilityInvoker $invoker, private string $serviceId) {}
+            $sdk->add($definition->sdkDefinition, new class ($invoker, $serviceId, $this->guard, $definition->name) implements PromptHandlerInterface {
+                public function __construct(private McpCapabilityInvoker $invoker, private string $serviceId, private ?\Closure $guard, private string $name) {}
                 public function get(array $arguments, ClientGateway $gateway): mixed
                 {
+                    if ($this->guard !== null && ($this->guard)(McpCapabilityKind::Prompt, $this->name) !== true) {
+                        throw new \RuntimeException('MCP capability unavailable.');
+                    }
+
                     return $this->invoker->invoke($this->serviceId, $arguments);
                 }
             });
@@ -118,6 +135,8 @@ final class McpServerBuilder
             array_values($this->prompts),
             $sdk->buildStateless(),
             $this->invoker,
+            $this->name,
+            $this->version,
         );
     }
 

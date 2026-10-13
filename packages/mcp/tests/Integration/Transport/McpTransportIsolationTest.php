@@ -134,6 +134,49 @@ final class McpTransportIsolationTest extends TestCase
             self::assertCount(1, $calls);
         }
     }
+    public function test_authorized_request_factories_do_not_share_principal_or_scope(): void
+    {
+        $registry = new ServiceRegistry();
+        $registry->freeze();
+        $source = (new \Evolve\Mcp\Server\McpServerBuilder(
+            'example',
+            '1.0',
+            new ScopedMcpCapabilityInvoker(new ExecutionOrchestrator($registry), static fn(): null => null),
+        ))
+            ->addTool(new \Evolve\Mcp\Server\McpToolDefinition(
+                'echo',
+                'service.echo',
+                ['type' => 'object'],
+                exposure: \Evolve\Mcp\Server\McpCapabilityExposure::RemoteApproved,
+            ))
+            ->build();
+        $seen = [];
+        $factory = new \Evolve\Mcp\Server\McpAuthorizedServerFactory(
+            $source,
+            new ExecutionOrchestrator($registry),
+            static function (ExecutionScope $scope, \Evolve\Mcp\Server\McpPrincipal $principal) use (&$seen): string {
+                $seen[] = [$scope, $principal->subject()];
+                return $principal->subject();
+            },
+            new class implements \Evolve\Mcp\Server\McpCapabilityPolicy {
+                public function allows(\Evolve\Mcp\Server\McpPrincipal $principal, \Evolve\Mcp\Server\McpCapabilityKind $kind, string $identity): bool
+                {
+                    return true;
+                }
+            },
+            new class implements \Evolve\Mcp\Server\McpSecurityAuditSink {
+                public function record(\Evolve\Mcp\Server\McpCapabilityKind $kind, string $identity, bool $allowed, string $correlation): void {}
+            },
+        );
+        $first = $factory->create(new \Evolve\Mcp\Server\McpPrincipal('alice'));
+        $second = $factory->create(new \Evolve\Mcp\Server\McpPrincipal('bob'));
+        self::assertNotSame($first->invoker(), $second->invoker());
+        self::assertSame('alice', $first->invoker()->invoke('service.echo', []));
+        self::assertSame('bob', $second->invoker()->invoke('service.echo', []));
+        self::assertNotSame($seen[0][0], $seen[1][0]);
+        self::assertSame(['alice', 'bob'], array_column($seen, 1));
+    }
+
 }
 
 final readonly class CallbackResetParticipant implements ResetParticipant

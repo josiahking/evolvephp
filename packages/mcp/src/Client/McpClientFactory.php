@@ -41,6 +41,7 @@ final readonly class McpClientFactory
                 $configuration->approveDestination,
                 $configuration->maxResponseBytes,
                 $bearer,
+                $configuration->maxRequestBytes,
             );
             $transport = new HttpTransport(
                 $configuration->endpoint,

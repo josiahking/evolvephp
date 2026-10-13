@@ -73,11 +73,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         foreach ($this->packages() as $package) {
             $this->assertFileExists(
                 $this->projectPath($package['manifest']),
-                $package['manifest'] . ' should exist.'
+                $package['manifest'] . ' should exist.',
             );
             $this->assertTrue(
                 is_dir($this->projectPath($package['src'])),
-                $package['src'] . ' should exist as a source directory.'
+                $package['src'] . ' should exist as a source directory.',
             );
         }
     }
@@ -87,7 +87,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         foreach ($this->packages() as $package) {
             $manifest = $this->readJsonFile($package['manifest']);
 
-            foreach (array('name', 'description', 'type', 'license', 'require', 'autoload') as $field) {
+            foreach (['name', 'description', 'type', 'license', 'require', 'autoload'] as $field) {
                 $this->assertArrayHasKey($field, $manifest, $package['manifest'] . ' should contain ' . $field . '.');
             }
 
@@ -99,9 +99,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
             $this->assertArrayHasKey('psr-4', $manifest['autoload'], $package['manifest'] . ' should declare PSR-4 autoloading.');
             $this->assertSame(
-                array($package['namespace'] => 'src/'),
+                [$package['namespace'] => 'src/'],
                 $manifest['autoload']['psr-4'],
-                $package['manifest'] . ' should map the accepted namespace to src/.'
+                $package['manifest'] . ' should map the accepted namespace to src/.',
             );
         }
     }
@@ -119,18 +119,18 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedRequire,
                 $actualRequire,
-                $package['manifest'] . ' should declare only the accepted package dependencies.'
+                $package['manifest'] . ' should declare only the accepted package dependencies.',
             );
         }
     }
 
     public function testProductionPackagesDoNotDependOnTestingAndGraphHasNoCycles(): void
     {
-        $graph = array();
+        $graph = [];
 
         foreach ($this->packages() as $package) {
             $manifest = $this->readJsonFile($package['manifest']);
-            $dependencies = array();
+            $dependencies = [];
 
             foreach ($manifest['require'] as $dependency => $constraint) {
                 if (strpos($dependency, 'evolvephp/') === 0) {
@@ -142,7 +142,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 $this->assertNotContains(
                     'evolvephp/testing',
                     $dependencies,
-                    $package['name'] . ' must not depend on evolvephp/testing.'
+                    $package['name'] . ' must not depend on evolvephp/testing.',
                 );
             }
 
@@ -157,7 +157,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $manifest = $this->readJsonFile('packages/observe/composer.json');
 
         $this->assertSame(
-            array(
+            [
                 'php' => '^8.4',
                 'evolvephp/core' => '^2.0',
                 'evolvephp/database-contracts' => '^2.0',
@@ -173,16 +173,16 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'psr/http-server-handler' => '^1.0',
                 'psr/http-server-middleware' => '^1.0',
                 'psr/simple-cache' => '^3.0',
-            ),
-            $manifest['require']
+            ],
+            $manifest['require'],
         );
         $this->assertSame(
             'OpenTelemetry composition, execution, HTTP and infrastructure tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.',
-            $manifest['description']
+            $manifest['description'],
         );
         $this->assertSame(
-            array('open-telemetry/sdk' => "Allows applications to use Observe's optional SDK resource, sampler, export-processing, reader and lifecycle integration surfaces."),
-            $manifest['suggest']
+            ['open-telemetry/sdk' => "Allows applications to use Observe's optional SDK resource, sampler, export-processing, reader and lifecycle integration surfaces."],
+            $manifest['suggest'],
         );
 
         foreach (array_keys(array_merge($manifest['require'], $manifest['suggest'])) as $packageName) {
@@ -198,7 +198,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
     public function testPackageManifestsAvoidDeferredComposerPolicyFields(): void
     {
-        $forbiddenFields = array('version', 'repositories', 'minimum-stability', 'prefer-stable');
+        $forbiddenFields = ['version', 'repositories', 'minimum-stability', 'prefer-stable'];
 
         foreach ($this->packages() as $package) {
             $manifest = $this->readJsonFile($package['manifest']);
@@ -210,7 +210,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertArrayNotHasKey('files', $manifest['autoload'], $package['manifest'] . ' must not use autoload.files.');
             $this->assertFalse(
                 isset($manifest['config']['platform']['php']),
-                $package['manifest'] . ' must not emulate Composer platform PHP.'
+                $package['manifest'] . ' must not emulate Composer platform PHP.',
             );
         }
     }
@@ -225,7 +225,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertSame(
                 $expectedFiles,
                 $this->phpFilesUnderSource($fullSourceDirectory),
-                $sourceDirectory . ' should contain exactly the approved package PHP source inventory.'
+                $sourceDirectory . ' should contain exactly the approved package PHP source inventory.',
             );
         }
 
@@ -327,7 +327,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/Module.*Plugin.*identity vocabulary|Plugin.*Module.*identity vocabulary/is', $content);
         $this->assertMatchesPattern(
             '/identity value objects.*do not implement.*lifecycle entry points.*descriptor behavior.*discovery.*registration.*boot.*ready.*shutdown/is',
-            $content
+            $content,
         );
     }
 
@@ -339,9 +339,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/experimental shared identity vocabulary|shared experimental identity vocabulary/i', $content);
         $this->assertMatchesPattern('/ComponentIdentifier.*ComponentType|ComponentType.*ComponentIdentifier/is', $content);
         $this->assertStringContainsString(
-    'The identity value objects do not themselves implement descriptor behavior, discovery, registration or lifecycle callbacks.',
-    $content
-);
+            'The identity value objects do not themselves implement descriptor behavior, discovery, registration or lifecycle callbacks.',
+            $content,
+        );
         $this->assertMatchesPattern('/Module\/Plugin entry points.*implemented by separate lifecycle contracts|entry points.*separate lifecycle contracts/is', $content);
         $this->assertMatchesPattern('/descriptors?.*separate package|separate package.*descriptors?/i', $content);
         $this->assertMatchesPattern('/registration.*Core|Core.*registration/i', $content);
@@ -356,7 +356,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array($moduleReadme, $pluginReadme, $packagesReadme) as $content) {
+        foreach ([$moduleReadme, $pluginReadme, $packagesReadme] as $content) {
             $this->assertMatchesPattern('/experimental/i', $content);
             $this->assertMatchesPattern('/immutable descriptor/i', $content);
             $this->assertMatchesPattern('/EvolvePHP-major compatibility validation|EvolvePHP major compatibility validation/i', $content);
@@ -395,7 +395,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $packagesReadme) as $content) {
+        foreach ([$contractsReadme, $moduleReadme, $pluginReadme, $packagesReadme] as $content) {
             $this->assertMatchesPattern('/experimental/i', $content);
             $this->assertMatchesPattern('/declaration vocabulary|graph declaration vocabulary/i', $content);
             $this->assertMatchesPattern('/required.*optional|optional.*required/is', $content);
@@ -407,7 +407,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertMatchesPattern('/startup-order semantics|startup order.*semantics|no startup-order/i', $content);
             $this->assertMatchesPattern(
                 '/do(?:es)? not.*(?:resolve|implement dependency resolution)|handled by Core graph resolution|Core owns graph validation/is',
-                $content
+                $content,
             );
             $this->assertMatchesPattern('/graph validation|graph resolution|dependency resolution/i', $content);
         }
@@ -416,21 +416,21 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/Phase 5\.3B/i', $changelog);
         $this->assertMatchesPattern('/ComponentGraphDeclaration|graph declaration vocabulary/i', $changelog);
 
-        foreach (array($moduleReadme, $pluginReadme) as $content) {
+        foreach ([$moduleReadme, $pluginReadme] as $content) {
             $this->assertMatchesPattern('/graph validation.*resolution.*handled by Core|handled by Core graph resolution/i', $content);
             $this->assertDoesNotMatchPattern('/remain deferred to Core graph resolution/i', $content);
         }
 
-        foreach (array($moduleReadme, $pluginReadme, $packagesReadme, $changelog) as $content) {
+        foreach ([$moduleReadme, $pluginReadme, $packagesReadme, $changelog] as $content) {
             $this->assertMatchesPattern('/graphDeclaration/i', $content);
             $this->assertMatchesPattern('/three-argument.*construction.*valid|construction.*three-argument.*valid/is', $content);
         }
 
-        foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $packagesReadme, $changelog) as $content) {
+        foreach ([$contractsReadme, $moduleReadme, $pluginReadme, $packagesReadme, $changelog] as $content) {
             $this->assertDoesNotMatchPattern('/composer\/semver/i', $content);
         }
 
-        foreach (array($contractsReadme, $moduleReadme, $pluginReadme) as $content) {
+        foreach ([$contractsReadme, $moduleReadme, $pluginReadme] as $content) {
             $this->assertDoesNotMatchPattern('/ProviderSelection|ProvidedCapability|CapabilityProvider|ProviderDescriptor/', $content);
         }
     }
@@ -443,22 +443,22 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertSame(
             '^1.1 || ^2.0',
             $contractsManifest['require']['psr/container'] ?? null,
-            'Contracts should require PSR-11 for the public service-definition factory contract.'
+            'Contracts should require PSR-11 for the public service-definition factory contract.',
         );
         $this->assertArrayNotHasKey(
             'provide',
             $contractsManifest,
-            'Contracts must not advertise PSR-11 implementation metadata.'
+            'Contracts must not advertise PSR-11 implementation metadata.',
         );
         $this->assertSame(
             '^1.1 || ^2.0',
             $coreManifest['require']['psr/container'] ?? null,
-            'Core should require the approved PSR-11 container contract range.'
+            'Core should require the approved PSR-11 container contract range.',
         );
         $this->assertSame(
-            array('psr/container-implementation' => '1.0.0'),
-            $coreManifest['provide'] ?? array(),
-            'Core should advertise the approved PSR-11 implementation metadata.'
+            ['psr/container-implementation' => '1.0.0'],
+            $coreManifest['provide'] ?? [],
+            'Core should advertise the approved PSR-11 implementation metadata.',
         );
 
         foreach ($this->packages() as $package) {
@@ -471,7 +471,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertArrayNotHasKey(
                 'psr/container',
                 $manifest['require'],
-                $package['manifest'] . ' must not require PSR-11 without an approved interoperability boundary.'
+                $package['manifest'] . ' must not require PSR-11 without an approved interoperability boundary.',
             );
             if ($package['name'] === 'evolvephp/cache-memory') {
                 $this->assertArrayNotHasKey('psr/container-implementation', $manifest['provide']);
@@ -482,7 +482,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertArrayNotHasKey(
                 'provide',
                 $manifest,
-                $package['manifest'] . ' must not advertise PSR-11 implementation metadata.'
+                $package['manifest'] . ' must not advertise PSR-11 implementation metadata.',
             );
         }
     }
@@ -494,7 +494,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array($contractsReadme, $coreReadme, $packagesReadme) as $content) {
+        foreach ([$contractsReadme, $coreReadme, $packagesReadme] as $content) {
             $this->assertMatchesPattern('/ServiceDefinitionRegistrar/i', $content);
             $this->assertMatchesPattern('/experimental/i', $content);
             $this->assertMatchesPattern('/contribution-only|definition contribution/i', $content);
@@ -522,7 +522,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $coreReadme, $packagesReadme, $changelog) as $content) {
+        foreach ([$contractsReadme, $moduleReadme, $pluginReadme, $coreReadme, $packagesReadme, $changelog] as $content) {
             $this->assertMatchesPattern('/experimental/i', $content);
             $this->assertMatchesPattern('/ComponentEntryPoint/i', $content);
             $this->assertMatchesPattern('/register.*boot.*ready.*shutdown|boot.*ready.*shutdown/is', $content);
@@ -560,7 +560,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array($coreReadme, $packagesReadme) as $content) {
+        foreach ([$coreReadme, $packagesReadme] as $content) {
             $this->assertMatchesPattern('/experimental/i', $content);
             $this->assertMatchesPattern('/Core-owned graph validation|Core-owned.*graph.*resolution|Core owns graph validation|graph validation.*Core owns/is', $content);
             $this->assertMatchesPattern('/ComponentGraphResolver/i', $content);
@@ -574,11 +574,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertMatchesPattern('/cycle.*canonical|canonical.*cycle/i', $content);
             $this->assertMatchesPattern(
                 '/graph resolver remains separate from registration and boot|graph resolution.*separate from registration.*boot|graph validation\/resolution only/is',
-                $content
+                $content,
             );
             $this->assertMatchesPattern(
                 '/graph resolution does not itself perform registration|does not.*perform registration|graph validation\/resolution only/is',
-                $content
+                $content,
             );
             $this->assertMatchesPattern('/discovery.*separate concern|discovery remains.*deferred|deferred.*discovery/is', $content);
             $this->assertMatchesPattern('/enablement|app-controlled enablement|application-controlled enablement/i', $content);
@@ -589,7 +589,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/Phase 5\.3B/i', $changelog);
         $this->assertMatchesPattern('/ComponentGraphResolver/i', $changelog);
 
-        foreach (array($coreReadme, $packagesReadme) as $content) {
+        foreach ([$coreReadme, $packagesReadme] as $content) {
             $this->assertMatchesPattern('/Contracts declarations|Contracts graph declarations|consumes.*ComponentGraphDeclaration/is', $content);
             $this->assertMatchesPattern('/conflict.*validation|validates.*conflicts?/is', $content);
         }
@@ -604,7 +604,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array($contractsReadme, $moduleReadme, $pluginReadme, $coreReadme, $packagesReadme, $changelog) as $content) {
+        foreach ([$contractsReadme, $moduleReadme, $pluginReadme, $coreReadme, $packagesReadme, $changelog] as $content) {
             $this->assertMatchesPattern('/experimental|pre-beta/i', $content);
             $this->assertMatchesPattern('/explicit/i', $content);
             $this->assertMatchesPattern('/Composer `extra`|Composer discovery|package scanning|automatic package scanning/i', $content);
@@ -624,7 +624,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/PluginCompatibilityValidator/i', $pluginReadme);
         $this->assertMatchesPattern('/entry-point class.*implements.*Plugin|implements.*Evolve\\\\Plugin\\\\Plugin/is', $pluginReadme);
 
-        foreach (array($coreReadme, $packagesReadme, $changelog) as $content) {
+        foreach ([$coreReadme, $packagesReadme, $changelog] as $content) {
             $this->assertMatchesPattern('/ComponentBootstrapper/i', $content);
             $this->assertMatchesPattern('/evolve\.components\.enabled/i', $content);
             $this->assertMatchesPattern('/disabled.*inert|inert.*disabled/i', $content);
@@ -640,7 +640,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $packagesReadme = $this->readProjectFile('packages/README.md');
         $changelog = $this->readProjectFile('CHANGELOG.md');
 
-        foreach (array($pluginReadme, $packagesReadme, $changelog) as $content) {
+        foreach ([$pluginReadme, $packagesReadme, $changelog] as $content) {
             $this->assertMatchesPattern('/ComposerPluginDiscovery/i', $content);
             $this->assertMatchesPattern('/vendor\/composer\/installed\.json|installed\.json/i', $content);
             $this->assertMatchesPattern('/extra\.evolvephp\.plugin/i', $content);
@@ -687,7 +687,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             $this->assertArrayNotHasKey(
                 $packageName,
                 $httpManifest['require'],
-                'HTTP must not require a concrete PSR-7 implementation.'
+                'HTTP must not require a concrete PSR-7 implementation.',
             );
         }
     }
@@ -789,134 +789,134 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
     private function packages()
     {
-        return array(
-            array(
+        return [
+            [
                 'manifest' => 'packages/contracts/composer.json',
                 'src' => 'packages/contracts/src',
                 'name' => 'evolvephp/contracts',
                 'description' => 'Foundational public contracts for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Contracts\\',
-                'require' => array('php' => '^8.4', 'psr/container' => '^1.1 || ^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'psr/container' => '^1.1 || ^2.0'],
+            ],
+            [
                 'manifest' => 'packages/database-contracts/composer.json',
                 'src' => 'packages/database-contracts/src',
                 'name' => 'evolvephp/database-contracts',
                 'description' => 'Portable SQL database statement and transaction contracts for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Database\\Contracts\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/database-pdo/composer.json',
                 'src' => 'packages/database-pdo/src',
                 'name' => 'evolvephp/database-pdo',
                 'description' => 'PDO database adapter for EvolvePHP 2 database contracts.',
                 'namespace' => 'Evolve\\Database\\Pdo\\',
-                'require' => array(
+                'require' => [
                     'php' => '^8.4',
                     'ext-pdo' => '*',
                     'evolvephp/contracts' => '^2.0',
                     'evolvephp/database-contracts' => '^2.0',
-                ),
-            ),
-            array(
+                ],
+            ],
+            [
                 'manifest' => 'packages/cache-memory/composer.json',
                 'src' => 'packages/cache-memory/src',
                 'name' => 'evolvephp/cache-memory',
                 'description' => 'In-memory PSR-16 cache implementation for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Cache\\Memory\\',
-                'require' => array(
+                'require' => [
                     'php' => '^8.4',
                     'psr/clock' => '^1.0',
                     'psr/simple-cache' => '^3.0',
-                ),
-                'provide' => array('psr/simple-cache-implementation' => '3.0'),
-            ),
-            array(
+                ],
+                'provide' => ['psr/simple-cache-implementation' => '3.0'],
+            ],
+            [
                 'manifest' => 'packages/session-contracts/composer.json',
                 'src' => 'packages/session-contracts/src',
                 'name' => 'evolvephp/session-contracts',
                 'description' => 'Runtime-neutral session contracts for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Session\\Contracts\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/lock-contracts/composer.json',
                 'src' => 'packages/lock-contracts/src',
                 'name' => 'evolvephp/lock-contracts',
                 'description' => 'Runtime-neutral lock and lease contracts for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Lock\\Contracts\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/queue-contracts/composer.json',
                 'src' => 'packages/queue-contracts/src',
                 'name' => 'evolvephp/queue-contracts',
                 'description' => 'Runtime-neutral queue transport contracts for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Queue\\Contracts\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/queue-memory/composer.json',
                 'src' => 'packages/queue-memory/src',
                 'name' => 'evolvephp/queue-memory',
                 'description' => 'Object-local in-memory queue adapter for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Queue\\Memory\\',
-                'require' => array('php' => '^8.4', 'evolvephp/queue-contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/queue-contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/storage-contracts/composer.json',
                 'src' => 'packages/storage-contracts/src',
                 'name' => 'evolvephp/storage-contracts',
                 'description' => 'Vendor-neutral object storage contracts for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Storage\\Contracts\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/storage-local/composer.json',
                 'src' => 'packages/storage-local/src',
                 'name' => 'evolvephp/storage-local',
                 'description' => 'Local filesystem adapter for EvolvePHP object storage contracts.',
                 'namespace' => 'Evolve\\Storage\\Local\\',
-                'require' => array('php' => '^8.4', 'evolvephp/storage-contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/storage-contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/secret-contracts/composer.json',
                 'src' => 'packages/secret-contracts/src',
                 'name' => 'evolvephp/secret-contracts',
                 'description' => 'Vendor-neutral secret resolution contracts for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Secret\\Contracts\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/bridge-contracts/composer.json',
                 'src' => 'packages/bridge-contracts/src',
                 'name' => 'evolvephp/bridge-contracts',
                 'description' => 'Generic transport-neutral Bridge contracts for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Bridge\\Contracts\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/bridge-psr/composer.json',
                 'src' => 'packages/bridge-psr/src',
                 'name' => 'evolvephp/bridge-psr',
                 'description' => 'Same-process PSR HTTP Bridge adapter foundation for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Bridge\\Psr\\',
-                'require' => array(
+                'require' => [
                     'php' => '^8.4',
                     'evolvephp/bridge-contracts' => '^2.0',
                     'evolvephp/core' => '^2.0',
                     'evolvephp/http' => '^2.0',
                     'psr/http-message' => '^1.1 || ^2.0',
-                ),
-            ),
-            array(
+                ],
+            ],
+            [
                 'manifest' => 'packages/bridge-laravel/composer.json',
                 'src' => 'packages/bridge-laravel/src',
                 'name' => 'evolvephp/bridge-laravel',
                 'description' => 'Laravel host Bridge adapter for embedded EvolvePHP 2 delegation.',
                 'namespace' => 'Evolve\\Bridge\\Laravel\\',
-                'require' => array(
+                'require' => [
                     'php' => '^8.4',
                     'evolvephp/bridge-contracts' => '^2.0',
                     'evolvephp/bridge-psr' => '^2.0',
@@ -924,15 +924,15 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                     'illuminate/http' => '^13.0',
                     'psr/http-factory' => '^1.0',
                     'psr/http-message' => '^1.1 || ^2.0',
-                ),
-            ),
-            array(
+                ],
+            ],
+            [
                 'manifest' => 'packages/bridge-symfony/composer.json',
                 'src' => 'packages/bridge-symfony/src',
                 'name' => 'evolvephp/bridge-symfony',
                 'description' => 'Symfony host Bridge adapter for embedded EvolvePHP 2 delegation.',
                 'namespace' => 'Evolve\\Bridge\\Symfony\\',
-                'require' => array(
+                'require' => [
                     'php' => '^8.4',
                     'evolvephp/bridge-contracts' => '^2.0',
                     'evolvephp/bridge-psr' => '^2.0',
@@ -940,15 +940,15 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                     'psr/http-message' => '^1.1 || ^2.0',
                     'symfony/http-foundation' => '^8.1',
                     'symfony/security-core' => '^8.1',
-                ),
-            ),
-            array(
+                ],
+            ],
+            [
                 'manifest' => 'packages/bridge-remote/composer.json',
                 'src' => 'packages/bridge-remote/src',
                 'name' => 'evolvephp/bridge-remote',
                 'description' => 'Remote HTTP JSON Bridge protocol and PSR-15 server endpoint for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Bridge\\Remote\\',
-                'require' => array(
+                'require' => [
                     'php' => '^8.4',
                     'evolvephp/bridge-contracts' => '^2.0',
                     'evolvephp/bridge-psr' => '^2.0',
@@ -956,94 +956,94 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                     'psr/http-factory' => '^1.0',
                     'psr/http-message' => '^1.1 || ^2.0',
                     'psr/http-server-handler' => '^1.0',
-                ),
-            ),
-            array(
+                ],
+            ],
+            [
                 'manifest' => 'packages/core/composer.json',
                 'src' => 'packages/core/src',
                 'name' => 'evolvephp/core',
                 'description' => 'Application kernel and runtime-neutral orchestration for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Core\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0', 'psr/container' => '^1.1 || ^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0', 'psr/container' => '^1.1 || ^2.0'],
+            ],
+            [
                 'manifest' => 'packages/job/composer.json',
                 'src' => 'packages/job/src',
                 'name' => 'evolvephp/job',
                 'description' => 'One-shot queue job execution runtime for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Job\\',
-                'require' => array('php' => '^8.4', 'evolvephp/core' => '^2.0', 'evolvephp/queue-contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/core' => '^2.0', 'evolvephp/queue-contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/scheduler/composer.json',
                 'src' => 'packages/scheduler/src',
                 'name' => 'evolvephp/scheduler',
                 'description' => 'One-tick scheduling runtime for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Scheduler\\',
-                'require' => array(
+                'require' => [
                     'php' => '^8.4',
                     'evolvephp/core' => '^2.0',
                     'evolvephp/lock-contracts' => '^2.0',
                     'evolvephp/queue-contracts' => '^2.0',
                     'psr/clock' => '^1.0',
                     'dragonmantank/cron-expression' => '^3.6',
-                ),
-            ),
-            array(
+                ],
+            ],
+            [
                 'manifest' => 'packages/migration/composer.json',
                 'src' => 'packages/migration/src',
                 'name' => 'evolvephp/migration',
                 'description' => 'Explicit one-shot migration runtime for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Migration\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0', 'evolvephp/core' => '^2.0', 'evolvephp/database-contracts' => '^2.0', 'evolvephp/lock-contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0', 'evolvephp/core' => '^2.0', 'evolvephp/database-contracts' => '^2.0', 'evolvephp/lock-contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/view/composer.json',
                 'src' => 'packages/view/src',
                 'name' => 'evolvephp/view',
                 'description' => 'Server-rendered view contracts and native PHP renderer for EvolvePHP 2.',
                 'namespace' => 'Evolve\\View\\',
-                'require' => array('php' => '^8.4'),
-            ),
-            array(
+                'require' => ['php' => '^8.4'],
+            ],
+            [
                 'manifest' => 'packages/view-twig/composer.json',
                 'src' => 'packages/view-twig/src',
                 'name' => 'evolvephp/view-twig',
                 'description' => 'Optional Twig view renderer adapter for EvolvePHP 2.',
                 'namespace' => 'Evolve\\View\\Twig\\',
-                'require' => array('php' => '^8.4', 'evolvephp/view' => '^2.0', 'twig/twig' => '^3.30'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/view' => '^2.0', 'twig/twig' => '^3.30'],
+            ],
+            [
                 'manifest' => 'packages/view-blade/composer.json',
                 'src' => 'packages/view-blade/src',
                 'name' => 'evolvephp/view-blade',
                 'description' => 'Optional Blade view renderer adapter for EvolvePHP 2.',
                 'namespace' => 'Evolve\\View\\Blade\\',
-                'require' => array('php' => '^8.4', 'evolvephp/view' => '^2.0', 'illuminate/container' => '^13.0', 'illuminate/events' => '^13.0', 'illuminate/filesystem' => '^13.0', 'illuminate/view' => '^13.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/view' => '^2.0', 'illuminate/container' => '^13.0', 'illuminate/events' => '^13.0', 'illuminate/filesystem' => '^13.0', 'illuminate/view' => '^13.0'],
+            ],
+            [
                 'manifest' => 'packages/i18n/composer.json',
                 'src' => 'packages/i18n/src',
                 'name' => 'evolvephp/i18n',
                 'description' => 'Explicit localization policy, catalogs and formatting for EvolvePHP 2.',
                 'namespace' => 'Evolve\\I18n\\',
-                'require' => array('php' => '^8.4', 'evolvephp/core' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/core' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/insight/composer.json',
                 'src' => 'packages/insight/src',
                 'name' => 'evolvephp/insight',
                 'description' => 'Local diagnostic capture, persistence, query and access-policy foundation for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Insight\\',
-                'require' => array('php' => '^8.4', 'evolvephp/core' => '^2.0', 'evolvephp/database-contracts' => '^2.0', 'evolvephp/http' => '^2.0', 'evolvephp/i18n' => '^2.0', 'evolvephp/queue-contracts' => '^2.0', 'evolvephp/storage-contracts' => '^2.0', 'evolvephp/view' => '^2.0', 'psr/simple-cache' => '^3.0', 'psr/http-client' => '^1.0', 'psr/http-factory' => '^1.0', 'psr/http-message' => '^1.1 || ^2.0', 'psr/http-server-handler' => '^1.0', 'psr/http-server-middleware' => '^1.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/core' => '^2.0', 'evolvephp/database-contracts' => '^2.0', 'evolvephp/http' => '^2.0', 'evolvephp/i18n' => '^2.0', 'evolvephp/queue-contracts' => '^2.0', 'evolvephp/storage-contracts' => '^2.0', 'evolvephp/view' => '^2.0', 'psr/simple-cache' => '^3.0', 'psr/http-client' => '^1.0', 'psr/http-factory' => '^1.0', 'psr/http-message' => '^1.1 || ^2.0', 'psr/http-server-handler' => '^1.0', 'psr/http-server-middleware' => '^1.0'],
+            ],
+            [
                 'manifest' => 'packages/observe/composer.json',
                 'src' => 'packages/observe/src',
                 'name' => 'evolvephp/observe',
                 'description' => 'OpenTelemetry composition, execution, HTTP and infrastructure tracing, metrics, log correlation and bounded export-processing foundation for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Observe\\',
-                'require' => array(
+                'require' => [
                     'php' => '^8.4',
                     'evolvephp/core' => '^2.0',
                     'evolvephp/database-contracts' => '^2.0',
@@ -1059,39 +1059,39 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                     'psr/http-server-handler' => '^1.0',
                     'psr/http-server-middleware' => '^1.0',
                     'psr/simple-cache' => '^3.0',
-                ),
-                'suggest' => array('open-telemetry/sdk' => 'Allows applications to pass SDK resource and sampler objects into Observe composition values.'),
-            ),
-            array(
+                ],
+                'suggest' => ['open-telemetry/sdk' => 'Allows applications to pass SDK resource and sampler objects into Observe composition values.'],
+            ],
+            [
                 'manifest' => 'packages/mcp/composer.json',
                 'src' => 'packages/mcp/src',
                 'name' => 'evolvephp/mcp',
                 'description' => 'Optional experimental MCP server, transport, component contribution and explicitly configured client foundation for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Mcp\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0', 'evolvephp/core' => '^2.0', 'evolvephp/secret-contracts' => '^2.0', 'mcp/sdk' => '^0.8.1', 'psr/http-client' => '^1.0', 'psr/http-factory' => '^1.0', 'psr/http-message' => '^1.1 || ^2.0', 'psr/http-server-handler' => '^1.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0', 'evolvephp/core' => '^2.0', 'evolvephp/secret-contracts' => '^2.0', 'mcp/sdk' => '^0.8.1', 'psr/http-client' => '^1.0', 'psr/http-factory' => '^1.0', 'psr/http-message' => '^1.1 || ^2.0', 'psr/http-server-handler' => '^1.0'],
+            ],
+            [
                 'manifest' => 'packages/dev-tools/composer.json',
                 'src' => 'packages/dev-tools/src',
                 'name' => 'evolvephp/dev-tools',
                 'description' => 'Development-time generators and tooling for EvolvePHP 2 applications.',
                 'namespace' => 'Evolve\\DevTools\\',
-                'require' => array(
+                'require' => [
                     'php' => '^8.4',
                     'ext-tokenizer' => '*',
                     'evolvephp/contracts' => '^2.0',
                     'evolvephp/core' => '^2.0',
                     'evolvephp/module' => '^2.0',
                     'evolvephp/plugin' => '^2.0',
-                ),
-            ),
-            array(
+                ],
+            ],
+            [
                 'manifest' => 'packages/http/composer.json',
                 'src' => 'packages/http/src',
                 'name' => 'evolvephp/http',
                 'description' => 'HTTP lifecycle, routing and middleware foundations for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Http\\',
-                'require' => array(
+                'require' => [
                     'php' => '^8.4',
                     'evolvephp/contracts' => '^2.0',
                     'evolvephp/core' => '^2.0',
@@ -1099,43 +1099,43 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                     'psr/http-message' => '^1.1 || ^2.0',
                     'psr/http-server-handler' => '^1.0',
                     'psr/http-server-middleware' => '^1.0',
-                ),
-            ),
-            array(
+                ],
+            ],
+            [
                 'manifest' => 'packages/http-client/composer.json',
                 'src' => 'packages/http-client/src',
                 'name' => 'evolvephp/http-client',
                 'description' => 'PSR-18 outbound HTTP client composition foundation for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Http\\Client\\',
-                'require' => array(
+                'require' => [
                     'php' => '^8.4',
                     'psr/http-client' => '^1.0',
                     'psr/http-message' => '^1.1 || ^2.0',
-                ),
-            ),
-            array(
+                ],
+            ],
+            [
                 'manifest' => 'packages/module/composer.json',
                 'src' => 'packages/module/src',
                 'name' => 'evolvephp/module',
                 'description' => 'Application module SDK and lifecycle support for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Module\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/plugin/composer.json',
                 'src' => 'packages/plugin/src',
                 'name' => 'evolvephp/plugin',
                 'description' => 'Framework plugin SDK and lifecycle support for EvolvePHP 2.',
                 'namespace' => 'Evolve\\Plugin\\',
-                'require' => array('php' => '^8.4', 'evolvephp/contracts' => '^2.0'),
-            ),
-            array(
+                'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0'],
+            ],
+            [
                 'manifest' => 'packages/testing/composer.json',
                 'src' => 'packages/testing/src',
                 'name' => 'evolvephp/testing',
                 'description' => 'Testing utilities for EvolvePHP 2 packages and applications.',
                 'namespace' => 'Evolve\\Testing\\',
-                'require' => array(
+                'require' => [
                     'php' => '^8.4',
                     'evolvephp/contracts' => '^2.0',
                     'evolvephp/core' => '^2.0',
@@ -1143,15 +1143,15 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                     'evolvephp/module' => '^2.0',
                     'evolvephp/plugin' => '^2.0',
                     'evolvephp/view' => '^2.0',
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
     }
 
     private function acceptedPackageSourceInventories()
     {
-        return array(
-            'packages/contracts/src' => array(
+        return [
+            'packages/contracts/src' => [
                 'Component/CapabilityCardinality.php',
                 'Component/CapabilityIdentifier.php',
                 'Component/CapabilityRequirement.php',
@@ -1173,37 +1173,37 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/LifecycleException.php',
                 'Execution/ResetParticipant.php',
                 'Lifecycle/ApplicationLifecycle.php',
-            ),
-            'packages/database-contracts/src' => array(
+            ],
+            'packages/database-contracts/src' => [
                 'DatabaseConnection.php',
                 'DatabaseFailureCategory.php',
                 'DatabaseOperation.php',
                 'DatabaseStatement.php',
                 'Exception/DatabaseException.php',
-            ),
-            'packages/database-pdo/src' => array(
+            ],
+            'packages/database-pdo/src' => [
                 'Exception/PdoDatabaseException.php',
                 'Internal/PdoFailureTranslator.php',
                 'PdoDatabaseConnection.php',
-            ),
-            'packages/cache-memory/src' => array(
+            ],
+            'packages/cache-memory/src' => [
                 'Exception/InvalidCacheKeyException.php',
                 'InMemoryCache.php',
                 'Internal/SystemClock.php',
-            ),
-            'packages/session-contracts/src' => array(
+            ],
+            'packages/session-contracts/src' => [
                 'Session.php',
                 'SessionAdapter.php',
                 'SessionIdentifier.php',
-            ),
-            'packages/lock-contracts/src' => array(
+            ],
+            'packages/lock-contracts/src' => [
                 'Exception/LockException.php',
                 'Lease.php',
                 'LeaseDuration.php',
                 'LockKey.php',
                 'LockProvider.php',
-            ),
-            'packages/queue-contracts/src' => array(
+            ],
+            'packages/queue-contracts/src' => [
                 'Delivery.php',
                 'Exception/QueueException.php',
                 'MessageEnvelope.php',
@@ -1212,54 +1212,54 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'QueueOperation.php',
                 'QueuePublisher.php',
                 'QueueReceiver.php',
-            ),
-            'packages/queue-memory/src' => array(
+            ],
+            'packages/queue-memory/src' => [
                 'InMemoryQueue.php',
                 'Internal/InMemoryDelivery.php',
-            ),
-            'packages/storage-contracts/src' => array(
+            ],
+            'packages/storage-contracts/src' => [
                 'Exception/StorageException.php',
                 'ObjectStorage.php',
                 'ReadableObject.php',
                 'StorageFailureCategory.php',
                 'StorageKey.php',
                 'StorageOperation.php',
-            ),
-            'packages/storage-local/src' => array(
+            ],
+            'packages/storage-local/src' => [
                 'Internal/LocalFilesystemReadableObject.php',
                 'Internal/LocalFilesystemStorageException.php',
                 'LocalFilesystemStorage.php',
-            ),
-            'packages/secret-contracts/src' => array(
+            ],
+            'packages/secret-contracts/src' => [
                 'Exception/SecretException.php',
                 'SecretFailureCategory.php',
                 'SecretName.php',
                 'SecretResolver.php',
                 'SecretValue.php',
-            ),
-            'packages/bridge-contracts/src' => array(
+            ],
+            'packages/bridge-contracts/src' => [
                 'BridgeContext.php',
                 'BridgeError.php',
                 'BridgeErrorKind.php',
                 'BridgeRequest.php',
                 'BridgeResponse.php',
                 'Internal/TransportValueValidator.php',
-            ),
-            'packages/bridge-psr/src' => array(
+            ],
+            'packages/bridge-psr/src' => [
                 'EmbeddedBridgeAdapter.php',
                 'EmbeddedBridgeResult.php',
-            ),
-            'packages/bridge-laravel/src' => array(
+            ],
+            'packages/bridge-laravel/src' => [
                 'LaravelBridgeAdapter.php',
                 'LaravelBridgeContextFactory.php',
                 'LaravelBridgeResult.php',
-            ),
-            'packages/bridge-symfony/src' => array(
+            ],
+            'packages/bridge-symfony/src' => [
                 'SymfonyBridgeAdapter.php',
                 'SymfonyBridgeContextFactory.php',
                 'SymfonyBridgeResult.php',
-            ),
-            'packages/bridge-remote/src' => array(
+            ],
+            'packages/bridge-remote/src' => [
                 'RemoteBridgeAuthenticator.php',
                 'RemoteBridgeClient.php',
                 'RemoteBridgeClientAuthenticator.php',
@@ -1269,8 +1269,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'RemoteBridgeProtocol.php',
                 'RemoteBridgeResult.php',
                 'RemoteBridgeServerHandler.php',
-            ),
-            'packages/core/src' => array(
+            ],
+            'packages/core/src' => [
                 'ApplicationKernel.php',
                 'Component/CapabilityProviderSelection.php',
                 'Component/ComponentBootstrapper.php',
@@ -1288,27 +1288,27 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Console/Command.php',
                 'Console/CommandInput.php',
                 'Console/CommandOutput.php',
-            'Console/CommandRegistry.php',
-            'Console/CommandResult.php',
-            'Console/CommandRunner.php',
-            'Console/Runtime/CliApplication.php',
-            'Console/Runtime/StreamCommandOutput.php',
+                'Console/CommandRegistry.php',
+                'Console/CommandResult.php',
+                'Console/CommandRunner.php',
+                'Console/Runtime/CliApplication.php',
+                'Console/Runtime/StreamCommandOutput.php',
                 'Container/ExecutionScopeContainer.php',
                 'Container/ServiceContainer.php',
                 'Container/ServiceDefinition.php',
                 'Container/ServiceLifetime.php',
-            'Container/ServiceRegistry.php',
-            'Doctor/Console/DoctorCommand.php',
-            'Doctor/DoctorCheck.php',
-            'Doctor/DoctorFinding.php',
-            'Doctor/DoctorReport.php',
-            'Doctor/DoctorRunner.php',
-            'Doctor/DoctorStatus.php',
-            'Doctor/Project/ComposerRequiredExtensionsCheck.php',
-            'Doctor/Project/EnvironmentVariablesCheck.php',
-            'Doctor/Project/WritablePathsCheck.php',
-            'Doctor/Runtime/PhpExtensionCheck.php',
-            'Doctor/Runtime/PhpVersionCheck.php',
+                'Container/ServiceRegistry.php',
+                'Doctor/Console/DoctorCommand.php',
+                'Doctor/DoctorCheck.php',
+                'Doctor/DoctorFinding.php',
+                'Doctor/DoctorReport.php',
+                'Doctor/DoctorRunner.php',
+                'Doctor/DoctorStatus.php',
+                'Doctor/Project/ComposerRequiredExtensionsCheck.php',
+                'Doctor/Project/EnvironmentVariablesCheck.php',
+                'Doctor/Project/WritablePathsCheck.php',
+                'Doctor/Runtime/PhpExtensionCheck.php',
+                'Doctor/Runtime/PhpVersionCheck.php',
                 'Exception/ActiveComponentConflict.php',
                 'Exception/AmbiguousCapabilityProvider.php',
                 'Exception/CommandNotFound.php',
@@ -1337,10 +1337,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/ServiceNotFound.php',
                 'Exception/ServiceRegistryFrozen.php',
                 'Exception/ServiceResolutionFailed.php',
-            'Execution/ExecutionContext.php',
-            'Execution/ExecutionContextAttacher.php',
-            'Execution/ExecutionContextAttachment.php',
-            'Execution/ExecutionContextValues.php',
+                'Execution/ExecutionContext.php',
+                'Execution/ExecutionContextAttacher.php',
+                'Execution/ExecutionContextAttachment.php',
+                'Execution/ExecutionContextValues.php',
                 'Execution/ExecutionIdentifier.php',
                 'Execution/ExecutionKind.php',
                 'Execution/ExecutionOrchestrator.php',
@@ -1355,14 +1355,14 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Instrumentation/ObservationSink.php',
                 'Instrumentation/ObservationType.php',
                 'Lifecycle/ApplicationState.php',
-            ),
-            'packages/job/src' => array(
+            ],
+            'packages/job/src' => [
                 'JobExecutionContext.php',
                 'JobRunOutcome.php',
                 'JobRunner.php',
                 'JobSettlementState.php',
-            ),
-            'packages/scheduler/src' => array(
+            ],
+            'packages/scheduler/src' => [
                 'CatchUpPolicy.php',
                 'CronSchedule.php',
                 'OverlapProtection.php',
@@ -1375,8 +1375,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'ScheduledTaskRun.php',
                 'SchedulerRunReport.php',
                 'SchedulerRunner.php',
-            ),
-            'packages/migration/src' => array(
+            ],
+            'packages/migration/src' => [
                 'AppliedMigration.php',
                 'Console/MigrateCommand.php',
                 'MigrationAction.php',
@@ -1393,8 +1393,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'MigrationRunReport.php',
                 'MigrationRunner.php',
                 'MigrationTransactionMode.php',
-            ),
-            'packages/view/src' => array(
+            ],
+            'packages/view/src' => [
                 'Exception/InvalidViewName.php',
                 'Exception/InvalidViewSource.php',
                 'Exception/ViewNotFound.php',
@@ -1408,19 +1408,19 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'ViewPathResolver.php',
                 'ViewRenderer.php',
                 'ViewSource.php',
-            ),
-            'packages/view-twig/src' => array(
+            ],
+            'packages/view-twig/src' => [
                 'TwigViewLoader.php',
                 'TwigViewPathResolver.php',
                 'TwigViewRenderer.php',
-            ),
-            'packages/view-blade/src' => array(
+            ],
+            'packages/view-blade/src' => [
                 'BladeViewPathResolver.php',
                 'BladeViewRenderer.php',
                 'Exception/InvalidBladeCachePath.php',
                 'Internal/BladeViewFinder.php',
-            ),
-            'packages/i18n/src' => array(
+            ],
+            'packages/i18n/src' => [
                 'ArrayMessageCatalog.php',
                 'CatalogTranslator.php',
                 'Exception/IntlUnavailable.php',
@@ -1445,8 +1445,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'MessageSource.php',
                 'PlaceholderMessageFormatter.php',
                 'Translator.php',
-            ),
-            'packages/insight/src' => array(
+            ],
+            'packages/insight/src' => [
                 'Access/DiagnosticAccessDenied.php',
                 'Access/DiagnosticAccessOperation.php',
                 'Access/DiagnosticAccessPolicy.php',
@@ -1499,8 +1499,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Storage/StoringDiagnosticBatchSink.php',
                 'Watcher/ExecutionLifecycleDiagnosticWatcher.php',
                 'Watcher/ObservationDiagnosticWatcher.php',
-            ),
-            'packages/observe/src' => array(
+            ],
+            'packages/observe/src' => [
                 'Cache/CacheInstrumentation.php',
                 'Database/DatabaseConnectionInstrumentation.php',
                 'EvolveSemanticConventions.php',
@@ -1531,8 +1531,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Queue/QueuePublisherInstrumentation.php',
                 'Storage/ObjectStorageInstrumentation.php',
                 'Storage/ReadableObjectInstrumentation.php',
-            ),
-            'packages/mcp/src' => array(
+            ],
+            'packages/mcp/src' => [
                 'Client/McpCapabilityCatalog.php',
                 'Client/McpClientConfiguration.php',
                 'Client/McpClientConnection.php',
@@ -1552,17 +1552,23 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Server/Exception/DuplicateMcpCapability.php',
                 'Server/Exception/InvalidMcpCapability.php',
                 'Server/Exception/McpServerFrozen.php',
+                'Server/McpAuthorizedServerFactory.php',
+                'Server/McpCapabilityExposure.php',
                 'Server/McpCapabilityInvoker.php',
+                'Server/McpCapabilityKind.php',
+                'Server/McpCapabilityPolicy.php',
+                'Server/McpPrincipal.php',
                 'Server/McpPromptDefinition.php',
                 'Server/McpResourceDefinition.php',
+                'Server/McpSecurityAuditSink.php',
                 'Server/McpServerBuilder.php',
                 'Server/McpServerDefinition.php',
                 'Server/McpToolDefinition.php',
                 'Transport/McpHttpRequestHandler.php',
                 'Transport/McpStdioCommand.php',
                 'Transport/ScopedMcpCapabilityInvoker.php',
-            ),
-            'packages/dev-tools/src' => array(
+            ],
+            'packages/dev-tools/src' => [
                 'Adoption/AdoptionPlan.php',
                 'Adoption/DataMigrationState.php',
                 'Adoption/DataOwnership.php',
@@ -1594,8 +1600,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Database/DatabaseFamilyAssessment.php',
                 'Database/DatabaseFamilyDefinition.php',
                 'Database/DatabaseWorkloadProfile.php',
-            ),
-            'packages/http/src' => array(
+            ],
+            'packages/http/src' => [
                 'Exception/MethodNotAllowed.php',
                 'Exception/RouteNotFound.php',
                 'Health/LivenessHandler.php',
@@ -1613,20 +1619,20 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Routing/RouteMatch.php',
                 'Routing/RouteMatcher.php',
                 'Routing/RoutingRequestHandler.php',
-            ),
-            'packages/http-client/src' => array(
+            ],
+            'packages/http-client/src' => [
                 'ClientMiddleware.php',
                 'Internal/MiddlewareNextClient.php',
                 'MiddlewareClient.php',
-            ),
-            'packages/module/src' => array(
+            ],
+            'packages/module/src' => [
                 'Exception/IncompatibleModuleDescriptor.php',
                 'Module.php',
                 'ModuleCompatibilityValidator.php',
                 'ModuleDefinition.php',
                 'ModuleDescriptor.php',
-            ),
-            'packages/plugin/src' => array(
+            ],
+            'packages/plugin/src' => [
                 'Discovery/ComposerPluginDiscovery.php',
                 'Exception/ComposerPluginDiscoveryFailed.php',
                 'Exception/ComposerPluginMetadataUnavailable.php',
@@ -1637,26 +1643,26 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'PluginCompatibilityValidator.php',
                 'PluginDefinition.php',
                 'PluginDescriptor.php',
-            ),
-            'packages/testing/src' => array(
+            ],
+            'packages/testing/src' => [
                 'Component/ComponentDefinitionFixture.php',
                 'Component/ComponentEntryPointFixture.php',
                 'Console/RecordingCommandOutput.php',
                 'View/RecordedViewRender.php',
                 'View/RecordingViewRenderer.php',
-            ),
-        );
+            ],
+        ];
     }
 
     private function concretePsr7Implementations()
     {
-        return array(
+        return [
             'guzzlehttp/psr7',
             'laminas/laminas-diactoros',
             'nyholm/psr7',
             'slim/psr7',
             'symfony/psr-http-message-bridge',
-        );
+        ];
     }
 
     private function projectPath($path)
@@ -1685,9 +1691,9 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
     private function phpFilesUnderSource($directory)
     {
-        $files = array();
+        $files = [];
         $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS)
+            new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
         );
 
         foreach ($iterator as $file) {
@@ -1704,11 +1710,11 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
     private function assertPackageGraphIsAcyclic(array $graph): void
     {
-        $visiting = array();
-        $visited = array();
+        $visiting = [];
+        $visited = [];
 
         foreach (array_keys($graph) as $packageName) {
-            $this->visitPackage($packageName, $graph, $visiting, $visited, array());
+            $this->visitPackage($packageName, $graph, $visiting, $visited, []);
         }
     }
 
@@ -1721,7 +1727,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertArrayNotHasKey(
             $packageName,
             $visiting,
-            'Package dependency graph must be acyclic; cycle detected: ' . implode(' -> ', array_merge($path, array($packageName)))
+            'Package dependency graph must be acyclic; cycle detected: ' . implode(' -> ', array_merge($path, [$packageName])),
         );
 
         $visiting[$packageName] = true;

@@ -18,6 +18,7 @@ final readonly class McpResourceDefinition
         public ?string $description = null,
         public ?string $mimeType = null,
         public ?string $title = null,
+        public McpCapabilityExposure $exposure = McpCapabilityExposure::LocalOnly,
     ) {
         if ($uri === '' || trim($uri) !== $uri) {
             throw new InvalidMcpCapability('Invalid resource URI.');

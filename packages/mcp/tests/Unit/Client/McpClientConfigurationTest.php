@@ -29,6 +29,7 @@ final class McpClientConfigurationTest extends TestCase
         self::assertSame($http, $configuration->httpClient);
         self::assertSame($factory, $configuration->requestFactory);
         self::assertSame($factory, $configuration->streamFactory);
+        self::assertSame(1048576, $configuration->maxRequestBytes);
         self::assertSame(0, $configuration->retries);
     }
 
@@ -89,6 +90,21 @@ final class McpClientConfigurationTest extends TestCase
             self::assertNull($exception->getPrevious());
         }
     }
+    public function test_http_request_limit_must_stay_within_the_approved_range(): void
+    {
+        $factory = new HttpFactory();
+        $http = $this->createStub(ClientInterface::class);
+        $this->expectException(\InvalidArgumentException::class);
+        McpClientConfiguration::http(
+            'https://localhost/mcp',
+            $http,
+            $factory,
+            $factory,
+            static fn(): bool => true,
+            maxRequestBytes: 16777217,
+        );
+    }
+
     public function test_stdio_requires_trusted_existing_absolute_command_and_directory(): void
     {
         $configuration = McpClientConfiguration::stdio(
@@ -100,6 +116,7 @@ final class McpClientConfigurationTest extends TestCase
         );
         self::assertSame('stdio', $configuration->mode);
         self::assertSame(ProtocolVersion::V2025_06_18, $configuration->protocolVersion);
+        self::assertSame(1048576, $configuration->maxRequestBytes);
         self::assertSame(0, $configuration->retries);
 
         $this->expectException(\InvalidArgumentException::class);

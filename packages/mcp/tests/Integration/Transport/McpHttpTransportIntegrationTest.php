@@ -12,7 +12,14 @@ use Evolve\Http\Routing\Route;
 use Evolve\Http\Routing\RouteCollection;
 use Evolve\Http\Routing\RouteMatcher;
 use Evolve\Http\Routing\RoutingRequestHandler;
+use Evolve\Mcp\Server\McpAuthorizedServerFactory;
+use Evolve\Mcp\Server\McpCapabilityExposure;
+use Evolve\Mcp\Server\McpCapabilityKind;
+use Evolve\Mcp\Server\McpCapabilityPolicy;
+use Evolve\Mcp\Server\McpPrincipal;
+use Evolve\Mcp\Server\McpSecurityAuditSink;
 use Evolve\Mcp\Server\McpServerBuilder;
+use Evolve\Mcp\Server\McpServerDefinition;
 use Evolve\Mcp\Server\McpToolDefinition;
 use Evolve\Mcp\Transport\McpHttpRequestHandler;
 use Evolve\Mcp\Transport\ScopedMcpCapabilityInvoker;
@@ -61,7 +68,7 @@ final class McpHttpTransportIntegrationTest extends TestCase
     public function test_host_authorization_and_sdk_origin_check_reject_untrusted_requests(): void
     {
         $calls = [];
-        $denied = $this->handler($calls, static fn(): bool => false)
+        $denied = $this->handler($calls, static fn(): ?McpPrincipal => null)
             ->handle($this->request('tools/call', ['name' => 'echo', 'arguments' => ['text' => 'never']]));
         self::assertSame(403, $denied->getStatusCode());
 
@@ -124,11 +131,12 @@ final class McpHttpTransportIntegrationTest extends TestCase
     {
         $calls = [];
         $authorizedUsers = [];
-        $handler = $this->handler($calls, static function (\Psr\Http\Message\ServerRequestInterface $request) use (&$authorizedUsers): bool {
+        $handler = $this->handler($calls, static function (\Psr\Http\Message\ServerRequestInterface $request) use (&$authorizedUsers): ?McpPrincipal {
             $authorizedUsers[] = $request->getAttribute('user');
 
             return $request->getAttribute('user') === 'alice'
-                && $request->getAttribute(ExecutionScope::class) instanceof ExecutionScope;
+                && $request->getAttribute(ExecutionScope::class) instanceof ExecutionScope
+                ? new McpPrincipal('alice') : null;
         });
         $routes = new RouteCollection([new Route(['POST'], '/mcp', $handler)]);
         $registry = new ServiceRegistry();
@@ -167,9 +175,27 @@ final class McpHttpTransportIntegrationTest extends TestCase
             },
         );
         $builder = new McpServerBuilder('example', '1.0', $invoker);
-        $builder->addTool(new McpToolDefinition('echo', 'tool.echo', ['type' => 'object']));
+        $builder->addTool(new McpToolDefinition('echo', 'tool.echo', ['type' => 'object'], exposure: McpCapabilityExposure::RemoteApproved));
         $factory = new HttpFactory();
-        $handler = new McpHttpRequestHandler($builder->build(), $factory, $factory, static fn(): bool => true);
+        $handler = new McpHttpRequestHandler(
+            $this->secured(
+                $builder->build(),
+                new ExecutionOrchestrator($registry),
+                static function (ExecutionScope $scope, McpPrincipal $principal, string $serviceId, array $arguments) use ($calls): string {
+                    $calls->append(true);
+                    $scope->registerResetParticipant('broken', new class implements \Evolve\Contracts\Execution\ResetParticipant {
+                        public function reset(): void
+                        {
+                            throw new \RuntimeException('reset failed');
+                        }
+                    });
+                    return 'unusable';
+                },
+            ),
+            $factory,
+            $factory,
+            static fn(): McpPrincipal => new McpPrincipal('alice'),
+        );
         $request = $this->request('tools/call', ['name' => 'echo', 'arguments' => []]);
 
         foreach ([$request, $request] as $attempt) {
@@ -181,7 +207,7 @@ final class McpHttpTransportIntegrationTest extends TestCase
             }
         }
         self::assertCount(1, $calls);
-        self::assertNotNull($invoker->quarantineFailure());
+        self::assertNotNull($handler->quarantineFailure());
     }
     public function test_http_kernel_exposes_inner_quarantine_as_a_failed_primary_outcome(): void
     {
@@ -203,9 +229,27 @@ final class McpHttpTransportIntegrationTest extends TestCase
             },
         );
         $builder = new McpServerBuilder('example', '1.0', $invoker);
-        $builder->addTool(new McpToolDefinition('echo', 'tool.echo', ['type' => 'object']));
+        $builder->addTool(new McpToolDefinition('echo', 'tool.echo', ['type' => 'object'], exposure: McpCapabilityExposure::RemoteApproved));
         $factory = new HttpFactory();
-        $handler = new McpHttpRequestHandler($builder->build(), $factory, $factory, static fn(): bool => true);
+        $handler = new McpHttpRequestHandler(
+            $this->secured(
+                $builder->build(),
+                new ExecutionOrchestrator($registry),
+                static function (ExecutionScope $scope, McpPrincipal $principal, string $serviceId, array $arguments) use ($calls): string {
+                    $calls->append(true);
+                    $scope->registerResetParticipant('broken', new class implements \Evolve\Contracts\Execution\ResetParticipant {
+                        public function reset(): void
+                        {
+                            throw new \RuntimeException('reset failed');
+                        }
+                    });
+                    return 'unusable';
+                },
+            ),
+            $factory,
+            $factory,
+            static fn(): McpPrincipal => new McpPrincipal('alice'),
+        );
         $routes = new RouteCollection([new Route(['POST'], '/mcp', $handler)]);
         $outerRegistry = new ServiceRegistry();
         $outerRegistry->freeze();
@@ -241,9 +285,24 @@ final class McpHttpTransportIntegrationTest extends TestCase
             },
         );
         $builder = new McpServerBuilder('example', '1.0', $invoker);
-        $builder->addTool(new McpToolDefinition('echo', 'tool.echo', ['type' => 'object']));
+        $builder->addTool(new McpToolDefinition('echo', 'tool.echo', ['type' => 'object'], exposure: McpCapabilityExposure::RemoteApproved));
         $factory = new HttpFactory();
-        $handler = new McpHttpRequestHandler($builder->build(), $factory, $factory, static fn(): bool => true);
+        $handler = new McpHttpRequestHandler(
+            $this->secured(
+                $builder->build(),
+                new ExecutionOrchestrator($registry),
+                static function (ExecutionScope $scope, McpPrincipal $principal, string $serviceId, array $arguments) use (&$calls): string {
+                    ++$calls;
+                    if ($calls === 1) {
+                        throw new \RuntimeException('ordinary capability failure');
+                    }
+                    return 'recovered';
+                },
+            ),
+            $factory,
+            $factory,
+            static fn(): McpPrincipal => new McpPrincipal('alice'),
+        );
         $request = $this->request('tools/call', ['name' => 'echo', 'arguments' => []]);
 
         $first = $handler->handle($request);
@@ -281,7 +340,7 @@ final class McpHttpTransportIntegrationTest extends TestCase
         self::assertSame(501, $handler->handle($subscription)->getStatusCode());
         self::assertSame([], $calls);
     }
-    public function test_http_adapter_requires_the_scoped_invoker_bound_to_its_server_definition(): void
+    public function test_http_adapter_rejects_the_legacy_unfiltered_definition_constructor(): void
     {
         $builder = new McpServerBuilder('example', '1.0', new class implements \Evolve\Mcp\Server\McpCapabilityInvoker {
             public function invoke(string $serviceId, array $arguments): mixed
@@ -291,18 +350,131 @@ final class McpHttpTransportIntegrationTest extends TestCase
         });
         $factory = new HttpFactory();
 
-        $this->expectException(\InvalidArgumentException::class);
-        new McpHttpRequestHandler($builder->build(), $factory, $factory, static fn(): bool => true);
+        $this->expectException(\TypeError::class);
+        (new \ReflectionClass(McpHttpRequestHandler::class))->newInstanceArgs([$builder->build(), $factory, $factory, static fn(): bool => true]);
     }
-    public function test_host_authorization_requires_an_explicit_true_result(): void
+    public function test_legacy_boolean_authorization_is_rejected(): void
     {
         $calls = [];
-        $unexpected = 'yes';
+        $unexpected = true;
         $handler = $this->handler($calls, static fn(): mixed => $unexpected);
         $response = $handler->handle($this->request('tools/call', ['name' => 'echo', 'arguments' => ['text' => 'never']]));
 
         self::assertSame(403, $response->getStatusCode());
         self::assertSame([], $calls);
+    }
+
+
+    public function test_missing_throwing_and_legacy_boolean_authentication_never_dispatch(): void
+    {
+        $calls = [];
+        foreach ([
+            static fn(): null => null,
+            static fn(): bool => true,
+            static function (): never {
+                throw new \RuntimeException('private authentication detail');
+            },
+        ] as $authenticate) {
+            $handler = $this->handler($calls, $authenticate);
+            $response = $handler->handle($this->request('tools/call', ['name' => 'echo', 'arguments' => ['text' => 'secret']]));
+            self::assertSame(403, $response->getStatusCode());
+            self::assertStringNotContainsString('private', (string) $response->getBody());
+        }
+        self::assertSame([], $calls);
+    }
+
+    public function test_principal_specific_lists_and_direct_calls_are_isolated_across_requests(): void
+    {
+        $registry = new ServiceRegistry();
+        $registry->freeze();
+        $invoker = new ScopedMcpCapabilityInvoker(new ExecutionOrchestrator($registry), static fn(): null => null);
+        $source = (new McpServerBuilder('example', '1.0', $invoker))
+            ->addTool(new McpToolDefinition('alice', 'tool.alice', ['type' => 'object'], exposure: McpCapabilityExposure::RemoteApproved))
+            ->addTool(new McpToolDefinition('bob', 'tool.bob', ['type' => 'object'], exposure: McpCapabilityExposure::RemoteApproved))
+            ->build();
+        $calls = [];
+        $policy = new class implements McpCapabilityPolicy {
+            public function allows(McpPrincipal $principal, McpCapabilityKind $kind, string $identity): bool
+            {
+                return $principal->subject() === $identity;
+            }
+        };
+        $servers = $this->secured(
+            $source,
+            new ExecutionOrchestrator($registry),
+            static function (ExecutionScope $scope, McpPrincipal $principal, string $serviceId, array $arguments) use (&$calls): string {
+                $calls[] = [$principal->subject(), $serviceId];
+                return $principal->subject();
+            },
+            $policy,
+        );
+        $factory = new HttpFactory();
+        $handler = new McpHttpRequestHandler(
+            $servers,
+            $factory,
+            $factory,
+            static fn(\Psr\Http\Message\ServerRequestInterface $request): ?McpPrincipal
+                => is_string($request->getAttribute('user')) ? new McpPrincipal($request->getAttribute('user')) : null,
+        );
+
+        foreach (['alice', 'bob'] as $user) {
+            $list = $handler->handle($this->request('tools/list')->withAttribute('user', $user));
+            self::assertSame([$user], array_column($this->json($list)['result']['tools'], 'name'));
+            $guessed = $handler->handle($this->request('tools/call', ['name' => $user === 'alice' ? 'bob' : 'alice', 'arguments' => []])->withAttribute('user', $user));
+            self::assertArrayHasKey('error', $this->json($guessed));
+            $allowed = $handler->handle($this->request('tools/call', ['name' => $user, 'arguments' => []])->withAttribute('user', $user));
+            self::assertSame($user, $this->json($allowed)['result']['content'][0]['text']);
+        }
+        self::assertSame([['alice', 'tool.alice'], ['bob', 'tool.bob']], $calls);
+    }
+
+    public function test_response_budget_blocks_an_oversized_serialized_result(): void
+    {
+        $registry = new ServiceRegistry();
+        $registry->freeze();
+        $source = (new McpServerBuilder(
+            'example',
+            '1.0',
+            new ScopedMcpCapabilityInvoker(new ExecutionOrchestrator($registry), static fn(): null => null),
+        ))
+            ->addTool(new McpToolDefinition('large', 'tool.large', ['type' => 'object'], exposure: McpCapabilityExposure::RemoteApproved))
+            ->build();
+        $servers = $this->secured(
+            $source,
+            new ExecutionOrchestrator($registry),
+            static fn(): string => str_repeat('sensitive-data', 100),
+        );
+        $factory = new HttpFactory();
+        $handler = new McpHttpRequestHandler(
+            $servers,
+            $factory,
+            $factory,
+            static fn(): McpPrincipal => new McpPrincipal('alice'),
+            maxResponseBytes: 200,
+        );
+        $response = $handler->handle($this->request('tools/call', ['name' => 'large', 'arguments' => []]));
+
+        self::assertSame(500, $response->getStatusCode());
+        self::assertLessThanOrEqual(200, strlen((string) $response->getBody()));
+        self::assertStringNotContainsString('sensitive-data', (string) $response->getBody());
+    }
+    /** @param callable(ExecutionScope, McpPrincipal, string, array<string, mixed>): mixed $invoke */
+    private function secured(McpServerDefinition $source, ExecutionOrchestrator $executions, callable $invoke, ?McpCapabilityPolicy $policy = null, ?McpSecurityAuditSink $sink = null): McpAuthorizedServerFactory
+    {
+        return new McpAuthorizedServerFactory(
+            $source,
+            $executions,
+            $invoke,
+            $policy ?? new class implements McpCapabilityPolicy {
+                public function allows(McpPrincipal $principal, McpCapabilityKind $kind, string $identity): bool
+                {
+                    return true;
+                }
+            },
+            $sink ?? new class implements McpSecurityAuditSink {
+                public function record(McpCapabilityKind $kind, string $identity, bool $allowed, string $correlation): void {}
+            },
+        );
     }
     /** @param list<string> $calls */
     private function handler(array &$calls, ?\Closure $authorize = null, int $maxBodyBytes = 4194304): McpHttpRequestHandler
@@ -322,10 +494,23 @@ final class McpHttpTransportIntegrationTest extends TestCase
             'type' => 'object',
             'properties' => ['text' => ['type' => 'string']],
             'required' => ['text'],
-        ]));
+        ], exposure: McpCapabilityExposure::RemoteApproved));
         $factory = new HttpFactory();
 
-        return new McpHttpRequestHandler($builder->build(), $factory, $factory, $authorize ?? static fn(): bool => true, $maxBodyBytes);
+        return new McpHttpRequestHandler(
+            $this->secured(
+                $builder->build(),
+                new ExecutionOrchestrator($registry),
+                static function (ExecutionScope $scope, McpPrincipal $principal, string $serviceId, array $arguments) use (&$calls): string {
+                    $calls[] = $arguments['text'];
+                    return 'echo: ' . $arguments['text'];
+                },
+            ),
+            $factory,
+            $factory,
+            $authorize ?? static fn(): McpPrincipal => new McpPrincipal('alice'),
+            $maxBodyBytes,
+        );
     }
 
     /** @param array<string, mixed> $params */

@@ -52,7 +52,7 @@ $definition = $builder->build();
 $sdkServer = $definition->server();
 ```
 
-The host-supplied invoker runs on every tool call, resource read and prompt request. It receives tool and prompt arguments unchanged. Resource reads receive `['uri' => $requestedUri]`. The host is responsible for service resolution, execution scope, cleanup, authorization and policy. Composition does not resolve or cache host services.
+The host-supplied invoker runs on every tool call, resource read and prompt request. It receives tool and prompt arguments unchanged. Resource reads receive `['uri' => $requestedUri]`. For direct SDK or trusted STDIO use, the host is responsible for service resolution, execution scope, cleanup, authorization and policy. The restricted remote HTTP adapter uses the authenticated factory and enforces capability policy itself. Composition does not resolve or cache host services.
 
 The SDK owns MCP schema validation, protocol dispatch, errors and result formatting. The server definition exposes the SDK server and modern stateless protocol. It performs no filesystem discovery or global registration.
 
@@ -70,14 +70,55 @@ The SDK STDIO transport serves handshake-era MCP. The integration test verifies 
 
 ## Restricted JSON-only HTTP endpoint
 
-`McpHttpRequestHandler` is an opt-in PSR-15 handler. Build the server definition with `ScopedMcpCapabilityInvoker`, then supply it with PSR-17 response and stream factories and a required host-owned authorization callable. Mount the handler explicitly with `Route`, `RoutingRequestHandler` and `HttpKernel`. The host authorization callback must return the boolean `true` for each permitted request; SDK Origin and Host checks are an additional protection. The SDK default Host allowlist is local only (`localhost`, `127.0.0.1`, `[::1]`); this adapter does not expose remote-host configuration.
+Remote HTTP requires a host-authenticated immutable McpPrincipal for each request. McpHttpRequestHandler accepts McpAuthorizedServerFactory, PSR-17 factories, and an authentication callback returning McpPrincipal or null. Legacy boolean authorization, including true, is denied; existing experimental HTTP integrations must migrate. The host authenticates the request and retains business authorization inside its services. MCP enforces capability-level admission.
 
-The handler uses the SDK's modern stateless HTTP transport and protocol for `2026-07-28` JSON responses and bodyless notifications. It bounds request bodies, retains SDK CORS and DNS-rebinding middleware, and rejects requests advertising `text/event-stream` or invoking `subscriptions/listen` before SDK dispatch. A returned SDK callback stream is rejected without consuming it. It provides no legacy HTTP session, GET subscription, DELETE teardown, SSE or cross-worker persistence. Do not mount it as an unrestricted Streamable HTTP endpoint. The host owns response emission and must inspect the `HttpKernel` execution outcome before transmission. The handler applies the SDK CORS and DNS-rebinding middleware before all response branches, including restricted-endpoint refusals. If an inner capability execution requires quarantine, the handler throws a terminal runtime exception after SDK dispatch and refuses later requests. The host must inspect `McpHttpRequestHandler::quarantineFailure()` after each `HttpKernel` outcome and recycle an affected worker. A failed outer primary outcome is an immediate signal; `HttpKernel`'s outer `isReusable()` value alone does not encode inner capability cleanup state. Ordinary capability exceptions with successful cleanup remain SDK JSON-RPC errors.
+Every definition, including a component contribution, defaults to McpCapabilityExposure::LocalOnly. The host must explicitly set RemoteApproved and supply McpCapabilityPolicy and McpSecurityAuditSink. The factory builds a fresh SDK registry per authenticated request with only visible tools, resources, and prompts. It checks permission again immediately before service invocation. Do not remotely mount the unfiltered SDK server or stateless protocol exposed by McpServerDefinition.
 
-Full SSE lifecycle management is deferred to a separately tracked roadmap item. No HTTP emitter or persistent session store is supplied here.
+The following uses the implemented contracts. The application supplies $definition from McpServerBuilder, $executions, PSR-17 $responses and $streams, a real $securityAuditSink, and $hostInvoker. A no-op audit sink is unsuitable for security-sensitive operations.
+
+```php
+use Evolve\Mcp\Server\McpAuthorizedServerFactory;
+use Evolve\Mcp\Server\McpCapabilityKind;
+use Evolve\Mcp\Server\McpCapabilityPolicy;
+use Evolve\Mcp\Server\McpPrincipal;
+use Evolve\Mcp\Transport\McpHttpRequestHandler;
+use Psr\Http\Message\ServerRequestInterface;
+
+$servers = new McpAuthorizedServerFactory(
+    $definition,
+    $executions,
+    static fn ($scope, McpPrincipal $principal, string $serviceId, array $arguments): mixed =>
+        $hostInvoker($scope, $principal, $serviceId, $arguments),
+    new class implements McpCapabilityPolicy {
+        public function allows(McpPrincipal $principal, McpCapabilityKind $kind, string $identity): bool
+        {
+            return $principal->subject() === 'approved-user'
+                && $kind === McpCapabilityKind::Tool
+                && $identity === 'echo';
+        }
+    },
+    $securityAuditSink,
+);
+$handler = new McpHttpRequestHandler(
+    $servers,
+    $responses,
+    $streams,
+    static function (ServerRequestInterface $request): ?McpPrincipal {
+        $subject = $request->getAttribute('verified_subject');
+        return is_string($subject) ? new McpPrincipal($subject) : null;
+    },
+);
+```
+
+Each audit record contains only capability kind, SHA-256 capability fingerprint, decision, and random per-request correlation. Do not record raw principals, tenants, arguments, results, authorization headers, or secrets. The secure builder uses the SDK default NullLogger because SDK debug logging can contain arguments and structured results. Policy or required audit failure denies invocation.
+
+The endpoint retains SDK CORS, Origin and local-only Host checks. It serves modern 2026-07-28 stateless JSON responses and bodyless notifications only. Request bodies default to 4 MiB and can be configured up to 16 MiB. Serialized responses default to 1 MiB and can be configured up to 16 MiB; oversized results are withheld. This post-serialization limit does not bound peak service memory or computation time. SSE negotiation, subscriptions, legacy HTTP sessions, GET subscription, DELETE teardown, and cross-worker persistence remain unsupported.
+
+The host owns response emission and must inspect HttpKernel outcomes and McpHttpRequestHandler::quarantineFailure() before worker reuse. An inner cleanup failure requires recycling even if the outer HttpKernel reports reusable. Full SSE, subscriptions and stateful HTTP remain deferred.
+
 ## Explicit client foundation
 
-Construct an HTTP configuration with an HTTPS endpoint, a caller-owned PSR-18 client, PSR-17 request and stream factories, and an approval callback for the exact endpoint. The caller must configure the underlying client to enforce TLS, destination and SSRF policy, no automatic redirects, and concrete connection/read deadlines. The adapter rechecks the endpoint before each send; it cannot inspect hidden redirects performed by the injected client.
+Construct an HTTP configuration with an HTTPS endpoint, a caller-owned PSR-18 client, PSR-17 request and stream factories, and an approval callback for the exact endpoint. The caller must configure the underlying PSR-18 client to enforce TLS validation, actual connected-IP and DNS-rebinding policy at every connection, no automatic redirects, restricted proxy routing, and concrete connection/read deadlines. The adapter rechecks the exact endpoint before each send; it cannot inspect hidden redirects or destination changes performed by the injected client.
 
 ```php
 use Evolve\Mcp\Client\McpClientConfiguration;
@@ -103,7 +144,7 @@ try {
 
 A named bearer secret can be supplied as a `SecretName` argument to `McpClientConfiguration::http()`; pass a `SecretResolver` to `McpClientFactory::connect()`. Resolution occurs before network activity on every connection and does not cache secret values. The SDK receives a fresh client and transport, the configured protocol version (`2026-07-28` for HTTP), zero connection retries, bounded SDK logical timeouts and its default `NullLogger`. The injected PSR-18 client must enforce actual I/O deadlines; the SDK's synchronous blocking I/O cannot always be interrupted. Protocol-level reissues may occur, so tool effects are not guaranteed exactly once.
 
-The HTTP wrapper replaces the SDK's SSE-capable Accept header with `application/json`. It rejects response session headers, redirects, SSE or unexpected content types, and reads response bodies within a byte limit even when Content-Length is absent or false. The endpoint must be HTTPS and must contain no URL userinfo, query or fragment. HTTP supports only stateless JSON responses from the accepted restricted server. No SSE stream, session or automatic trust elevation is supported.
+The HTTP wrapper replaces the SDK's SSE-capable Accept header with `application/json`. It rejects response session headers, redirects, SSE or unexpected content types, and reads outbound request bodies and inbound response bodies within configured byte limits even when a size is unknown or false. Both default to 1 MiB and are configurable up to 16 MiB. The endpoint must be HTTPS and must contain no URL userinfo, query or fragment. HTTP supports only stateless JSON responses from the accepted restricted server. No SSE stream, session or automatic trust elevation is supported.
 
 Client STDIO is supported on Linux PHP only for EvolvePHP 2.0 Beta. Native Windows PHP refuses STDIO at connection creation before secret resolution or child launch; HTTP client mode remains available on Windows. Native Windows PHP STDIO is deferred to the 2.1 follow-up. On Linux, use `McpClientConfiguration::stdio()` with an absolute existing executable path, explicit arguments, working directory and environment, plus an application-owned approval callback. The default protocol is `2025-06-18`. Named environment secrets can be resolved per connection. The child receives only the explicitly configured environment and resolved named secrets; an empty environment stays empty and does not inherit ambient parent credentials. Only trusted local application configuration may provide the command; remote capability declarations never become commands. The SDK owns the child process and pipes. Startup and initialization errors become categorized failures. The SDK attempts termination on close, but termination of an unresponsive child is not guaranteed.
 
