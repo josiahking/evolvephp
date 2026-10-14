@@ -68,6 +68,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
 
         $expectedRequireDev = array(
             'deptrac/deptrac' => '^4.7',
+            'evolvephp/ai' => '^2.0@dev',
             'evolvephp/bridge-contracts' => '^2.0@dev',
             'evolvephp/bridge-laravel' => '^2.0@dev',
             'evolvephp/bridge-psr' => '^2.0@dev',
@@ -180,6 +181,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
             'test:observe' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe',
             'test:mcp' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite mcp',
+            'test:ai' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite ai',
             'test:plugin' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin',
             'test:queue-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-contracts',
             'test:queue-memory' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-memory',
@@ -246,7 +248,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
         }
     }
 
-    public function testReleaseMapContainsOnlyTheTwentySixReleasePackages(): void
+    public function testReleaseMapContainsOnlyTheApprovedReleasePackages(): void
     {
         $map = $this->readJsonFile('release-packages.json');
 
@@ -280,6 +282,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/http-client', 'directory' => 'packages/http-client'),
                 array('name' => 'evolvephp/observe', 'directory' => 'packages/observe'),
                 array('name' => 'evolvephp/mcp', 'directory' => 'packages/mcp'),
+                array('name' => 'evolvephp/ai', 'directory' => 'packages/ai'),
                 array('name' => 'evolvephp/bridge-psr', 'directory' => 'packages/bridge-psr'),
                 array('name' => 'evolvephp/bridge-laravel', 'directory' => 'packages/bridge-laravel'),
                 array('name' => 'evolvephp/bridge-symfony', 'directory' => 'packages/bridge-symfony'),
@@ -333,6 +336,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/module',
             'evolvephp/observe',
             'evolvephp/mcp',
+            'evolvephp/ai',
             'evolvephp/plugin',
             'evolvephp/queue-contracts',
             'evolvephp/queue-memory',

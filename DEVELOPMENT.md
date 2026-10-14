@@ -93,6 +93,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/http-client`
 - `evolvephp/observe`
 - `evolvephp/mcp`
+- `evolvephp/ai`
 - `evolvephp/module`
 - `evolvephp/plugin`
 - `evolvephp/testing`
@@ -167,6 +168,7 @@ composer test:i18n
 composer test:insight
 composer test:observe
 composer test:mcp
+composer test:ai
 composer test:dev-tools
 composer test:http
 composer test:http-client
@@ -276,7 +278,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains thirty-three packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, migration, view, view-twig, view-blade, i18n, module, plugin, http, insight, http-client, observe, mcp, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains thirty-four packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, migration, view, view-twig, view-blade, i18n, module, plugin, http, insight, http-client, observe, mcp, ai, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -452,6 +454,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `insight` | `packages/insight/tests` |
 | `observe` | `packages/observe/tests` |
 | `mcp` | `packages/mcp/tests` |
+| `ai` | `packages/ai/tests` |
 | `dev-tools` | `packages/dev-tools/tests` |
 | `http` | `packages/http/tests` |
 | `http-client` | `packages/http-client/tests` |
@@ -518,6 +521,8 @@ packages/observe/src
 packages/observe/tests
 packages/mcp/src
 packages/mcp/tests
+packages/ai/src
+packages/ai/tests
 packages/dev-tools/src
 packages/dev-tools/tests
 packages/http/src
@@ -536,7 +541,7 @@ The root manually includes `phpstan/phpstan-phpunit` type-inference integration 
 
 No PHPStan baseline is allowed, and the configuration must not use `ignoreErrors`. Local PHPStan cache belongs in `.phpstan-cache/` and is ignored.
 
-Observe and MCP source/test tooling coverage is included in PHPStan and PHP-CS-Fixer through their respective `packages/observe/src`, `packages/observe/tests`, `packages/mcp/src` and `packages/mcp/tests` paths.
+Observe, MCP and AI source/test tooling coverage is included in PHPStan and PHP-CS-Fixer through their respective package source and test paths.
 
 ## Architecture Boundaries
 
@@ -573,6 +578,7 @@ packages/scheduler/src
 packages/insight/src
 packages/observe/src
 packages/mcp/src
+packages/ai/src
 packages/dev-tools/src
 packages/http/src
 packages/http-client/src
@@ -606,6 +612,7 @@ Scheduler -> packages/scheduler/src/.* -> Evolve\Scheduler\
 Insight   -> packages/insight/src/.*   -> Evolve\Insight\
 Observe   -> packages/observe/src/.*   -> Evolve\Observe\
 Mcp       -> packages/mcp/src/.*       -> Evolve\Mcp\
+Ai        -> packages/ai/src/.*        -> Evolve\Ai\
 DevTools  -> packages/dev-tools/src/.* -> Evolve\DevTools\
 Http      -> packages/http/src/.*      -> Evolve\Http\
 HttpClient -> packages/http-client/src/.* -> Evolve\Http\Client\
@@ -638,6 +645,7 @@ Job       -> Core, QueueContracts
 Insight   -> Core, DatabaseContracts, Http, View, I18n, QueueContracts, StorageContracts, PsrSimpleCache, PsrHttpClient, PsrHttpMessage, PsrHttpServer
 Observe   -> Core, DatabaseContracts, Http, HttpClient, Job, QueueContracts, StorageContracts, OpenTelemetryApi, OpenTelemetrySdk, OpenTelemetrySemConv, PsrHttpClient, PsrHttpMessage, PsrHttpServer, PsrSimpleCache
 Mcp       -> Contracts, Core, SecretContracts, McpSdk, PsrHttpClient, PsrHttpMessage, PsrHttpServer
+Ai        -> (no outward first-party dependencies)
 DevTools  -> Contracts, Core, Module, Plugin
 Http      -> Contracts, Core
 HttpClient -> PsrHttpMessage, PsrHttpClient
@@ -721,7 +729,7 @@ PHP-CS-Fixer is the root coding-standard engine. The distributable configuration
 
 The project style is based on PHP-FIG PER Coding Style 3.0 through PHP-CS-Fixer's `@PER-CS3x0` rule set. The floating `@PER-CS` alias is not used. The project explicitly enables alphabetical `ordered_imports` and `no_unused_imports`.
 
-PHP-CS-Fixer checks Observe and MCP `src` and `tests` directories plus the existing covered package `src` and `tests` directories and the committed skeleton PHP config/bootstrap files. The extensionless skeleton executable is protected by syntax and create-project validation rather than distorting the Finder. The root architecture tests, root documentation tests, RFCs, `vendor/` and generated caches are excluded.
+PHP-CS-Fixer checks Observe, MCP and AI `src` and `tests` directories plus the existing covered package `src` and `tests` directories and the committed skeleton PHP config/bootstrap files. The extensionless skeleton executable is protected by syntax and create-project validation rather than distorting the Finder. The root architecture tests, root documentation tests, RFCs, `vendor/` and generated caches are excluded.
 
 Risky rules are disabled. The `declare_strict_types` fixer is not enabled; strict-types policy for EvolvePHP 2 package PHP files is enforced by architecture tests.
 

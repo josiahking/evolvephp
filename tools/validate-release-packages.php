@@ -108,6 +108,7 @@ function expectedPackages(): array
         'evolvephp/http-client' => array('name' => 'evolvephp/http-client', 'directory' => 'packages/http-client'),
         'evolvephp/observe' => array('name' => 'evolvephp/observe', 'directory' => 'packages/observe'),
         'evolvephp/mcp' => array('name' => 'evolvephp/mcp', 'directory' => 'packages/mcp'),
+        'evolvephp/ai' => array('name' => 'evolvephp/ai', 'directory' => 'packages/ai'),
         'evolvephp/bridge-psr' => array('name' => 'evolvephp/bridge-psr', 'directory' => 'packages/bridge-psr'),
         'evolvephp/bridge-laravel' => array('name' => 'evolvephp/bridge-laravel', 'directory' => 'packages/bridge-laravel'),
         'evolvephp/bridge-symfony' => array('name' => 'evolvephp/bridge-symfony', 'directory' => 'packages/bridge-symfony'),
@@ -150,6 +151,7 @@ function expectedNamespaces(): array
         'evolvephp/insight' => 'Evolve\\Insight\\',
         'evolvephp/observe' => 'Evolve\\Observe\\',
         'evolvephp/mcp' => 'Evolve\\Mcp\\',
+        'evolvephp/ai' => 'Evolve\\Ai\\',
         'evolvephp/dev-tools' => 'Evolve\\DevTools\\',
         'evolvephp/module' => 'Evolve\\Module\\',
         'evolvephp/plugin' => 'Evolve\\Plugin\\',
@@ -192,6 +194,7 @@ function expectedGraph(): array
         'evolvephp/insight' => array('evolvephp/core', 'evolvephp/database-contracts', 'evolvephp/http', 'evolvephp/i18n', 'evolvephp/queue-contracts', 'evolvephp/storage-contracts', 'evolvephp/view'),
         'evolvephp/observe' => array('evolvephp/core', 'evolvephp/database-contracts', 'evolvephp/http', 'evolvephp/http-client', 'evolvephp/job', 'evolvephp/queue-contracts', 'evolvephp/storage-contracts'),
         'evolvephp/mcp' => array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/secret-contracts'),
+        'evolvephp/ai' => array(),
         'evolvephp/module' => array('evolvephp/contracts'),
         'evolvephp/plugin' => array('evolvephp/contracts'),
         'evolvephp/http' => array('evolvephp/contracts', 'evolvephp/core'),
@@ -221,8 +224,8 @@ function validateMap(string $root): array
         fail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 33) {
-        fail('release-packages.json must contain exactly thirty-three package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 34) {
+        fail('release-packages.json must contain exactly thirty-four package entries.');
     }
 
     $expectedPackages = array_values(expectedPackages());

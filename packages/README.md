@@ -10,7 +10,7 @@ All package manifests require PHP `^8.4`.
 
 EvolvePHP 2 packages continue to require PHP `^8.4`. `compat/legacy-http-client` is a separate isolated remote compatibility artifact for legacy applications whose initial official legacy runtime evidence is PHP 7.4.
 
-The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 33-package release map.
+The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 34-package release map.
 
 The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge endpoint. It does not enable embedded or same-process EvolvePHP on PHP 7, lower Core or package requirements, share sessions or cookies, provide automatic retries or fallback routing, or perform modernization cutover or data migration.
 
@@ -45,6 +45,7 @@ The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge e
 | `evolvephp/insight` | `Evolve\Insight\` | Optional diagnostic-batch collection, explicit incoming HTTP server diagnostics and an opt-in native PHP dashboard over detached persisted snapshots. |
 | `evolvephp/observe` | `Evolve\Observe\` | Optional OpenTelemetry composition, generic execution tracing and metrics, explicit HTTP server and outbound client telemetry, database/cache/storage decorators, structured-log correlation, bounded SDK export-processing integration, remote Bridge W3C continuity boundary and application-owned providers/exporters/transports with the final package boundary intentionally closed to first-party Bridge and Insight dependencies. |
 | `evolvephp/mcp` | `Evolve\Mcp\` | Optional experimental MCP server transports, explicit module/plugin contributions and explicitly configured SDK client foundation; client STDIO is Linux PHP-only for 2.0 Beta. |
+| `evolvephp/ai` | `Evolve\Ai\` | Optional experimental provider-neutral synchronous model invocation contracts and caller-controlled tool handoff; no provider adapter or automatic execution. |
 | `evolvephp/dev-tools` | `Evolve\DevTools\` | Development-only tooling boundary with public experimental `module:new` and `plugin:new` command adapters, read-only Audit APIs and the standalone `evolve-audit` binary for root Composer, resolved lockfile, PHP source coupling and lexical source-structure evidence, plus adoption-planning models for explicit migration declarations. |
 | `evolvephp/http` | `Evolve\Http\` | HTTP boundary with PSR HTTP interoperability, `MiddlewarePipeline`, route definitions and matching, routed handler dispatch, typed routing failures, `HttpKernel` integration with Core execution orchestration, response/error and health foundations and explicit response-emitter boundary; runtime adapters remain deferred. |
 | `evolvephp/http-client` | `Evolve\Http\Client\` | Public experimental vendor-neutral PSR-18 outbound client composition foundation with ordered middleware and application-owned concrete transports and policy. |

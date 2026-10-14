@@ -145,7 +145,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $config->toArray()['skip_violations'] ?? array(),
         );
 
-        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/storage-contracts/tests', 'packages/storage-local/tests', 'packages/secret-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/job/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/mcp/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/http-client/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
+        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/storage-contracts/tests', 'packages/storage-local/tests', 'packages/secret-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/job/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/mcp/tests', 'packages/ai/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/http-client/tests', 'packages/module/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
             $this->assertStringNotContainsString($testPath, $content);
         }
 
@@ -280,6 +280,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'Insight' => 'packages/insight/src/.*',
             'Observe' => 'packages/observe/src/.*',
             'Mcp' => 'packages/mcp/src/.*',
+            'Ai' => 'packages/ai/src/.*',
             'DevTools' => 'packages/dev-tools/src/.*',
             'Http' => 'packages/http/src/.*',
             'HttpClient' => 'packages/http-client/src/.*',
@@ -335,6 +336,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'Insight' => array('Core', 'DatabaseContracts', 'Http', 'View', 'I18n', 'QueueContracts', 'StorageContracts', 'PsrSimpleCache', 'PsrHttpClient', 'PsrHttpMessage', 'PsrHttpServer'),
             'Observe' => array('Core', 'DatabaseContracts', 'Http', 'HttpClient', 'Job', 'QueueContracts', 'StorageContracts', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'PsrHttpClient', 'PsrHttpMessage', 'PsrHttpServer', 'PsrSimpleCache'),
             'Mcp' => array('Contracts', 'Core', 'SecretContracts', 'McpSdk', 'PsrHttpClient', 'PsrHttpMessage', 'PsrHttpServer'),
+            'Ai' => array(),
             'DevTools' => array('Contracts', 'Core', 'Module', 'Plugin'),
             'Http' => array('Contracts', 'Core', 'PsrHttpMessage', 'PsrHttpServer'),
             'HttpClient' => array('PsrHttpMessage', 'PsrHttpClient'),
@@ -418,6 +420,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'insight' => 'Insight',
             'observe' => 'Observe',
             'mcp' => 'Mcp',
+            'ai' => 'Ai',
             'devTools' => 'DevTools',
             'http' => 'Http',
             'httpClient' => 'HttpClient',
@@ -443,11 +446,11 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $rulesets[$layerName] = $accesses;
         }
 
-        foreach (array('Contracts', 'DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'SecretContracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'PsrContainer', 'PsrSimpleCache', 'PsrClock', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'LaravelHost', 'SymfonyHost', 'Core', 'Insight', 'Observe', 'Mcp', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
+        foreach (array('Contracts', 'DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'SecretContracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'PsrContainer', 'PsrSimpleCache', 'PsrClock', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'LaravelHost', 'SymfonyHost', 'Core', 'Insight', 'Observe', 'Mcp', 'Ai', 'DevTools', 'Http', 'Module', 'Plugin') as $productionLayer) {
             $this->assertNotContains('Testing', $rulesets[$productionLayer], $productionLayer . ' must not access Testing.');
         }
 
-        foreach (array('DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'SecretContracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'Insight', 'Observe', 'Mcp', 'DevTools', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
+        foreach (array('DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'SecretContracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'Insight', 'Observe', 'Mcp', 'Ai', 'DevTools', 'Http', 'Module', 'Plugin', 'Testing') as $layerName) {
             $this->assertNotContains('PsrContainer', $rulesets[$layerName], $layerName . ' must not access PsrContainer directly without an approved boundary.');
         }
 
@@ -491,6 +494,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/insight/src' => 'Evolve\\Insight\\',
             'packages/observe/src' => 'Evolve\\Observe\\',
             'packages/mcp/src' => 'Evolve\\Mcp\\',
+            'packages/ai/src' => 'Evolve\\Ai\\',
             'packages/dev-tools/src' => 'Evolve\\DevTools\\',
             'packages/http/src' => 'Evolve\\Http\\',
             'packages/http-client/src' => 'Evolve\\Http\\Client\\',

@@ -80,6 +80,7 @@ final class PrereleaseConsumerValidator
                 'evolvephp/http-client' => '^2.0@alpha',
                 'evolvephp/observe' => '^2.0@alpha',
                 'evolvephp/mcp' => '^2.0@alpha',
+                'evolvephp/ai' => '^2.0@alpha',
                 'evolvephp/testing' => '^2.0@alpha',
             ));
             $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case F', $alphaRepositories, $lockedRuntimePackages, array(
@@ -110,6 +111,7 @@ final class PrereleaseConsumerValidator
                 'evolvephp/http-client' => '^2.0',
                 'evolvephp/observe' => '^2.0',
                 'evolvephp/mcp' => '^2.0',
+                'evolvephp/ai' => '^2.0',
                 'evolvephp/testing' => '^2.0',
             ), array('minimum-stability' => 'alpha', 'prefer-stable' => true), $this->expectedVersions($packages, self::ALPHA_VERSION));
             $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case G', $alphaRepositories, $lockedRuntimePackages, $this->explicitAlphaRootRequirements($packages), array(), $this->expectedVersions($packages, self::ALPHA_VERSION));
@@ -141,6 +143,7 @@ final class PrereleaseConsumerValidator
                 'evolvephp/http-client' => '^2.0',
                 'evolvephp/observe' => '^2.0',
                 'evolvephp/mcp' => '^2.0',
+                'evolvephp/ai' => '^2.0',
                 'evolvephp/testing' => '^2.0',
             ), array(), $this->expectedVersions($packages, self::STABLE_VERSION));
 
