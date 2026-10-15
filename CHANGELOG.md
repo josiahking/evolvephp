@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added optional experimental `evolvephp/ai` provider-neutral synchronous invocation contracts on PHP `^8.4`. Applications own providers, credentials, transport deadlines, cancellation checks, and authorization of any requested tool execution; no provider or automatic tool execution is included.
+
 - Added explicit, graph-ordered MCP tool, resource and prompt contributions from enabled modules and plugins. Contributions use callback-scoped registrars and publish atomically after validation.
 
 - Added an opt-in MCP client foundation with official SDK HTTP and Linux PHP-only STDIO transports, bounded discovery, explicit invocation, per-run secrets and scoped cleanup. HTTP is JSON-only with caller-owned destination and network policy; SSE and stateful sessions remain unsupported; native Windows PHP STDIO is deferred to Phase 13.9 for 2.1.

@@ -38,6 +38,7 @@ return static function (DeptracConfig $config): void {
             'packages/insight/src',
             'packages/observe/src',
             'packages/mcp/src',
+            'packages/ai/src',
             'packages/dev-tools/src',
             'packages/http/src',
             'packages/http-client/src',
@@ -165,6 +166,9 @@ return static function (DeptracConfig $config): void {
             $mcp = Layer::withName('Mcp')->collectors(
                 DirectoryConfig::create('packages/mcp/src/.*'),
             ),
+            $ai = Layer::withName('Ai')->collectors(
+                DirectoryConfig::create('packages/ai/src/.*'),
+            ),
             $mcpSdk = Layer::withName('McpSdk')->collectors(
                 ClassLikeConfig::create('^Mcp\\.*'),
             ),
@@ -236,6 +240,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($insight)->accesses($core, $databaseContracts, $http, $view, $i18n, $queueContracts, $storageContracts, $psrSimpleCache, $psrHttpClient, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($observe)->accesses($core, $databaseContracts, $http, $httpClient, $job, $queueContracts, $storageContracts, $openTelemetryApi, $openTelemetrySdk, $openTelemetrySemConv, $psrHttpClient, $psrHttpMessage, $psrHttpServer, $psrSimpleCache),
             Ruleset::forLayer($mcp)->accesses($contracts, $core, $secretContracts, $mcpSdk, $psrHttpClient, $psrHttpMessage, $psrHttpServer),
+            Ruleset::forLayer($ai),
             Ruleset::forLayer($mcpSdk),
             Ruleset::forLayer($openTelemetryApi),
             Ruleset::forLayer($openTelemetrySdk),

@@ -36,6 +36,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'compat/legacy-http-client/README.md',
                 'docs/rfcs/README.md',
                 'packages/README.md',
+            'packages/ai/README.md',
                 'packages/bridge-contracts/README.md',
                 'packages/bridge-laravel/README.md',
                 'packages/bridge-psr/README.md',
@@ -153,7 +154,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             $this->assertStringContainsString('composer ' . $script, $content);
         }
 
-        foreach (['test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:job', 'test:scheduler', 'test:migration', 'test:insight', 'test:observe', 'test:mcp', 'test:dev-tools', 'test:http', 'test:http-client', 'test:module', 'test:plugin', 'test:testing'] as $script) {
+        foreach (['test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:job', 'test:scheduler', 'test:migration', 'test:insight', 'test:observe', 'test:mcp', 'test:ai', 'test:dev-tools', 'test:http', 'test:http-client', 'test:module', 'test:plugin', 'test:testing'] as $script) {
             $this->assertStringContainsString('composer ' . $script, $content);
         }
     }
@@ -408,6 +409,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'docs/alpha/insight.md',
             'docs/alpha/observe.md',
             'packages/README.md',
+            'packages/ai/README.md',
             'packages/bridge-contracts/README.md',
             'packages/bridge-laravel/README.md',
             'packages/bridge-psr/README.md',
@@ -423,6 +425,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
             'packages/job/README.md',
             'packages/scheduler/README.md',
             'packages/mcp/README.md',
+            'packages/ai/README.md',
             'packages/migration/README.md',
             'packages/http/README.md',
             'packages/http-client/README.md',

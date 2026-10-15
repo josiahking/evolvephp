@@ -110,6 +110,10 @@
             "directory": "packages/mcp"
         },
         {
+            "name": "evolvephp/ai",
+            "directory": "packages/ai"
+        },
+        {
             "name": "evolvephp/bridge-psr",
             "directory": "packages/bridge-psr"
         },

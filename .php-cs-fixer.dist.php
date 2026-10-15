@@ -58,6 +58,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/observe/tests',
         'packages/mcp/src',
         'packages/mcp/tests',
+        'packages/ai/src',
+        'packages/ai/tests',
         'packages/dev-tools/src',
         'packages/dev-tools/tests',
         'packages/http/src',
