@@ -1,0 +1,39 @@
+site_name: EvolvePHP
+site_description: EvolvePHP 2 Next developer manual
+site_url: https://josiahking.github.io/evolvephp/
+repo_url: https://github.com/josiahking/evolvephp
+repo_name: josiahking/evolvephp
+edit_uri: edit/2.x/website/docs/
+docs_dir: docs
+site_dir: build
+use_directory_urls: true
+theme:
+  name: mkdocs
+plugins:
+  - search
+markdown_extensions:
+  - fenced_code
+  - codehilite
+nav:
+  - Home: index.md
+  - Next:
+      - Start Here: next/index.md
+      - Current Status: next/getting-started/current-status.md
+      - Requirements: next/getting-started/requirements.md
+      - Source Preview: next/getting-started/source-preview.md
+      - Architecture: next/concepts/architecture.md
+      - Execution Model: next/concepts/execution-model.md
+      - Service Lifetimes: next/concepts/service-lifetimes.md
+      - Modernization: next/modernization/overview.md
+      - Audit: next/modernization/audit.md
+      - Doctor: next/modernization/doctor.md
+      - Adoption Planning: next/modernization/adoption-planning.md
+      - Bridge: next/modernization/bridge.md
+      - Insight: next/observability/insight.md
+      - Observe: next/observability/observe.md
+      - Packages: next/packages/overview.md
+      - MCP: next/packages/mcp.md
+      - Releases: next/project/releases.md
+      - RFCs: next/project/rfcs.md
+      - Documentation Versioning: next/project/documentation-versioning.md
+  - Versions: versions/index.md

@@ -18,6 +18,10 @@ Behavioral changes are expected to follow `RED -> GREEN -> REFACTOR`: add or upd
 
 Run the relevant focused checks first, then broader quality checks when the change is ready. Detailed setup, Composer commands and validation guidance live in [DEVELOPMENT.md](DEVELOPMENT.md).
 
+## Current Documentation
+
+Public behavior changes should update the [Next developer manual](website/docs/next/index.md) and its examples in the same reviewed change. The manual describes implemented APIs and current limitations. Its MkDocs build, virtual environments and caches are generated files; see [documentation site instructions](website/README.md) for validation.
+
 ## Architecture And Public API
 
 Public API and architecture changes require deliberate review. Accepted RFCs must not be silently contradicted. Package ownership, dependency direction and Composer dependency boundaries must be respected.

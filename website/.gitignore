@@ -1,0 +1,7 @@
+build/
+.venv/
+.audit-venv/
+.docusaurus/
+node_modules/
+__pycache__/
+*.pyc

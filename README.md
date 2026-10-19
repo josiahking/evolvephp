@@ -82,6 +82,10 @@ The normal clone path starts on `2.x` because it is the GitHub default branch. F
 
 Use [DEVELOPMENT.md](DEVELOPMENT.md) for detailed Composer, PHPUnit, PHPStan, PHP-CS-Fixer, Deptrac, supply-chain, release-validation and developer-experience commands. See [CONTRIBUTING.md](CONTRIBUTING.md) for newcomer-facing contribution guidance.
 
+## Current Developer Manual
+
+The current [Next developer manual](website/docs/next/index.md) documents the 2.x source and its limitations. Its intended GitHub Pages address is https://josiahking.github.io/evolvephp/next/; availability requires separate Pages publication. EvolvePHP 2 remains pre-release and not production-ready, and first-party packages are not yet independently published. See [documentation site instructions](website/README.md) for local build and validation.
+
 ## Alpha Documentation
 
 - [Alpha getting started](docs/alpha/getting-started.md)
