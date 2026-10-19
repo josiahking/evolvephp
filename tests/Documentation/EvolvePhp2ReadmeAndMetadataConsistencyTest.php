@@ -71,6 +71,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'packages/view-twig/README.md',
                 'packages/view/README.md',
                 'skeleton/README.md',
+                'website/README.md',
             ],
             $this->trackedReadmes(),
         );

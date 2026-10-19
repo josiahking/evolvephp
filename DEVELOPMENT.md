@@ -781,6 +781,20 @@ The workflow must not run `composer update`, use a platform-requirement bypass o
 
 Action dependencies are pinned by immutable full-SHA references. The reviewed release comments must remain beside those SHAs so future audits can connect each commit pin to its intended release tag.
 
+## Documentation Website
+
+The current Next manual is authored in website/docs/next/. MkDocs 1.6.1 uses its bundled theme and search; Python 3.11 and 3.13 are the documentation CI matrix, while PHP examples are checked with PHP 8.4. This toolchain is for documentation development and does not change the PHP framework runtime requirement.
+
+On native Windows, select a Python 3.11+ launcher explicitly. For the available Python 3.13 launcher, from the repository root:
+
+    py -3.13 -m venv website/.venv
+    website/.venv/Scripts/python.exe -m pip install -r website/requirements-docs.txt
+    website/.venv/Scripts/python.exe website/build_docs.py
+
+The build wrapper runs MkDocs with --strict and copies .nojekyll into website/build/ for the intended GitHub Pages project path /evolvephp/. Run the website Python tests with EVOLVEPHP_DOCS_PHP set to an explicit PHP 8.4 executable; the documentation workflow also runs root Documentation policy tests. The separate requirements-audit.txt environment audits both exact installed Python environments. Pins are exact versions but do not contain wheel hashes, so artifact-level reproducibility remains unresolved. The build-tool-only MPL-2.0 pathspec and audit-tool certifi license declarations require policy review before acceptance.
+
+Build validation does not publish documentation. Keep website/build/, virtual environments and caches out of source control. Future documentation snapshots must be tied to actual release tags; today's Next pages are not a historical release snapshot.
+
 ## Compatibility Evidence
 
 EvolvePHP 2 requires PHP 8.4 as the baseline. The current CI matrix has successfully executed in GitHub Actions: the current root quality pipeline passes on PHP 8.4 and PHP 8.5, and the root policy job passes on PHP 8.4.

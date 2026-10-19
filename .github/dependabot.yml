@@ -13,6 +13,11 @@ updates:
       - dependency-name: "evolvephp/plugin"
       - dependency-name: "evolvephp/testing"
 
+  - package-ecosystem: "pip"
+    directory: "/website"
+    schedule:
+      interval: "weekly"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

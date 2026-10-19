@@ -103,6 +103,10 @@ Write or update tests before implementation, demonstrate the expected failing re
 - Clearly identify historical claims, maintainer-reported facts and independently verified facts.
 - Keep public documentation tool-neutral and durable.
 
+## Public Documentation Ownership
+
+website/docs/next/ is the public current Next developer manual. docs/rfcs/ records accepted architecture and decisions; docs/releases/ records releases; docs/alpha/ and docs/history/ retain historical or source records. Public behavior changes should assess and update the manual and its examples in the same change where applicable. Examples must use implemented APIs and state limitations. Public documentation stays tool-neutral. Generated website/build/, website/.venv/, website/.audit-venv/ and website/**/__pycache__/ are not source.
+
 ## Completion Evidence
 
 Every final agent report must include the same contribution evidence expected from any automated repository work:

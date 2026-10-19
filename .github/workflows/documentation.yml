@@ -1,0 +1,88 @@
+name: Documentation
+
+on:
+  pull_request:
+    branches:
+      - 2.x
+  push:
+    branches:
+      - 2.x
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: documentation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Documentation (Python ${{ matrix.python }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.13']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Set up PHP for policy tests and examples
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.4'
+          extensions: intl
+          tools: composer:v2
+          coverage: none
+
+      - name: Verify PHP 8.4
+        run: php -r 'if (PHP_VERSION_ID < 80400 || PHP_VERSION_ID >= 80500) { exit(1); }'
+
+      - name: Create isolated Python environments
+        run: |
+          python -m venv website/.venv
+          python -m venv website/.audit-venv
+
+      - name: Install pinned documentation dependencies
+        run: |
+          website/.venv/bin/python -m pip install --no-input --disable-pip-version-check -r website/requirements-docs.txt
+          website/.venv/bin/python -m pip check
+
+      - name: Install pinned audit tooling
+        run: |
+          website/.audit-venv/bin/python -m pip install --no-input --disable-pip-version-check -r website/requirements-audit.txt
+          website/.audit-venv/bin/python -m pip check
+
+      - name: Audit exact installed Python environments
+        run: |
+          DOCS_SITE_PACKAGES="$(website/.venv/bin/python -c 'import site; print(site.getsitepackages()[0])')"
+          AUDIT_SITE_PACKAGES="$(website/.audit-venv/bin/python -c 'import site; print(site.getsitepackages()[0])')"
+          website/.audit-venv/bin/python -m pip_audit --path "$DOCS_SITE_PACKAGES"
+          website/.audit-venv/bin/python -m pip_audit --path "$AUDIT_SITE_PACKAGES"
+
+      - name: Build documentation in strict mode
+        run: website/.venv/bin/python website/build_docs.py
+
+      - name: Validate generated site and PHP examples
+        env:
+          EVOLVEPHP_DOCS_PHP: php
+        run: website/.venv/bin/python -m unittest discover -s website/tests -v
+
+      - name: Install root Composer dependencies for documentation policy
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run repository documentation policy tests
+        run: php vendor/bin/phpunit --configuration phpunit.xml.dist tests/Documentation
+
+      - name: Reject tracked generated documentation output
+        run: |
+          test -z "$(git ls-files website/build website/.venv website/.audit-venv website/node_modules website/.docusaurus)"

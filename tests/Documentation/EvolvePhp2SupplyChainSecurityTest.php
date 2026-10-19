@@ -20,7 +20,9 @@ final class EvolvePhp2SupplyChainSecurityTest extends TestCase
         $this->assertMatchesPattern('/directory:\s*"\/"|directory:\s*\//', $content);
         $this->assertMatchesPattern('/package-ecosystem:\s*"github-actions"|package-ecosystem:\s*github-actions/', $content);
         $this->assertMatchesPattern('/directory:\s*"\/"|directory:\s*\/\s*$/m', $content);
-        $this->assertSame(2, preg_match_all('/interval:\s*"weekly"|interval:\s*weekly/', $content, $matches));
+        $this->assertMatchesPattern('/package-ecosystem:\s*"pip"|package-ecosystem:\s*pip/', $content);
+        $this->assertMatchesPattern('/directory:\s*"\/website"|directory:\s*\/website/', $content);
+        $this->assertSame(3, preg_match_all('/interval:\s*"weekly"|interval:\s*weekly/', $content, $matches));
 
         foreach (array(
             '/registr(?:y|ies):/i',

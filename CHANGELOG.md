@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added a proposed MkDocs 1.6.1 Next developer manual with strict build, search, GitHub Pages path validation, PHP 8.4 example linting and Python 3.11/3.13 documentation CI. Publication and historical version snapshots have not occurred.
+
 - Added optional experimental `evolvephp/ai` provider-neutral synchronous invocation contracts on PHP `^8.4`. Applications own providers, credentials, transport deadlines, cancellation checks, and authorization of any requested tool execution; no provider or automatic tool execution is included.
 
 - Added explicit, graph-ordered MCP tool, resource and prompt contributions from enabled modules and plugins. Contributions use callback-scoped registrars and publish atomically after validation.
