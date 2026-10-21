@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Evolve\Mcp\Client;
 
+use Evolve\Mcp\Observability\McpOperation;
+use Evolve\Mcp\Observability\McpOperationDispatcher;
 use Mcp\Client;
 use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\Result\GetPromptResult;
@@ -20,6 +22,7 @@ final class McpClientConnection
     public function __construct(
         private Client $client,
         private McpClientConfiguration $configuration,
+        private ?McpOperationDispatcher $operations = null,
     ) {}
 
     public function isReusable(): bool
@@ -43,6 +46,7 @@ final class McpClientConnection
                 $this->configuration->maxPages,
                 $this->configuration->maxItems,
             ),
+            'discover',
         );
     }
 
@@ -50,20 +54,20 @@ final class McpClientConnection
     public function callTool(string $name, array $arguments = []): CallToolResult
     {
         $this->assertIdentity($name);
-        return $this->operation(McpClientFailureCategory::Operation, fn(): CallToolResult => $this->client->callTool($name, $arguments));
+        return $this->operation(McpClientFailureCategory::Operation, fn(): CallToolResult => $this->client->callTool($name, $arguments), 'invoke', $name);
     }
 
     public function readResource(string $uri): ReadResourceResult
     {
         $this->assertIdentity($uri);
-        return $this->operation(McpClientFailureCategory::Operation, fn(): ReadResourceResult => $this->client->readResource($uri));
+        return $this->operation(McpClientFailureCategory::Operation, fn(): ReadResourceResult => $this->client->readResource($uri), 'invoke', $uri);
     }
 
     /** @param array<string, string> $arguments */
     public function getPrompt(string $name, array $arguments = []): GetPromptResult
     {
         $this->assertIdentity($name);
-        return $this->operation(McpClientFailureCategory::Operation, fn(): GetPromptResult => $this->client->getPrompt($name, $arguments));
+        return $this->operation(McpClientFailureCategory::Operation, fn(): GetPromptResult => $this->client->getPrompt($name, $arguments), 'invoke', $name);
     }
 
     public function close(): void
@@ -96,19 +100,39 @@ final class McpClientConnection
      * @param callable(): T $operation
      * @return T
      */
-    private function operation(McpClientFailureCategory $category, callable $operation): mixed
+    private function operation(McpClientFailureCategory $category, callable $operation, string $kind, ?string $identity = null): mixed
     {
-        if (!$this->isReusable()) {
-            throw new McpClientException(McpClientFailureCategory::Unusable, 'MCP connection is not reusable.');
-        }
+        $started = $this->operations?->isEnabled() ? hrtime(true) : null;
+        $outcomeLabel = 'success';
+        $failureCategory = null;
         try {
-            return $operation();
-        } catch (Throwable $exception) {
-            $this->poisoned = true;
-            if ($exception instanceof McpClientException) {
-                throw $exception;
+            if (!$this->isReusable()) {
+                throw new McpClientException(McpClientFailureCategory::Unusable, 'MCP connection is not reusable.');
             }
-            throw new McpClientException($category, 'MCP remote operation failed.');
+            try {
+                return $operation();
+            } catch (Throwable $exception) {
+                $this->poisoned = true;
+                if ($exception instanceof McpClientException) {
+                    throw $exception;
+                }
+                throw new McpClientException($category, 'MCP remote operation failed.');
+            }
+        } catch (McpClientException $exception) {
+            $outcomeLabel = 'failure';
+            $failureCategory = $exception->category->value;
+            throw $exception;
+        } finally {
+            if ($started !== null) {
+                $this->operations->dispatch(new McpOperation(
+                    $kind,
+                    $this->configuration->mode,
+                    $outcomeLabel,
+                    $identity,
+                    durationNs: max(0, hrtime(true) - $started),
+                    failureCategory: $failureCategory,
+                ));
+            }
         }
     }
 }

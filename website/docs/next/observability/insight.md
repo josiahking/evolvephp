@@ -39,3 +39,17 @@ $orchestrator = new ExecutionOrchestrator($services, $pipeline);
 ~~~
 
 This enables only the explicitly attached diagnostics sink. Configure capture policy and redaction before collecting sensitive applications' events. Insight finalizes detached batches and snapshots; optional storage is separate from business storage. Native dashboard routes are available through explicit composition, but no route, storage, or authorization policy installs itself. Local diagnostics are not a production telemetry exporter.
+
+## MCP local diagnostics
+
+`McpOperationDiagnostics` accepts normalized MCP operational arrays and a caller-owned execution identifier and `DiagnosticEntrySink`. Its local summary records kind, transport, outcome, bounded duration and fixed failure category. It omits capability hashes and correlation tokens. The host must wire it explicitly; Insight does not require MCP and does not export production telemetry. MCP security audit is separate. After installing MCP and Insight, the host can compose the caller-owned diagnostic sink and execution identifier explicitly:
+
+```php
+$diagnostics = new \Evolve\Insight\Mcp\McpOperationDiagnostics($diagnosticEntrySink, $executionIdentifier);
+$sink = new class($diagnostics) implements \Evolve\Mcp\Observability\McpOperationSink {
+    public function __construct(private \Evolve\Insight\Mcp\McpOperationDiagnostics $diagnostics) {}
+    public function record(array $fields): void { $this->diagnostics->record($fields); }
+};
+$operations = new \Evolve\Mcp\Observability\McpOperationDispatcher($sink);
+$clientFactory = new \Evolve\Mcp\Client\McpClientFactory($operations);
+```

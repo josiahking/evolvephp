@@ -147,6 +147,8 @@ final class PrereleaseConsumerValidator
                 'evolvephp/testing' => '^2.0',
             ), array(), $this->expectedVersions($packages, self::STABLE_VERSION));
 
+            $results[] = $this->runMcpIndependentConsumer($temp, $composer, $alphaRepositories, $lockedRuntimePackages, $root);
+
             assertSourceStatePreserved($this->runner, $root, $sourceState);
 
             return $results;
@@ -249,6 +251,58 @@ final class PrereleaseConsumerValidator
         }
 
         return array('name' => $caseName, 'outcome' => 'success', 'detail' => $this->formatVersions($actualVersions));
+    }
+
+    /**
+     * Install a real disposable consumer after the existing lock-only cases.
+     * This is part of the later immutable-ref release gate and is not run during implementation.
+     * @param array<string, string> $repositories
+     * @param list<array<string, mixed>> $lockedRuntimePackages
+     * @return array{name: string, outcome: string, detail: string}
+     */
+    private function runMcpIndependentConsumer(ReleaseValidationTemporaryDirectory $temp, ?string $composer, array $repositories, array $lockedRuntimePackages, string $root): array
+    {
+        $consumer = $this->createConsumer(
+            $temp,
+            'MCP independent case',
+            $repositories,
+            $lockedRuntimePackages,
+            array('evolvephp/mcp' => '^2.0@alpha', 'guzzlehttp/psr7' => '^3.1'),
+            array('minimum-stability' => 'alpha', 'prefer-stable' => true),
+        );
+        $update = $this->runComposerUpdate($consumer, $temp, $composer);
+        if ($update->exitCode !== 0) {
+            releaseValidationFail('MCP independent lock failed: ' . $update->output());
+        }
+        $install = $this->runner->run(
+            withComposerCommand(array(
+                '--working-dir=' . $consumer,
+                'install',
+                '--no-interaction',
+                '--no-plugins',
+                '--no-scripts',
+                '--no-audit',
+                '--no-ansi',
+            ), $composer),
+            null,
+            array(
+                'COMPOSER_DISABLE_NETWORK' => '1',
+                'COMPOSER_HOME' => $temp->child('composer-home'),
+                'COMPOSER_CACHE_DIR' => $temp->child('composer-cache'),
+            ),
+        );
+        if ($install->exitCode !== 0) {
+            releaseValidationFail('MCP independent install failed: ' . $install->output());
+        }
+        $fixture = $this->runner->run(
+            array(PHP_BINARY, joinPaths($root, 'tools/fixtures/mcp-independent-consumer.php'), $consumer),
+            null,
+            array('COMPOSER_DISABLE_NETWORK' => '1'),
+        );
+        if ($fixture->exitCode !== 0) {
+            releaseValidationFail('MCP independent fixture failed: ' . $fixture->output());
+        }
+        return array('name' => 'MCP independent case', 'outcome' => 'success', 'detail' => trim($fixture->stdout));
     }
 
     /**

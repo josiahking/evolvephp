@@ -38,3 +38,17 @@ $composition = (new OpenTelemetryCompositionFactory())->create(
 ~~~
 
 Pass the composition to the specific Observe instrumentation you choose to install. The application owns providers, exporters, transports, timeouts, flush and shutdown, and any Collector deployment. Observe does not install global or automatic instrumentation. Insight provides Evolve-aware local diagnostics; Observe provides OpenTelemetry-oriented instrumentation and export composition.
+
+## MCP operation telemetry
+
+`McpOperationInstrumentation` consumes normalized MCP operational arrays through explicit host wiring. It creates optional spans, count/duration metrics and safe log correlation when the application enables Observe providers. Metric labels are limited to fixed kind, transport and outcome values; capability hashes and correlation tokens are never metric labels. Observe does not require the MCP package, enable a global provider, or configure an exporter. Security audit remains an MCP host concern. An enabled composition creates and ends one span per event; it records a count and, when `duration_ns` is present, a seconds histogram. Export failures are contained. The host can wire it explicitly as follows after installing MCP and Observe:
+
+```php
+$instrumentation = new \Evolve\Observe\Mcp\McpOperationInstrumentation($composition);
+$sink = new class($instrumentation) implements \Evolve\Mcp\Observability\McpOperationSink {
+    public function __construct(private \Evolve\Observe\Mcp\McpOperationInstrumentation $instrumentation) {}
+    public function record(array $fields): void { $this->instrumentation->record($fields); }
+};
+$operations = new \Evolve\Mcp\Observability\McpOperationDispatcher($sink);
+$clientFactory = new \Evolve\Mcp\Client\McpClientFactory($operations);
+```

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Evolve\Mcp\Client;
 
+use Evolve\Mcp\Observability\McpOperation;
+use Evolve\Mcp\Observability\McpOperationDispatcher;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -25,6 +27,7 @@ final readonly class McpHttpPolicyClient implements ClientInterface
         private int $maxResponseBytes,
         private ?string $bearerToken = null,
         private int $maxRequestBytes = 1048576,
+        private ?McpOperationDispatcher $operations = null,
     ) {
         if ($maxResponseBytes < 1 || $maxResponseBytes > 16777216
             || $maxRequestBytes < 1 || $maxRequestBytes > 16777216) {
@@ -36,90 +39,109 @@ final readonly class McpHttpPolicyClient implements ClientInterface
     /** @throws McpClientException */
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
-        $uri = (string) $request->getUri();
-        if ($uri !== $this->endpoint || $request->getMethod() !== 'POST') {
-            throw new McpClientException(McpClientFailureCategory::Security, 'MCP destination or method denied.');
-        }
+        $started = $this->operations?->isEnabled() ? hrtime(true) : null;
+        $outcomeLabel = 'success';
+        $failureCategory = null;
         try {
-            $approved = ($this->approveDestination)($uri) === true;
-        } catch (Throwable) {
-            $approved = false;
-        }
-        if (!$approved) {
-            throw new McpClientException(McpClientFailureCategory::Security, 'MCP destination or method denied.');
-        }
-        if ($request->hasHeader('Transfer-Encoding')) {
-            throw new McpClientException(McpClientFailureCategory::Security, 'MCP request transfer encoding denied.');
-        }
-        $body = $request->getBody();
-        if ($body->getSize() !== null && $body->getSize() > $this->maxRequestBytes) {
-            throw new McpClientException(McpClientFailureCategory::Security, 'MCP request body limit exceeded.');
-        }
-        if ($body->isSeekable()) {
-            $body->rewind();
-        }
-        $bytes = '';
-        try {
-            while ($body->getSize() !== 0 && !$body->eof()) {
-                $chunk = $body->read(min(8192, $this->maxRequestBytes - strlen($bytes) + 1));
-                if ($chunk === '') {
-                    throw new McpClientException(McpClientFailureCategory::Connection, 'MCP request body stalled.');
-                }
-                $bytes .= $chunk;
-                if (strlen($bytes) > $this->maxRequestBytes) {
-                    throw new McpClientException(McpClientFailureCategory::Security, 'MCP request body limit exceeded.');
-                }
+            $uri = (string) $request->getUri();
+            if ($uri !== $this->endpoint || $request->getMethod() !== 'POST') {
+                throw new McpClientException(McpClientFailureCategory::Security, 'MCP destination or method denied.');
             }
-        } catch (McpClientException $exception) {
-            throw $exception;
-        } catch (Throwable) {
-            throw new McpClientException(McpClientFailureCategory::Connection, 'MCP request body read failed.');
-        }
-        $request = $request->withBody($this->streams->createStream($bytes))
-            ->withHeader('Content-Length', (string) strlen($bytes))
-            ->withHeader('Accept', 'application/json');
-        if ($this->bearerToken !== null) {
-            $request = $request->withHeader('Authorization', 'Bearer ' . $this->bearerToken);
-        }
-
-        try {
-            $response = $this->inner->sendRequest($request);
-        } catch (Throwable) {
-            throw new McpClientException(McpClientFailureCategory::Connection, 'MCP HTTP transport failed.');
-        }
-
-        if ($response->hasHeader('Mcp-Session-Id')
-            || $response->hasHeader('Location')
-            || ($response->getStatusCode() >= 300 && $response->getStatusCode() < 400)) {
-            throw new McpClientException(McpClientFailureCategory::Security, 'MCP stateful or redirect response denied.');
-        }
-        $contentType = strtolower(trim(explode(';', $response->getHeaderLine('Content-Type'), 2)[0]));
-        if ($contentType !== 'application/json' && !($response->getStatusCode() === 202 && $contentType === '')) {
-            throw new McpClientException(McpClientFailureCategory::Security, 'MCP response content type denied.');
-        }
-
-        $body = $response->getBody();
-        if ($body->getSize() !== null && $body->getSize() > $this->maxResponseBytes) {
-            throw new McpClientException(McpClientFailureCategory::Security, 'MCP response body limit exceeded.');
-        }
-        $bytes = '';
-        try {
-            while ($body->getSize() !== 0 && !$body->eof()) {
-                $chunk = $body->read(min(8192, $this->maxResponseBytes - strlen($bytes) + 1));
-                if ($chunk === '') {
-                    throw new McpClientException(McpClientFailureCategory::Connection, 'MCP response body stalled.');
-                }
-                $bytes .= $chunk;
-                if (strlen($bytes) > $this->maxResponseBytes) {
-                    throw new McpClientException(McpClientFailureCategory::Security, 'MCP response body limit exceeded.');
-                }
+            try {
+                $approved = ($this->approveDestination)($uri) === true;
+            } catch (Throwable) {
+                $approved = false;
             }
-        } catch (McpClientException $exception) {
-            throw $exception;
-        } catch (Throwable) {
-            throw new McpClientException(McpClientFailureCategory::Connection, 'MCP response body read failed.');
-        }
+            if (!$approved) {
+                throw new McpClientException(McpClientFailureCategory::Security, 'MCP destination or method denied.');
+            }
+            if ($request->hasHeader('Transfer-Encoding')) {
+                throw new McpClientException(McpClientFailureCategory::Security, 'MCP request transfer encoding denied.');
+            }
+            $body = $request->getBody();
+            if ($body->getSize() !== null && $body->getSize() > $this->maxRequestBytes) {
+                throw new McpClientException(McpClientFailureCategory::Security, 'MCP request body limit exceeded.');
+            }
+            if ($body->isSeekable()) {
+                $body->rewind();
+            }
+            $bytes = '';
+            try {
+                while ($body->getSize() !== 0 && !$body->eof()) {
+                    $chunk = $body->read(min(8192, $this->maxRequestBytes - strlen($bytes) + 1));
+                    if ($chunk === '') {
+                        throw new McpClientException(McpClientFailureCategory::Connection, 'MCP request body stalled.');
+                    }
+                    $bytes .= $chunk;
+                    if (strlen($bytes) > $this->maxRequestBytes) {
+                        throw new McpClientException(McpClientFailureCategory::Security, 'MCP request body limit exceeded.');
+                    }
+                }
+            } catch (McpClientException $exception) {
+                throw $exception;
+            } catch (Throwable) {
+                throw new McpClientException(McpClientFailureCategory::Connection, 'MCP request body read failed.');
+            }
+            $request = $request->withBody($this->streams->createStream($bytes))
+                ->withHeader('Content-Length', (string) strlen($bytes))
+                ->withHeader('Accept', 'application/json');
+            if ($this->bearerToken !== null) {
+                $request = $request->withHeader('Authorization', 'Bearer ' . $this->bearerToken);
+            }
 
-        return $response->withBody($this->streams->createStream($bytes));
+            try {
+                $response = $this->inner->sendRequest($request);
+            } catch (Throwable) {
+                throw new McpClientException(McpClientFailureCategory::Connection, 'MCP HTTP transport failed.');
+            }
+
+            if ($response->hasHeader('Mcp-Session-Id')
+                || $response->hasHeader('Location')
+                || ($response->getStatusCode() >= 300 && $response->getStatusCode() < 400)) {
+                throw new McpClientException(McpClientFailureCategory::Security, 'MCP stateful or redirect response denied.');
+            }
+            $contentType = strtolower(trim(explode(';', $response->getHeaderLine('Content-Type'), 2)[0]));
+            if ($contentType !== 'application/json' && !($response->getStatusCode() === 202 && $contentType === '')) {
+                throw new McpClientException(McpClientFailureCategory::Security, 'MCP response content type denied.');
+            }
+
+            $body = $response->getBody();
+            if ($body->getSize() !== null && $body->getSize() > $this->maxResponseBytes) {
+                throw new McpClientException(McpClientFailureCategory::Security, 'MCP response body limit exceeded.');
+            }
+            $bytes = '';
+            try {
+                while ($body->getSize() !== 0 && !$body->eof()) {
+                    $chunk = $body->read(min(8192, $this->maxResponseBytes - strlen($bytes) + 1));
+                    if ($chunk === '') {
+                        throw new McpClientException(McpClientFailureCategory::Connection, 'MCP response body stalled.');
+                    }
+                    $bytes .= $chunk;
+                    if (strlen($bytes) > $this->maxResponseBytes) {
+                        throw new McpClientException(McpClientFailureCategory::Security, 'MCP response body limit exceeded.');
+                    }
+                }
+            } catch (McpClientException $exception) {
+                throw $exception;
+            } catch (Throwable) {
+                throw new McpClientException(McpClientFailureCategory::Connection, 'MCP response body read failed.');
+            }
+
+            return $response->withBody($this->streams->createStream($bytes));
+        } catch (Throwable $exception) {
+            $outcomeLabel = 'failure';
+            $failureCategory = $exception instanceof McpClientException ? $exception->category->value : 'unknown';
+            throw $exception;
+        } finally {
+            if ($started !== null) {
+                $this->operations->dispatch(new McpOperation(
+                    'transport',
+                    'http',
+                    $outcomeLabel,
+                    durationNs: max(0, hrtime(true) - $started),
+                    failureCategory: $failureCategory,
+                ));
+            }
+        }
     }
 }

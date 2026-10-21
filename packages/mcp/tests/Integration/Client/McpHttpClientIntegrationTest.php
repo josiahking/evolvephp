@@ -9,6 +9,8 @@ use Evolve\Core\Execution\ExecutionOrchestrator;
 use Evolve\Core\Execution\ExecutionScope;
 use Evolve\Mcp\Client\McpClientConfiguration;
 use Evolve\Mcp\Client\McpClientFactory;
+use Evolve\Mcp\Observability\McpOperationDispatcher;
+use Evolve\Mcp\Observability\McpOperationSink;
 use Evolve\Mcp\Server\McpAuthorizedServerFactory;
 use Evolve\Mcp\Server\McpCapabilityExposure;
 use Evolve\Mcp\Server\McpCapabilityKind;
@@ -83,7 +85,15 @@ final class McpHttpClientIntegrationTest extends TestCase
             ));
         });
         $configuration = McpClientConfiguration::http('https://localhost/mcp', $http, $factory, $factory, static fn(): bool => true);
-        $connection = (new McpClientFactory())->connect($configuration);
+        $sink = new class implements McpOperationSink {
+            /** @var list<array<string, string|int>> */
+            public array $events = [];
+            public function record(array $fields): void
+            {
+                $this->events[] = $fields;
+            }
+        };
+        $connection = (new McpClientFactory(new McpOperationDispatcher($sink)))->connect($configuration);
 
         $catalog = $connection->discover();
         self::assertSame('echo', $catalog->tools()[0]->name);
@@ -100,6 +110,31 @@ final class McpHttpClientIntegrationTest extends TestCase
         self::assertCount(3, $calls);
         $connection->close();
         self::assertFalse($connection->isReusable());
+        self::assertNotEmpty(array_filter($sink->events, static fn(array $event): bool => $event['kind'] === 'transport' && $event['outcome'] === 'success'));
+    }
+
+    public function test_factory_http_policy_denial_reaches_sink_and_remains_denied(): void
+    {
+        $factory = new HttpFactory();
+        $sink = new class implements McpOperationSink {
+            /** @var list<array<string, string|int>> */
+            public array $events = [];
+            public function record(array $fields): void
+            {
+                $this->events[] = $fields;
+            }
+        };
+        $http = $this->createStub(ClientInterface::class);
+        $http->method('sendRequest')->willReturn(new \GuzzleHttp\Psr7\Response(200, ['Content-Type' => 'text/event-stream'], 'private'));
+        $configuration = McpClientConfiguration::http('https://localhost/mcp', $http, $factory, $factory, static fn(): bool => true);
+        try {
+            (new McpClientFactory(new McpOperationDispatcher($sink)))->connect($configuration);
+            self::fail('Expected JSON-only policy refusal.');
+        } catch (\Evolve\Mcp\Client\McpClientException $exception) {
+            self::assertSame(\Evolve\Mcp\Client\McpClientFailureCategory::Security, $exception->category);
+        }
+        self::assertNotEmpty(array_filter($sink->events, static fn(array $event): bool => $event['kind'] === 'transport' && $event['failure_category'] === 'security'));
+        self::assertStringNotContainsString('private', json_encode($sink->events, JSON_THROW_ON_ERROR));
     }
 
     public function test_named_bearer_secret_is_resolved_before_any_request_and_never_appears_in_errors(): void

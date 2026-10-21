@@ -6,6 +6,16 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 {
     private $root;
 
+    public function test_mcp_independent_consumer_fixture_is_invoked_after_disposable_install(): void
+    {
+        $root = dirname(__DIR__, 2);
+        $validator = (string) file_get_contents($root . '/tools/validate-prerelease-consumers.php');
+        $fixture = $root . '/tools/fixtures/mcp-independent-consumer.php';
+        self::assertFileExists($fixture);
+        self::assertStringContainsString('runMcpIndependentConsumer', $validator);
+        self::assertStringContainsString('mcp-independent-consumer.php', $validator);
+        self::assertStringContainsString('vendor/autoload.php', (string) file_get_contents($fixture));
+    }
     protected function setUp(): void
     {
         $this->root = dirname(__DIR__, 2);
