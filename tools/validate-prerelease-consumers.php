@@ -281,7 +281,6 @@ final class PrereleaseConsumerValidator
                 '--no-interaction',
                 '--no-plugins',
                 '--no-scripts',
-                '--no-audit',
                 '--no-ansi',
             ), $composer),
             null,
