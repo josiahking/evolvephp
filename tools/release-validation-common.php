@@ -635,6 +635,19 @@ function lockedPackageRepositoryPackagesByName(string $root, bool $includeDev = 
                 $definition['type'] = $package['type'];
             }
 
+            // Preserve Composer plugin and autoload metadata from composer.lock.
+            foreach (array('extra', 'autoload') as $field) {
+                if (!array_key_exists($field, $package)) {
+                    continue;
+                }
+
+                if (!is_array($package[$field])) {
+                    releaseValidationFail('composer.lock package ' . $name . ' field ' . $field . ' must be an object.');
+                }
+
+                $definition[$field] = $package[$field];
+            }
+
             foreach (array('source', 'dist') as $field) {
                 if (!array_key_exists($field, $package)) {
                     continue;
