@@ -262,6 +262,8 @@ final class PrereleaseConsumerValidator
      */
     private function runMcpIndependentConsumer(ReleaseValidationTemporaryDirectory $temp, ?string $composer, array $repositories, array $lockedRuntimePackages, string $root): array
     {
+        $offlineRepository = $this->prepareMcpOfflineRepository($root, $temp, $lockedRuntimePackages);
+        $firstPartyRepository = $this->prepareMcpFirstPartyOfflineRepository($temp, $repositories);
         $consumer = $this->createConsumer(
             $temp,
             'MCP independent case',
@@ -269,6 +271,8 @@ final class PrereleaseConsumerValidator
             $lockedRuntimePackages,
             array('evolvephp/mcp' => '^2.0@alpha', 'guzzlehttp/psr7' => '^3.1'),
             array('minimum-stability' => 'alpha', 'prefer-stable' => true),
+            $offlineRepository,
+            $firstPartyRepository,
         );
         $update = $this->runComposerUpdate($consumer, $temp, $composer);
         if ($update->exitCode !== 0) {
@@ -305,12 +309,264 @@ final class PrereleaseConsumerValidator
     }
 
     /**
+     * @param list<array<string, mixed>> $lockedRuntimePackages
+     * @return array{root: string, versions: array<string, string>}
+     */
+    private function prepareMcpOfflineRepository(string $root, ReleaseValidationTemporaryDirectory $temp, array $lockedRuntimePackages): array
+    {
+        $locked = array_column($lockedRuntimePackages, null, 'name');
+        $firstParty = array_column(loadReleasePackages($root), null, 'name');
+        $queue = array('evolvephp/mcp', 'guzzlehttp/psr7');
+        $visited = array();
+        $versions = array();
+
+        while ($queue !== array()) {
+            $name = array_shift($queue);
+            if (isset($visited[$name])) {
+                continue;
+            }
+            if (!preg_match('~^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$~', $name)) {
+                releaseValidationFail('Unsafe MCP offline package name: ' . (string) $name);
+            }
+            $visited[$name] = true;
+
+            if (str_starts_with($name, 'evolvephp/')) {
+                if (!isset($firstParty[$name])) {
+                    releaseValidationFail('Unknown MCP first-party package: ' . $name);
+                }
+                $manifest = readJsonFile(joinPaths($root, $firstParty[$name]['directory'] . '/composer.json'), $name . ' composer.json');
+                if (($manifest['name'] ?? null) !== $name) {
+                    releaseValidationFail('MCP first-party package name mismatch: ' . $name);
+                }
+                $requires = $manifest['require'] ?? array();
+            } else {
+                if (!isset($locked[$name])) {
+                    releaseValidationFail('MCP offline dependency is missing from composer.lock: ' . $name);
+                }
+                $package = $locked[$name];
+                if (($package['name'] ?? null) !== $name || !isset($package['version']) || !is_string($package['version'])) {
+                    releaseValidationFail('Invalid locked MCP offline package metadata: ' . $name);
+                }
+                $versions[$name] = $package['version'];
+                $requires = $package['require'] ?? array();
+            }
+
+            if (!is_array($requires)) {
+                releaseValidationFail('Invalid MCP offline package requirements: ' . $name);
+            }
+            foreach (array_keys($requires) as $dependency) {
+                if (is_string($dependency) && str_contains($dependency, '/')) {
+                    $queue[] = $dependency;
+                }
+            }
+        }
+
+        ksort($versions);
+        $vendorRoot = joinPaths($root, 'vendor');
+        $vendorRealPath = realpath($vendorRoot);
+        if ($vendorRealPath === false || !is_dir($vendorRealPath) || is_link($vendorRoot)) {
+            releaseValidationFail('MCP offline vendor directory is missing.');
+        }
+        $installed = readJsonFile(joinPaths($vendorRoot, 'composer/installed.json'), 'installed Composer packages');
+        $installedPackages = array_column($installed['packages'] ?? array(), null, 'name');
+        $repositoryRoot = $temp->child('offline-mcp-vendor');
+        if (!mkdir($repositoryRoot, 0777, true) && !is_dir($repositoryRoot)) {
+            releaseValidationFail('Unable to create MCP offline repository.');
+        }
+
+        foreach ($versions as $name => $version) {
+            $source = joinPaths($vendorRoot, $name);
+            $sourceRealPath = realpath($source);
+            if (!is_dir($source) || is_link($source) || is_link(dirname($source))
+                || $sourceRealPath === false
+                || !str_starts_with(normalizePath($sourceRealPath), rtrim(normalizePath($vendorRealPath), '/') . '/')
+            ) {
+                releaseValidationFail('Locked MCP package is not installed safely: ' . $name);
+            }
+            if (($installedPackages[$name]['version'] ?? null) !== $version) {
+                releaseValidationFail('Installed MCP package version does not match composer.lock: ' . $name);
+            }
+            $manifest = readJsonFile(joinPaths($source, 'composer.json'), $name . ' installed composer.json');
+            if (($manifest['name'] ?? null) !== $name) {
+                releaseValidationFail('Installed MCP package name mismatch: ' . $name);
+            }
+            $this->copyMcpPackageDirectory($source, joinPaths($repositoryRoot, $name));
+        }
+
+        return array('root' => $repositoryRoot, 'versions' => $versions);
+    }
+
+    private function copyMcpPackageDirectory(string $source, string $target): void
+    {
+        if (!is_dir($source) || is_link($source)) {
+            releaseValidationFail('Locked MCP package directory is missing or a symlink: ' . $source);
+        }
+        if (!mkdir($target, 0777, true) && !is_dir($target)) {
+            releaseValidationFail('Unable to create MCP offline package directory: ' . $target);
+        }
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($source, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::SELF_FIRST
+        );
+        foreach ($iterator as $entry) {
+            if ($entry->isLink()) {
+                releaseValidationFail('Refusing to copy symlink into MCP offline repository: ' . $entry->getPathname());
+            }
+            $relative = substr($entry->getPathname(), strlen($source) + 1);
+            $destination = joinPaths($target, str_replace(DIRECTORY_SEPARATOR, '/', $relative));
+            if ($entry->isDir()) {
+                if (!mkdir($destination, 0777, true) && !is_dir($destination)) {
+                    releaseValidationFail('Unable to create MCP offline package directory: ' . $destination);
+                }
+            } elseif (!$entry->isFile() || !copy($entry->getPathname(), $destination)) {
+                releaseValidationFail('Unable to copy MCP offline package file: ' . $entry->getPathname());
+            }
+        }
+    }
+
+    /**
+     * @param array<string, string> $repositories
+     * @return array{root: string, versions: array<string, string>}
+     */
+    private function prepareMcpFirstPartyOfflineRepository(ReleaseValidationTemporaryDirectory $temp, array $repositories): array
+    {
+        $temporaryRoot = realpath($temp->path);
+        $alphaRoot = $temp->child('alpha-repositories');
+        $alphaRealPath = realpath($alphaRoot);
+        if ($temporaryRoot === false || $alphaRealPath === false || is_link($alphaRoot)
+            || !str_starts_with(normalizePath($alphaRealPath), rtrim(normalizePath($temporaryRoot), '/') . '/')
+        ) {
+            releaseValidationFail('MCP alpha repository root is unsafe or missing.');
+        }
+
+        $queue = array('evolvephp/mcp');
+        $versions = array();
+        $sources = array();
+        while ($queue !== array()) {
+            $name = array_shift($queue);
+            if (!str_starts_with($name, 'evolvephp/') || isset($versions[$name])) {
+                continue;
+            }
+            if (!preg_match('~^evolvephp/[a-z0-9][a-z0-9._-]*$~', $name)) {
+                releaseValidationFail('Unsafe MCP first-party package name: ' . $name);
+            }
+            if (!isset($repositories[$name])) {
+                releaseValidationFail('Missing MCP first-party alpha repository: ' . $name);
+            }
+
+            $source = $repositories[$name];
+            $sourceRealPath = realpath($source);
+            if ($sourceRealPath === false || !is_dir($source) || is_link($source)
+                || !str_starts_with(normalizePath($sourceRealPath), rtrim(normalizePath($alphaRealPath), '/') . '/')
+            ) {
+                releaseValidationFail('Unsafe MCP first-party alpha repository: ' . $name);
+            }
+            $head = trim($this->runner->mustRun(array('git', '-C', $source, 'rev-parse', 'HEAD'))->stdout);
+            $tag = $this->runner->run(array('git', '-C', $source, 'rev-parse', '--verify', 'refs/tags/' . self::ALPHA_VERSION . '^{commit}'));
+            if ($tag->exitCode !== 0 || trim($tag->stdout) !== $head) {
+                releaseValidationFail('MCP first-party alpha tag does not match HEAD: ' . $name);
+            }
+            $status = trim($this->runner->mustRun(array('git', '-C', $source, 'status', '--porcelain=v1', '--untracked-files=all'))->stdout);
+            if ($status !== '') {
+                releaseValidationFail('MCP first-party alpha repository has uncommitted files: ' . $name);
+            }
+
+            $manifest = readJsonFile(joinPaths($source, 'composer.json'), $name . ' tagged composer.json');
+            if (!is_array($manifest) || ($manifest['name'] ?? null) !== $name) {
+                releaseValidationFail('MCP first-party package name mismatch: ' . $name);
+            }
+            $requires = $manifest['require'] ?? null;
+            if (!is_array($requires)) {
+                releaseValidationFail('MCP first-party package requirements are invalid: ' . $name);
+            }
+            foreach (array_keys($requires) as $dependency) {
+                if (is_string($dependency) && str_starts_with($dependency, 'evolvephp/')) {
+                    $queue[] = $dependency;
+                }
+            }
+            $versions[$name] = self::ALPHA_VERSION;
+            $sources[$name] = $source;
+        }
+
+        ksort($versions);
+        $expected = array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/mcp', 'evolvephp/secret-contracts');
+        if (array_keys($versions) !== $expected) {
+            releaseValidationFail('MCP first-party alpha dependency closure changed.');
+        }
+
+        $repositoryRoot = $temp->child('offline-mcp-first-party');
+        if (!mkdir($repositoryRoot, 0777, true) && !is_dir($repositoryRoot)) {
+            releaseValidationFail('Unable to create MCP first-party offline repository.');
+        }
+        foreach ($versions as $name => $version) {
+            $target = joinPaths($repositoryRoot, str_replace('/', '-', $name));
+            $this->copyTaggedMcpPackageSnapshot($sources[$name], $target);
+            $copyManifest = readJsonFile(joinPaths($target, 'composer.json'), $name . ' offline composer.json');
+            if (($copyManifest['name'] ?? null) !== $name) {
+                releaseValidationFail('Copied MCP first-party package name mismatch: ' . $name);
+            }
+        }
+
+        return array('root' => $repositoryRoot, 'versions' => $versions);
+    }
+
+    private function copyTaggedMcpPackageSnapshot(string $source, string $target): void
+    {
+        $sourceRealPath = realpath($source);
+        if ($sourceRealPath === false || !is_dir($source) || is_link($source)) {
+            releaseValidationFail('MCP tagged package source is unsafe: ' . $source);
+        }
+        $listing = $this->runner->mustRun(array('git', '-C', $source, 'ls-files', '--stage', '-z'))->stdout;
+        $entries = explode("\0", rtrim($listing, "\0"));
+        if ($entries === array('')) {
+            releaseValidationFail('MCP tagged package has no tracked files: ' . $source);
+        }
+        if (!mkdir($target, 0777, true) && !is_dir($target)) {
+            releaseValidationFail('Unable to create MCP first-party package snapshot: ' . $target);
+        }
+
+        foreach ($entries as $entry) {
+            if (!preg_match('/^(100644|100755) [0-9a-f]{40,64} 0\t(.+)$/s', $entry, $match)) {
+                releaseValidationFail('MCP tagged package contains a symlink or unsupported Git entry: ' . $source);
+            }
+            $relative = $match[2];
+            $segments = explode('/', $relative);
+            if (str_contains($relative, '\\') || str_contains($relative, ':')
+                || array_intersect($segments, array('', '.', '..', '.git')) !== array()
+            ) {
+                releaseValidationFail('Unsafe MCP tagged package file path: ' . $relative);
+            }
+            $file = joinPaths($source, $relative);
+            $fileRealPath = realpath($file);
+            if ($fileRealPath === false || !is_file($file) || is_link($file)
+                || !str_starts_with(normalizePath($fileRealPath), rtrim(normalizePath($sourceRealPath), '/') . '/')
+            ) {
+                releaseValidationFail('MCP tagged package source file is missing or unsafe: ' . $relative);
+            }
+            $destination = joinPaths($target, $relative);
+            $parent = dirname($destination);
+            if (!is_dir($parent) && !mkdir($parent, 0777, true)) {
+                releaseValidationFail('Unable to create MCP tagged package directory: ' . $parent);
+            }
+            if (!copy($file, $destination)) {
+                releaseValidationFail('Unable to copy MCP tagged package file: ' . $relative);
+            }
+            if ($match[1] === '100755' && !chmod($destination, 0755)) {
+                releaseValidationFail('Unable to preserve MCP tagged package executable file: ' . $relative);
+            }
+        }
+    }
+
+    /**
      * @param array<string, string> $repositories
      * @param list<array<string, mixed>> $lockedRuntimePackages
      * @param array<string, string> $requirements
      * @param array<string, string|bool> $consumerOptions
+     * @param array{root: string, versions: array<string, string>}|null $offlineRepository
+     * @param array{root: string, versions: array<string, string>}|null $firstPartyRepository
      */
-    private function createConsumer(ReleaseValidationTemporaryDirectory $temp, string $caseName, array $repositories, array $lockedRuntimePackages, array $requirements, array $consumerOptions): string
+    private function createConsumer(ReleaseValidationTemporaryDirectory $temp, string $caseName, array $repositories, array $lockedRuntimePackages, array $requirements, array $consumerOptions, ?array $offlineRepository = null, ?array $firstPartyRepository = null): string
     {
         $directory = $temp->child('consumers/' . strtolower(str_replace(' ', '-', $caseName)));
 
@@ -318,7 +574,32 @@ final class PrereleaseConsumerValidator
             releaseValidationFail('Unable to create consumer fixture for ' . $caseName . '.');
         }
 
-        $repositoryEntries = array(array('packagist.org' => false));
+        $repositoryEntries = array();
+        if ($offlineRepository !== null) {
+            $versions = $offlineRepository['versions'];
+            $repositoryEntries[] = array(
+                'type' => 'path',
+                'url' => normalizePath(joinPaths($offlineRepository['root'], '*/*')),
+                'only' => array_keys($versions),
+                'canonical' => true,
+                'options' => array('symlink' => false, 'versions' => $versions),
+            );
+            $lockedRuntimePackages = array_values(array_filter(
+                $lockedRuntimePackages,
+                static fn (array $package): bool => !isset($versions[$package['name']]),
+            ));
+        }
+        if ($firstPartyRepository !== null) {
+            $versions = $firstPartyRepository['versions'];
+            $repositoryEntries[] = array(
+                'type' => 'path',
+                'url' => normalizePath(joinPaths($firstPartyRepository['root'], '*')),
+                'only' => array_keys($versions),
+                'canonical' => true,
+                'options' => array('symlink' => false, 'versions' => $versions),
+            );
+        }
+        $repositoryEntries[] = array('packagist.org' => false);
         $repositoryEntries[] = array('type' => 'package', 'package' => $lockedRuntimePackages);
 
         foreach ($repositories as $repository) {

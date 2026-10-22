@@ -16,6 +16,343 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         self::assertStringContainsString('mcp-independent-consumer.php', $validator);
         self::assertStringContainsString('vendor/autoload.php', (string) file_get_contents($fixture));
     }
+
+    public function testMcpIndependentConsumerUsesLocalLockedPackagesInsteadOfRemoteDistributions(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $this->loadPrereleaseConsumerValidatorClass();
+
+        $packages = loadLockedRuntimePackageRepositoryPackages($this->root);
+        $packagesByName = array_column($packages, null, 'name');
+        $psr7 = $packagesByName['guzzlehttp/psr7'];
+        $this->assertStringStartsWith('https://', $psr7['dist']['url']);
+
+        $temporary = createTemporaryDirectory('evolvephp-mcp-offline-test-');
+
+        try {
+            $validator = new PrereleaseConsumerValidator();
+            $offline = (new ReflectionMethod($validator, 'prepareMcpOfflineRepository'))
+                ->invoke($validator, $this->root, $temporary, $packages);
+            $consumer = (new ReflectionMethod($validator, 'createConsumer'))->invoke(
+                $validator,
+                $temporary,
+                'MCP independent case',
+                array('evolvephp/mcp' => $temporary->child('first-party')),
+                $packages,
+                array('evolvephp/mcp' => '^2.0@alpha', 'guzzlehttp/psr7' => '^3.1'),
+                array('minimum-stability' => 'alpha', 'prefer-stable' => true),
+                $offline,
+            );
+            $manifest = readJsonFile($consumer . '/composer.json', 'MCP test consumer');
+            $path = $manifest['repositories'][0];
+            $this->assertSame('path', $path['type']);
+            $this->assertFalse($path['options']['symlink']);
+            $this->assertSame('3.1.0', $path['options']['versions']['guzzlehttp/psr7']);
+            $this->assertSame(array_keys($offline['versions']), $path['only']);
+            $this->assertTrue($path['canonical']);
+            foreach ($offline['versions'] as $name => $version) {
+                $this->assertSame($packagesByName[$name]['version'], $version);
+                $copy = $temporary->child('offline-mcp-vendor/' . $name);
+                $this->assertDirectoryExists($copy);
+                $this->assertFalse(is_link($copy));
+                $this->assertSame($name, readJsonFile($copy . '/composer.json', 'copied package')['name']);
+            }
+            $this->assertSame(array('packagist.org' => false), $manifest['repositories'][1]);
+            $this->assertSame(array(), array_intersect($path['only'], array_column($manifest['repositories'][2]['package'], 'name')));
+            $this->assertSame('vcs', $manifest['repositories'][3]['type']);
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testMcpOfflineCopyRejectsMissingPackageDirectory(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $this->loadPrereleaseConsumerValidatorClass();
+        $temporary = createTemporaryDirectory('evolvephp-mcp-missing-test-');
+
+        try {
+            $validator = new PrereleaseConsumerValidator();
+            $this->expectException(ReleaseValidationFailure::class);
+            $this->expectExceptionMessage('Locked MCP package directory is missing or a symlink');
+            (new ReflectionMethod($validator, 'copyMcpPackageDirectory'))->invoke(
+                $validator,
+                $temporary->child('missing'),
+                $temporary->child('copy'),
+            );
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testMcpOfflineCopyRejectsNestedSymlink(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $this->loadPrereleaseConsumerValidatorClass();
+        $temporary = createTemporaryDirectory('evolvephp-mcp-symlink-test-');
+
+        try {
+            $source = $temporary->child('source');
+            mkdir($source);
+            file_put_contents($temporary->child('outside.txt'), 'outside');
+            if (!@symlink($temporary->child('outside.txt'), $source . '/linked.txt')) {
+                $this->markTestSkipped('This host cannot create a symbolic link.');
+            }
+
+            $validator = new PrereleaseConsumerValidator();
+            $this->expectException(ReleaseValidationFailure::class);
+            $this->expectExceptionMessage('Refusing to copy symlink into MCP offline repository');
+            (new ReflectionMethod($validator, 'copyMcpPackageDirectory'))->invoke(
+                $validator,
+                $source,
+                $temporary->child('copy'),
+            );
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testMcpFirstPartyOfflineRepositoryUsesVerifiedAlphaSnapshots(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $this->loadPrereleaseConsumerValidatorClass();
+        $temporary = createTemporaryDirectory('evolvephp-mcp-first-party-test-');
+
+        try {
+            $repositories = $this->createTaggedMcpRepositories($temporary);
+            $validator = new PrereleaseConsumerValidator();
+            $offline = (new ReflectionMethod($validator, 'prepareMcpFirstPartyOfflineRepository'))
+                ->invoke($validator, $temporary, $repositories);
+            $expected = array(
+                'evolvephp/contracts' => '2.0.0-alpha.1',
+                'evolvephp/core' => '2.0.0-alpha.1',
+                'evolvephp/mcp' => '2.0.0-alpha.1',
+                'evolvephp/secret-contracts' => '2.0.0-alpha.1',
+            );
+            $this->assertSame($expected, $offline['versions']);
+
+            foreach ($expected as $name => $version) {
+                $copy = $temporary->child('offline-mcp-first-party/' . str_replace('/', '-', $name));
+                $this->assertDirectoryExists($copy);
+                $this->assertFalse(is_link($copy));
+                $this->assertFileDoesNotExist($copy . '/.git');
+                $this->assertDirectoryDoesNotExist($copy . '/.git');
+                $this->assertFileExists($copy . '/src/Marker.php');
+                $this->assertSame($name, readJsonFile($copy . '/composer.json', 'copied first-party package')['name']);
+            }
+
+            $external = array('root' => $temporary->child('external'), 'versions' => array('guzzlehttp/psr7' => '3.1.0'));
+            $consumer = (new ReflectionMethod($validator, 'createConsumer'))->invoke(
+                $validator,
+                $temporary,
+                'MCP independent case',
+                $repositories,
+                array(array('name' => 'guzzlehttp/psr7', 'version' => '3.1.0')),
+                array('evolvephp/mcp' => '^2.0@alpha', 'guzzlehttp/psr7' => '^3.1'),
+                array('minimum-stability' => 'alpha', 'prefer-stable' => true),
+                $external,
+                $offline,
+            );
+            $manifest = readJsonFile($consumer . '/composer.json', 'MCP first-party consumer');
+            $this->assertSame('path', $manifest['repositories'][0]['type']);
+            $this->assertSame(array('guzzlehttp/psr7'), $manifest['repositories'][0]['only']);
+            $this->assertSame(array('guzzlehttp/psr7' => '3.1.0'), $manifest['repositories'][0]['options']['versions']);
+            $this->assertSame('path', $manifest['repositories'][1]['type']);
+            $this->assertSame(array_keys($expected), $manifest['repositories'][1]['only']);
+            $this->assertSame($expected, $manifest['repositories'][1]['options']['versions']);
+            $this->assertFalse($manifest['repositories'][1]['options']['symlink']);
+            $this->assertTrue($manifest['repositories'][1]['canonical']);
+            $this->assertSame(array('packagist.org' => false), $manifest['repositories'][2]);
+            $this->assertCount(8, $manifest['repositories']);
+            $this->assertSame(array('vcs', 'vcs', 'vcs', 'vcs'), array_column(array_slice($manifest['repositories'], 4), 'type'));
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testMcpFirstPartyOfflineRepositoryRejectsMissingPackage(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $this->loadPrereleaseConsumerValidatorClass();
+        $temporary = createTemporaryDirectory('evolvephp-mcp-first-party-missing-test-');
+
+        try {
+            $repositories = $this->createTaggedMcpRepositories($temporary);
+            unset($repositories['evolvephp/core']);
+            $this->expectException(ReleaseValidationFailure::class);
+            $this->expectExceptionMessage('Missing MCP first-party alpha repository: evolvephp/core');
+            (new ReflectionMethod(new PrereleaseConsumerValidator(), 'prepareMcpFirstPartyOfflineRepository'))
+                ->invoke(new PrereleaseConsumerValidator(), $temporary, $repositories);
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testMcpFirstPartyOfflineRepositoryRejectsWrongManifestName(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $this->loadPrereleaseConsumerValidatorClass();
+        $temporary = createTemporaryDirectory('evolvephp-mcp-first-party-name-test-');
+
+        try {
+            $repositories = $this->createTaggedMcpRepositories($temporary, 'evolvephp/wrong');
+            $this->expectException(ReleaseValidationFailure::class);
+            $this->expectExceptionMessage('MCP first-party package name mismatch: evolvephp/mcp');
+            (new ReflectionMethod(new PrereleaseConsumerValidator(), 'prepareMcpFirstPartyOfflineRepository'))
+                ->invoke(new PrereleaseConsumerValidator(), $temporary, $repositories);
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testMcpFirstPartyOfflineRepositoryRejectsTagBehindHead(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $this->loadPrereleaseConsumerValidatorClass();
+        $temporary = createTemporaryDirectory('evolvephp-mcp-first-party-tag-test-');
+
+        try {
+            $repositories = $this->createTaggedMcpRepositories($temporary);
+            $mcp = $repositories['evolvephp/mcp'];
+            file_put_contents($mcp . '/src/New.php', '<?php');
+            $runner = new ReleaseValidationProcessRunner();
+            $runner->mustRun(array('git', '-C', $mcp, 'add', 'src/New.php'));
+            $runner->mustRun(array('git', '-C', $mcp, 'commit', '-m', 'Advance HEAD'));
+            $this->expectException(ReleaseValidationFailure::class);
+            $this->expectExceptionMessage('MCP first-party alpha tag does not match HEAD: evolvephp/mcp');
+            (new ReflectionMethod(new PrereleaseConsumerValidator(), 'prepareMcpFirstPartyOfflineRepository'))
+                ->invoke(new PrereleaseConsumerValidator(), $temporary, $repositories);
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+
+    public function testMcpFirstPartySnapshotRejectsTrackedSymlinkMode(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $this->loadPrereleaseConsumerValidatorClass();
+        $temporary = createTemporaryDirectory('evolvephp-mcp-first-party-link-test-');
+
+        try {
+            $repositories = $this->createTaggedMcpRepositories($temporary);
+            $mcp = $repositories['evolvephp/mcp'];
+            file_put_contents($mcp . '/src/linked.txt', 'Marker.php');
+            $runner = new ReleaseValidationProcessRunner();
+            $hash = trim($runner->mustRun(array('git', '-C', $mcp, 'hash-object', '-w', 'src/linked.txt'))->stdout);
+            $runner->mustRun(array('git', '-C', $mcp, 'update-index', '--add', '--cacheinfo', '120000', $hash, 'src/linked.txt'));
+            $validator = new PrereleaseConsumerValidator();
+            $this->expectException(ReleaseValidationFailure::class);
+            $this->expectExceptionMessage('MCP tagged package contains a symlink or unsupported Git entry');
+            (new ReflectionMethod($validator, 'copyTaggedMcpPackageSnapshot'))
+                ->invoke($validator, $mcp, $temporary->child('copy'));
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testMcpFirstPartySnapshotRejectsMissingTrackedFile(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $this->loadPrereleaseConsumerValidatorClass();
+        $temporary = createTemporaryDirectory('evolvephp-mcp-first-party-file-test-');
+
+        try {
+            $repositories = $this->createTaggedMcpRepositories($temporary);
+            $mcp = $repositories['evolvephp/mcp'];
+            unlink($mcp . '/src/Marker.php');
+            $validator = new PrereleaseConsumerValidator();
+            $this->expectException(ReleaseValidationFailure::class);
+            $this->expectExceptionMessage('MCP tagged package source file is missing or unsafe');
+            (new ReflectionMethod($validator, 'copyTaggedMcpPackageSnapshot'))
+                ->invoke($validator, $mcp, $temporary->child('copy'));
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testConsumerWithoutMcpOfflineRepositoriesRetainsExistingRepositoryOrder(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $this->loadPrereleaseConsumerValidatorClass();
+        $temporary = createTemporaryDirectory('evolvephp-consumer-order-test-');
+
+        try {
+            $validator = new PrereleaseConsumerValidator();
+            $consumer = (new ReflectionMethod($validator, 'createConsumer'))->invoke(
+                $validator,
+                $temporary,
+                'Alpha case C',
+                array('evolvephp/core' => $temporary->child('tagged-core')),
+                array(array('name' => 'psr/container', 'version' => '2.0.2')),
+                array('evolvephp/core' => '^2.0'),
+                array('minimum-stability' => 'alpha', 'prefer-stable' => true),
+            );
+            $manifest = readJsonFile($consumer . '/composer.json', 'unchanged consumer');
+            $this->assertSame(array('packagist.org' => false), $manifest['repositories'][0]);
+            $this->assertSame('package', $manifest['repositories'][1]['type']);
+            $this->assertSame('vcs', $manifest['repositories'][2]['type']);
+            $this->assertCount(3, $manifest['repositories']);
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+    /**
+     * @return array<string, string>
+     */
+    private function createTaggedMcpRepositories(ReleaseValidationTemporaryDirectory $temporary, ?string $mcpManifestName = null): array
+    {
+        $runner = new ReleaseValidationProcessRunner();
+        $requires = array(
+            'evolvephp/contracts' => array('psr/container' => '^2.0'),
+            'evolvephp/core' => array('evolvephp/contracts' => '^2.0'),
+            'evolvephp/mcp' => array(
+                'evolvephp/contracts' => '^2.0',
+                'evolvephp/core' => '^2.0',
+                'evolvephp/secret-contracts' => '^2.0',
+                'mcp/sdk' => '^0.8',
+            ),
+            'evolvephp/secret-contracts' => array('evolvephp/contracts' => '^2.0'),
+        );
+        $repositories = array();
+
+        foreach ($requires as $name => $dependencies) {
+            $repository = $temporary->child('alpha-repositories/' . str_replace('/', '-', $name));
+            mkdir($repository, 0777, true);
+            $runner->mustRun(array('git', 'init', $repository));
+            $runner->mustRun(array('git', '-C', $repository, 'config', 'user.name', 'EvolvePHP Test'));
+            $runner->mustRun(array('git', '-C', $repository, 'config', 'user.email', 'evolvephp-test@example.com'));
+            $manifest = array(
+                'name' => $name === 'evolvephp/mcp' && $mcpManifestName !== null ? $mcpManifestName : $name,
+                'type' => 'library',
+                'require' => $dependencies,
+            );
+            file_put_contents($repository . '/composer.json', json_encode($manifest, JSON_THROW_ON_ERROR));
+            mkdir($repository . '/src');
+            file_put_contents($repository . '/src/Marker.php', '<?php');
+            $runner->mustRun(array('git', '-C', $repository, 'add', '.'));
+            $runner->mustRun(array('git', '-C', $repository, 'commit', '-m', 'Tagged package fixture'));
+            $runner->mustRun(array('git', '-C', $repository, 'tag', '2.0.0-alpha.1'));
+            $repositories[$name] = $repository;
+        }
+
+        return $repositories;
+    }
+
+    private function loadPrereleaseConsumerValidatorClass(): void
+    {
+        if (class_exists(PrereleaseConsumerValidator::class, false)) {
+            return;
+        }
+
+        $source = (string) file_get_contents($this->root . '/tools/validate-prerelease-consumers.php');
+        $start = strpos($source, 'final class PrereleaseConsumerValidator');
+        $end = strpos($source, "\ntry {\n    \$options = parseReleaseValidationArguments", $start);
+        $this->assertNotFalse($start);
+        $this->assertNotFalse($end);
+        eval(substr($source, $start, $end - $start));
+    }
+
     protected function setUp(): void
     {
         $this->root = dirname(__DIR__, 2);
