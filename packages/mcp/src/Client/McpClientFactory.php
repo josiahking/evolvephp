@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Evolve\Mcp\Client;
 
+use Evolve\Mcp\Observability\McpOperation;
+use Evolve\Mcp\Observability\McpOperationDispatcher;
 use Evolve\Secret\Contracts\SecretName;
 use Evolve\Secret\Contracts\SecretResolver;
 use Mcp\Client;
@@ -14,81 +16,97 @@ use Throwable;
 /** Creates a fresh SDK client and transport after resolving this execution's secrets. */
 final readonly class McpClientFactory
 {
+    public function __construct(private ?McpOperationDispatcher $operations = null) {}
+
     public function connect(McpClientConfiguration $configuration, ?SecretResolver $secrets = null): McpClientConnection
     {
-        if ($configuration->mode === 'stdio' && PHP_OS_FAMILY !== 'Linux') {
-            throw new McpClientException(McpClientFailureCategory::Configuration, 'MCP STDIO is supported on Linux PHP only.');
-        }
-
-        $bearer = $configuration->bearerSecret === null
-            ? null
-            : $this->resolveSecret($secrets, $configuration->bearerSecret);
-        $environment = $configuration->environment;
-        foreach ($configuration->secretEnvironment as $name => $secretName) {
-            $environment[$name] = $this->resolveSecret($secrets, $secretName);
-        }
-
-        if ($configuration->mode === 'http') {
-            if ($configuration->httpClient === null || $configuration->requestFactory === null
-                || $configuration->streamFactory === null || $configuration->endpoint === null
-                || $configuration->approveDestination === null) {
-                throw new McpClientException(McpClientFailureCategory::Configuration, 'MCP HTTP configuration is incomplete.');
-            }
-            $policy = new McpHttpPolicyClient(
-                $configuration->httpClient,
-                $configuration->streamFactory,
-                $configuration->endpoint,
-                $configuration->approveDestination,
-                $configuration->maxResponseBytes,
-                $bearer,
-                $configuration->maxRequestBytes,
-            );
-            $transport = new HttpTransport(
-                $configuration->endpoint,
-                httpClient: $policy,
-                requestFactory: $configuration->requestFactory,
-                streamFactory: $configuration->streamFactory,
-            );
-        } else {
-            if ($configuration->command === null || $configuration->workingDirectory === null) {
-                throw new McpClientException(McpClientFailureCategory::Configuration, 'MCP STDIO configuration is incomplete.');
-            }
-            $transport = new StdioTransport(
-                $configuration->command,
-                $configuration->arguments,
-                $configuration->workingDirectory,
-                $environment,
-            );
-        }
-
-        $client = Client::builder()
-            ->setClientInfo('evolvephp-mcp-client', '0.1.0')
-            ->setProtocolVersion($configuration->protocolVersion)
-            ->setInitTimeout($configuration->initTimeoutSeconds)
-            ->setRequestTimeout($configuration->requestTimeoutSeconds)
-            ->setMaxRetries(0)
-
-            ->build();
-
+        $started = $this->operations?->isEnabled() ? hrtime(true) : null;
         try {
-            $client->connect($transport);
-        } catch (Throwable $exception) {
-            try {
-                $client->disconnect();
-            } catch (Throwable) {
-                throw new McpClientException(
-                    McpClientFailureCategory::Connection,
-                    'MCP connection and cleanup failed; recycle the worker.',
-                    McpClientFailureCategory::Cleanup,
+            if ($configuration->mode === 'stdio' && PHP_OS_FAMILY !== 'Linux') {
+                throw new McpClientException(McpClientFailureCategory::Configuration, 'MCP STDIO is supported on Linux PHP only.');
+            }
+
+            $bearer = $configuration->bearerSecret === null
+                ? null
+                : $this->resolveSecret($secrets, $configuration->bearerSecret);
+            $environment = $configuration->environment;
+            foreach ($configuration->secretEnvironment as $name => $secretName) {
+                $environment[$name] = $this->resolveSecret($secrets, $secretName);
+            }
+
+            if ($configuration->mode === 'http') {
+                if ($configuration->httpClient === null || $configuration->requestFactory === null
+                    || $configuration->streamFactory === null || $configuration->endpoint === null
+                    || $configuration->approveDestination === null) {
+                    throw new McpClientException(McpClientFailureCategory::Configuration, 'MCP HTTP configuration is incomplete.');
+                }
+                $policy = new McpHttpPolicyClient(
+                    $configuration->httpClient,
+                    $configuration->streamFactory,
+                    $configuration->endpoint,
+                    $configuration->approveDestination,
+                    $configuration->maxResponseBytes,
+                    $bearer,
+                    $configuration->maxRequestBytes,
+                    $this->operations,
+                );
+                $transport = new HttpTransport(
+                    $configuration->endpoint,
+                    httpClient: $policy,
+                    requestFactory: $configuration->requestFactory,
+                    streamFactory: $configuration->streamFactory,
+                );
+            } else {
+                if ($configuration->command === null || $configuration->workingDirectory === null) {
+                    throw new McpClientException(McpClientFailureCategory::Configuration, 'MCP STDIO configuration is incomplete.');
+                }
+                $transport = new StdioTransport(
+                    $configuration->command,
+                    $configuration->arguments,
+                    $configuration->workingDirectory,
+                    $environment,
                 );
             }
-            throw new McpClientException(
-                self::findPolicyCategory($exception) ?? McpClientFailureCategory::Connection,
-                'MCP connection failed.',
-            );
-        }
 
-        return new McpClientConnection($client, $configuration);
+            $client = Client::builder()
+                ->setClientInfo('evolvephp-mcp-client', '0.1.0')
+                ->setProtocolVersion($configuration->protocolVersion)
+                ->setInitTimeout($configuration->initTimeoutSeconds)
+                ->setRequestTimeout($configuration->requestTimeoutSeconds)
+                ->setMaxRetries(0)
+
+                ->build();
+
+            try {
+                $client->connect($transport);
+            } catch (Throwable $exception) {
+                try {
+                    $client->disconnect();
+                } catch (Throwable) {
+                    throw new McpClientException(
+                        McpClientFailureCategory::Connection,
+                        'MCP connection and cleanup failed; recycle the worker.',
+                        McpClientFailureCategory::Cleanup,
+                    );
+                }
+                throw new McpClientException(
+                    self::findPolicyCategory($exception) ?? McpClientFailureCategory::Connection,
+                    'MCP connection failed.',
+                );
+            }
+
+            $connection = new McpClientConnection($client, $configuration, $this->operations);
+            if ($started !== null) {
+                $this->operations->dispatch(new McpOperation('connect', $configuration->mode, 'success', durationNs: max(0, hrtime(true) - $started)));
+            }
+            return $connection;
+        } catch (Throwable $exception) {
+            if ($started !== null) {
+                $category = $exception instanceof McpClientException ? $exception->category->value : 'unknown';
+                $this->operations->dispatch(new McpOperation('connect', $configuration->mode, 'failure', durationNs: max(0, hrtime(true) - $started), failureCategory: $category));
+            }
+            throw $exception;
+        }
     }
 
     private function resolveSecret(?SecretResolver $secrets, SecretName $name): string

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Evolve\Mcp\Server;
 
+use Evolve\Mcp\Observability\McpOperation;
+use Evolve\Mcp\Observability\McpOperationDispatcher;
 use Evolve\Mcp\Server\Exception\DuplicateMcpCapability;
 use Evolve\Mcp\Server\Exception\InvalidMcpCapability;
 use Evolve\Mcp\Server\Exception\McpServerFrozen;
@@ -34,6 +36,7 @@ final class McpServerBuilder
         private readonly string $version,
         private readonly McpCapabilityInvoker $invoker,
         ?callable $guard = null,
+        private readonly ?McpOperationDispatcher $operations = null,
     ) {
         $this->guard = $guard === null ? null : \Closure::fromCallable($guard);
         if (trim($name) === '' || trim($name) !== $name || trim($version) === '' || trim($version) !== $version) {
@@ -48,6 +51,7 @@ final class McpServerBuilder
             throw new DuplicateMcpCapability('Duplicate tool name.');
         }
         $this->tools[$definition->name] = $definition;
+        $this->recordRegistration($definition->name);
 
         return $this;
     }
@@ -59,6 +63,7 @@ final class McpServerBuilder
             throw new DuplicateMcpCapability('Duplicate resource URI.');
         }
         $this->resources[$definition->uri] = $definition;
+        $this->recordRegistration($definition->uri);
 
         return $this;
     }
@@ -70,6 +75,7 @@ final class McpServerBuilder
             throw new DuplicateMcpCapability('Duplicate prompt name.');
         }
         $this->prompts[$definition->name] = $definition;
+        $this->recordRegistration($definition->name);
 
         return $this;
     }
@@ -138,6 +144,13 @@ final class McpServerBuilder
             $this->name,
             $this->version,
         );
+    }
+
+    private function recordRegistration(string $identity): void
+    {
+        if ($this->operations?->isEnabled()) {
+            $this->operations->dispatch(new McpOperation('register', 'local', 'success', $identity));
+        }
     }
 
     private function assertMutable(): void

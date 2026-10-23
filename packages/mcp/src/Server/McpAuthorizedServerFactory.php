@@ -6,6 +6,8 @@ namespace Evolve\Mcp\Server;
 
 use Evolve\Core\Execution\ExecutionOrchestrator;
 use Evolve\Core\Execution\ExecutionScope;
+use Evolve\Mcp\Observability\McpOperation;
+use Evolve\Mcp\Observability\McpOperationDispatcher;
 use Evolve\Mcp\Transport\ScopedMcpCapabilityInvoker;
 use RuntimeException;
 use Throwable;
@@ -23,6 +25,7 @@ final readonly class McpAuthorizedServerFactory
         callable $invokeInScope,
         private McpCapabilityPolicy $policy,
         private McpSecurityAuditSink $audit,
+        private ?McpOperationDispatcher $operations = null,
     ) {
         $this->invokeInScope = \Closure::fromCallable($invokeInScope);
         if ($source->name() === null || $source->version() === null) {
@@ -38,11 +41,13 @@ final readonly class McpAuthorizedServerFactory
             $this->executions,
             static fn(ExecutionScope $scope, string $serviceId, array $arguments): mixed
                 => $invokeInScope($scope, $principal, $serviceId, $arguments),
+            $this->operations,
+            'http',
         );
         $guard = function (McpCapabilityKind $kind, string $identity) use ($principal, $correlation): bool {
             return $this->decision($principal, $kind, $identity, $correlation);
         };
-        $builder = new McpServerBuilder($this->source->name(), $this->source->version(), $scoped, $guard);
+        $builder = new McpServerBuilder($this->source->name(), $this->source->version(), $scoped, $guard, $this->operations);
 
         foreach ($this->source->tools() as $tool) {
             if ($tool->exposure === McpCapabilityExposure::RemoteApproved
@@ -71,6 +76,9 @@ final readonly class McpAuthorizedServerFactory
         try {
             $allowed = $this->policy->allows($principal, $kind, $identity) === true;
             $this->audit->record($kind, hash('sha256', $kind->value . ':' . $identity), $allowed, $correlation);
+            if ($this->operations?->isEnabled()) {
+                $this->operations->dispatch(new McpOperation('discover', 'http', $allowed ? 'success' : 'denied', $identity, $correlation, failureCategory: $allowed ? null : 'policy'));
+            }
 
             return $allowed;
         } catch (Throwable) {

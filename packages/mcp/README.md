@@ -151,3 +151,50 @@ Client STDIO is supported on Linux PHP only for EvolvePHP 2.0 Beta. Native Windo
 `McpClientConnection::discover()` lists tools, resources and prompts through the SDK with page, item, duplicate and cursor-cycle limits. Results retain SDK types and listing order. Invoke only explicitly chosen capabilities through `callTool()`, `readResource()` and `getPrompt()`. A failed operation poisons that connection; close it and construct a new one. `McpClientException::category` exposes safe categories without raw protocol content or credentials. If cleanup is uncertain, `cleanupCategory` identifies it and the host must recycle the affected worker.
 
 `ScopedMcpClient::run()` is the Core execution-scoped option. It resolves credentials, opens a fresh connection, invokes the caller callback and closes the connection for each run. It exposes `quarantineFailure()` if cleanup or execution isolation fails. The wrapper forwards no identity, tenant, cookies, authorization or other execution context by default. The application controls any deliberate, bounded propagation.
+## Optional operational events
+
+Operational events are experimental and disabled by default. A host can pass an optional `McpOperationDispatcher` to `McpAuthorizedServerFactory` or `McpClientFactory`. A standalone `ScopedMcpCapabilityInvoker` can receive the same dispatcher. The dispatcher calls a host supplied `McpOperationSink` with a normalized array and contains sink exceptions. The required `McpSecurityAuditSink` remains separate and fail closed; a diagnostic sink cannot grant a denied capability or hide a required audit or cleanup failure.
+
+```php
+use Evolve\Mcp\Observability\McpOperationDispatcher;
+use Evolve\Mcp\Observability\McpOperationSink;
+use Evolve\Mcp\Server\McpAuthorizedServerFactory;
+use Evolve\Mcp\Client\McpClientFactory;
+
+// The application installed evolvephp/observe and created an enabled or disabled
+// OpenTelemetryComposition with its own providers and resource identity.
+$instrumentation = new \Evolve\Observe\Mcp\McpOperationInstrumentation($composition);
+$events = new class($instrumentation) implements McpOperationSink {
+    public function __construct(private \Evolve\Observe\Mcp\McpOperationInstrumentation $instrumentation) {}
+    public function record(array $fields): void
+    {
+        $this->instrumentation->record($fields);
+    }
+};
+$operations = new McpOperationDispatcher($events);
+$servers = new McpAuthorizedServerFactory(
+    $definition,
+    $executions,
+    static fn ($scope, \Evolve\Mcp\Server\McpPrincipal $principal, string $serviceId, array $arguments): mixed =>
+        $hostInvoker($scope, $principal, $serviceId, $arguments),
+    new class implements \Evolve\Mcp\Server\McpCapabilityPolicy {
+        public function allows(\Evolve\Mcp\Server\McpPrincipal $principal, \Evolve\Mcp\Server\McpCapabilityKind $kind, string $identity): bool
+        {
+            return $principal->subject() === 'approved-user'
+                && $kind === \Evolve\Mcp\Server\McpCapabilityKind::Tool
+                && $identity === 'echo';
+        }
+    },
+    $securityAuditSink,
+    $operations,
+);
+$clientFactory = new McpClientFactory($operations);
+$connection = $clientFactory->connect($config);
+try {
+    $catalog = $connection->discover();
+} finally {
+    $connection->close();
+}
+```
+
+Events contain fixed operation kind, transport and outcome values; optional SHA-256 capability identity, bounded random correlation, bounded duration, and a fixed failure category. They never contain raw principals, prompts, tool arguments or results, resource URI text, exception messages, credentials or headers. Observe's `McpOperationInstrumentation` accepts the neutral array for application-owned OpenTelemetry tracing and metrics. Its metric attributes use only the three fixed categories. Insight's `McpOperationDiagnostics` accepts the same array for a caller-owned local diagnostic sink and omits capability hashes and correlation tokens. Wire either adapter explicitly through a host `McpOperationSink`; neither optional package is a required MCP dependency. The independent installed-consumer SDK HTTP fixture is prepared for the later immutable-ref gate and has not been executed at this patch gate. Linux client STDIO interoperability remains pending external validation.

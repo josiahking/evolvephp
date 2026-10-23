@@ -27,3 +27,5 @@ A complete concrete SAPI/web runtime, production bootstrap, deployment scaffoldi
 First-party packages are **not yet independently published**. Public Packagist installation and public composer create-project installation are not available. No production readiness, LTS policy, broad host compatibility certification, automatic retry/fallback, distributed transaction, or persistent-worker concurrency guarantee is claimed. The isolated PHP 7.4 legacy remote client does not lower the PHP 8.4 Core and embedded Bridge requirement.
 
 See [source preview](source-preview.md) for what can be done from the repository today.
+
+The experimental MCP source includes opt-in bounded operational events and neutral Observe and Insight adapters. Independent installed-consumer acceptance and Linux PHP client STDIO interoperability are still pending validation.

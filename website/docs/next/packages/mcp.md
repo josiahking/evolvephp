@@ -85,3 +85,9 @@ Client STDIO is currently supported only on Linux PHP. Native Windows PHP reject
 No automatic MCP discovery, route installation, authorization policy, host service wiring, or component activation is supplied. The HTTP endpoint has no SSE, persistent session, subscription, or cross-worker state. The client does not grant remote declarations authority to launch local commands. These boundaries must be composed and reviewed by the application.
 
 See the [MCP package reference](https://github.com/josiahking/evolvephp/blob/2.x/packages/mcp/README.md), [package overview](overview.md), and [execution model](../concepts/execution-model.md).
+
+## Optional operational events
+
+Operational events are experimental and disabled by default. Pass an explicit `McpOperationDispatcher` to `McpAuthorizedServerFactory` or `McpClientFactory` to record bounded registration, discovery, invocation, connection and HTTP policy transport outcomes. `McpSecurityAuditSink` remains the required fail-closed security record. A throwing optional diagnostic sink cannot change a denial or cleanup result.
+
+The `McpOperationSink::record(array $fields)` callback receives fixed kind, transport and outcome categories, optional SHA-256 capability hash, bounded random correlation and duration, and a fixed failure category. It receives no raw principal, prompt, argument, result, resource URI, header, secret or exception message. A host can pass the neutral array to Observe's `McpOperationInstrumentation` or Insight's `McpOperationDiagnostics`; neither adapter imports MCP production classes. Observe provides application-owned OpenTelemetry tracing and metrics; Insight provides local diagnostic summaries. The package reference shows concrete `McpOperationSink`, server-factory and client-factory composition. The SDK HTTP installed-consumer fixture is prepared for the later immutable-ref gate; Linux PHP client STDIO interop remains pending validation.

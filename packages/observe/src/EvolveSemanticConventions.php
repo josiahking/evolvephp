@@ -95,5 +95,9 @@ final class EvolveSemanticConventions
 
     public const EXECUTION_KIND_WORKER_TASK = ExecutionKind::WorkerTask->value;
 
+    public const SPAN_NAME_MCP_OPERATION = 'evolve.mcp.operation';
+    public const METRIC_MCP_OPERATION_COUNT = 'evolve.mcp.operation.count';
+    public const METRIC_MCP_OPERATION_DURATION = 'evolve.mcp.operation.duration';
+
     private function __construct() {}
 }

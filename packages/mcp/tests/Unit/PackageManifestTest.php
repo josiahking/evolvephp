@@ -37,6 +37,6 @@ final class PackageManifestTest extends TestCase
         self::assertArrayNotHasKey('require-dev', $manifest);
         self::assertFileExists($package . '/README.md');
         self::assertSame(file_get_contents(dirname(__DIR__, 4) . '/LICENSE.md'), file_get_contents($package . '/LICENSE.md'));
-        self::assertSame(['Client', 'Contribution', 'Server', 'Transport'], array_values(array_diff(scandir($package . '/src'), ['.', '..'])));
+        self::assertSame(['Client', 'Contribution', 'Observability', 'Server', 'Transport'], array_values(array_diff(scandir($package . '/src'), ['.', '..'])));
     }
 }

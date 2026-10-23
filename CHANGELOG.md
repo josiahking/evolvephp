@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added experimental opt-in MCP operational event metadata and neutral Observe/Insight adapters, with fixed metric categories and separate fail-closed security audit. Independent installed-consumer and Linux STDIO interoperability checks remain pending.
+
 - Added a proposed MkDocs 1.6.1 Next developer manual with strict build, search, GitHub Pages path validation, PHP 8.4 example linting and Python 3.11/3.13 documentation CI. Publication and historical version snapshots have not occurred.
 
 - Added optional experimental `evolvephp/ai` provider-neutral synchronous invocation contracts on PHP `^8.4`. Applications own providers, credentials, transport deadlines, cancellation checks, and authorization of any requested tool execution; no provider or automatic tool execution is included.

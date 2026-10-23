@@ -53,3 +53,5 @@ The [repository package index](https://github.com/josiahking/evolvephp/blob/2.x/
 ## Current guides
 
 This v1 manual has a focused [MCP guide](mcp.md) and guides for selected foundations and modernization features. The package list above remains a source map; it does not promise a full tutorial for every first-party package.
+
+MCP operational events are disabled by default. Hosts may wire safe normalized events to Observe telemetry or Insight local diagnostics without adding package dependency cycles.
