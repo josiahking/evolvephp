@@ -14,6 +14,6 @@ platformdirs==4.13.3
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
 pyyaml_env_tag==1.1
-setuptools==83.0.0
+setuptools==84.2.0
 six==1.17.0
 watchdog==6.0.0
