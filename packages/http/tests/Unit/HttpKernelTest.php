@@ -19,6 +19,7 @@ use Evolve\Core\Execution\ExecutionScope;
 use Evolve\Core\Execution\ProcessReuseDecision;
 use Evolve\Core\Instrumentation\InstrumentationFailure;
 use Evolve\Core\Instrumentation\Observation;
+use Evolve\Core\Instrumentation\ObservationOutcome;
 use Evolve\Core\Instrumentation\ObservationSink;
 use Evolve\Core\Instrumentation\ObservationType;
 use Evolve\Http\Exception\MethodNotAllowed;
@@ -30,6 +31,7 @@ use Evolve\Http\Routing\RouteCollection;
 use Evolve\Http\Routing\RouteMatch;
 use Evolve\Http\Routing\RouteMatcher;
 use Evolve\Http\Routing\RoutingRequestHandler;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -45,10 +47,118 @@ use WeakReference;
 
 final class HttpKernelTest extends TestCase
 {
-    public function test_explicit_execution_values_propagate_without_sequential_leak(): void
+    /**
+     * @return array<string, array{bool}>
+     */
+    public static function noSinkConfigurations(): array
+    {
+        return ['null' => [false], 'empty array' => [true]];
+    }
+
+    /**
+     * @return iterable<string, array{string, bool, bool}>
+     */
+    public static function observedFailureCases(): iterable
+    {
+        foreach (['single', 'multiple', 'throwing'] as $configuration) {
+            foreach ([false, true] as $handlerFails) {
+                foreach ([false, true] as $cleanupFails) {
+                    yield sprintf('%s handler=%d cleanup=%d', $configuration, $handlerFails, $cleanupFails)
+                        => [$configuration, $handlerFails, $cleanupFails];
+                }
+            }
+        }
+    }
+
+    #[DataProvider('observedFailureCases')]
+    public function test_configured_sinks_preserve_complete_observations_and_independent_failures(
+        string $configuration,
+        bool $handlerFails,
+        bool $cleanupFails,
+    ): void {
+        $types = [
+            ObservationType::ExecutionStarted,
+            ObservationType::HandlerCompleted,
+            ObservationType::ScopeCloseStarted,
+            ObservationType::ScopeCloseCompleted,
+        ];
+        if ($cleanupFails) {
+            $types[] = ObservationType::QuarantineRequired;
+        }
+        $types[] = ObservationType::ExecutionCompleted;
+        $sinks = $configuration === 'throwing'
+            ? [new ThrowingKernelObservationSink($types), new ThrowingKernelObservationSink($types), new CollectingKernelObservationSink()]
+            : [new CollectingKernelObservationSink()];
+        if ($configuration === 'multiple') {
+            $sinks[] = new CollectingKernelObservationSink();
+        }
+
+        $response = $this->response();
+        $handlerFailure = new RuntimeException('handler failed');
+        $resetFailure = $cleanupFails ? new RuntimeException('reset failed') : null;
+        $log = new KernelEventLog();
+        $handler = $this->createMock(RequestHandlerInterface::class);
+        $handler->expects(self::once())->method('handle')->willReturnCallback(
+            static function (ServerRequestInterface $request) use ($response, $handlerFails, $handlerFailure, $resetFailure, $log): ResponseInterface {
+                $scope = $request->getAttribute(ExecutionScope::class);
+                self::assertInstanceOf(ExecutionScope::class, $scope);
+                $log->add('handler');
+                $scope->registerResetParticipant('reset', new KernelResetParticipant($log, $resetFailure));
+                if ($handlerFails) {
+                    throw $handlerFailure;
+                }
+                return $response;
+            },
+        );
+        $outcome = (new HttpKernel($handler, $this->orchestrator($configuration === 'single' ? $sinks[0] : $sinks)))
+            ->handle($this->request('GET', '/observed'));
+        $reuse = $cleanupFails ? ProcessReuseDecision::QuarantineRequired : ProcessReuseDecision::Reusable;
+        $primaryState = $handlerFails ? ObservationOutcome::Failed : ObservationOutcome::Succeeded;
+        $expected = [
+            [ObservationType::ExecutionStarted, null, null, null],
+            [ObservationType::HandlerCompleted, $primaryState, $handlerFails ? RuntimeException::class : null, null],
+            [ObservationType::ScopeCloseStarted, null, null, null],
+            [ObservationType::ScopeCloseCompleted, $cleanupFails ? ObservationOutcome::Failed : ObservationOutcome::Succeeded, $cleanupFails ? ExecutionResetFailed::class : null, null],
+        ];
+        if ($cleanupFails) {
+            $expected[] = [ObservationType::QuarantineRequired, null, null, $reuse];
+        }
+        $expected[] = [ObservationType::ExecutionCompleted, $primaryState, null, $reuse];
+
+        self::assertSame(['handler', 'reset'], $log->all());
+        self::assertSame($handlerFails ? $handlerFailure : null, $outcome->primaryThrowable());
+        if (! $handlerFails) {
+            self::assertSame($response, $outcome->primaryResult());
+        }
+        self::assertSame($reuse, $outcome->reuseDecision());
+        self::assertSame($cleanupFails, $outcome->cleanupFailed());
+        foreach ($sinks as $sink) {
+            self::assertSame($sinks[0]->observations(), $sink->observations());
+            self::assertCount(count($expected), $sink->observations());
+            foreach ($sink->observations() as $index => $observation) {
+                self::assertSame($outcome->identifier(), $observation->identifier());
+                self::assertSame(ExecutionKind::HttpRequest, $observation->kind());
+                self::assertSame($expected[$index], [$observation->type(), $observation->outcome(), $observation->errorType(), $observation->reuseDecision()]);
+            }
+        }
+        $failures = $outcome->instrumentationFailures();
+        self::assertCount($configuration === 'throwing' ? count($types) * 2 : 0, $failures);
+        if ($configuration === 'throwing') {
+            foreach ($types as $index => $type) {
+                self::assertNotSame($failures[$index * 2], $failures[$index * 2 + 1]);
+                foreach ([$failures[$index * 2], $failures[$index * 2 + 1]] as $failure) {
+                    self::assertSame($type, $failure->observationType());
+                    self::assertSame(RuntimeException::class, $failure->errorType());
+                }
+            }
+        }
+    }
+
+    #[DataProvider('noSinkConfigurations')]
+    public function test_explicit_execution_values_propagate_without_sequential_leak(bool $emptySinks): void
     {
         $handler = new RecordingKernelHandler($this->response());
-        $kernel = new HttpKernel($handler, $this->orchestrator());
+        $kernel = new HttpKernel($handler, $this->orchestrator($emptySinks ? [] : null));
         $kernel->handle($this->request('GET', '/first'), new ExecutionContextValues('en_NG', 'Africa/Lagos'));
         $kernel->handle($this->request('GET', '/second'), new ExecutionContextValues('fr_FR', 'Europe/Paris'));
         $kernel->handle($this->request('GET', '/third'));
@@ -73,7 +183,8 @@ final class HttpKernelTest extends TestCase
         );
     }
 
-    public function test_successful_response_is_primary_result_and_execution_attributes_are_authoritative(): void
+    #[DataProvider('noSinkConfigurations')]
+    public function test_successful_response_is_primary_result_and_execution_attributes_are_authoritative(bool $emptySinks): void
     {
         $staleContext = new ExecutionContext(ExecutionIdentifier::generate(), ExecutionKind::WorkerTask);
         $staleScope = new KernelNoopScope();
@@ -83,7 +194,7 @@ final class HttpKernelTest extends TestCase
             ->withAttribute('tenant', 'acme');
         $response = $this->response();
         $handler = new RecordingKernelHandler($response);
-        $outcome = (new HttpKernel($handler, $this->orchestrator()))->handle($request);
+        $outcome = (new HttpKernel($handler, $this->orchestrator($emptySinks ? [] : null)))->handle($request);
 
         self::assertTrue($outcome->primarySucceeded());
         self::assertSame($response, $outcome->primaryResult());
@@ -106,10 +217,11 @@ final class HttpKernelTest extends TestCase
         self::assertSame($staleScope, $request->getAttribute(ExecutionScope::class));
     }
 
-    public function test_clean_sequential_requests_get_unique_contexts_and_scopes_without_leaking_attributes(): void
+    #[DataProvider('noSinkConfigurations')]
+    public function test_clean_sequential_requests_get_unique_contexts_and_scopes_without_leaking_attributes(bool $emptySinks): void
     {
         $handler = new RecordingKernelHandler($this->response());
-        $kernel = new HttpKernel($handler, $this->orchestrator());
+        $kernel = new HttpKernel($handler, $this->orchestrator($emptySinks ? [] : null));
 
         $first = $kernel->handle($this->request('GET', '/first')->withAttribute('request-name', 'first'));
         $second = $kernel->handle($this->request('GET', '/second')->withAttribute('request-name', 'second'));
@@ -131,10 +243,11 @@ final class HttpKernelTest extends TestCase
         self::assertTrue($second->isReusable());
     }
 
-    public function test_arbitrary_handler_throwable_is_exact_primary_failure_and_remains_reusable(): void
+    #[DataProvider('noSinkConfigurations')]
+    public function test_arbitrary_handler_throwable_is_exact_primary_failure_and_remains_reusable(bool $emptySinks): void
     {
         $throwable = new RuntimeException('handler failed');
-        $outcome = (new HttpKernel(new ThrowingKernelHandler($throwable), $this->orchestrator()))
+        $outcome = (new HttpKernel(new ThrowingKernelHandler($throwable), $this->orchestrator($emptySinks ? [] : null)))
             ->handle($this->request('GET', '/fail'));
 
         self::assertTrue($outcome->primaryFailed());
@@ -191,14 +304,15 @@ final class HttpKernelTest extends TestCase
         self::assertSame(['id' => '42'], $routeHandler->firstRequest()->getAttribute(RouteMatch::class)->parameters());
     }
 
-    public function test_reset_runs_after_success_and_preserves_response_when_cleanup_fails(): void
+    #[DataProvider('noSinkConfigurations')]
+    public function test_reset_runs_after_success_and_preserves_response_when_cleanup_fails(bool $emptySinks): void
     {
         $log = new KernelEventLog();
         $resetFailure = new RuntimeException('reset failed');
         $response = $this->response();
         $handler = new ResetRegisteringHandler($response, $log, $resetFailure);
 
-        $outcome = (new HttpKernel($handler, $this->orchestrator()))->handle($this->request('GET', '/cleanup'));
+        $outcome = (new HttpKernel($handler, $this->orchestrator($emptySinks ? [] : null)))->handle($this->request('GET', '/cleanup'));
 
         self::assertSame(['handler', 'reset'], $log->all());
         self::assertTrue($outcome->primarySucceeded());
@@ -210,14 +324,15 @@ final class HttpKernelTest extends TestCase
         self::assertFalse($outcome->isReusable());
     }
 
-    public function test_reset_still_runs_after_handler_failure_and_preserves_primary_throwable(): void
+    #[DataProvider('noSinkConfigurations')]
+    public function test_reset_still_runs_after_handler_failure_and_preserves_primary_throwable(bool $emptySinks): void
     {
         $log = new KernelEventLog();
         $handlerFailure = new RuntimeException('handler failed');
         $resetFailure = new RuntimeException('reset failed');
         $handler = new ResetRegisteringThrowingHandler($handlerFailure, $log, $resetFailure);
 
-        $outcome = (new HttpKernel($handler, $this->orchestrator()))->handle($this->request('GET', '/cleanup-failure'));
+        $outcome = (new HttpKernel($handler, $this->orchestrator($emptySinks ? [] : null)))->handle($this->request('GET', '/cleanup-failure'));
 
         self::assertSame(['handler', 'reset'], $log->all());
         self::assertTrue($outcome->primaryFailed());
@@ -227,11 +342,12 @@ final class HttpKernelTest extends TestCase
         self::assertTrue($outcome->requiresQuarantine());
     }
 
-    public function test_quarantined_orchestrator_refuses_later_request_before_handler_runs(): void
+    #[DataProvider('noSinkConfigurations')]
+    public function test_quarantined_orchestrator_refuses_later_request_before_handler_runs(bool $emptySinks): void
     {
         $resetFailure = new RuntimeException('reset failed');
         $handler = new ResetRegisteringHandler($this->response(), new KernelEventLog(), $resetFailure);
-        $orchestrator = $this->orchestrator();
+        $orchestrator = $this->orchestrator($emptySinks ? [] : null);
         $kernel = new HttpKernel($handler, $orchestrator);
 
         self::assertTrue($kernel->handle($this->request('GET', '/first'))->requiresQuarantine());
@@ -289,7 +405,8 @@ final class HttpKernelTest extends TestCase
         ));
     }
 
-    public function test_kernel_does_not_retain_request_scope_response_or_outcome_after_handle_returns(): void
+    #[DataProvider('noSinkConfigurations')]
+    public function test_kernel_does_not_retain_request_scope_response_or_outcome_after_handle_returns(bool $emptySinks): void
     {
         $weakService = null;
         $weakResponse = null;
@@ -302,7 +419,7 @@ final class HttpKernelTest extends TestCase
         });
         $registry->freeze();
         $handler = new KernelResponseWeakReferenceHandler();
-        $kernel = new HttpKernel($handler, new ExecutionOrchestrator($registry));
+        $kernel = new HttpKernel($handler, new ExecutionOrchestrator($registry, $emptySinks ? [] : null));
         $request = $this->request('GET', '/release');
         $outcome = $kernel->handle($request);
         $weakResponse = $handler->weakResponse;
@@ -316,7 +433,10 @@ final class HttpKernelTest extends TestCase
         self::assertNull($weakResponse?->get());
     }
 
-    private function orchestrator(?ObservationSink $sink = null): ExecutionOrchestrator
+    /**
+     * @param ObservationSink|list<ObservationSink>|null $sink
+     */
+    private function orchestrator(ObservationSink|array|null $sink = null): ExecutionOrchestrator
     {
         $registry = new ServiceRegistry();
         $registry->freeze();
