@@ -4,7 +4,7 @@ certifi==2026.10.19
 charset-normalizer==3.5.2
 cyclonedx-python-lib==11.12.0
 defusedxml==0.7.1
-filelock==4.2.0
+filelock==4.2.1
 idna==3.20
 license-expression==30.4.4
 markdown-it-py==4.2.0
@@ -22,7 +22,7 @@ Pygments==2.21.0
 pyparsing==3.3.3
 requests==2.34.2
 rich==15.0.0
-setuptools==83.0.0
+setuptools==84.1.0
 sortedcontainers==2.4.0
 tomli==2.5.0
 tomli_w==1.2.0
