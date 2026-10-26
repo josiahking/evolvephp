@@ -22,6 +22,8 @@ final class ExecutionOrchestrator
 
     private ObservationDispatcher $observations;
 
+    private bool $hasObservationSinks;
+
     /**
      * @var list<ExecutionContextAttacher>
      */
@@ -37,6 +39,7 @@ final class ExecutionOrchestrator
         array $executionContextAttachers = [],
     ) {
         $this->observations = new ObservationDispatcher($observationSink);
+        $this->hasObservationSinks = $observationSink !== null && $observationSink !== [];
         $this->executionContextAttachers = $this->normalizeExecutionContextAttachers($executionContextAttachers);
     }
 
@@ -75,11 +78,13 @@ final class ExecutionOrchestrator
             }
         }
 
-        $this->observe($instrumentationFailures, new Observation(
-            ObservationType::ExecutionStarted,
-            $identifier,
-            $kind,
-        ));
+        if ($this->hasObservationSinks) {
+            $this->observe($instrumentationFailures, new Observation(
+                ObservationType::ExecutionStarted,
+                $identifier,
+                $kind,
+            ));
+        }
 
         try {
             $primaryResult = $operation($context, $scope);
@@ -88,18 +93,20 @@ final class ExecutionOrchestrator
             $primaryThrowable = $exception;
         }
 
-        $this->observe($instrumentationFailures, new Observation(
-            ObservationType::HandlerCompleted,
-            $identifier,
-            $kind,
-            $primarySucceeded ? ObservationOutcome::Succeeded : ObservationOutcome::Failed,
-            $primaryThrowable === null ? null : $primaryThrowable::class,
-        ));
-        $this->observe($instrumentationFailures, new Observation(
-            ObservationType::ScopeCloseStarted,
-            $identifier,
-            $kind,
-        ));
+        if ($this->hasObservationSinks) {
+            $this->observe($instrumentationFailures, new Observation(
+                ObservationType::HandlerCompleted,
+                $identifier,
+                $kind,
+                $primarySucceeded ? ObservationOutcome::Succeeded : ObservationOutcome::Failed,
+                $primaryThrowable === null ? null : $primaryThrowable::class,
+            ));
+            $this->observe($instrumentationFailures, new Observation(
+                ObservationType::ScopeCloseStarted,
+                $identifier,
+                $kind,
+            ));
+        }
 
         $cleanupFailures = [];
 
@@ -133,30 +140,32 @@ final class ExecutionOrchestrator
             ? ProcessReuseDecision::Reusable
             : ProcessReuseDecision::QuarantineRequired;
 
-        $this->observe($instrumentationFailures, new Observation(
-            ObservationType::ScopeCloseCompleted,
-            $identifier,
-            $kind,
-            $cleanupThrowable === null ? ObservationOutcome::Succeeded : ObservationOutcome::Failed,
-            $cleanupThrowable === null ? null : $cleanupThrowable::class,
-        ));
-
-        if ($reuseDecision === ProcessReuseDecision::QuarantineRequired) {
+        if ($this->hasObservationSinks) {
             $this->observe($instrumentationFailures, new Observation(
-                ObservationType::QuarantineRequired,
+                ObservationType::ScopeCloseCompleted,
                 $identifier,
                 $kind,
+                $cleanupThrowable === null ? ObservationOutcome::Succeeded : ObservationOutcome::Failed,
+                $cleanupThrowable === null ? null : $cleanupThrowable::class,
+            ));
+
+            if ($reuseDecision === ProcessReuseDecision::QuarantineRequired) {
+                $this->observe($instrumentationFailures, new Observation(
+                    ObservationType::QuarantineRequired,
+                    $identifier,
+                    $kind,
+                    reuseDecision: $reuseDecision,
+                ));
+            }
+
+            $this->observe($instrumentationFailures, new Observation(
+                ObservationType::ExecutionCompleted,
+                $identifier,
+                $kind,
+                $primarySucceeded ? ObservationOutcome::Succeeded : ObservationOutcome::Failed,
                 reuseDecision: $reuseDecision,
             ));
         }
-
-        $this->observe($instrumentationFailures, new Observation(
-            ObservationType::ExecutionCompleted,
-            $identifier,
-            $kind,
-            $primarySucceeded ? ObservationOutcome::Succeeded : ObservationOutcome::Failed,
-            reuseDecision: $reuseDecision,
-        ));
 
         unset($scope);
 

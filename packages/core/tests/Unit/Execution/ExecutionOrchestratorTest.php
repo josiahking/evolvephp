@@ -7,9 +7,12 @@ namespace Evolve\Core\Tests\Unit\Execution;
 use Evolve\Contracts\Execution\ResetParticipant;
 use Evolve\Core\Container\ServiceLifetime;
 use Evolve\Core\Container\ServiceRegistry;
+use Evolve\Core\Exception\ExecutionCleanupFailed;
 use Evolve\Core\Exception\ExecutionResetFailed;
 use Evolve\Core\Exception\ExecutionStartFailed;
 use Evolve\Core\Execution\ExecutionContext;
+use Evolve\Core\Execution\ExecutionContextAttacher;
+use Evolve\Core\Execution\ExecutionContextAttachment;
 use Evolve\Core\Execution\ExecutionContextValues;
 use Evolve\Core\Execution\ExecutionIdentifier;
 use Evolve\Core\Execution\ExecutionKind;
@@ -17,8 +20,10 @@ use Evolve\Core\Execution\ExecutionOrchestrator;
 use Evolve\Core\Execution\ExecutionOutcome;
 use Evolve\Core\Execution\ExecutionScope;
 use Evolve\Core\Execution\ProcessReuseDecision;
+use Evolve\Core\Instrumentation\ObservationType;
 use InvalidArgumentException;
 use LogicException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionEnum;
@@ -28,6 +33,124 @@ use WeakReference;
 
 final class ExecutionOrchestratorTest extends TestCase
 {
+    /**
+     * @return iterable<string, array{bool, bool, bool, bool}>
+     */
+    public static function unobservedFailureCases(): iterable
+    {
+        foreach ([false, true] as $emptySinks) {
+            foreach ([false, true] as $handlerFails) {
+                foreach ([false, true] as $detachFails) {
+                    foreach ([false, true] as $resetFails) {
+                        yield sprintf('empty=%d handler=%d detach=%d reset=%d', $emptySinks, $handlerFails, $detachFails, $resetFails)
+                            => [$emptySinks, $handlerFails, $detachFails, $resetFails];
+                    }
+                }
+            }
+        }
+    }
+
+    #[DataProvider('unobservedFailureCases')]
+    public function test_no_sinks_preserves_attachment_failures_reverse_detachment_cleanup_and_quarantine(
+        bool $emptySinks,
+        bool $handlerFails,
+        bool $detachFails,
+        bool $resetFails,
+    ): void {
+        $events = [];
+        $handlerFailure = new RuntimeException('handler failed');
+        $detachFailure = new RuntimeException('detach failed');
+        $resetFailure = new RuntimeException('reset failed');
+        $values = new ExecutionContextValues('en-NG', 'Africa/Lagos');
+        $identifier = null;
+        $attachers = [];
+
+        foreach (['first', 'broken', 'last'] as $name) {
+            $attacher = $this->createMock(ExecutionContextAttacher::class);
+            if ($name === 'broken') {
+                $attacher->expects(self::once())->method('attach')->willReturnCallback(
+                    static function (ExecutionContext $context) use (&$events): never {
+                        $events[] = 'broken:attach';
+                        throw new LogicException('attach failed');
+                    },
+                );
+            } else {
+                $attachment = $this->createMock(ExecutionContextAttachment::class);
+                $attachment->expects(self::once())->method('detach')->willReturnCallback(
+                    static function () use (&$events, $name, $detachFails, $detachFailure): void {
+                        $events[] = $name . ':detach';
+                        if ($name === 'last' && $detachFails) {
+                            throw $detachFailure;
+                        }
+                    },
+                );
+                $attacher->expects(self::once())->method('attach')->willReturnCallback(
+                    static function (ExecutionContext $context) use (&$events, &$identifier, $name, $values, $attachment): ExecutionContextAttachment {
+                        $events[] = $name . ':attach';
+                        $identifier ??= $context->identifier();
+                        self::assertSame($identifier, $context->identifier());
+                        self::assertSame($values, $context->values());
+                        return $attachment;
+                    },
+                );
+            }
+            $attachers[] = $attacher;
+        }
+
+        $orchestrator = new ExecutionOrchestrator($this->frozenRegistry(), $emptySinks ? [] : null, $attachers);
+        $outcome = $orchestrator->execute(
+            ExecutionKind::HttpRequest,
+            function (ExecutionContext $context, ExecutionScope $scope) use (&$events, &$identifier, $values, $handlerFails, $handlerFailure, $resetFails, $resetFailure): string {
+                self::assertSame($identifier, $context->identifier());
+                self::assertSame($values, $context->values());
+                $events[] = 'handler';
+                $scope->registerResetParticipant('reset', $this->participant(static function () use (&$events, $resetFails, $resetFailure): void {
+                    $events[] = 'reset';
+                    if ($resetFails) {
+                        throw $resetFailure;
+                    }
+                }));
+                if ($handlerFails) {
+                    throw $handlerFailure;
+                }
+                return 'handled';
+            },
+            $values,
+        );
+
+        self::assertSame(['first:attach', 'broken:attach', 'last:attach', 'handler', 'last:detach', 'first:detach', 'reset'], $events);
+        self::assertSame($identifier, $outcome->identifier());
+        self::assertSame(! $handlerFails, $outcome->primarySucceeded());
+        self::assertSame($handlerFails ? $handlerFailure : null, $outcome->primaryThrowable());
+        if (! $handlerFails) {
+            self::assertSame('handled', $outcome->primaryResult());
+        }
+        self::assertCount(1, $outcome->instrumentationFailures());
+        self::assertSame(ObservationType::ExecutionStarted, $outcome->instrumentationFailures()[0]->observationType());
+        self::assertSame(LogicException::class, $outcome->instrumentationFailures()[0]->errorType());
+        self::assertSame($detachFails || $resetFails, $outcome->cleanupFailed());
+        self::assertSame($detachFails || $resetFails ? ProcessReuseDecision::QuarantineRequired : ProcessReuseDecision::Reusable, $outcome->reuseDecision());
+        $cleanup = $outcome->cleanupThrowable();
+        if ($detachFails) {
+            self::assertInstanceOf(ExecutionCleanupFailed::class, $cleanup);
+            self::assertCount($resetFails ? 2 : 1, $cleanup->failures());
+            self::assertSame($detachFailure, $cleanup->failures()[0]);
+            $cleanup = $cleanup->failures()[1] ?? null;
+        }
+        if ($resetFails) {
+            self::assertInstanceOf(ExecutionResetFailed::class, $cleanup);
+            self::assertSame([$resetFailure], $cleanup->failures());
+        } else {
+            self::assertNull($cleanup);
+        }
+        if ($detachFails || $resetFails) {
+            $this->expectException(ExecutionStartFailed::class);
+            $orchestrator->execute(ExecutionKind::HttpRequest, static function (): never {
+                self::fail('Quarantined execution must not invoke the handler.');
+            });
+        }
+    }
+
     public function test_execution_identity_kind_and_context_are_local_stable_and_non_ambient(): void
     {
         $orchestrator = new ExecutionOrchestrator($this->frozenRegistry());
