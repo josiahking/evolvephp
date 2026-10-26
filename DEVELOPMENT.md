@@ -270,6 +270,40 @@ database installation, vendor ranking or compatibility certification. Multiple
 workload profiles are evaluated independently through `adviseMany()` for
 polyglot-persistence planning; they are not merged into a composite score.
 
+## Local Beta Distribution Planning
+
+The approved distribution model keeps this monorepo authoritative and proposes 34 independently tagged public GitHub split repositories, with each package individually registered on Packagist after separate authorization. The intended sequence is monorepo source, deterministic package splits, independent repositories, independently verified package tags, Packagist registration, then consumer installation. None of those public publication steps is performed by local readiness tooling.
+
+The version-1 inventory in `release-packages.json` remains canonical. `tools/release-package-destinations.json` separately maps all 34 packages, in that same order, to proposed `evolvephp-<slug>` repositories under the owner recorded in that mapping. Its `proposed-unverified` status means that repository existence and ownership have not been checked. `2.0.0-beta.1` is a proposed simulation version, not a released Beta.
+
+From a clean committed source checkout, generate the offline JSON plan:
+
+```bash
+composer release:plan
+```
+
+For an independently reviewed source identity, supply the full accepted commit and tree IDs with `--source-commit=<40-character-sha>` and `--source-tree=<40-character-sha>`, and the accepted branch with `--source-branch=<branch>`, after Composer's `--` separator. `--root=<checkout>` selects another local source checkout. The defaults bind to the current HEAD commit, tree and branch. Detached CI checkouts use the branch label `HEAD`; this is not proof of protected-branch membership. Planning accepts `2.x`, task branches under `feature/`, or detached HEAD; it rejects `master`, dirty state, hidden index entries, replacement refs, mismatched identities and unsupported arguments.
+
+Review the source commit/tree against the accepted immutable source, the exact 34 names and ordering, every proposed destination, and each `package_tree` and `composer_blob`. Compare two outputs byte for byte for the same source. Save evidence outside the checkout: an untracked output file inside it makes subsequent planning fail. The planner uses read-only Git object inspection and preserves the index, worktree and refs. It neither computes split-history commits nor verifies tags: `composer release:split:validate` remains the separate disposable-clone split/history check. A later publication review must prove each split tree equals the planned package tree and independently verify every package tag against the approved source.
+
+An uncommitted implementation checkout is deliberately rejected. During implementation, PHPUnit uses disposable committed fixtures to exercise successful plans, and the live checkout exercises dirty-source rejection. Do not stage or commit solely to bypass this guard.
+
+`composer release:consumer:validate` retains the Alpha/Stable matrix and adds these synthetic Beta cases using the actual Composer resolver:
+
+| Case | Root requirements and stability | Expected result |
+| --- | --- | --- |
+| I | HTTP `^2.0`, default stable | Stability rejection |
+| J | HTTP `2.0.0-beta.1`, default stable | Transitive stability rejection |
+| K | HTTP `^2.0@beta` only, default stable | Transitive stability rejection |
+| L | HTTP `^2.0`, minimum-stability: beta and prefer-stable: true | HTTP, Core and Contracts select Beta |
+| M | Explicit root `^2.0@beta` for HTTP, Core and Contracts | All three select Beta |
+| N | All 34 root requirements `^2.0`, minimum-stability: beta and prefer-stable: true | Complete Beta graph |
+| O | All 34 root requirements exactly `2.0.0-beta.1` | Complete Beta graph |
+
+Root stability flags do not automatically propagate to dependencies. Package-local first-party constraints remain `^2.0`; PHP remains `^8.4` and licensing remains BSD-3-Clause. No first-party package gains a version field or a root stability policy. The validator sets `COMPOSER_DISABLE_NETWORK=1`, disables Packagist in synthetic consumers, and creates synthetic version tags only in disposable local repositories. Lock-only Beta resolution is not a public installation or production-readiness claim. The existing independently installed MCP consumer case remains separate.
+
+The planner has no publishing mode, needs no credentials or network, and cannot create repositories, push commits, create local or remote release tags, change remotes, register Packagist packages, or publish releases. Future repository creation, synchronization, tags, registration and releases require explicit publication authorization and independently reviewed evidence. Packages are not yet independently published; public Composer installation has not been verified.
+
 ## Release Validation
 
 Run deterministic/offline package release-readiness validation:
@@ -753,7 +787,7 @@ It runs for pull requests targeting `2.x`, pushes to `2.x` and manual dispatch. 
 
 All jobs run on the explicit Ubuntu 24.04 runner, using the `ubuntu-24.04` label. The workflow has no initial dependency cache.
 
-The policy job runs on PHP 8.4. The `Policy (PHP 8.4)` job validates the root Composer manifest and lockfile before installation, installs root dependencies from the committed lockfile with `composer install`, runs package split validation, runs skeleton create-project validation, runs supply-chain checks and runs the root Architecture and Documentation policy tests through root PHPUnit 13:
+The policy job runs on PHP 8.4. The `Policy (PHP 8.4)` job validates the root Composer manifest and lockfile before installation, installs root dependencies from the committed lockfile with `composer install`, validates the local release plan, runs package split validation, runs prerelease consumer validation, runs skeleton create-project validation, runs supply-chain checks and runs the root Architecture and Documentation policy tests through root PHPUnit 13:
 
 ```bash
 php vendor/bin/phpunit --configuration phpunit.xml.dist tests/Architecture tests/Documentation

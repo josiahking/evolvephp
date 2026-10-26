@@ -5,6 +5,7 @@ require_once __DIR__ . '/release-validation-common.php';
 final class PrereleaseConsumerValidator
 {
     private const ALPHA_VERSION = '2.0.0-alpha.1';
+    private const BETA_VERSION = '2.0.0-beta.1';
     private const STABLE_VERSION = '2.0.0';
 
     private ReleaseValidationProcessRunner $runner;
@@ -146,6 +147,9 @@ final class PrereleaseConsumerValidator
                 'evolvephp/ai' => '^2.0',
                 'evolvephp/testing' => '^2.0',
             ), array(), $this->expectedVersions($packages, self::STABLE_VERSION));
+
+            $betaRepositories = $this->createTaggedRepositories($temp->child('beta-repositories'), $splitRoots, self::BETA_VERSION);
+            array_push($results, ...$this->validateBetaConsumers($temp, $composer, $betaRepositories, $lockedRuntimePackages, $packages));
 
             $results[] = $this->runMcpIndependentConsumer($temp, $composer, $alphaRepositories, $lockedRuntimePackages, $root);
 
@@ -649,6 +653,35 @@ final class PrereleaseConsumerValidator
         );
     }
 
+    /**
+     * Exercise real Composer stability rules against disposable Beta-tagged VCS repositories.
+     * @param array<string, string> $repositories
+     * @param list<array<string, mixed>> $lockedRuntimePackages
+     * @param list<array{name: string, directory: string}> $packages
+     * @return list<array{name: string, outcome: string, detail: string}>
+     */
+    private function validateBetaConsumers(ReleaseValidationTemporaryDirectory $temp, ?string $composer, array $repositories, array $lockedRuntimePackages, array $packages): array
+    {
+        $httpVersions = array(
+            'evolvephp/contracts' => self::BETA_VERSION,
+            'evolvephp/core' => self::BETA_VERSION,
+            'evolvephp/http' => self::BETA_VERSION,
+        );
+        $allRequirements = array_fill_keys(array_column($packages, 'name'), '^2.0');
+        $explicitRequirements = array_fill_keys(array_column($packages, 'name'), self::BETA_VERSION);
+        $betaOptions = array('minimum-stability' => 'beta', 'prefer-stable' => true);
+
+        return array(
+            $this->runExpectedFailureCase($temp, $composer, 'Beta case I', $repositories, $lockedRuntimePackages, array('evolvephp/http' => '^2.0')),
+            $this->runExpectedFailureCase($temp, $composer, 'Beta case J', $repositories, $lockedRuntimePackages, array('evolvephp/http' => self::BETA_VERSION)),
+            $this->runExpectedFailureCase($temp, $composer, 'Beta case K', $repositories, $lockedRuntimePackages, array('evolvephp/http' => '^2.0@beta')),
+            $this->runExpectedSuccessCase($temp, $composer, 'Beta case L', $repositories, $lockedRuntimePackages, array('evolvephp/http' => '^2.0'), $betaOptions, $httpVersions),
+            $this->runExpectedSuccessCase($temp, $composer, 'Beta case M', $repositories, $lockedRuntimePackages, array_fill_keys(array_keys($httpVersions), '^2.0@beta'), array(), $httpVersions),
+            $this->runExpectedSuccessCase($temp, $composer, 'Beta full-graph case N', $repositories, $lockedRuntimePackages, $allRequirements, $betaOptions, $this->expectedVersions($packages, self::BETA_VERSION)),
+            $this->runExpectedSuccessCase($temp, $composer, 'Beta full-graph case O', $repositories, $lockedRuntimePackages, $explicitRequirements, array(), $this->expectedVersions($packages, self::BETA_VERSION)),
+        );
+    }
+
     private function isMinimumStabilityFailure(string $output): bool
     {
         return str_contains($output, 'minimum-stability')
@@ -740,6 +773,7 @@ try {
     echo 'COMPOSER_DISABLE_NETWORK: enabled' . PHP_EOL;
     echo 'Packagist: disabled' . PHP_EOL;
     echo 'Alpha tag: 2.0.0-alpha.1' . PHP_EOL;
+    echo 'Beta tag: 2.0.0-beta.1' . PHP_EOL;
     echo 'Stable tag: 2.0.0' . PHP_EOL;
 
     foreach ($results as $result) {
@@ -752,6 +786,8 @@ try {
     echo 'minimum-stability: alpha plus prefer-stable: true succeeds.' . PHP_EOL;
     echo 'Explicit root @alpha flags succeed.' . PHP_EOL;
     echo 'Stable 2.0.0 succeeds under default stability.' . PHP_EOL;
+    echo 'Beta default stability and top-level-only prerelease constraints fail as expected.' . PHP_EOL;
+    echo 'minimum-stability: beta plus prefer-stable: true, or explicit root prerelease constraints for every selected first-party dependency, succeeds.' . PHP_EOL;
     echo 'No package-manifest change is required.' . PHP_EOL;
     echo 'Source repository state preserved.' . PHP_EOL;
     exit(0);

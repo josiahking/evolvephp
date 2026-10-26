@@ -82,6 +82,8 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $this->assertStringContainsString('composer install --no-interaction --no-progress --prefer-dist', $job);
         $this->assertSame(1, substr_count($job, 'composer supply-chain'));
         $this->assertSame(1, substr_count($job, 'composer release:split:validate'));
+        $this->assertSame(1, substr_count($job, 'composer release:plan'));
+        $this->assertStringContainsString('composer release:plan', $this->extractStep($job, 'Validate local release plan'));
         $this->assertSame(1, substr_count($job, 'composer release:consumer:validate'));
         $this->assertSame(1, substr_count($job, 'composer release:skeleton:validate'));
         $this->assertStringContainsString('php vendor/bin/phpunit --configuration phpunit.xml.dist tests/Architecture tests/Documentation', $job);

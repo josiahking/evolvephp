@@ -148,6 +148,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'licenses:check' => '@php tools/check-licenses.php',
             'quality' => array('@architecture', '@analyse', '@style:check', '@test'),
             'release:consumer:validate' => '@php tools/validate-prerelease-consumers.php',
+            'release:plan' => '@php tools/publish-package-splits.php',
             'release:skeleton:validate' => '@php tools/validate-skeleton-project.php',
             'release:split:validate' => '@php tools/validate-package-splits.php',
             'release:validate' => '@php tools/validate-release-packages.php',

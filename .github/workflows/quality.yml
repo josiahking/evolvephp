@@ -49,6 +49,9 @@ jobs:
       - name: Run legacy remote client static analysis
         run: php vendor/bin/phpstan analyse --configuration compat/legacy-http-client/phpstan.neon.dist --memory-limit=1G --no-progress
 
+      - name: Validate local release plan
+        run: composer release:plan
+
       - name: Run release package split validation
         run: composer release:split:validate
 
