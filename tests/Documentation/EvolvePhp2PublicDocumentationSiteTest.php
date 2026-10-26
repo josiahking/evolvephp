@@ -88,7 +88,7 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         self::assertStringContainsString('pip_audit==2.10.0', $this->read('website/requirements-audit.txt'));
         foreach (['website/requirements-docs.txt', 'website/requirements-audit.txt'] as $path) {
             $pins = preg_grep('/^setuptools==/i', preg_split('/\R/', trim($this->read($path))));
-            self::assertSame(['setuptools==83.0.0'], array_values($pins), 'SETUPTOOLS_PIN_GUARD:' . $path);
+            self::assertSame(['setuptools==84.1.0'], array_values($pins), 'SETUPTOOLS_PIN_GUARD:' . $path);
         }
     }
 
