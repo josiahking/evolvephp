@@ -6,6 +6,38 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
 {
     private $root;
 
+    public function testBetaDestinationsMatchCanonicalInventoryAndRemainProposals(): void
+    {
+        $map = $this->readJsonFile('tools/release-package-destinations.json');
+        $canonical = $this->readJsonFile('release-packages.json');
+        $this->assertSame(array('version', 'status', 'packages'), array_keys($map));
+        $this->assertSame(1, $map['version']);
+        $this->assertSame('proposed-unverified', $map['status']);
+        $this->assertCount(34, $map['packages']);
+        $this->assertSame(array_column($canonical['packages'], 'name'), array_column($map['packages'], 'name'));
+        $this->assertCount(34, array_unique(array_column($map['packages'], 'repository')));
+        foreach ($map['packages'] as $package) {
+            $this->assertSame(array('name', 'repository'), array_keys($package));
+            $this->assertSame('josiahking/evolvephp-' . substr($package['name'], 10), $package['repository']);
+        }
+    }
+
+    public function testBetaPlanningDocumentationStatesLocalOnlyBoundaries(): void
+    {
+        $development = $this->readProjectFile('DEVELOPMENT.md');
+        foreach (array('composer release:plan', 'tools/release-package-destinations.json', '2.0.0-beta.1', 'minimum-stability: beta', 'proposed-unverified', '--source-commit', '--source-tree', 'Packagist registration', '34 independently tagged') as $needle) {
+            $this->assertStringContainsString($needle, $development);
+        }
+        $this->assertStringContainsString('local release-readiness', $this->readProjectFile('CHANGELOG.md'));
+        $this->assertStringContainsString('Beta consumer', $this->readProjectFile('CHANGELOG.md'));
+        $manual = $this->readProjectFile('website/docs/next/project/releases.md');
+        $this->assertStringContainsString('composer release:plan', $manual);
+        $this->assertStringContainsString('2.0.0-beta.1', $manual);
+        $this->assertStringContainsString('not yet independently published', $manual);
+        $this->assertFileDoesNotExist($this->projectPath('docs/releases/2.0.0-beta.1.md'));
+    }
+
+
     protected function setUp(): void
     {
         $this->root = dirname(__DIR__, 2);

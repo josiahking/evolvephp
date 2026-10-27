@@ -1,0 +1,142 @@
+{
+    "version": 1,
+    "status": "proposed-unverified",
+    "packages": [
+        {
+            "name": "evolvephp/contracts",
+            "repository": "josiahking/evolvephp-contracts"
+        },
+        {
+            "name": "evolvephp/database-contracts",
+            "repository": "josiahking/evolvephp-database-contracts"
+        },
+        {
+            "name": "evolvephp/database-pdo",
+            "repository": "josiahking/evolvephp-database-pdo"
+        },
+        {
+            "name": "evolvephp/cache-memory",
+            "repository": "josiahking/evolvephp-cache-memory"
+        },
+        {
+            "name": "evolvephp/session-contracts",
+            "repository": "josiahking/evolvephp-session-contracts"
+        },
+        {
+            "name": "evolvephp/lock-contracts",
+            "repository": "josiahking/evolvephp-lock-contracts"
+        },
+        {
+            "name": "evolvephp/queue-contracts",
+            "repository": "josiahking/evolvephp-queue-contracts"
+        },
+        {
+            "name": "evolvephp/queue-memory",
+            "repository": "josiahking/evolvephp-queue-memory"
+        },
+        {
+            "name": "evolvephp/storage-contracts",
+            "repository": "josiahking/evolvephp-storage-contracts"
+        },
+        {
+            "name": "evolvephp/storage-local",
+            "repository": "josiahking/evolvephp-storage-local"
+        },
+        {
+            "name": "evolvephp/secret-contracts",
+            "repository": "josiahking/evolvephp-secret-contracts"
+        },
+        {
+            "name": "evolvephp/bridge-contracts",
+            "repository": "josiahking/evolvephp-bridge-contracts"
+        },
+        {
+            "name": "evolvephp/core",
+            "repository": "josiahking/evolvephp-core"
+        },
+        {
+            "name": "evolvephp/job",
+            "repository": "josiahking/evolvephp-job"
+        },
+        {
+            "name": "evolvephp/scheduler",
+            "repository": "josiahking/evolvephp-scheduler"
+        },
+        {
+            "name": "evolvephp/migration",
+            "repository": "josiahking/evolvephp-migration"
+        },
+        {
+            "name": "evolvephp/view",
+            "repository": "josiahking/evolvephp-view"
+        },
+        {
+            "name": "evolvephp/view-twig",
+            "repository": "josiahking/evolvephp-view-twig"
+        },
+        {
+            "name": "evolvephp/view-blade",
+            "repository": "josiahking/evolvephp-view-blade"
+        },
+        {
+            "name": "evolvephp/i18n",
+            "repository": "josiahking/evolvephp-i18n"
+        },
+        {
+            "name": "evolvephp/module",
+            "repository": "josiahking/evolvephp-module"
+        },
+        {
+            "name": "evolvephp/plugin",
+            "repository": "josiahking/evolvephp-plugin"
+        },
+        {
+            "name": "evolvephp/http",
+            "repository": "josiahking/evolvephp-http"
+        },
+        {
+            "name": "evolvephp/insight",
+            "repository": "josiahking/evolvephp-insight"
+        },
+        {
+            "name": "evolvephp/http-client",
+            "repository": "josiahking/evolvephp-http-client"
+        },
+        {
+            "name": "evolvephp/observe",
+            "repository": "josiahking/evolvephp-observe"
+        },
+        {
+            "name": "evolvephp/mcp",
+            "repository": "josiahking/evolvephp-mcp"
+        },
+        {
+            "name": "evolvephp/ai",
+            "repository": "josiahking/evolvephp-ai"
+        },
+        {
+            "name": "evolvephp/bridge-psr",
+            "repository": "josiahking/evolvephp-bridge-psr"
+        },
+        {
+            "name": "evolvephp/bridge-laravel",
+            "repository": "josiahking/evolvephp-bridge-laravel"
+        },
+        {
+            "name": "evolvephp/bridge-symfony",
+            "repository": "josiahking/evolvephp-bridge-symfony"
+        },
+        {
+            "name": "evolvephp/bridge-remote",
+            "repository": "josiahking/evolvephp-bridge-remote"
+        },
+        {
+            "name": "evolvephp/testing",
+            "repository": "josiahking/evolvephp-testing"
+        },
+        {
+            "name": "evolvephp/dev-tools",
+            "repository": "josiahking/evolvephp-dev-tools"
+        }
+    ]
+}

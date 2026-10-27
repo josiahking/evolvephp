@@ -43,6 +43,9 @@ jobs:
       - name: Validate root Composer manifest and lockfile
         run: composer validate --strict --check-lock
 
+      - name: Validate local release plan
+        run: composer release:plan
+
       - name: Install root dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 

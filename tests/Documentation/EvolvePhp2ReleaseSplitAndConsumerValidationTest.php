@@ -6,6 +6,243 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 {
     private $root;
 
+    public function testReleasePlanIsDeterministicBoundToGitAndHasNoSideEffects(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $temporary = $this->createPlannerFixture();
+        $runner = new ReleaseValidationProcessRunner();
+        try {
+            $root = $temporary->path;
+            $before = $this->plannerFixtureState($runner, $root);
+            $commit = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD'), $root)->stdout);
+            $tree = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD^{tree}'), $root)->stdout);
+            $options = array('--source-commit=' . $commit, '--source-tree=' . $tree, '--source-branch=feature/release-plan-test');
+            $first = $this->runPlanner($root, $options);
+            $second = $this->runPlanner($root, $options);
+            $this->assertSame(0, $first->exitCode, $first->output());
+            $this->assertSame('', $first->stderr);
+            $this->assertSame(0, $second->exitCode, $second->output());
+            $this->assertSame($first->stdout, $second->stdout);
+            $plan = json_decode($first->stdout, true, 512, JSON_THROW_ON_ERROR);
+            $this->assertSame('dry-run', $plan['mode']);
+            $this->assertFalse($plan['publication_enabled']);
+            $this->assertSame('2.0.0-beta.1', $plan['proposed_version']);
+            $this->assertSame(array('branch' => 'feature/release-plan-test', 'commit' => $commit, 'tree' => $tree), $plan['source']);
+            $this->assertCount(34, $plan['packages']);
+            $this->assertSame(array_column($this->releasePackages(), 'name'), array_column($plan['packages'], 'name'));
+            foreach ($plan['packages'] as $package) {
+                $this->assertSame('josiahking/evolvephp-' . packageSlug($package['name']), $package['destination']);
+                $this->assertSame('proposed-unverified', $package['destination_status']);
+                $expectedTree = trim($runner->mustRun(array('git', 'rev-parse', $commit . ':' . $package['directory']), $root)->stdout);
+                $this->assertSame($expectedTree, $package['package_tree']);
+                $this->assertMatchesRegularExpression('/^[a-f0-9]{40}$/', $package['composer_blob']);
+            }
+            $this->assertSame($before, $this->plannerFixtureState($runner, $root));
+            $runner->mustRun(array('git', 'checkout', '--detach'), $root);
+            $detached = $this->runPlanner($root, array('--source-branch=HEAD'));
+            $this->assertSame(0, $detached->exitCode, $detached->output());
+            $this->assertSame('HEAD', json_decode($detached->stdout, true)['source']['branch']);
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testReleasePlanRejectsWrongIdentityAndUnsupportedArgumentsWithoutMutation(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $temporary = $this->createPlannerFixture();
+        $runner = new ReleaseValidationProcessRunner();
+        try {
+            $before = $this->plannerFixtureState($runner, $temporary->path);
+            foreach (array(
+                array('--source-commit=' . str_repeat('0', 40)),
+                array('--source-tree=' . str_repeat('0', 40)),
+                array('--source-branch=2.x'),
+                array('--source-commit=HEAD'),
+                array('--publish'),
+                array('--push'),
+                array('--version=2.0.0'),
+                array('--composer=composer'),
+                array('--root=' . $temporary->path, '--root=' . $temporary->path),
+            ) as $options) {
+                $result = $this->runPlanner($temporary->path, $options);
+                $this->assertSame(1, $result->exitCode, implode(' ', $options) . $result->output());
+                $this->assertSame('', $result->stdout);
+                $this->assertStringContainsString('release plan failed:', $result->stderr);
+                $this->assertSame($before, $this->plannerFixtureState($runner, $temporary->path));
+            }
+            $runner->mustRun(array('git', 'checkout', '-b', 'master'), $temporary->path);
+            $result = $this->runPlanner($temporary->path);
+            $this->assertSame(1, $result->exitCode);
+            $this->assertStringContainsString('branch', $result->stderr);
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testReleasePlanRejectsDirtyWorktreeIndexAndUntrackedFiles(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        foreach (array('worktree', 'index', 'untracked', 'hidden') as $kind) {
+            $temporary = $this->createPlannerFixture();
+            $runner = new ReleaseValidationProcessRunner();
+            try {
+                $path = $kind === 'untracked' ? 'untracked.txt' : 'packages/contracts/composer.json';
+                file_put_contents($temporary->child($path), "\n", FILE_APPEND);
+                if ($kind === 'index') {
+                    $runner->mustRun(array('git', 'add', $path), $temporary->path);
+                }
+                if ($kind === 'hidden') {
+                    $runner->mustRun(array('git', 'update-index', '--assume-unchanged', $path), $temporary->path);
+                }
+                $before = $this->plannerFixtureState($runner, $temporary->path);
+                $result = $this->runPlanner($temporary->path);
+                $this->assertSame(1, $result->exitCode, $kind . $result->output());
+                $this->assertSame('', $result->stdout);
+                $this->assertMatchesRegularExpression('/dirty|hidden index/i', $result->stderr);
+                $this->assertSame($before, $this->plannerFixtureState($runner, $temporary->path));
+            } finally {
+                $temporary->cleanup();
+            }
+        }
+    }
+
+    public function testReleasePlanRejectsInvalidCommittedMappingsAndMetadata(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $mapping = $this->readJsonFile('tools/release-package-destinations.json');
+        $cases = array();
+        $missing = $mapping;
+        array_pop($missing['packages']);
+        $cases['incomplete'] = array('tools/release-package-destinations.json', json_encode($missing), 'destinations');
+        $duplicate = $mapping;
+        $duplicate['packages'][1] = $duplicate['packages'][0];
+        $cases['duplicate'] = array('tools/release-package-destinations.json', json_encode($duplicate), 'destination');
+        foreach (array('attacker/evolvephp-contracts', 'josiahking/../contracts', 'https://github.com/josiahking/evolvephp-contracts', 'josiahking/evolvephp-core') as $destination) {
+            $invalid = $mapping;
+            $invalid['packages'][0]['repository'] = $destination;
+            $cases[$destination] = array('tools/release-package-destinations.json', json_encode($invalid), 'destination');
+        }
+        $reordered = $mapping;
+        $reordered['packages'] = array_reverse($reordered['packages']);
+        $cases['reordered'] = array('tools/release-package-destinations.json', json_encode($reordered), 'destination');
+        $cases['malformed'] = array('tools/release-package-destinations.json', '{', 'JSON');
+        $cases['missing-file'] = array('tools/release-package-destinations.json', null, 'destination');
+        foreach (array('name' => 'evolvephp/wrong', 'license' => 'MIT', 'version' => '2.0.0-beta.1', 'minimum-stability' => 'beta', 'prefer-stable' => true, 'require' => array('php' => '^8.3')) as $field => $value) {
+            $manifest = $this->readJsonFile('packages/contracts/composer.json');
+            $manifest[$field] = $value;
+            $cases['manifest-' . $field] = array('packages/contracts/composer.json', json_encode($manifest), 'manifest');
+        }
+        $manifest = $this->readJsonFile('packages/core/composer.json');
+        $manifest['require']['evolvephp/contracts'] = '^2.0@beta';
+        $cases['constraint'] = array('packages/core/composer.json', json_encode($manifest), 'constraint');
+        foreach ($cases as $name => [$path, $contents, $message]) {
+            $temporary = $this->createPlannerFixture($path, $contents);
+            try {
+                $result = $this->runPlanner($temporary->path);
+                $this->assertSame(1, $result->exitCode, $name . ': ' . $result->output());
+                $this->assertSame('', $result->stdout);
+                $this->assertStringContainsString($message, $result->stderr, $name);
+            } finally {
+                $temporary->cleanup();
+            }
+        }
+    }
+
+    public function testBetaConsumerMatrixUsesRealOfflineComposerAndPreservesAlphaStable(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $this->loadPrereleaseConsumerValidatorClass();
+        $validator = new PrereleaseConsumerValidator();
+        $this->assertTrue(method_exists($validator, 'validateBetaConsumers'), 'The existing validator must own the Beta matrix.');
+        $temporary = createTemporaryDirectory('evolvephp-beta-test-');
+        $runner = new ReleaseValidationProcessRunner();
+        try {
+            $splitRoots = array();
+            foreach ($this->releasePackages() as $package) {
+                $directory = $temporary->child('packages/' . packageSlug($package['name']));
+                mkdir($directory, 0777, true);
+                copy($this->path($package['directory'] . '/composer.json'), $directory . '/composer.json');
+                $this->initializeGitFixture($runner, $directory);
+                $runner->mustRun(array('git', 'add', 'composer.json'), $directory);
+                $runner->mustRun(array('git', 'commit', '-m', 'Synthetic package metadata'), $directory);
+                $splitRoots[$package['name']] = $directory;
+            }
+            $repositories = (new ReflectionMethod($validator, 'createTaggedRepositories'))->invoke($validator, $temporary->child('beta-repositories'), $splitRoots, '2.0.0-beta.1');
+            $results = (new ReflectionMethod($validator, 'validateBetaConsumers'))->invoke(
+                $validator, $temporary, null, $repositories, loadLockedRuntimePackageRepositoryPackages($this->root), $this->releasePackages()
+            );
+            $this->assertSame(array('Beta case I', 'Beta case J', 'Beta case K', 'Beta case L', 'Beta case M', 'Beta full-graph case N', 'Beta full-graph case O'), array_column($results, 'name'));
+            $this->assertSame(array('expected failure', 'expected failure', 'expected failure', 'success', 'success', 'success', 'success'), array_column($results, 'outcome'));
+            foreach (array_slice($results, 3) as $result) {
+                $this->assertStringContainsString('evolvephp/contracts 2.0.0-beta.1', $result['detail']);
+                $this->assertStringNotContainsString('alpha', $result['detail']);
+            }
+            foreach (array_slice($results, 5) as $result) {
+                $this->assertSame(34, substr_count($result['detail'], '2.0.0-beta.1'));
+            }
+            $consumer = readJsonFile($temporary->child('consumers/beta-case-l/composer.json'), 'Beta consumer');
+            $this->assertSame('beta', $consumer['minimum-stability']);
+            $this->assertTrue($consumer['prefer-stable']);
+            $this->assertContains(array('packagist.org' => false), $consumer['repositories']);
+            foreach ($splitRoots as $name => $directory) {
+                $this->assertSame('', trim($runner->mustRun(array('git', 'status', '--porcelain'), $directory)->stdout), $name);
+            }
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    private function createPlannerFixture(?string $changedPath = null, ?string $contents = null): ReleaseValidationTemporaryDirectory
+    {
+        $this->assertFileExists($this->path('tools/publish-package-splits.php'));
+        $temporary = createTemporaryDirectory('evolvephp-plan-test-');
+        $runner = new ReleaseValidationProcessRunner();
+        $this->initializeGitFixture($runner, $temporary->path);
+        $runner->mustRun(array('git', 'checkout', '-b', 'feature/release-plan-test'), $temporary->path);
+        foreach (array('release-packages.json', 'tools/release-package-destinations.json') as $path) {
+            $this->writeFixtureFile($temporary->path, $path, $this->readProjectFile($path));
+        }
+        foreach ($this->releasePackages() as $package) {
+            foreach (array('composer.json', 'LICENSE.md', 'README.md') as $file) {
+                $path = $package['directory'] . '/' . $file;
+                $this->writeFixtureFile($temporary->path, $path, $this->readProjectFile($path));
+            }
+        }
+        if ($changedPath !== null) {
+            if ($contents === null) {
+                unlink($temporary->child($changedPath));
+            } else {
+                $this->writeFixtureFile($temporary->path, $changedPath, $contents);
+            }
+        }
+        $runner->mustRun(array('git', 'add', '.'), $temporary->path);
+        $runner->mustRun(array('git', 'commit', '-m', 'Synthetic release plan fixture'), $temporary->path);
+        return $temporary;
+    }
+
+    private function runPlanner(string $root, array $options = array()): ReleaseValidationProcessResult
+    {
+        return (new ReleaseValidationProcessRunner())->run(
+            array_merge(array(PHP_BINARY, $this->path('tools/publish-package-splits.php'), '--root=' . $root), $options),
+            null,
+            array('COMPOSER_DISABLE_NETWORK' => '1', 'GIT_TERMINAL_PROMPT' => '0', 'GIT_ALLOW_PROTOCOL' => 'file')
+        );
+    }
+
+    private function plannerFixtureState(ReleaseValidationProcessRunner $runner, string $root): array
+    {
+        return array(
+            'refs' => $runner->mustRun(array('git', 'for-each-ref'), $root)->stdout,
+            'head' => $runner->mustRun(array('git', 'rev-parse', 'HEAD'), $root)->stdout,
+            'index' => hash_file('sha256', $root . '/.git/index'),
+            'diff' => $runner->mustRun(array('git', '--no-optional-locks', 'diff', '--no-ext-diff'), $root)->stdout,
+            'files' => $runner->mustRun(array('git', '--no-optional-locks', 'status', '--porcelain=v1', '--untracked-files=all'), $root)->stdout,
+            'config' => hash_file('sha256', $root . '/.git/config'),
+        );
+    }
+
+
     public function test_mcp_independent_consumer_fixture_is_invoked_after_disposable_install(): void
     {
         $root = dirname(__DIR__, 2);

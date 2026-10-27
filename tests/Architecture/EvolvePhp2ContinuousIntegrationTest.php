@@ -80,14 +80,38 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
         $this->assertMatchesPattern('/php-version:\s*\'8\.4\'/', $job);
         $this->assertStringContainsString('composer validate --strict --check-lock', $job);
         $this->assertStringContainsString('composer install --no-interaction --no-progress --prefer-dist', $job);
+        $this->assertStringContainsString('php vendor/bin/phpstan analyse --configuration compat/legacy-http-client/phpstan.neon.dist --memory-limit=1G --no-progress', $job);
         $this->assertSame(1, substr_count($job, 'composer supply-chain'));
         $this->assertSame(1, substr_count($job, 'composer release:split:validate'));
+        $this->assertSame(1, substr_count($job, 'composer release:plan'));
+        $this->assertStringContainsString('composer release:plan', $this->extractStep($job, 'Validate local release plan'));
         $this->assertSame(1, substr_count($job, 'composer release:consumer:validate'));
         $this->assertSame(1, substr_count($job, 'composer release:skeleton:validate'));
         $this->assertStringContainsString('php vendor/bin/phpunit --configuration phpunit.xml.dist tests/Architecture tests/Documentation', $job);
         $this->assertDoesNotMatchPattern('/--working-dir=workspace|composer --working-dir=\.\s+install/', $job);
         $this->assertDoesNotMatchPattern('/composer update|--ignore-platform-reqs?|config\.platform\.php/', $job);
         $this->assertDoesNotMatchPattern('/phpunit.*(?:core|components|helpers|index\.php|route\.php)/i', $job);
+    }
+
+    public function testPolicyJobValidatesReleasePlanAtCleanSourceBoundary(): void
+    {
+        $job = $this->extractJob('policy');
+
+        $this->assertSame(11, preg_match_all('/^ {6}- name: ([^\r\n]+)\r?$/m', $job, $steps));
+        $this->assertSame([
+            'Checkout repository',
+            'Set up PHP',
+            'Validate root Composer manifest and lockfile',
+            'Validate local release plan',
+            'Install root dependencies',
+            'Run legacy remote client static analysis',
+            'Run release package split validation',
+            'Run prerelease consumer validation',
+            'Run application skeleton create-project validation',
+            'Run root supply-chain checks',
+            'Run root policy tests',
+        ], $steps[1], 'Release planning must follow PHP setup and manifest validation, precede dependency installation, and retain every policy validator.');
+        $this->assertSame('run: composer release:plan', trim($this->extractStep($job, 'Validate local release plan')));
     }
 
     public function testBenchmarkPolicyJobRunsOnlyIsolatedBenchmarkPolicyChecksOnPhp84(): void
