@@ -9,7 +9,7 @@ mkdocs==1.6.1
 mkdocs-get-deps==0.2.2
 packaging==26.3
 pathspec==1.1.1
-pip==26.2.1
+pip==26.2.2
 platformdirs==4.13.3
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
