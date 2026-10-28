@@ -38,6 +38,23 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
     }
 
 
+    public function testPublisherPreparationKeepsReadOnlyCiAndUnreleasedBoundaries(): void
+    {
+        $development = $this->readProjectFile('DEVELOPMENT.md');
+        foreach (array('release:publisher:prepare', 'no-network and no-write', 'pilot', 'publication authorization', 'partial', '--observations', 'split_commit', 'plan_sha256') as $needle) {
+            $this->assertStringContainsString($needle, $development);
+        }
+        $workflow = $this->readProjectFile('.github/workflows/quality.yml');
+        $this->assertStringContainsString('contents: read', $workflow);
+        $this->assertStringNotContainsString('contents: write', $workflow);
+        $this->assertStringContainsString('persist-credentials: false', $workflow);
+        $this->assertStringContainsString('Validate publisher preparation boundaries', $workflow);
+        $this->assertStringContainsString('tools/release-package-publisher.php --publish', $workflow);
+        $this->assertStringContainsString('publisher-preparation', $this->readProjectFile('CHANGELOG.md'));
+        $this->assertSame('proposed-unverified', $this->readJsonFile('tools/release-package-destinations.json')['status']);
+        $this->assertFileDoesNotExist($this->projectPath('docs/releases/2.0.0-beta.1.md'));
+    }
+
     protected function setUp(): void
     {
         $this->root = dirname(__DIR__, 2);

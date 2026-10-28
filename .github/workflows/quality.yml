@@ -46,6 +46,22 @@ jobs:
       - name: Validate local release plan
         run: composer release:plan
 
+      - name: Validate publisher preparation boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          php tools/release-package-publisher.php --source-commit="$(git rev-parse HEAD)" --source-tree="$(git rev-parse 'HEAD^{tree}')" --source-branch="$(git rev-parse --abbrev-ref HEAD)" > "$RUNNER_TEMP/publisher-plan.json"
+          php -r '$p=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR); exit($p["publication_enabled"] === false && $p["publication_readiness"] === "blocked" && count($p["packages"]) === 34 ? 0 : 1);' "$RUNNER_TEMP/publisher-plan.json"
+          if php tools/release-package-publisher.php --publish > "$RUNNER_TEMP/publisher-negative.out" 2> "$RUNNER_TEMP/publisher-negative.err"; then
+            echo 'Publisher unexpectedly accepted publication'
+            exit 1
+          else
+            code=$?
+            test "$code" -eq 1
+            test ! -s "$RUNNER_TEMP/publisher-negative.out"
+            grep -Fq 'Publication disabled:' "$RUNNER_TEMP/publisher-negative.err"
+          fi
+
       - name: Install root dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 
