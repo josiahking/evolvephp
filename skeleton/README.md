@@ -61,6 +61,44 @@ composer test
 The Testing package provides the command-output recorder used by the
 generator command tests; the skeleton keeps broader testing utilities deferred.
 
+## Explicit module composition
+
+The module:new Billing command creates an application-owned entry point and a module.php definition. The generated CLI does not load or enable the definition automatically. Application code can load it explicitly, pass it to ComponentBootstrapper, configure evolve.components.enabled with app/billing, and boot and shut down ApplicationKernel. The repository's offline skeleton validation exercises that path and also installs an independent library module through Composer. The library module remains under vendor and has its own namespace.
+
+Place this in a PHP file at the generated application root after running module:new Billing:
+
+<!-- module-sdk-example -->
+```php
+<?php
+
+declare(strict_types=1);
+
+use Evolve\Core\ApplicationKernel;
+use Evolve\Core\Component\ComponentBootstrapper;
+use Evolve\Core\Configuration\ArrayConfiguration;
+use Evolve\Module\ModuleDefinition;
+
+require __DIR__ . '/vendor/autoload.php';
+
+$definition = require __DIR__ . '/src/Modules/Billing/module.php';
+if (!$definition instanceof ModuleDefinition) {
+    throw new RuntimeException('Expected a module definition.');
+}
+
+$kernel = new ApplicationKernel(
+    new ArrayConfiguration(['evolve' => ['components' => ['enabled' => ['app/billing']]]]),
+    components: new ComponentBootstrapper([$definition]),
+);
+$kernel->boot();
+try {
+    // Run application work.
+} finally {
+    $kernel->shutdown();
+}
+```
+
+Modules can expose message catalogs and migration definitions for the application to register explicitly. The application supplies execution locale to I18n and controls migration planning and execution. Booting a module does not run migrations.
+
 ## Deferred
 
 Command discovery, route discovery, JSON output, tables, help UI, TTY/ANSI behavior, web runtime entrypoints, controllers, middleware defaults, dotenv loading, storage defaults, deployment scaffolding and application boot magic remain deferred.

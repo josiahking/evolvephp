@@ -28,6 +28,12 @@ The package provides the public experimental `Evolve\Module\ModuleDefinition`. I
 
 Discovery, descriptor loading, Composer `extra` metadata, automatic package scanning, module self-enablement, descriptor serialization and version-constraint evaluation remain deferred.
 
+## Explicit Composer consumer evidence
+
+The repository-owned skeleton validator creates an isolated Composer application, generates an application-owned module, and installs a separately namespaced library module from an offline path repository. The application loads each module's PHP definition file explicitly and supplies those definitions to Core's ComponentBootstrapper. Only identifiers listed in evolve.components.enabled enter the Kernel lifecycle. This is local integration evidence, not a claim that the package is publicly published.
+
+The library module's class is loaded from the generated application's vendor tree. Registration, boot, ready, shutdown, disabled state, dependency ordering, and failure cleanup are checked with observable effects. A module may provide a namespaced message source and migration definitions through explicit application composition. Locale comes from each execution context. Migration planning is read-only; application code chooses when to execute a pending action. No module scanning, automatic enablement, or boot-time migration execution is provided.
+
 ## Package
 
 `evolvephp/module`
