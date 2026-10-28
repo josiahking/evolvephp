@@ -17,5 +17,6 @@ Accepted RFCs record durable architecture decisions. This manual explains curren
 | [0005: Execution scope and reset](https://github.com/josiahking/evolvephp/blob/2.x/docs/rfcs/0005-request-scope-runtime-reset-and-persistent-worker-safety.md) | Isolation, cleanup and quarantine direction. |
 | [0006: Bridge modernization](https://github.com/josiahking/evolvephp/blob/2.x/docs/rfcs/0006-evolve-bridge-and-incremental-modernisation.md) | Embedded and remote integration ownership. |
 | [0007: Insight and OpenTelemetry](https://github.com/josiahking/evolvephp/blob/2.x/docs/rfcs/0007-insight-and-opentelemetry-architecture.md) | Diagnostics and telemetry separation. |
+| [0008: Security engineering and vulnerability response](https://github.com/josiahking/evolvephp/blob/2.x/docs/rfcs/0008-security-engineering-and-vulnerability-response.md) | Accepted risk-based assurance and confidential vulnerability-response architecture, with tooling and response targets deferred. |
 
 The [repository RFC index](https://github.com/josiahking/evolvephp/blob/2.x/docs/rfcs/README.md) carries status and governance detail. An accepted RFC may describe deferred work; check package implementation before relying on a capability.

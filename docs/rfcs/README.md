@@ -23,5 +23,6 @@ Accepted material architecture decisions must not be silently reversed. A later 
 - [RFC 0005: Request Scope, Runtime Reset and Persistent-Worker Safety](0005-request-scope-runtime-reset-and-persistent-worker-safety.md) - Accepted
 - [RFC 0006: Evolve Bridge and Incremental Modernisation](0006-evolve-bridge-and-incremental-modernisation.md) - Accepted
 - [RFC 0007: Insight and OpenTelemetry Architecture](0007-insight-and-opentelemetry-architecture.md) - Accepted
+- [RFC 0008: Security Engineering and Vulnerability Response](0008-security-engineering-and-vulnerability-response.md) - Accepted
 
 Accepted RFCs are authoritative for implementation. Later work may build on them, but material changes require a new RFC that explicitly supersedes the affected accepted decision.
