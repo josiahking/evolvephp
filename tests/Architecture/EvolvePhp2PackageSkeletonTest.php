@@ -61,7 +61,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    private $root;
+    private string $root;
 
     protected function setUp(): void
     {
@@ -551,7 +551,13 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/no per-execution component lifecycle work|no request.*component lifecycle/i', $coreReadme);
         $this->assertMatchesPattern('/no Core dependency on Module\/Plugin|Core.*not.*Module.*Plugin/is', $coreReadme);
 
-        $this->assertDoesNotMatchPattern('/package publication|production readiness|hot unloading|runtime auto-discovery|telemetry integration|persistent runtime certification|benchmark superiority/i', $changelog);
+        foreach (preg_split('/\R/', $changelog) as $line) {
+            if (stripos($line, 'package publication') !== false) {
+                $this->assertSame(1, preg_match_all('/\bpackage publication\b/i', $line));
+                $this->assertMatchesPattern('/\bNo\b[^.\r\n]*\bpackage publication\b[^.\r\n]*\b(?:is|was|has been)\s+claimed\b/i', $line);
+            }
+        }
+        $this->assertDoesNotMatchPattern('/production readiness|hot unloading|runtime auto-discovery|telemetry integration|persistent runtime certification|benchmark superiority/i', $changelog);
     }
 
     public function testCoreGraphResolutionIsDocumentedWithinAcceptedBoundaries(): void
@@ -787,7 +793,10 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertDoesNotMatchPattern('/reserved-but-rejected/i', $content);
     }
 
-    private function packages()
+    /**
+     * @return list<array{manifest: string, src: string, name: string, description: string, namespace: string, require: array<string, string>}>
+     */
+    private function packages(): array
     {
         return [
             [
@@ -1156,7 +1165,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         ];
     }
 
-    private function acceptedPackageSourceInventories()
+    /** @return array<string, list<string>> */
+    private function acceptedPackageSourceInventories(): array
     {
         return [
             'packages/contracts/src' => [
@@ -1683,7 +1693,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         ];
     }
 
-    private function concretePsr7Implementations()
+    /** @return list<string> */
+    private function concretePsr7Implementations(): array
     {
         return [
             'guzzlehttp/psr7',
@@ -1694,12 +1705,13 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         ];
     }
 
-    private function projectPath($path)
+    private function projectPath(string $path): string
     {
         return $this->root . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path);
     }
 
-    private function readProjectFile($path)
+    /** @return string|false */
+    private function readProjectFile(string $path): string|false
     {
         $fullPath = $this->projectPath($path);
         $this->assertFileExists($fullPath, $path . ' should exist before it is read.');
@@ -1707,7 +1719,20 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         return file_get_contents($fullPath);
     }
 
-    private function readJsonFile($path)
+    /**
+     * @return array{
+     *     name: string,
+     *     description: string,
+     *     type: string,
+     *     license: string,
+     *     require: array<string, string>,
+     *     autoload: array{psr-4?: array<string, string>},
+     *     suggest?: array<string, string>,
+     *     provide?: array<string, string>,
+     *     config?: array{platform?: array{php?: string}}
+     * }
+     */
+    private function readJsonFile(string $path): array
     {
         $content = $this->readProjectFile($path);
         $json = json_decode($content, true);
@@ -1718,7 +1743,8 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         return $json;
     }
 
-    private function phpFilesUnderSource($directory)
+    /** @return list<string> */
+    private function phpFilesUnderSource(string $directory): array
     {
         $files = [];
         $iterator = new RecursiveIteratorIterator(
@@ -1737,6 +1763,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         return $files;
     }
 
+    /** @param array<string, list<string>> $graph */
     private function assertPackageGraphIsAcyclic(array $graph): void
     {
         $visiting = [];
@@ -1747,7 +1774,13 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         }
     }
 
-    private function visitPackage($packageName, array $graph, array &$visiting, array &$visited, array $path): void
+    /**
+     * @param array<string, list<string>> $graph
+     * @param array<string, true> $visiting
+     * @param array<string, true> $visited
+     * @param list<string> $path
+     */
+    private function visitPackage(string $packageName, array $graph, array &$visiting, array &$visited, array $path): void
     {
         if (isset($visited[$packageName])) {
             return;
@@ -1772,12 +1805,12 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $visited[$packageName] = true;
     }
 
-    private function assertMatchesPattern($pattern, $content)
+    private function assertMatchesPattern(string $pattern, string|false $content): void
     {
         $this->assertSame(1, preg_match($pattern, $content), 'Failed asserting that content matches ' . $pattern);
     }
 
-    private function assertDoesNotMatchPattern($pattern, $content)
+    private function assertDoesNotMatchPattern(string $pattern, string|false $content): void
     {
         $this->assertSame(0, preg_match($pattern, $content), 'Failed asserting that content does not match ' . $pattern);
     }

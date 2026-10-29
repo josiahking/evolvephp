@@ -6,6 +6,249 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
 {
     private $root;
 
+
+    public function testPublisherPreparationIsDeterministicBoundAndHasNoSideEffects(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $temporary = $this->createPlannerFixture();
+        $runner = new ReleaseValidationProcessRunner();
+        try {
+            $before = $this->plannerFixtureState($runner, $temporary->path);
+            $first = $this->runPublisher($temporary->path);
+            $trace = $temporary->child('forbidden-trace.json');
+            $second = $this->runPublisher($temporary->path, array(), array('GIT_TRACE2_EVENT' => $trace, 'GIT_DIR' => $temporary->child('nonexistent-git-dir'), 'GH_TOKEN' => 'secret-sentinel'));
+            $this->assertFileDoesNotExist($trace);
+            $this->assertSame(0, $first->exitCode, $first->output());
+            $this->assertSame('', $first->stderr);
+            $this->assertSame($first->stdout, $second->stdout);
+            $plan = json_decode($first->stdout, true, 512, JSON_THROW_ON_ERROR);
+            $this->assertSame('dry-run', $plan['mode']);
+            $this->assertFalse($plan['publication_enabled']);
+            $this->assertSame('blocked', $plan['publication_readiness']);
+            $this->assertSame('evolvephp/contracts', $plan['pilot']);
+            $this->assertCount(34, $plan['packages']);
+            $this->assertSame(array_column($this->releasePackages(), 'name'), array_column($plan['packages'], 'name'));
+            $digest = $plan['plan_sha256'];
+            unset($plan['plan_sha256']);
+            $this->assertSame(hash('sha256', json_encode($plan, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)), $digest);
+            foreach ($plan['packages'] as $index => $package) {
+                $tree = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD:' . $package['directory']), $temporary->path)->stdout);
+                $this->assertSame($tree, $package['package_tree']);
+                $this->assertSame($tree, $package['required_attestation']['split_tree']);
+                $this->assertNull($package['split_commit']);
+                $this->assertNull($package['verified_tag_object']);
+                $this->assertSame('refs/tags/2.0.0-beta.1', $package['required_attestation']['tag_ref']);
+                $this->assertSame($plan['source'], $package['required_attestation']['source']);
+                $this->assertSame($index === 0 ? 'pilot-approval-required' : 'pilot-acceptance-and-later-approval-required', $package['gate']);
+                foreach ($package['dependencies'] as $dependency) {
+                    $this->assertContains($dependency, array_column(array_slice($plan['packages'], 0, $index), 'name'));
+                }
+            }
+            $this->assertSame($before, $this->plannerFixtureState($runner, $temporary->path));
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testPublisherRejectsIdentityArgumentsCredentialsAndDirtyStates(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $temporary = $this->createPlannerFixture();
+        $runner = new ReleaseValidationProcessRunner();
+        try {
+            foreach (array(
+                array('--source-commit=' . str_repeat('0', 40)),
+                array('--source-tree=' . str_repeat('0', 40)),
+                array('--source-branch=2.x'), array('--source-commit=HEAD'),
+                array('--publish'), array('--push'), array('--authorize=secret-sentinel'),
+                array('--token=secret-sentinel'), array('--version=2.0.0'),
+                array('--observations=missing', '--observations=duplicate'),
+            ) as $options) {
+                $before = $this->plannerFixtureState($runner, $temporary->path);
+                $result = $this->runPublisher($temporary->path, $options, array('GH_TOKEN' => 'secret-sentinel', 'CI' => 'true', 'PUBLISH_AUTHORIZED' => '1'));
+                $this->assertSame(1, $result->exitCode, $result->output());
+                $this->assertSame('', $result->stdout);
+                $this->assertStringNotContainsString('secret-sentinel', $result->output());
+                $this->assertSame($before, $this->plannerFixtureState($runner, $temporary->path));
+            }
+            $missing = $runner->run(array(PHP_BINARY, $this->path('tools/release-package-publisher.php'), '--root=' . $temporary->path));
+            $this->assertSame(1, $missing->exitCode);
+            $this->assertStringContainsString('source identity', $missing->stderr);
+            $withCredentials = $this->runPublisher($temporary->path, array(), array('GH_TOKEN' => 'secret-sentinel', 'CI' => 'true'));
+            $this->assertSame(0, $withCredentials->exitCode, $withCredentials->output());
+            $this->assertFalse(json_decode($withCredentials->stdout, true)['publication_enabled']);
+            $this->assertStringNotContainsString('secret-sentinel', $withCredentials->output());
+            foreach (array('untracked', 'tracked', 'index', 'hidden') as $kind) {
+                $path = $kind === 'untracked' ? 'new.txt' : 'packages/contracts/README.md';
+                file_put_contents($temporary->child($path), "\nchanged", FILE_APPEND);
+                if ($kind === 'index') {
+                    $runner->mustRun(array('git', 'add', $path), $temporary->path);
+                }
+                if ($kind === 'hidden') {
+                    $runner->mustRun(array('git', 'update-index', '--assume-unchanged', $path), $temporary->path);
+                }
+                $before = $this->plannerFixtureState($runner, $temporary->path);
+                $result = $this->runPublisher($temporary->path);
+                $this->assertSame(1, $result->exitCode, $kind . $result->output());
+                $this->assertSame($before, $this->plannerFixtureState($runner, $temporary->path));
+                if ($kind === 'hidden') {
+                    $runner->mustRun(array('git', 'update-index', '--no-assume-unchanged', $path), $temporary->path);
+                }
+                if ($kind === 'untracked') {
+                    unlink($temporary->child($path));
+                } else {
+                    // Only this disposable fixture is restored, never the source worktree.
+                    $runner->mustRun(array('git', 'restore', '--source=HEAD', '--staged', '--worktree', $path), $temporary->path);
+                }
+            }
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testPublisherRejectsCommittedInventoryManifestLicenseAndDependencyFailures(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $mapping = $this->readJsonFile('tools/release-package-destinations.json');
+        $cases = array(array('tools/release-package-destinations.json', '{'));
+        foreach (array('missing', 'duplicate', 'reordered', 'destination', 'verified') as $kind) {
+            $map = $mapping;
+            if ($kind === 'missing') { array_pop($map['packages']); }
+            if ($kind === 'duplicate') { $map['packages'][1] = $map['packages'][0]; }
+            if ($kind === 'reordered') { $map['packages'] = array_reverse($map['packages']); }
+            if ($kind === 'destination') { $map['packages'][0]['repository'] = 'attacker/contracts'; }
+            if ($kind === 'verified') { $map['status'] = 'verified'; }
+            $cases[] = array('tools/release-package-destinations.json', json_encode($map));
+        }
+        foreach (array('name' => 'evolvephp/wrong', 'license' => 'MIT', 'require' => array('php' => '^8.3'), 'version' => '2.0.0-beta.1') as $field => $value) {
+            $manifest = $this->readJsonFile('packages/contracts/composer.json');
+            $manifest[$field] = $value;
+            $cases[] = array('packages/contracts/composer.json', json_encode($manifest));
+        }
+        $manifest = $this->readJsonFile('packages/contracts/composer.json');
+        $manifest['require']['evolvephp/core'] = '^2.0';
+        $cases[] = array('packages/contracts/composer.json', json_encode($manifest));
+        $cases[] = array('packages/contracts/LICENSE.md', 'wrong license');
+        $cases[] = array('packages/contracts/unsafe name', 'unsafe Git path');
+        $canonical = $this->readJsonFile('release-packages.json');
+        $canonical['packages'] = array_reverse($canonical['packages']);
+        $cases[] = array('release-packages.json', json_encode($canonical));
+        foreach ($cases as [$path, $contents]) {
+            $temporary = $this->createPlannerFixture($path, $contents);
+            try {
+                $result = $this->runPublisher($temporary->path);
+                $this->assertSame(1, $result->exitCode, $path . $result->output());
+                $this->assertSame('', $result->stdout);
+            } finally {
+                $temporary->cleanup();
+            }
+        }
+    }
+
+    public function testPublisherObservationsCannotAuthorizeAndConflictsOrPartialStateFailClosed(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $temporary = $this->createPlannerFixture();
+        $evidence = createTemporaryDirectory('evolvephp-publisher-observations-');
+        try {
+            $result = $this->runPublisher($temporary->path);
+            $this->assertSame(0, $result->exitCode, $result->output());
+            $plan = json_decode($result->stdout, true, 512, JSON_THROW_ON_ERROR);
+            $observations = array('version' => 1, 'source' => $plan['source'], 'packages' => array());
+            foreach ($plan['packages'] as $package) {
+                $observations['packages'][] = array(
+                    'name' => $package['name'], 'destination' => $package['destination'],
+                    'split_commit' => null, 'split_tree' => null, 'remote_commit' => null,
+                    'tag_ref' => 'refs/tags/2.0.0-beta.1', 'tag_object' => null, 'tag_commit' => null,
+                );
+            }
+            $path = $evidence->child('observations.json');
+            file_put_contents($path, json_encode($observations));
+            $empty = $this->runPublisher($temporary->path, array('--observations=' . $path));
+            $this->assertSame(0, $empty->exitCode, $empty->output());
+            $this->assertSame('reported-absent-unverified', json_decode($empty->stdout, true)['remote_observation']);
+            $complete = $observations;
+            foreach ($complete['packages'] as $i => &$entry) {
+                $entry['split_tree'] = $plan['packages'][$i]['package_tree'];
+                $entry['split_commit'] = $entry['remote_commit'] = $entry['tag_commit'] = str_repeat('a', 40);
+                $entry['tag_object'] = str_repeat('b', 40);
+            }
+            unset($entry);
+            file_put_contents($path, json_encode($complete));
+            $consistent = $this->runPublisher($temporary->path, array('--observations=' . $path));
+            $this->assertSame(0, $consistent->exitCode, $consistent->output());
+            $this->assertSame('reported-complete-unverified', json_decode($consistent->stdout, true)['remote_observation']);
+            $this->assertFalse(json_decode($consistent->stdout, true)['publication_enabled']);
+            $this->assertNull(json_decode($consistent->stdout, true)['packages'][0]['split_commit']);
+            $cases = array();
+            $incomplete = $complete; $incomplete['packages'][0]['tag_object'] = null; $cases[] = $incomplete;
+            $partial = $observations; $partial['packages'][0] = $complete['packages'][0]; $cases[] = $partial;
+            foreach (array('remote_commit', 'tag_commit', 'split_tree', 'tag_ref', 'destination', 'name') as $field) {
+                $bad = $complete; $bad['packages'][0][$field] = str_repeat('c', 40); $cases[] = $bad;
+            }
+            $bad = $complete; $bad['packages'][1] = $bad['packages'][0]; $cases[] = $bad;
+            $bad = $complete; $bad['source']['tree'] = str_repeat('0', 40); $cases[] = $bad;
+            foreach ($cases as $case) {
+                file_put_contents($path, json_encode($case));
+                $failed = $this->runPublisher($temporary->path, array('--observations=' . $path));
+                $this->assertSame(1, $failed->exitCode, $failed->output());
+                $this->assertSame('', $failed->stdout);
+                $this->assertSame($failed->stderr, $this->runPublisher($temporary->path, array('--observations=' . $path))->stderr);
+            }
+            file_put_contents($path, json_encode($observations));
+            $this->assertSame($empty->stdout, $this->runPublisher($temporary->path, array('--observations=' . $path))->stdout);
+        } finally {
+            $temporary->cleanup();
+            $evidence->cleanup();
+        }
+    }
+
+    public function testPublisherRejectsSymlinkGitlinkAndWorktreeConfig(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $runner = new ReleaseValidationProcessRunner();
+        foreach (array('120000', '160000', 'worktree-config') as $kind) {
+            $temporary = $this->createPlannerFixture();
+            try {
+                if ($kind === 'worktree-config') {
+                    $runner->mustRun(array('git', 'config', 'extensions.worktreeConfig', 'true'), $temporary->path);
+                } else {
+                    $runner->mustRun(array('git', 'config', 'core.symlinks', 'false'), $temporary->path);
+                    $path = 'packages/contracts/unsupported';
+                    if ($kind === '120000') {
+                        file_put_contents($temporary->child($path), 'README.md');
+                        $object = trim($runner->mustRun(array('git', 'hash-object', '-w', $path), $temporary->path)->stdout);
+                    } else {
+                        mkdir($temporary->child($path));
+                        $object = trim($runner->mustRun(array('git', 'rev-parse', 'HEAD'), $temporary->path)->stdout);
+                    }
+                    $runner->mustRun(array('git', 'update-index', '--add', '--cacheinfo', $kind, $object, $path), $temporary->path);
+                    $runner->mustRun(array('git', 'commit', '-m', 'Unsafe object fixture'), $temporary->path);
+                }
+                $before = $this->plannerFixtureState($runner, $temporary->path);
+                $result = $this->runPublisher($temporary->path);
+                $this->assertSame(1, $result->exitCode, $kind . ': ' . $result->output());
+                $this->assertSame('', $result->stdout);
+                $this->assertSame($before, $this->plannerFixtureState($runner, $temporary->path));
+            } finally {
+                $temporary->cleanup();
+            }
+        }
+    }
+
+    private function runPublisher(string $root, array $options = array(), array $environment = array()): ReleaseValidationProcessResult
+    {
+        $runner = new ReleaseValidationProcessRunner();
+        $pins = array();
+        foreach (array('commit' => 'HEAD', 'tree' => 'HEAD^{tree}', 'branch' => '--abbrev-ref') as $key => $ref) {
+            $command = $key === 'branch' ? array('git', 'rev-parse', '--abbrev-ref', 'HEAD') : array('git', 'rev-parse', $ref);
+            if (!array_filter($options, static fn ($option) => str_starts_with($option, '--source-' . $key . '='))) {
+                $pins[] = '--source-' . $key . '=' . trim($runner->mustRun($command, $root)->stdout);
+            }
+        }
+        return $runner->run(array_merge(array(PHP_BINARY, $this->path('tools/release-package-publisher.php'), '--root=' . $root), $pins, $options), null, $environment);
+    }
+
     public function testReleasePlanIsDeterministicBoundToGitAndHasNoSideEffects(): void
     {
         require_once $this->root . '/tools/release-validation-common.php';
@@ -200,7 +443,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $runner = new ReleaseValidationProcessRunner();
         $this->initializeGitFixture($runner, $temporary->path);
         $runner->mustRun(array('git', 'checkout', '-b', 'feature/release-plan-test'), $temporary->path);
-        foreach (array('release-packages.json', 'tools/release-package-destinations.json') as $path) {
+        foreach (array('LICENSE.md', 'release-packages.json', 'tools/release-package-destinations.json') as $path) {
             $this->writeFixtureFile($temporary->path, $path, $this->readProjectFile($path));
         }
         foreach ($this->releasePackages() as $package) {

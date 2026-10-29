@@ -97,12 +97,13 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
     {
         $job = $this->extractJob('policy');
 
-        $this->assertSame(11, preg_match_all('/^ {6}- name: ([^\r\n]+)\r?$/m', $job, $steps));
+        $this->assertSame(12, preg_match_all('/^ {6}- name: ([^\r\n]+)\r?$/m', $job, $steps));
         $this->assertSame([
             'Checkout repository',
             'Set up PHP',
             'Validate root Composer manifest and lockfile',
             'Validate local release plan',
+            'Validate publisher preparation boundaries',
             'Install root dependencies',
             'Run legacy remote client static analysis',
             'Run release package split validation',
@@ -189,10 +190,24 @@ final class EvolvePhp2ContinuousIntegrationTest extends TestCase
 
     public function testWorkflowExcludesReleasePublishingSecretsCachesAndDeployments(): void
     {
+        $publisherStep = $this->extractStep($this->extractJob('policy'), 'Validate publisher preparation boundaries');
+        $this->assertStringContainsString('shell: bash', $publisherStep);
+        $this->assertStringContainsString('set -euo pipefail', $publisherStep);
+        $this->assertStringContainsString('$p["publication_enabled"] === false', $publisherStep);
+        $this->assertStringContainsString('$p["publication_readiness"] === "blocked"', $publisherStep);
+        $this->assertSame(2, substr_count($publisherStep, 'php tools/release-package-publisher.php'));
+        $this->assertSame(1, substr_count($this->workflow, '--publish'));
+        $this->assertMatchesPattern('/if php tools\/release-package-publisher\.php --publish[^\r\n]*; then\s*echo [^\r\n]*\s*exit 1\s*else\s*code=\$\?\s*test "\$code" -eq 1\s*test ! -s [^\r\n]*\s*grep -Fq \'Publication disabled:\' [^\r\n]*\s*fi/', $publisherStep);
+        $this->assertDoesNotMatchPattern('/\b(?:composer|gh|git|npm|npx)\s+[^\r\n]*\bpublish\b/i', $publisherStep);
+        $this->assertDoesNotMatchPattern('/^\s+php\s+[^\r\n]*\bpublish\b/im', $publisherStep);
+
+        $workflowWithoutPublisherStep = preg_replace('/^ {6}- name: Validate publisher preparation boundaries\r?\n.*?(?=^ {6}- name:|\z)/ms', '', $this->workflow);
+        $this->assertNotNull($workflowWithoutPublisherStep);
+        $this->assertDoesNotMatchPattern('/publish/i', $workflowWithoutPublisherStep);
+
         foreach ([
             '/secrets\./',
             '/deploy(?:ment)?/i',
-            '/publish/i',
             '/gh\s+release/i',
             '/actions\/create-release/i',
             '/softprops\/action-gh-release/i',

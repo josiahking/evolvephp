@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added fail-closed Beta publisher-preparation tooling with explicit source pins, a Contracts-first dependency plan, unverified offline observation checks and disabled publication. No public Beta, package publication, repository ownership verification, tag or Packagist registration is claimed.
+
 - Added local release-readiness tooling: a deterministic read-only 34-package release plan with proposed split-repository destinations and offline Beta consumer validation for simulated `2.0.0-beta.1`, preserving Alpha/Stable coverage. No Beta has been released, no packages have been published, and no Packagist registration has occurred.
 
 - Added experimental opt-in MCP operational event metadata and neutral Observe/Insight adapters, with fixed metric categories and separate fail-closed security audit. Independent installed-consumer and Linux STDIO interoperability checks remain pending.
