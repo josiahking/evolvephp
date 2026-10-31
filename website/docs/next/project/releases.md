@@ -12,4 +12,6 @@ EvolvePHP 2 remains experimental and not production-ready. First-party packages 
 
 Local distribution readiness now includes `composer release:plan`, a deterministic offline plan for 34 proposed split-repository destinations, plus synthetic Beta consumer validation using `2.0.0-beta.1`. The proposed version is for simulation only; no Beta release or Packagist registration is claimed. Planning requires a clean committed source and preserves Git state. See the [development guide](https://github.com/josiahking/evolvephp/blob/2.x/DEVELOPMENT.md#local-beta-distribution-planning) for source commit/tree review, root stability requirements and the separate authorization required before publication.
 
+A separate offline pilot executor preflight checks a saved plan against the local source and `evolvephp/contracts` package tree. It keeps destination ownership, remote state and publication authorization unverified; it cannot publish packages or tags. Public Beta and Packagist availability remain pending.
+
 Do not use a source-branch package feature to infer that the earlier Alpha tag included it. Consult release notes and the tagged source for historical behavior.
