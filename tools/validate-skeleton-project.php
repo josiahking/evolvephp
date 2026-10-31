@@ -125,6 +125,8 @@ final class SkeletonProjectValidator
             '[9/13] Running generated test suite',
         );
 
+        $this->stage('[9/13] Validating independent module SDK consumer');
+        $this->validateModuleSdkConsumer($root, $application, $temp, $composer, $offlineVendorRepository, $lockedVendorPackages);
         $this->stage('[10/13] Running collision and traversal checks');
         $this->assertCommand('[10/13] Running collision and traversal checks', $application, array('module:new', 'Billing'), 1, '', 'Refusing to overwrite existing file: src/Modules/Billing/BillingModule.php' . PHP_EOL);
         $this->assertCommand('[10/13] Running collision and traversal checks', $application, array('plugin:new', 'Cache'), 1, '', 'Refusing to overwrite existing file: src/Plugins/Cache/CachePlugin.php' . PHP_EOL);
@@ -137,6 +139,62 @@ final class SkeletonProjectValidator
         $this->assertCommand('[10/13] Running collision and traversal checks', $application, array('route:list', '--json'), 2, '', 'The route:list command does not accept arguments or options.' . PHP_EOL);
     }
 
+    /**
+     * @param list<array<string, mixed>> $lockedVendorPackages
+     */
+    private function validateModuleSdkConsumer(
+        string $root,
+        string $application,
+        ReleaseValidationTemporaryDirectory $temp,
+        ?string $composer,
+        string $offlineVendorRepository,
+        array $lockedVendorPackages,
+    ): void {
+        $fixture = joinPaths($root, 'tools/fixtures/module-sdk-independent-consumer.php');
+        $package = $temp->child('independent-module');
+        $this->runner->mustRun(
+            array(PHP_BINARY, $fixture, 'prepare', $package),
+            $root,
+            array(),
+            'Preparing independent module package',
+        );
+
+        $manifestPath = joinPaths($application, 'composer.json');
+        $manifest = readJsonFile($manifestPath, 'generated skeleton composer.json');
+        if (!is_array($manifest)) {
+            releaseValidationFail('Generated skeleton manifest must decode to an object.');
+        }
+        $manifest['repositories'] = array(
+            array('type' => 'path', 'url' => normalizePath($package), 'options' => array('symlink' => false)),
+            $this->frameworkRepository($root),
+            $this->vendorRepository($offlineVendorRepository, $lockedVendorPackages),
+        );
+        if (file_put_contents($manifestPath, json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL) === false) {
+            releaseValidationFail('Unable to register offline module repository.');
+        }
+
+        // composer require writes the application-owned dependency and lockfile.
+        $this->runner->mustRun(
+            withComposerCommand(array(
+                '--working-dir=' . $application,
+                'require',
+                'acme/module-sdk-billing:1.0.0',
+                '--no-interaction',
+                '--no-progress',
+                '--no-ansi',
+                '--no-scripts',
+            ), $composer),
+            null,
+            $this->composerEnvironment($temp),
+            'Installing independent module through Composer',
+        );
+        $this->runner->mustRun(
+            array(PHP_BINARY, $fixture, 'verify', $application),
+            $root,
+            array(),
+            'Verifying independent module SDK consumer',
+        );
+    }
     private function restoreDistributedManifest(string $root, string $application): void
     {
         $sourceManifest = file_get_contents(joinPaths($root, 'skeleton/composer.json'));
