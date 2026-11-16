@@ -195,9 +195,9 @@ final class PackagePublicationPlanner
         $map = json_decode($this->committedContents($root, $commit, 'tools/release-package-destinations.json'), true, 512, JSON_THROW_ON_ERROR);
         if (!is_array($map) || array_keys($map) !== array('version', 'status', 'packages')
             || $map['version'] !== 1 || $map['status'] !== 'proposed-unverified'
-            || !is_array($map['packages']) || !array_is_list($map['packages']) || count($map['packages']) !== 34
+            || !is_array($map['packages']) || !array_is_list($map['packages']) || count($map['packages']) !== 35
         ) {
-            releaseValidationFail('Invalid destinations: exactly 34 ordered proposed mappings are required.');
+            releaseValidationFail('Invalid destinations: exactly 35 ordered proposed mappings are required.');
         }
         $seen = array();
         foreach ($packages as $index => $package) {

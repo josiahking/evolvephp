@@ -13,6 +13,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $temporary = $this->createPlannerFixture();
         $runner = new ReleaseValidationProcessRunner();
         try {
+            $this->assertSame('input', trim($runner->mustRun(array('git', 'config', '--local', '--get', 'core.autocrlf'), $temporary->path)->stdout));
             $before = $this->plannerFixtureState($runner, $temporary->path);
             $first = $this->runPublisher($temporary->path);
             $trace = $temporary->child('forbidden-trace.json');
@@ -26,7 +27,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             $this->assertFalse($plan['publication_enabled']);
             $this->assertSame('blocked', $plan['publication_readiness']);
             $this->assertSame('evolvephp/contracts', $plan['pilot']);
-            $this->assertCount(34, $plan['packages']);
+            $this->assertCount(35, $plan['packages']);
             $this->assertSame(array_column($this->releasePackages(), 'name'), array_column($plan['packages'], 'name'));
             $digest = $plan['plan_sha256'];
             unset($plan['plan_sha256']);
@@ -271,7 +272,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             $this->assertFalse($plan['publication_enabled']);
             $this->assertSame('2.0.0-beta.1', $plan['proposed_version']);
             $this->assertSame(array('branch' => 'feature/release-plan-test', 'commit' => $commit, 'tree' => $tree), $plan['source']);
-            $this->assertCount(34, $plan['packages']);
+            $this->assertCount(35, $plan['packages']);
             $this->assertSame(array_column($this->releasePackages(), 'name'), array_column($plan['packages'], 'name'));
             foreach ($plan['packages'] as $package) {
                 $this->assertSame('josiahking/evolvephp-' . packageSlug($package['name']), $package['destination']);
@@ -422,7 +423,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
                 $this->assertStringNotContainsString('alpha', $result['detail']);
             }
             foreach (array_slice($results, 5) as $result) {
-                $this->assertSame(34, substr_count($result['detail'], '2.0.0-beta.1'));
+                $this->assertSame(35, substr_count($result['detail'], '2.0.0-beta.1'));
             }
             $consumer = readJsonFile($temporary->child('consumers/beta-case-l/composer.json'), 'Beta consumer');
             $this->assertSame('beta', $consumer['minimum-stability']);
@@ -442,6 +443,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $temporary = createTemporaryDirectory('evolvephp-plan-test-');
         $runner = new ReleaseValidationProcessRunner();
         $this->initializeGitFixture($runner, $temporary->path);
+        $runner->mustRun(array('git', 'config', '--local', 'core.autocrlf', 'input'), $temporary->path);
         $runner->mustRun(array('git', 'checkout', '-b', 'feature/release-plan-test'), $temporary->path);
         foreach (array('LICENSE.md', 'release-packages.json', 'tools/release-package-destinations.json') as $path) {
             $this->writeFixtureFile($temporary->path, $path, $this->readProjectFile($path));
@@ -1177,7 +1179,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array($path));
 
             $this->assertSame('full', $decision['mode'], $path . ' must force full validation.');
-            $this->assertSame(34, count($decision['packages']), $path . ' must keep the complete package map.');
+            $this->assertSame(35, count($decision['packages']), $path . ' must keep the complete package map.');
         }
 
         $decision = decidePackageSplitValidationScope(loadReleasePackages($this->root), array('docs/release-notes.md', 'README.md'));
@@ -1513,7 +1515,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $coreIndex = array_search('evolvephp/core', $packageNames, true);
 
         $this->assertIsInt($coreIndex);
-        $this->assertCount(34, $packages);
+        $this->assertCount(35, $packages);
         $this->assertContains('evolvephp/insight', $packageNames);
         $this->assertSame(
             array('name' => 'evolvephp/database-contracts', 'directory' => 'packages/database-contracts'),
@@ -1574,16 +1576,17 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $this->assertSame(array('name' => 'evolvephp/view-twig', 'directory' => 'packages/view-twig'), $packages[$coreIndex + 5]);
         $this->assertSame(array('name' => 'evolvephp/view-blade', 'directory' => 'packages/view-blade'), $packages[$coreIndex + 6]);
         $this->assertSame(array('name' => 'evolvephp/i18n', 'directory' => 'packages/i18n'), $packages[$coreIndex + 7]);
+        $this->assertSame(array('name' => 'evolvephp/audit-log', 'directory' => 'packages/audit-log'), $packages[$coreIndex + 9]);
         $this->assertSame(
             array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
-            $packages[$coreIndex + 11]
+            $packages[$coreIndex + 12]
         );
         $this->assertSame(
             array('name' => 'evolvephp/observe', 'directory' => 'packages/observe'),
-            $packages[$coreIndex + 13]
+            $packages[$coreIndex + 14]
         );
-        $this->assertSame(array('name' => 'evolvephp/mcp', 'directory' => 'packages/mcp'), $packages[$coreIndex + 14]);
-        $this->assertSame(array('name' => 'evolvephp/ai', 'directory' => 'packages/ai'), $packages[$coreIndex + 15]);
+        $this->assertSame(array('name' => 'evolvephp/mcp', 'directory' => 'packages/mcp'), $packages[$coreIndex + 15]);
+        $this->assertSame(array('name' => 'evolvephp/ai', 'directory' => 'packages/ai'), $packages[$coreIndex + 16]);
         $this->assertSame($map['packages'], $packages);
     }
 
@@ -1835,7 +1838,7 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         $map = $this->readJsonFile('release-packages.json');
 
         $this->assertSame(1, $map['version']);
-        $this->assertCount(34, $map['packages']);
+        $this->assertCount(35, $map['packages']);
 
         return $map['packages'];
     }

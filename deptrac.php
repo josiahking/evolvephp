@@ -43,6 +43,7 @@ return static function (DeptracConfig $config): void {
             'packages/http/src',
             'packages/http-client/src',
             'packages/module/src',
+            'packages/audit-log/src',
             'packages/plugin/src',
             'packages/testing/src',
         )
@@ -193,6 +194,9 @@ return static function (DeptracConfig $config): void {
             $module = Layer::withName('Module')->collectors(
                 DirectoryConfig::create('packages/module/src/.*'),
             ),
+            $auditLog = Layer::withName('AuditLog')->collectors(
+                DirectoryConfig::create('packages/audit-log/src/.*'),
+            ),
             $plugin = Layer::withName('Plugin')->collectors(
                 DirectoryConfig::create('packages/plugin/src/.*'),
             ),
@@ -249,6 +253,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($http)->accesses($contracts, $core, $psrHttpMessage, $psrHttpServer),
             Ruleset::forLayer($httpClient)->accesses($psrHttpMessage, $psrHttpClient),
             Ruleset::forLayer($module)->accesses($contracts),
+            Ruleset::forLayer($auditLog)->accesses($contracts, $databaseContracts, $i18n, $migration, $module, $psrContainer),
             Ruleset::forLayer($plugin)->accesses($contracts),
             Ruleset::forLayer($testing)->accesses(
                 $contracts,

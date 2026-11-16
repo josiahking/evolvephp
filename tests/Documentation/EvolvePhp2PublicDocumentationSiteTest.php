@@ -28,7 +28,7 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             self::assertFileExists($this->root . '/' . $path, $path);
         }
 
-        self::assertCount(19, $this->nextPages());
+        self::assertCount(20, $this->nextPages());
         self::assertFileDoesNotExist($this->root . '/website/package.json');
         self::assertFileDoesNotExist($this->root . '/website/docusaurus.config.ts');
         self::assertFileDoesNotExist($this->root . '/website/docs/versions/2.0.0-alpha.1');
@@ -132,6 +132,7 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         self::assertGreaterThanOrEqual(10, $checked);
     }
 
+    /** @return list<string> */
     private function nextPages(): array
     {
         $pages = [];

@@ -19,6 +19,7 @@ final class EvolvePhp2ReleasePackageExecutorTest extends TestCase
         $root = self::$fixture->path;
         $runner = new ReleaseValidationProcessRunner();
         $runner->mustRun(array('git', 'init'), $root);
+        $runner->mustRun(array('git', 'config', '--local', 'core.autocrlf', 'input'), $root);
         $runner->mustRun(array('git', 'config', 'user.name', 'Release Fixture'), $root);
         $runner->mustRun(array('git', 'config', 'user.email', 'fixture@example.invalid'), $root);
         $runner->mustRun(array('git', 'checkout', '-b', 'feature/executor-fixture'), $root);
@@ -51,15 +52,24 @@ final class EvolvePhp2ReleasePackageExecutorTest extends TestCase
 
     public function testAuthenticCanonicalPublisherPlanIsAcceptedButPublicationBlocked(): void
     {
+        $runner = new ReleaseValidationProcessRunner();
+        $this->assertSame('input', trim($runner->mustRun(array('git', 'config', '--local', '--get', 'core.autocrlf'), self::$fixture->path)->stdout));
         $before = $this->state();
         $first = (new ReleasePackageExecutor())->prepare(self::$plan, self::$fixture->path);
         $this->assertSame($first, (new ReleasePackageExecutor())->prepare(self::$plan, self::$fixture->path));
-        $this->assertCount(34, self::$plan['packages']);
+        $this->assertCount(35, self::$plan['packages']);
         $this->assertFalse($first['publication_enabled']);
         $this->assertSame('unverified', $first['destination_ownership']);
         $this->assertSame('unverified', $first['remote_state']);
         $this->assertSame('refs/tags/2.0.0-beta.1', $first['tag_ref']);
         $this->assertSame($before, $this->state());
+    }
+
+    public function testTruncatedThirtyFourPackageInventoryIsRejected(): void
+    {
+        $truncated = self::$plan;
+        array_pop($truncated['packages']);
+        $this->reject($truncated);
     }
 
     public function testForgedSinglePackageAndFabricatedFullInventoryAreRejected(): void
