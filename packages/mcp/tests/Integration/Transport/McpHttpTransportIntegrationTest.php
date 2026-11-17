@@ -331,7 +331,8 @@ final class McpHttpTransportIntegrationTest extends TestCase
                 $response = $handler->handle($untrusted);
                 self::assertSame(403, $response->getStatusCode());
                 self::assertSame('text/plain', $response->getHeaderLine('Content-Type'));
-                self::assertSame('Mcp-Session-Id', $response->getHeaderLine('Access-Control-Expose-Headers'));
+                self::assertSame('Mcp-Session-Id, WWW-Authenticate', $response->getHeaderLine('Access-Control-Expose-Headers'));
+                self::assertSame('', $response->getHeaderLine('Access-Control-Allow-Origin'));
             }
         }
 

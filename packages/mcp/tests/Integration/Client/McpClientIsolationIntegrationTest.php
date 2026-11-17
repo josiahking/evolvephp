@@ -106,7 +106,7 @@ final class McpClientIsolationIntegrationTest extends TestCase
             $payload = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
             return $factory->createResponse(200)->withHeader('Content-Type', 'application/json')
                 ->withBody($factory->createStream(json_encode([
-                    'jsonrpc' => '2.0', 'id' => $payload['id'], 'result' => [],
+                    'jsonrpc' => '2.0', 'id' => $payload['id'], 'result' => ['supportedVersions' => ['2026-07-28']],
                 ], JSON_THROW_ON_ERROR)));
         });
         $configuration = McpClientConfiguration::http('https://localhost/mcp', $http, $factory, $factory, static fn(): bool => true);

@@ -2,9 +2,9 @@
 
 Optional experimental MCP server, transport, component contribution and explicitly configured client foundation for EvolvePHP 2.
 
-`evolvephp/mcp` is an optional, experimental EvolvePHP 2 package requiring PHP `^8.4`. It composes MCP server and client facilities with the official PHP MCP SDK `mcp/sdk` at `^0.8.1`. Runtime dependencies are `evolvephp/contracts`, `evolvephp/core`, `evolvephp/secret-contracts`, `mcp/sdk`, `psr/http-client`, `psr/http-factory`, `psr/http-message` and `psr/http-server-handler`.
+`evolvephp/mcp` is an optional, experimental EvolvePHP 2 package requiring PHP `^8.4`. It composes MCP server and client facilities with the official PHP MCP SDK `mcp/sdk` at `^0.9.0`. Runtime dependencies are `evolvephp/contracts`, `evolvephp/core`, `evolvephp/secret-contracts`, `mcp/sdk`, `psr/http-client`, `psr/http-factory`, `psr/http-message` and `psr/http-server-handler`.
 
-EvolvePHP 2 is pre-release. The canonical source is the EvolvePHP monorepo at https://github.com/josiahking/evolvephp; packages are not yet independently published. This package uses the BSD-3-Clause licence in `LICENSE.md`.
+EvolvePHP 2 is pre-release. The canonical source is the EvolvePHP monorepo at https://github.com/josiahking/evolvephp; package-level Beta releases are already published on GitHub and Packagist; the coordinated framework Beta has not been issued. This package uses the BSD-3-Clause licence in `LICENSE.md`.
 
 ## Explicit server composition
 
