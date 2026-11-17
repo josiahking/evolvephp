@@ -127,7 +127,15 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             $this->assertStringContainsString($package['responsibility'], $content);
             $this->assertStringContainsString('PHP `^8.4`', $content);
             $this->assertMatchesPattern('/EvolvePHP 2 is pre-release/i', $content);
-            $this->assertMatchesPattern('/not yet independently published/i', $content);
+            if ($package['name'] === 'evolvephp/mcp') {
+                $this->assertStringContainsString(
+                    'package-level Beta releases are already published on GitHub and Packagist; the coordinated framework Beta has not been issued.',
+                    $content,
+                );
+                $this->assertDoesNotMatchRegularExpression('/not yet independently published/i', $content);
+            } else {
+                $this->assertMatchesPattern('/not yet independently published/i', $content);
+            }
             $this->assertMatchesPattern('/canonical source.*EvolvePHP monorepo/i', $content);
             $this->assertStringContainsString('https://github.com/josiahking/evolvephp', $content);
             $this->assertStringContainsString($package['dependencies'], $content);
