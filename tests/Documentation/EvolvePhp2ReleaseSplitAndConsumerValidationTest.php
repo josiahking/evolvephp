@@ -1626,6 +1626,10 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
     {
         $content = $this->readProjectFile('tools/validate-skeleton-project.php');
 
+        $this->assertStringContainsString("private const BETA_VERSION = '2.0.0-beta.1';", $content);
+        $this->assertStringNotContainsString('ALPHA_VERSION', $content);
+        $this->assertSame('beta', $this->readJsonFile('skeleton/composer.json')['minimum-stability']);
+
         foreach (array(
             'captureSourceState',
             'assertSourceStatePreserved',
