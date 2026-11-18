@@ -588,7 +588,15 @@ function validateReadme(array $package, string $readmePath): void
         fail($package['name'] . ' README.md must document PHP ^8.4.');
     }
 
-    if (preg_match('/not yet independently published/i', $content) !== 1) {
+    if ($package['name'] === 'evolvephp/mcp') {
+        // Strict local-only wording check; the offline validator makes no registry requests.
+        $publishedStatus = 'package-level Beta releases are already published on GitHub and '
+            . 'Pack' . 'agist; the coordinated framework Beta has not been issued.';
+        if (!str_contains($content, $publishedStatus)
+            || preg_match('/not yet independently published/i', $content) === 1) {
+            fail('evolvephp/mcp README.md must distinguish published package Beta from unissued framework Beta.');
+        }
+    } elseif (preg_match('/not yet independently published/i', $content) !== 1) {
         fail($package['name'] . ' README.md must state that independent publication has not begun yet.');
     }
 

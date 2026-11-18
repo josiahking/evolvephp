@@ -25,7 +25,7 @@ final class PackageManifestTest extends TestCase
             'evolvephp/contracts' => '^2.0',
             'evolvephp/core' => '^2.0',
             'evolvephp/secret-contracts' => '^2.0',
-            'mcp/sdk' => '^0.8.1',
+            'mcp/sdk' => '^0.9.0',
             'psr/http-client' => '^1.0',
             'psr/http-factory' => '^1.0',
             'psr/http-message' => '^1.1 || ^2.0',
