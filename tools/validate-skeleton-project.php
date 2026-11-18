@@ -4,7 +4,7 @@ require_once __DIR__ . '/release-validation-common.php';
 
 final class SkeletonProjectValidator
 {
-    private const ALPHA_VERSION = '2.0.0-alpha.1';
+    private const BETA_VERSION = '2.0.0-beta.1';
 
     private ReleaseValidationProcessRunner $runner;
 
@@ -66,7 +66,7 @@ final class SkeletonProjectValidator
                 '--repository=' . json_encode($this->vendorRepository($offlineVendorRepository, $lockedVendorPackages), JSON_THROW_ON_ERROR),
                 'evolvephp/skeleton',
                 $application,
-                self::ALPHA_VERSION,
+                self::BETA_VERSION,
             ), $composer),
             null,
             $this->composerEnvironment($temp),
@@ -219,7 +219,7 @@ final class SkeletonProjectValidator
             'options' => array(
                 'symlink' => false,
                 'versions' => array(
-                    'evolvephp/skeleton' => self::ALPHA_VERSION,
+                    'evolvephp/skeleton' => self::BETA_VERSION,
                 ),
             ),
         );
@@ -267,7 +267,7 @@ final class SkeletonProjectValidator
         $versions = array();
 
         foreach (loadReleasePackages($root) as $package) {
-            $versions[$package['name']] = self::ALPHA_VERSION;
+            $versions[$package['name']] = self::BETA_VERSION;
         }
 
         ksort($versions);
@@ -434,7 +434,7 @@ final class SkeletonProjectValidator
             releaseValidationFail('Generated skeleton manifest test script changed.');
         }
 
-        if (($manifest['minimum-stability'] ?? null) !== 'alpha' || ($manifest['prefer-stable'] ?? null) !== true) {
+        if (($manifest['minimum-stability'] ?? null) !== 'beta' || ($manifest['prefer-stable'] ?? null) !== true) {
             releaseValidationFail('Generated skeleton manifest prerelease stability policy changed.');
         }
 
