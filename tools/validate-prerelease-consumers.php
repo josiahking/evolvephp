@@ -54,6 +54,7 @@ final class PrereleaseConsumerValidator
                 'evolvephp/http' => self::ALPHA_VERSION,
             ));
             $results[] = $this->runExpectedFailureCase($temp, $composer, 'Full-graph case E', $alphaRepositories, $lockedRuntimePackages, array(
+                'evolvephp/audit-log' => '^2.0@alpha',
                 'evolvephp/bridge-contracts' => '^2.0@alpha',
                 'evolvephp/bridge-psr' => '^2.0@alpha',
                 'evolvephp/bridge-laravel' => '^2.0@alpha',
@@ -85,6 +86,7 @@ final class PrereleaseConsumerValidator
                 'evolvephp/testing' => '^2.0@alpha',
             ));
             $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case F', $alphaRepositories, $lockedRuntimePackages, array(
+                'evolvephp/audit-log' => '^2.0',
                 'evolvephp/bridge-contracts' => '^2.0',
                 'evolvephp/bridge-psr' => '^2.0',
                 'evolvephp/bridge-laravel' => '^2.0',
@@ -117,6 +119,7 @@ final class PrereleaseConsumerValidator
             ), array('minimum-stability' => 'alpha', 'prefer-stable' => true), $this->expectedVersions($packages, self::ALPHA_VERSION));
             $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case G', $alphaRepositories, $lockedRuntimePackages, $this->explicitAlphaRootRequirements($packages), array(), $this->expectedVersions($packages, self::ALPHA_VERSION));
             $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Stable case H', $stableRepositories, $lockedRuntimePackages, array(
+                'evolvephp/audit-log' => '^2.0',
                 'evolvephp/bridge-contracts' => '^2.0',
                 'evolvephp/bridge-psr' => '^2.0',
                 'evolvephp/bridge-laravel' => '^2.0',

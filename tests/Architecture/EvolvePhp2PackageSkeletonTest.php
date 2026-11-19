@@ -36,6 +36,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'http' => null,
             'http-client' => null,
             'module' => null,
+            'audit-log' => null,
             'plugin' => null,
             'testing' => null,
         ] as $package => $expectedBin) {
@@ -467,6 +468,17 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             }
 
             $manifest = $this->readJsonFile($package['manifest']);
+
+            if ($package['name'] === 'evolvephp/audit-log') {
+                $this->assertSame('^1.1 || ^2.0', $manifest['require']['psr/container'] ?? null);
+                $this->assertArrayNotHasKey(
+                    'provide',
+                    $manifest,
+                    'AuditLog must not advertise PSR-11 implementation metadata.',
+                );
+
+                continue;
+            }
 
             $this->assertArrayNotHasKey(
                 'psr/container',
@@ -1139,6 +1151,22 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'require' => ['php' => '^8.4', 'evolvephp/contracts' => '^2.0'],
             ],
             [
+                'manifest' => 'packages/audit-log/composer.json',
+                'src' => 'packages/audit-log/src',
+                'name' => 'evolvephp/audit-log',
+                'description' => 'Explicit, tenant-scoped first-party audit log module for EvolvePHP 2.',
+                'namespace' => 'Evolve\\AuditLog\\',
+                'require' => [
+                    'php' => '^8.4',
+                    'evolvephp/contracts' => '^2.0',
+                    'evolvephp/database-contracts' => '^2.0',
+                    'evolvephp/i18n' => '^2.0',
+                    'evolvephp/migration' => '^2.0',
+                    'evolvephp/module' => '^2.0',
+                    'psr/container' => '^1.1 || ^2.0',
+                ],
+            ],
+            [
                 'manifest' => 'packages/plugin/composer.json',
                 'src' => 'packages/plugin/src',
                 'name' => 'evolvephp/plugin',
@@ -1670,6 +1698,21 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'ModuleCompatibilityValidator.php',
                 'ModuleDefinition.php',
                 'ModuleDescriptor.php',
+            ],
+            'packages/audit-log/src' => [
+                'AuditAccessPolicy.php',
+                'AuditEvent.php',
+                'AuditEventLabel.php',
+                'AuditLog.php',
+                'AuditLogMigrationContributor.php',
+                'AuditLogModule.php',
+                'AuditReadRequest.php',
+                'AuditRetentionRequest.php',
+                'AuditStore.php',
+                'Exception/DuplicateAuditEvent.php',
+                'Exception/UnauthorizedAuditAccess.php',
+                'RedactionPolicy.php',
+                'SqlAuditStore.php',
             ],
             'packages/plugin/src' => [
                 'Discovery/ComposerPluginDiscovery.php',

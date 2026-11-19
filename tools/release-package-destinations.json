@@ -87,6 +87,10 @@
             "repository": "josiahking/evolvephp-module"
         },
         {
+            "name": "evolvephp/audit-log",
+            "repository": "josiahking/evolvephp-audit-log"
+        },
+        {
             "name": "evolvephp/plugin",
             "repository": "josiahking/evolvephp-plugin"
         },

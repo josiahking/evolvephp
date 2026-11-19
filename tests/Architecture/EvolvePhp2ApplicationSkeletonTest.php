@@ -18,6 +18,10 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
         $this->assertSame('evolvephp/skeleton', $manifest['name']);
         $this->assertSame('project', $manifest['type']);
         $this->assertSame('BSD-3-Clause', $manifest['license']);
+        $this->assertSame(
+            preg_replace('/[ \t]+$/m', '', $this->readProjectFile('LICENSE.md')),
+            $this->readProjectFile('skeleton/LICENSE.md'),
+        );
         $this->assertSame('^8.4', $manifest['require']['php']);
         $this->assertSame('^2.0', $manifest['require']['evolvephp/contracts']);
         $this->assertSame('^2.0', $manifest['require']['evolvephp/core']);
@@ -38,7 +42,7 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
         $this->assertSame(array('App\\' => 'src/'), $manifest['autoload']['psr-4']);
         $this->assertSame(array('Tests\\' => 'tests/'), $manifest['autoload-dev']['psr-4']);
         $this->assertSame('phpunit --configuration phpunit.xml.dist', $manifest['scripts']['test']);
-        $this->assertSame('alpha', $manifest['minimum-stability']);
+        $this->assertSame('beta', $manifest['minimum-stability']);
         $this->assertTrue($manifest['prefer-stable']);
         $this->assertArrayNotHasKey('version', $manifest);
         $this->assertArrayNotHasKey('repositories', $manifest);
@@ -49,6 +53,7 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
         foreach (array(
             'skeleton/composer.json',
             'skeleton/README.md',
+            'skeleton/LICENSE.md',
             'skeleton/bin/evolve',
             'skeleton/bootstrap/console.php',
             'skeleton/config/commands.php',
@@ -62,6 +67,7 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
 
         $this->assertSame(
             array(
+                'LICENSE.md',
                 'README.md',
                 'bin/evolve',
                 'bootstrap/console.php',
@@ -137,7 +143,7 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
         $coreManifest = $this->readJsonFile('packages/core/composer.json');
         $skeletonManifest = $this->readJsonFile('skeleton/composer.json');
 
-        $this->assertCount(34, $map['packages']);
+        $this->assertCount(35, $map['packages']);
         $this->assertNotContains('evolvephp/skeleton', $packageNames);
         $this->assertNotContains('skeleton', $packageDirectories);
         $this->assertStringNotContainsString('skeleton', $deptrac);
@@ -189,7 +195,14 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
             $this->assertStringContainsString($needle, $readme);
         }
 
-        $this->assertDoesNotMatchRegularExpression('/composer create-project evolvephp\/skeleton/i', $readme);
+        $this->assertStringContainsString(
+            'composer create-project evolvephp/skeleton my-app 2.0.0-beta.1',
+            $readme,
+        );
+        $this->assertStringContainsString(
+            'only supported after a clean external create-project validation',
+            $readme,
+        );
         $this->assertDoesNotMatchRegularExpression('/automatic (?:route|command) discovery|autoloaded routes/i', $readme);
     }
 

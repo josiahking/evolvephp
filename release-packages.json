@@ -86,6 +86,10 @@
             "directory": "packages/module"
         },
         {
+            "name": "evolvephp/audit-log",
+            "directory": "packages/audit-log"
+        },
+        {
             "name": "evolvephp/plugin",
             "directory": "packages/plugin"
         },

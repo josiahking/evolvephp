@@ -8,7 +8,7 @@ The production manifest includes `evolvephp/view` for explicit application-owned
 
 The manifest also includes `evolvephp/i18n`. Applications choose supported locales and register message sources explicitly; the skeleton supplies no default locale list, automatic negotiation or template translator global. The ordinary PHP-array translation path does not require Intl.
 
-For current Alpha onboarding, see [Alpha getting started](../docs/alpha/getting-started.md) and [Application foundations](../docs/alpha/application-foundations.md). Those guides describe the skeleton as the accepted application template while package publication and public create-project installation remain unclaimed.
+For historical Alpha source-preview context, see [Alpha getting started](https://github.com/josiahking/evolvephp/blob/2.x/docs/alpha/getting-started.md) and [Application foundations](https://github.com/josiahking/evolvephp/blob/2.x/docs/alpha/application-foundations.md). All 34 first-party framework packages have publicly verified Beta distributions, but the standalone `evolvephp/skeleton` project is a separate publication with its own acceptance gates.
 
 ## CLI
 
@@ -41,7 +41,20 @@ Local prerelease create-project validation is repository-owned and available fro
 composer release:skeleton:validate
 ```
 
-That validation exercises Composer create-project against local prerelease package evidence with Packagist and Composer network access disabled. Public Packagist create-project availability is not yet claimed.
+That validation exercises Composer create-project using isolated local Beta-labelled package fixtures with Packagist and Composer network access disabled. It preserves the verified CLI, generator, independent module and production `--no-dev` checks. This offline test does **not** prove that the separately published skeleton is available from Packagist.
+
+## Public Beta installation (publication-dependent)
+
+The skeleton is a separate Composer `project`, not an additional framework runtime package. **The standalone skeleton is not yet independently published.** The intended public installer requires an independently published `2.0.0-beta.1` skeleton tag, verified Packagist metadata and is **only supported after a clean external create-project validation**:
+
+```bash
+composer create-project evolvephp/skeleton my-app 2.0.0-beta.1
+cd my-app
+php bin/evolve doctor
+php bin/evolve route:list
+```
+
+Consult the actual published skeleton version and release-readiness evidence before using these instructions. A successfully validated framework-package consumer does not, by itself, establish public skeleton availability. This template remains pre-release and is not production-ready.
 
 ## Generators
 

@@ -23,13 +23,14 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             'website/docs/next/index.md',
             'website/docs/next/packages/mcp.md',
             'website/docs/next/packages/redis.md',
+            'website/docs/next/packages/audit-log.md',
             'website/docs/next/project/documentation-versioning.md',
             'website/docs/versions/index.md',
         ] as $path) {
             self::assertFileExists($this->root . '/' . $path, $path);
         }
 
-        self::assertCount(20, $this->nextPages());
+        self::assertCount(21, $this->nextPages());
         self::assertFileDoesNotExist($this->root . '/website/package.json');
         self::assertFileDoesNotExist($this->root . '/website/docusaurus.config.ts');
         self::assertFileDoesNotExist($this->root . '/website/docs/versions/2.0.0-alpha.1');
@@ -77,6 +78,9 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         self::assertLessThan(strpos($redis, '## Install optional packages'), strpos($redis, '## Use the cache'));
         self::assertStringContainsString('next/packages/redis.md', $config);
         self::assertStringContainsString('(redis.md)', $this->read('website/docs/next/packages/overview.md'));
+        self::assertStringContainsString('next/packages/audit-log.md', $config);
+        self::assertStringContainsString('(audit-log.md)', $this->read('website/docs/next/packages/overview.md'));
+        self::assertStringNotContainsString('<<<<<<<', $config);
 
         foreach ($this->nextPages() as $path) {
             $content = file_get_contents($path);
@@ -170,6 +174,7 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         }
     }
 
+    /** @return list<string> */
     private function nextPages(): array
     {
         $pages = [];

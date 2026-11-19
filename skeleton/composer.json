@@ -31,6 +31,6 @@
     "scripts": {
         "test": "phpunit --configuration phpunit.xml.dist"
     },
-    "minimum-stability": "alpha",
+    "minimum-stability": "beta",
     "prefer-stable": true
 }
