@@ -68,6 +68,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
 
         $expectedRequireDev = array(
             'deptrac/deptrac' => '^4.7',
+            'evolvephp/audit-log' => '^2.0@dev',
             'evolvephp/ai' => '^2.0@dev',
             'evolvephp/bridge-contracts' => '^2.0@dev',
             'evolvephp/bridge-laravel' => '^2.0@dev',
@@ -184,6 +185,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'test:observe' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe',
             'test:mcp' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite mcp',
             'test:ai' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite ai',
+            'test:audit-log' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite audit-log',
             'test:plugin' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite plugin',
             'test:queue-contracts' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-contracts',
             'test:queue-memory' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite queue-memory',
@@ -279,6 +281,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
                 array('name' => 'evolvephp/view-blade', 'directory' => 'packages/view-blade'),
                 array('name' => 'evolvephp/i18n', 'directory' => 'packages/i18n'),
                 array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
+                array('name' => 'evolvephp/audit-log', 'directory' => 'packages/audit-log'),
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
                 array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -337,6 +340,7 @@ final class EvolvePhp2RootComposerTest extends TestCase
             'evolvephp/view-twig',
             'evolvephp/view-blade',
             'evolvephp/module',
+            'evolvephp/audit-log',
             'evolvephp/observe',
             'evolvephp/mcp',
             'evolvephp/ai',

@@ -68,6 +68,8 @@ parameters:
         - packages/http-client/tests
         - packages/module/src
         - packages/module/tests
+        - packages/audit-log/src
+        - packages/audit-log/tests
         - packages/plugin/src
         - packages/plugin/tests
         - packages/testing/src

@@ -33,6 +33,7 @@ nav:
       - Observe: next/observability/observe.md
       - Packages: next/packages/overview.md
       - MCP: next/packages/mcp.md
+      - Audit Log: next/packages/audit-log.md
       - Releases: next/project/releases.md
       - RFCs: next/project/rfcs.md
       - Documentation Versioning: next/project/documentation-versioning.md

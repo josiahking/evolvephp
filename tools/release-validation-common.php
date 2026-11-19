@@ -723,8 +723,8 @@ function loadReleasePackages(string $root): array
         releaseValidationFail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 34) {
-        releaseValidationFail('release-packages.json must contain exactly thirty-four package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 35) {
+        releaseValidationFail('release-packages.json must contain exactly thirty-five package entries.');
     }
 
     $expected = array(
@@ -749,6 +749,7 @@ function loadReleasePackages(string $root): array
         array('name' => 'evolvephp/view-blade', 'directory' => 'packages/view-blade'),
         array('name' => 'evolvephp/i18n', 'directory' => 'packages/i18n'),
         array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
+        array('name' => 'evolvephp/audit-log', 'directory' => 'packages/audit-log'),
         array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
         array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
         array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
