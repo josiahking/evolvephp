@@ -22,13 +22,14 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             'website/docs/.nojekyll',
             'website/docs/next/index.md',
             'website/docs/next/packages/mcp.md',
+            'website/docs/next/packages/redis.md',
             'website/docs/next/project/documentation-versioning.md',
             'website/docs/versions/index.md',
         ] as $path) {
             self::assertFileExists($this->root . '/' . $path, $path);
         }
 
-        self::assertCount(19, $this->nextPages());
+        self::assertCount(20, $this->nextPages());
         self::assertFileDoesNotExist($this->root . '/website/package.json');
         self::assertFileDoesNotExist($this->root . '/website/docusaurus.config.ts');
         self::assertFileDoesNotExist($this->root . '/website/docs/versions/2.0.0-alpha.1');
@@ -61,6 +62,12 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         $mcp = $this->read('website/docs/next/packages/mcp.md');
         self::assertStringContainsString('McpComponentContribution', $mcp);
         self::assertStringContainsString('McpContributionServerComposer', $mcp);
+        $redis = $this->read('website/docs/next/packages/redis.md');
+        self::assertStringContainsString('RedisAdapter', $redis);
+        self::assertStringContainsString('Psr16Cache', $redis);
+        self::assertStringContainsString('tools/validate-redis-compatibility.php', $redis);
+        self::assertStringContainsString('next/packages/redis.md', $config);
+        self::assertStringContainsString('(redis.md)', $this->read('website/docs/next/packages/overview.md'));
 
         foreach ($this->nextPages() as $path) {
             $content = file_get_contents($path);
@@ -130,6 +137,28 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             }
         }
         self::assertGreaterThanOrEqual(10, $checked);
+    }
+
+    public function testRedisOptionalSymbolsHaveIsolatedConsumerVerification(): void
+    {
+        $guide = $this->read('website/docs/next/packages/redis.md');
+        self::assertStringContainsString('\\Symfony\\Component\\Cache\\Adapter\\RedisAdapter', $guide);
+        self::assertStringContainsString('\\Symfony\\Component\\Cache\\Psr16Cache', $guide);
+        self::assertStringContainsString('nonempty, application-owned namespace', $guide);
+        self::assertStringContainsString('flush the entire selected Redis database', $guide);
+        self::assertFileExists($this->root . '/tools/fixtures/redis-psr16-consumer.php');
+        $validator = $this->read('tools/validate-redis-compatibility.php');
+        self::assertStringContainsString('EVOLVE_REDIS_CONSUMER_AUTOLOAD', $validator);
+        self::assertStringContainsString('RedisAdapter::class', $validator);
+        self::assertStringContainsString('Psr16Cache::class', $validator);
+
+        $autoload = getenv('EVOLVE_REDIS_CONSUMER_AUTOLOAD');
+        if (is_string($autoload) && $autoload !== '') {
+            self::assertFileExists($autoload);
+            require_once $autoload;
+            self::assertTrue(class_exists(\Symfony\Component\Cache\Adapter\RedisAdapter::class));
+            self::assertTrue(class_exists(\Symfony\Component\Cache\Psr16Cache::class));
+        }
     }
 
     private function nextPages(): array

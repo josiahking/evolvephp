@@ -33,6 +33,7 @@ nav:
       - Observe: next/observability/observe.md
       - Packages: next/packages/overview.md
       - MCP: next/packages/mcp.md
+      - Redis PSR-16: next/packages/redis.md
       - Releases: next/project/releases.md
       - RFCs: next/project/rfcs.md
       - Documentation Versioning: next/project/documentation-versioning.md
