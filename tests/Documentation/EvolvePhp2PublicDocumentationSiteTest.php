@@ -49,12 +49,12 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         self::assertStringContainsString('EvolvePHP 2 — Developer manual (Next)', $home);
         self::assertStringContainsString(
             '[Read the manual](next/index.md) · [View the repository](https://github.com/josiahking/evolvephp)',
-            $home
+            $home,
         );
 
         self::assertStringNotContainsString(
             '[Read the manual](next/index.md) ? [View the repository](https://github.com/josiahking/evolvephp)',
-            $home
+            $home,
         );
         $status = $this->read('website/docs/next/getting-started/current-status.md');
         self::assertMatchesRegularExpression('/pre-release/i', $status);
@@ -66,6 +66,15 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         self::assertStringContainsString('RedisAdapter', $redis);
         self::assertStringContainsString('Psr16Cache', $redis);
         self::assertStringContainsString('tools/validate-redis-compatibility.php', $redis);
+        self::assertStringContainsString('use Psr\SimpleCache\CacheInterface;', $redis);
+        self::assertStringContainsString('function __construct(CacheInterface $cache)', $redis);
+        self::assertStringContainsString("get('example', 'fallback')", $redis);
+        self::assertStringContainsString("set('example', 'value', 3600)", $redis);
+        self::assertStringContainsString("delete('example')", $redis);
+        self::assertStringNotContainsString("require __DIR__ . '/vendor/autoload.php';", $redis);
+        self::assertStringContainsString('## Use the cache', $redis);
+        self::assertStringContainsString('## Install optional packages', $redis);
+        self::assertLessThan(strpos($redis, '## Install optional packages'), strpos($redis, '## Use the cache'));
         self::assertStringContainsString('next/packages/redis.md', $config);
         self::assertStringContainsString('(redis.md)', $this->read('website/docs/next/packages/overview.md'));
 
@@ -131,7 +140,7 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
                     self::assertTrue(
                         class_exists($symbol) || interface_exists($symbol)
                         || trait_exists($symbol) || enum_exists($symbol),
-                        $path . ': missing example symbol ' . $symbol
+                        $path . ': missing example symbol ' . $symbol,
                     );
                 }
             }
@@ -166,7 +175,7 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         $pages = [];
         $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(
             $this->root . '/website/docs/next',
-            FilesystemIterator::SKIP_DOTS
+            FilesystemIterator::SKIP_DOTS,
         ));
         foreach ($iterator as $file) {
             if ($file->isFile() && $file->getExtension() === 'md') {
