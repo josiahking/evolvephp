@@ -22,13 +22,15 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             'website/docs/.nojekyll',
             'website/docs/next/index.md',
             'website/docs/next/packages/mcp.md',
+            'website/docs/next/packages/redis.md',
+            'website/docs/next/packages/audit-log.md',
             'website/docs/next/project/documentation-versioning.md',
             'website/docs/versions/index.md',
         ] as $path) {
             self::assertFileExists($this->root . '/' . $path, $path);
         }
 
-        self::assertCount(20, $this->nextPages());
+        self::assertCount(21, $this->nextPages());
         self::assertFileDoesNotExist($this->root . '/website/package.json');
         self::assertFileDoesNotExist($this->root . '/website/docusaurus.config.ts');
         self::assertFileDoesNotExist($this->root . '/website/docs/versions/2.0.0-alpha.1');
@@ -48,12 +50,12 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         self::assertStringContainsString('EvolvePHP 2 — Developer manual (Next)', $home);
         self::assertStringContainsString(
             '[Read the manual](next/index.md) · [View the repository](https://github.com/josiahking/evolvephp)',
-            $home
+            $home,
         );
 
         self::assertStringNotContainsString(
             '[Read the manual](next/index.md) ? [View the repository](https://github.com/josiahking/evolvephp)',
-            $home
+            $home,
         );
         $status = $this->read('website/docs/next/getting-started/current-status.md');
         self::assertMatchesRegularExpression('/pre-release/i', $status);
@@ -61,6 +63,24 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         $mcp = $this->read('website/docs/next/packages/mcp.md');
         self::assertStringContainsString('McpComponentContribution', $mcp);
         self::assertStringContainsString('McpContributionServerComposer', $mcp);
+        $redis = $this->read('website/docs/next/packages/redis.md');
+        self::assertStringContainsString('RedisAdapter', $redis);
+        self::assertStringContainsString('Psr16Cache', $redis);
+        self::assertStringContainsString('tools/validate-redis-compatibility.php', $redis);
+        self::assertStringContainsString('use Psr\SimpleCache\CacheInterface;', $redis);
+        self::assertStringContainsString('function __construct(CacheInterface $cache)', $redis);
+        self::assertStringContainsString("get('example', 'fallback')", $redis);
+        self::assertStringContainsString("set('example', 'value', 3600)", $redis);
+        self::assertStringContainsString("delete('example')", $redis);
+        self::assertStringNotContainsString("require __DIR__ . '/vendor/autoload.php';", $redis);
+        self::assertStringContainsString('## Use the cache', $redis);
+        self::assertStringContainsString('## Install optional packages', $redis);
+        self::assertLessThan(strpos($redis, '## Install optional packages'), strpos($redis, '## Use the cache'));
+        self::assertStringContainsString('next/packages/redis.md', $config);
+        self::assertStringContainsString('(redis.md)', $this->read('website/docs/next/packages/overview.md'));
+        self::assertStringContainsString('next/packages/audit-log.md', $config);
+        self::assertStringContainsString('(audit-log.md)', $this->read('website/docs/next/packages/overview.md'));
+        self::assertStringNotContainsString('<<<<<<<', $config);
 
         foreach ($this->nextPages() as $path) {
             $content = file_get_contents($path);
@@ -124,12 +144,34 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
                     self::assertTrue(
                         class_exists($symbol) || interface_exists($symbol)
                         || trait_exists($symbol) || enum_exists($symbol),
-                        $path . ': missing example symbol ' . $symbol
+                        $path . ': missing example symbol ' . $symbol,
                     );
                 }
             }
         }
         self::assertGreaterThanOrEqual(10, $checked);
+    }
+
+    public function testRedisOptionalSymbolsHaveIsolatedConsumerVerification(): void
+    {
+        $guide = $this->read('website/docs/next/packages/redis.md');
+        self::assertStringContainsString('\\Symfony\\Component\\Cache\\Adapter\\RedisAdapter', $guide);
+        self::assertStringContainsString('\\Symfony\\Component\\Cache\\Psr16Cache', $guide);
+        self::assertStringContainsString('nonempty, application-owned namespace', $guide);
+        self::assertStringContainsString('flush the entire selected Redis database', $guide);
+        self::assertFileExists($this->root . '/tools/fixtures/redis-psr16-consumer.php');
+        $validator = $this->read('tools/validate-redis-compatibility.php');
+        self::assertStringContainsString('EVOLVE_REDIS_CONSUMER_AUTOLOAD', $validator);
+        self::assertStringContainsString('RedisAdapter::class', $validator);
+        self::assertStringContainsString('Psr16Cache::class', $validator);
+
+        $autoload = getenv('EVOLVE_REDIS_CONSUMER_AUTOLOAD');
+        if (is_string($autoload) && $autoload !== '') {
+            self::assertFileExists($autoload);
+            require_once $autoload;
+            self::assertTrue(class_exists(\Symfony\Component\Cache\Adapter\RedisAdapter::class));
+            self::assertTrue(class_exists(\Symfony\Component\Cache\Psr16Cache::class));
+        }
     }
 
     /** @return list<string> */
@@ -138,7 +180,7 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         $pages = [];
         $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(
             $this->root . '/website/docs/next',
-            FilesystemIterator::SKIP_DOTS
+            FilesystemIterator::SKIP_DOTS,
         ));
         foreach ($iterator as $file) {
             if ($file->isFile() && $file->getExtension() === 'md') {

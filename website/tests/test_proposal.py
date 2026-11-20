@@ -1,4 +1,4 @@
-﻿import pathlib
+import pathlib
 import re
 import unittest
 
@@ -14,10 +14,15 @@ class MkDocsProposalTests(unittest.TestCase):
         self.assertIn("- search", config)
         self.assertIn("next/index.md", config)
         self.assertNotIn("docusaurus", config.lower())
+        self.assertNotIn("<<<<<<<", config)
 
     def test_content_integrity(self):
         pages = list((DOCS / "next").rglob("*.md"))
-        self.assertEqual(20, len(pages))
+        self.assertEqual(21, len(pages))
+        self.assertTrue((DOCS / "next/packages/redis.md").exists())
+        self.assertIn("next/packages/redis.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
+        self.assertTrue((DOCS / "next/packages/audit-log.md").exists())
+        self.assertIn("next/packages/audit-log.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
         self.assertTrue((DOCS / "next/index.md").exists())
         self.assertTrue((DOCS / "index.md").exists())
         self.assertTrue((DOCS / "versions/index.md").exists())
