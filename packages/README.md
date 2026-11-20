@@ -10,7 +10,7 @@ All package manifests require PHP `^8.4`.
 
 EvolvePHP 2 packages continue to require PHP `^8.4`. `compat/legacy-http-client` is a separate isolated remote compatibility artifact for legacy applications whose initial official legacy runtime evidence is PHP 7.4.
 
-The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 35-package release map.
+The artifact uses Composer identity `evolvephp/legacy-http-client`, namespace `Evolve\Bridge\LegacyHttp\`, and speaks Remote Bridge protocol v1 over bounded HTTP JSON. It has no runtime dependency on EvolvePHP Core, Bridge packages, PSR packages or the monorepo root, and it is not part of the normal 36-package release map.
 
 The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge endpoint. It does not enable embedded or same-process EvolvePHP on PHP 7, lower Core or package requirements, share sessions or cookies, provide automatic retries or fallback routing, or perform modernization cutover or data migration.
 
@@ -51,6 +51,7 @@ The legacy client lets a PHP 7.4 host invoke an already-deployed remote Bridge e
 | `evolvephp/http-client` | `Evolve\Http\Client\` | Public experimental vendor-neutral PSR-18 outbound client composition foundation with ordered middleware and application-owned concrete transports and policy. |
 | `evolvephp/module` | `Evolve\Module\` | Module SDK boundary with the public experimental `ModuleDescriptor`, EvolvePHP-major compatibility validation, `graphDeclaration()` projection, `Module` entry point extending `ComponentEntryPoint` and explicit `ModuleDefinition`; discovery remains deferred. |
 | `evolvephp/audit-log` | `Evolve\AuditLog\` | Explicit, tenant-scoped audit event storage, authorized reads and caller-triggered retention. |
+| `evolvephp/webhooks` | `Evolve\Webhooks\` | Explicit tenant-scoped outbound webhooks with signed delivery and host-controlled transport. |
 | `evolvephp/plugin` | `Evolve\Plugin\` | Plugin SDK boundary with the public experimental `PluginDescriptor`, EvolvePHP-major compatibility validation, `graphDeclaration()` projection, `Plugin` entry point extending `ComponentEntryPoint`, explicit `PluginDefinition` and `ComposerPluginDiscovery` for packaged plugin metadata. |
 | `evolvephp/testing` | `Evolve\Testing\` | Development-only testing-support boundary, including public experimental component fixtures, public experimental command-output recorder and independent component acceptance coverage. |
 

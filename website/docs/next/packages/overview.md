@@ -37,6 +37,7 @@ The current 2.x source declares the following first-party packages in [release-p
 | [view](https://github.com/josiahking/evolvephp/blob/2.x/packages/view/README.md) / [view-twig](https://github.com/josiahking/evolvephp/blob/2.x/packages/view-twig/README.md) / [view-blade](https://github.com/josiahking/evolvephp/blob/2.x/packages/view-blade/README.md) | Native view composition and optional template adapters. |
 | [i18n](https://github.com/josiahking/evolvephp/blob/2.x/packages/i18n/README.md) | Explicit locale policy, catalogs and translation. |
 | [audit-log](https://github.com/josiahking/evolvephp/blob/2.x/packages/audit-log/README.md) | Explicit audit events, tenant-scoped SQL persistence, authorized reads and caller-triggered retention; local source only. |
+| [webhooks](webhooks.md) | Explicit tenant-scoped outbound webhook publication and signed delivery; requires a reviewed host transport. |
 
 ## Integration and operations
 
@@ -53,6 +54,6 @@ The [repository package index](https://github.com/josiahking/evolvephp/blob/2.x/
 
 ## Current guides
 
-This v1 manual has focused [MCP](mcp.md) and [Audit Log](audit-log.md) guides and guides for selected foundations and modernization features. The package list above remains a source map; it does not promise a full tutorial for every first-party package.
+This v1 manual has focused [MCP](mcp.md) , [Audit Log](audit-log.md), and [Webhooks](webhooks.md) guides and guides for selected foundations and modernization features. The package list above remains a source map; it does not promise a full tutorial for every first-party package.
 
 MCP operational events are disabled by default. Hosts may wire safe normalized events to Observe telemetry or Insight local diagnostics without adding package dependency cycles.

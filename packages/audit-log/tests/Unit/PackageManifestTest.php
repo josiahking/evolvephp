@@ -25,10 +25,11 @@ final class PackageManifestTest extends TestCase
         self::assertSame(['Evolve\\AuditLog\\' => 'src/'], $manifest['autoload']['psr-4']);
         $map = json_decode((string) file_get_contents($root . '/release-packages.json'), true, flags: JSON_THROW_ON_ERROR);
         $names = array_column($map['packages'], 'name');
-        self::assertCount(35, $names);
+        self::assertCount(36, $names);
         $position = array_search('evolvephp/module', $names, true);
         self::assertIsInt($position);
         self::assertSame('evolvephp/audit-log', $names[$position + 1]);
-        self::assertCount(35, array_unique($names));
+        self::assertSame('evolvephp/webhooks', $names[$position + 2]);
+        self::assertCount(36, array_unique($names));
     }
 }

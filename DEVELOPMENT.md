@@ -96,6 +96,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/ai`
 - `evolvephp/module`
 - `evolvephp/audit-log`
+- `evolvephp/webhooks`
 - `evolvephp/plugin`
 - `evolvephp/testing`
 
@@ -175,6 +176,7 @@ composer test:http
 composer test:http-client
 composer test:module
 composer test:audit-log
+composer test:webhooks
 composer test:plugin
 composer test:testing
 ```
@@ -274,7 +276,7 @@ polyglot-persistence planning; they are not merged into a composite score.
 
 ## Beta Publisher Preparation
 
-`release:publisher:prepare` is a separate publisher-preparation operator. It defaults to dry-run, no-network and no-write behavior, including no temporary output files. Its only output is JSON on stdout or a bounded failure message on stderr. The existing `release:plan`, split validator and Alpha/Stable/Beta consumer validators retain their roles. There are still 35 proposed independent repositories and no public Beta has been issued.
+`release:publisher:prepare` is a separate publisher-preparation operator. It defaults to dry-run, no-network and no-write behavior, including no temporary output files. Its only output is JSON on stdout or a bounded failure message on stderr. The existing `release:plan`, split validator and Alpha/Stable/Beta consumer validators retain their roles. There are still 36 proposed independent repositories and no public Beta has been issued.
 
 Use an absolute PHP 8.4 executable appropriate to the host. Supply an independently reviewed full source commit, tree and branch with `--source-commit`, `--source-tree` and `--source-branch`; optionally select a checkout with `--root`. The equivalent Composer entry point is `composer release:publisher:prepare` with those same options. Missing pins fail closed; reading HEAD yourself does not constitute release approval. A clean committed checkout is required, so an uncommitted implementation candidate is deliberately rejected. Store redirected evidence outside the checkout.
 
@@ -301,9 +303,9 @@ Local validation uses isolated fixture repositories and external evidence. The r
 
 ## Local Beta Distribution Planning
 
-The approved distribution model keeps this monorepo authoritative and proposes 35 independently tagged public GitHub split repositories, with each package individually registered on Packagist after separate authorization. The intended sequence is monorepo source, deterministic package splits, independent repositories, independently verified package tags, Packagist registration, then consumer installation. None of those public publication steps is performed by local readiness tooling.
+The approved distribution model keeps this monorepo authoritative and proposes 36 independently tagged public GitHub split repositories, with each package individually registered on Packagist after separate authorization. The intended sequence is monorepo source, deterministic package splits, independent repositories, independently verified package tags, Packagist registration, then consumer installation. None of those public publication steps is performed by local readiness tooling.
 
-The version-1 inventory in `release-packages.json` remains canonical. `tools/release-package-destinations.json` separately maps all 35 packages, in that same order, to proposed `evolvephp-<slug>` repositories under the owner recorded in that mapping. Its `proposed-unverified` status means that repository existence and ownership have not been checked. `2.0.0-beta.1` is a proposed simulation version, not a released Beta.
+The version-1 inventory in `release-packages.json` remains canonical. `tools/release-package-destinations.json` separately maps all 36 packages, in that same order, to proposed `evolvephp-<slug>` repositories under the owner recorded in that mapping. Its `proposed-unverified` status means that repository existence and ownership have not been checked. `2.0.0-beta.1` is a proposed simulation version, not a released Beta.
 
 From a clean committed source checkout, generate the offline JSON plan:
 
@@ -341,7 +343,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains thirty-five packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, migration, view, view-twig, view-blade, i18n, module, audit-log, plugin, http, insight, http-client, observe, mcp, ai, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains thirty-six packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, migration, view, view-twig, view-blade, i18n, module, audit-log, webhooks, plugin, http, insight, http-client, observe, mcp, ai, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -523,6 +525,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `http-client` | `packages/http-client/tests` |
 | `module` | `packages/module/tests` |
 | `audit-log` | `packages/audit-log/tests` |
+| `webhooks` | `packages/webhooks/tests` |
 | `plugin` | `packages/plugin/tests` |
 | `testing` | `packages/testing/tests` |
 
@@ -596,6 +599,8 @@ packages/http-client/tests
 packages/module/src
 packages/module/tests
 packages/audit-log/tests
+packages/webhooks/src
+packages/webhooks/tests
 packages/plugin/src
 packages/plugin/tests
 packages/testing/src

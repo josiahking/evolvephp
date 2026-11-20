@@ -13,9 +13,9 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
         $this->assertSame(array('version', 'status', 'packages'), array_keys($map));
         $this->assertSame(1, $map['version']);
         $this->assertSame('proposed-unverified', $map['status']);
-        $this->assertCount(35, $map['packages']);
+        $this->assertCount(36, $map['packages']);
         $this->assertSame(array_column($canonical['packages'], 'name'), array_column($map['packages'], 'name'));
-        $this->assertCount(35, array_unique(array_column($map['packages'], 'repository')));
+        $this->assertCount(36, array_unique(array_column($map['packages'], 'repository')));
         foreach ($map['packages'] as $package) {
             $this->assertSame(array('name', 'repository'), array_keys($package));
             $this->assertSame('josiahking/evolvephp-' . substr($package['name'], 10), $package['repository']);
@@ -25,7 +25,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
     public function testBetaPlanningDocumentationStatesLocalOnlyBoundaries(): void
     {
         $development = $this->readProjectFile('DEVELOPMENT.md');
-        foreach (array('composer release:plan', 'tools/release-package-destinations.json', '2.0.0-beta.1', 'minimum-stability: beta', 'proposed-unverified', '--source-commit', '--source-tree', 'Packagist registration', '35 independently tagged') as $needle) {
+        foreach (array('composer release:plan', 'tools/release-package-destinations.json', '2.0.0-beta.1', 'minimum-stability: beta', 'proposed-unverified', '--source-commit', '--source-tree', 'Packagist registration', '36 independently tagged') as $needle) {
             $this->assertStringContainsString($needle, $development);
         }
         $this->assertStringContainsString('local release-readiness', $this->readProjectFile('CHANGELOG.md'));
@@ -90,6 +90,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 array('name' => 'evolvephp/i18n', 'directory' => 'packages/i18n'),
                 array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
                 array('name' => 'evolvephp/audit-log', 'directory' => 'packages/audit-log'),
+                array('name' => 'evolvephp/webhooks', 'directory' => 'packages/webhooks'),
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
                 array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -120,6 +121,8 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
 
     public function testPackageReadmesDocumentPublicationStatusWithoutInventingRemoteRepositories(): void
     {
+        $this->assertContains('evolvephp/webhooks', array_column($this->packages(), 'name'));
+        $this->assertContains('evolvephp/plugin', array_column($this->packages(), 'name'));
         foreach ($this->packages() as $package) {
             $content = $this->readProjectFile($package['directory'] . '/README.md');
 
@@ -234,7 +237,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/## Release Validation/',
             '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
-            '/thirty-five packages.*mapped explicitly|mapped explicitly.*thirty-five packages|map contains thirty-five packages/i',
+            '/thirty-six packages.*mapped explicitly|mapped explicitly.*thirty-six packages|map contains thirty-six packages/i',
             '/dependency-compatible/i',
             '/package-local README/i',
             '/package-local.*licen[cs]es/i',
@@ -435,6 +438,13 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'human' => 'EvolvePHP Audit Log',
                 'responsibility' => 'Explicit application audit events, tenant-scoped SQL storage, authorized reads and retention.',
                 'dependencies' => '`evolvephp/contracts`, `evolvephp/database-contracts`, `evolvephp/i18n`, `evolvephp/migration`, `evolvephp/module`',
+            ),
+            array(
+                'name' => 'evolvephp/webhooks',
+                'directory' => 'packages/webhooks',
+                'human' => 'EvolvePHP Webhooks',
+                'responsibility' => 'Explicit tenant-scoped outbound webhooks with signed delivery and host-controlled transport.',
+                'dependencies' => '`evolvephp/contracts`, `evolvephp/database-contracts`, `evolvephp/i18n`, `evolvephp/migration`, `evolvephp/module`, `evolvephp/secret-contracts`',
             ),
             array(
                 'name' => 'evolvephp/plugin',

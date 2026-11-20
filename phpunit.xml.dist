@@ -110,6 +110,9 @@
         <testsuite name="audit-log">
             <directory suffix="Test.php">packages/audit-log/tests</directory>
         </testsuite>
+        <testsuite name="webhooks">
+            <directory suffix="Test.php">packages/webhooks/tests</directory>
+        </testsuite>
         <testsuite name="plugin">
             <directory suffix="Test.php">packages/plugin/tests</directory>
         </testsuite>
@@ -152,6 +155,7 @@
             <directory suffix=".php">packages/http-client/src</directory>
             <directory suffix=".php">packages/module/src</directory>
             <directory suffix=".php">packages/audit-log/src</directory>
+            <directory suffix=".php">packages/webhooks/src</directory>
             <directory suffix=".php">packages/plugin/src</directory>
             <directory suffix=".php">packages/testing/src</directory>
         </include>

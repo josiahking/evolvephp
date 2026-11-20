@@ -57,7 +57,7 @@ final class EvolvePhp2ReleasePackageExecutorTest extends TestCase
         $before = $this->state();
         $first = (new ReleasePackageExecutor())->prepare(self::$plan, self::$fixture->path);
         $this->assertSame($first, (new ReleasePackageExecutor())->prepare(self::$plan, self::$fixture->path));
-        $this->assertCount(35, self::$plan['packages']);
+        $this->assertCount(36, self::$plan['packages']);
         $this->assertFalse($first['publication_enabled']);
         $this->assertSame('unverified', $first['destination_ownership']);
         $this->assertSame('unverified', $first['remote_state']);

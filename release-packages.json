@@ -90,6 +90,10 @@
             "directory": "packages/audit-log"
         },
         {
+            "name": "evolvephp/webhooks",
+            "directory": "packages/webhooks"
+        },
+        {
             "name": "evolvephp/plugin",
             "directory": "packages/plugin"
         },

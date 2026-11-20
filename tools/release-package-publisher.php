@@ -51,7 +51,7 @@ final class PackagePublisherPreparation
             $map = json_decode($this->contents($entries, 'tools/release-package-destinations.json'), true, 512, JSON_THROW_ON_ERROR);
             if (!is_array($map) || array_keys($map) !== array('version', 'status', 'packages')
                 || $map['version'] !== 1 || $map['status'] !== 'proposed-unverified'
-                || !is_array($map['packages']) || !array_is_list($map['packages']) || count($map['packages']) !== 35) {
+                || !is_array($map['packages']) || !array_is_list($map['packages']) || count($map['packages']) !== 36) {
                 releaseValidationFail('Invalid destination inventory or unapproved ownership status.');
             }
             $license = $this->contents($entries, 'LICENSE.md');
@@ -287,7 +287,7 @@ final class PackagePublisherPreparation
         $report = json_decode($bytes, true, 512, JSON_THROW_ON_ERROR);
         if (!is_array($report) || array_keys($report) !== array('version', 'source', 'packages')
             || $report['version'] !== 1 || $report['source'] !== $source
-            || !is_array($report['packages']) || !array_is_list($report['packages']) || count($report['packages']) !== 35) {
+            || !is_array($report['packages']) || !array_is_list($report['packages']) || count($report['packages']) !== 36) {
             releaseValidationFail('Invalid observations inventory or source identity.');
         }
         $complete = 0;
@@ -313,7 +313,7 @@ final class PackagePublisherPreparation
             }
             ++$complete;
         }
-        if ($complete !== 0 && $complete !== 35) {
+        if ($complete !== 0 && $complete !== 36) {
             releaseValidationFail('Partial publication observation; stop and reconcile.');
         }
         return array($complete === 0 ? 'reported-absent-unverified' : 'reported-complete-unverified', hash('sha256', $bytes));

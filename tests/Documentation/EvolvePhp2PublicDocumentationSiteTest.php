@@ -22,13 +22,14 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             'website/docs/.nojekyll',
             'website/docs/next/index.md',
             'website/docs/next/packages/mcp.md',
+            'website/docs/next/packages/webhooks.md',
             'website/docs/next/project/documentation-versioning.md',
             'website/docs/versions/index.md',
         ] as $path) {
             self::assertFileExists($this->root . '/' . $path, $path);
         }
 
-        self::assertCount(20, $this->nextPages());
+        self::assertCount(21, $this->nextPages());
         self::assertFileDoesNotExist($this->root . '/website/package.json');
         self::assertFileDoesNotExist($this->root . '/website/docusaurus.config.ts');
         self::assertFileDoesNotExist($this->root . '/website/docs/versions/2.0.0-alpha.1');

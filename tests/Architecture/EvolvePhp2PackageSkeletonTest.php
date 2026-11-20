@@ -37,6 +37,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
             'http-client' => null,
             'module' => null,
             'audit-log' => null,
+            'webhooks' => null,
             'plugin' => null,
             'testing' => null,
         ] as $package => $expectedBin) {
@@ -469,7 +470,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
             $manifest = $this->readJsonFile($package['manifest']);
 
-            if ($package['name'] === 'evolvephp/audit-log') {
+            if (in_array($package['name'], ['evolvephp/audit-log', 'evolvephp/webhooks'], true)) {
                 $this->assertSame('^1.1 || ^2.0', $manifest['require']['psr/container'] ?? null);
                 $this->assertArrayNotHasKey(
                     'provide',
@@ -1167,6 +1168,22 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 ],
             ],
             [
+                'manifest' => 'packages/webhooks/composer.json',
+                'src' => 'packages/webhooks/src',
+                'name' => 'evolvephp/webhooks',
+                'description' => 'Explicit tenant-scoped outbound webhook module for EvolvePHP 2.',
+                'namespace' => 'Evolve\\Webhooks\\',
+                'require' => [
+                    'php' => '^8.4',
+                    'evolvephp/contracts' => '^2.0',
+                    'evolvephp/database-contracts' => '^2.0',
+                    'evolvephp/i18n' => '^2.0',
+                    'evolvephp/migration' => '^2.0',
+                    'evolvephp/module' => '^2.0',
+                    'evolvephp/secret-contracts' => '^2.0',
+                    'psr/container' => '^1.1 || ^2.0',
+                ],
+            ],            [
                 'manifest' => 'packages/plugin/composer.json',
                 'src' => 'packages/plugin/src',
                 'name' => 'evolvephp/plugin',
@@ -1713,6 +1730,27 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Exception/UnauthorizedAuditAccess.php',
                 'RedactionPolicy.php',
                 'SqlAuditStore.php',
+            ],
+            'packages/webhooks/src' => [
+                'DeliveryAttempt.php',
+                'DeliveryResult.php',
+                'DeliveryWork.php',
+                'DestinationPolicy.php',
+                'KeyProvider.php',
+                'ReplayStore.php',
+                'ResponsePolicy.php',
+                'SecretKeyProvider.php',
+                'Signature.php',
+                'SqlWebhookStore.php',
+                'TrustedTransport.php',
+                'Verifier.php',
+                'WebhookAccessPolicy.php',
+                'WebhookDiagnosticLabel.php',
+                'WebhookEvent.php',
+                'WebhookSubscription.php',
+                'Webhooks.php',
+                'WebhooksMigrationContributor.php',
+                'WebhooksModule.php',
             ],
             'packages/plugin/src' => [
                 'Discovery/ComposerPluginDiscovery.php',
