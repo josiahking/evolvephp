@@ -1745,12 +1745,12 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
             'StreamCommandOutput',
             'application CLI composition is explicit',
             'Core remains independent of HTTP',
-            'Packagist create-project availability is not yet claimed',
+            'The standalone `evolvephp/skeleton:2.0.0-beta.1` is publicly available through Packagist',
             'minimum-stability: alpha',
             'prefer-stable: true',
             'Explicit root `@alpha` flags',
             'no package Composer manifest should add `@alpha`, `minimum-stability`, `prefer-stable` or a hard-coded `version` field.',
-            'Remote package repositories, remote synchronization, Packagist registration, tags and releases remain deferred.',
+            'the coordinated framework Beta tag and GitHub Release remain deferred.',
         ) as $needle) {
             $this->assertStringContainsString($needle, $content);
         }

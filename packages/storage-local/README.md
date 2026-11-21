@@ -4,7 +4,7 @@ Local filesystem implementation of the EvolvePHP object storage contracts.
 
 Package: `evolvephp/storage-local`.
 
-This experimental EvolvePHP 2 package requires PHP `^8.4` and `evolvephp/storage-contracts:^2.0`. It is not yet independently published; its canonical source is the EvolvePHP monorepo.
+This experimental EvolvePHP 2 package requires PHP `^8.4` and `evolvephp/storage-contracts:^2.0`. It is independently published as a Beta package; its canonical source is the EvolvePHP monorepo.
 
 Construct `LocalFilesystemStorage` with an explicit, absolute path to an existing directory. The adapter canonicalizes that directory once. It does not discover a root from the current working directory or environment. Its debug output redacts the configured path.
 

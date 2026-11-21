@@ -2,11 +2,11 @@
 
 ## Unreleased
 
-- Added fail-closed Beta publisher-preparation tooling with explicit source pins, a Contracts-first dependency plan, unverified offline observation checks and disabled publication. No public Beta, package publication, repository ownership verification, tag or Packagist registration is claimed.
+- Added fail-closed Beta publisher-preparation tooling with explicit source pins, a Contracts-first dependency plan, unverified offline observation checks and disabled publication. Those preparation tools never publish packages themselves. The original 34 package Beta distributions were independently verified later; the coordinated framework release is a separate gate.
 
-- Added local release-readiness tooling: a deterministic read-only 34-package release plan with proposed split-repository destinations and offline Beta consumer validation for simulated `2.0.0-beta.1`, preserving Alpha/Stable coverage. No Beta has been released, no packages have been published, and no Packagist registration has occurred.
+- Added local release-readiness tooling: a deterministic read-only 34-package release plan with proposed split-repository destinations and offline Beta consumer validation for simulated `2.0.0-beta.1`, preserving Alpha/Stable coverage. The original 34 first-party packages have since been publicly published as Beta packages and independently installed through Packagist; a coordinated framework release remains separate.
 
-- Added experimental opt-in MCP operational event metadata and neutral Observe/Insight adapters, with fixed metric categories and separate fail-closed security audit. Independent installed-consumer and Linux STDIO interoperability checks remain pending.
+- Added experimental opt-in MCP operational event metadata and neutral Observe/Insight adapters, with fixed metric categories and separate fail-closed security audit. Public 34-package Composer install/autoload and representative application smoke were accepted subsequently; Linux STDIO interoperability remains a separately scoped validation claim.
 
 - Added a proposed MkDocs 1.6.1 Next developer manual with strict build, search, GitHub Pages path validation, PHP 8.4 example linting and Python 3.11/3.13 documentation CI. Publication and historical version snapshots have not occurred.
 

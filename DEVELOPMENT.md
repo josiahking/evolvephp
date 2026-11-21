@@ -297,11 +297,11 @@ Optional `--observations=<external-json-file>` accepts an untrusted offline snap
 
 Malformed, reordered, duplicate, mismatched or partial reports fail closed. Even a consistent all-package report remains unverified and blocked. Mixed absent/complete packages are partial state, including a reported pilot-only publication: stop, preserve the external evidence, independently inspect every destination and tag, and obtain a separately reviewed recovery decision. Do not delete/recreate tags, force-push, overwrite metadata or automatically retry writes. The operator has no checkpoint, remote mutation or resume mechanism. Repeating identical source/options/observation bytes produces identical output; the observations byte digest makes snapshot changes inspectable. Correcting an invalid report permits a fresh dry-run but never authorizes publication.
 
-Local validation uses isolated fixture repositories and external evidence. The read-only CI preparation check additionally requires a successful blocked plan and rejection of `--publish`; `contents: read` and checkout credential isolation are retained. The Next manual's existing unpublished status remains accurate; these maintainer-only preparation instructions introduce no consumer API or installation change.
+Local validation uses isolated fixture repositories and external evidence. The read-only CI preparation check additionally requires a successful blocked plan and rejection of `--publish`; `contents: read` and checkout credential isolation are retained. The Next manual documents the original 34 published Beta packages and separate Beta skeleton; these maintainer-only preparation instructions introduce no consumer API or installation change.
 
 ## Local Beta Distribution Planning
 
-The approved distribution model keeps this monorepo authoritative and proposes 35 independently tagged public GitHub split repositories, with each package individually registered on Packagist after separate authorization. The intended sequence is monorepo source, deterministic package splits, independent repositories, independently verified package tags, Packagist registration, then consumer installation. None of those public publication steps is performed by local readiness tooling.
+The current source model proposes 35 independently tagged GitHub split repositories, including the source-only Audit Log package. This monorepo remains authoritative; the already accepted original Beta release set covers only the initial 34 first-party package distributions. Any future source-only package publication needs separate approval. The intended sequence is monorepo source, deterministic package splits, independent repositories, independently verified package tags, Packagist registration, then consumer installation. None of those public publication steps is performed by local readiness tooling.
 
 The version-1 inventory in `release-packages.json` remains canonical. `tools/release-package-destinations.json` separately maps all 35 packages, in that same order, to proposed `evolvephp-<slug>` repositories under the owner recorded in that mapping. Its `proposed-unverified` status means that repository existence and ownership have not been checked. `2.0.0-beta.1` is a proposed simulation version, not a released Beta.
 
@@ -331,7 +331,7 @@ An uncommitted implementation checkout is deliberately rejected. During implemen
 
 Root stability flags do not automatically propagate to dependencies. Package-local first-party constraints remain `^2.0`; PHP remains `^8.4` and licensing remains BSD-3-Clause. No first-party package gains a version field or a root stability policy. The validator sets `COMPOSER_DISABLE_NETWORK=1`, disables Packagist in synthetic consumers, and creates synthetic version tags only in disposable local repositories. Lock-only Beta resolution is not a public installation or production-readiness claim. The existing independently installed MCP consumer case remains separate.
 
-The planner has no publishing mode, needs no credentials or network, and cannot create repositories, push commits, create local or remote release tags, change remotes, register Packagist packages, or publish releases. Future repository creation, synchronization, tags, registration and releases require explicit publication authorization and independently reviewed evidence. Packages are not yet independently published; public Composer installation has not been verified.
+The planner has no publishing mode, needs no credentials or network, and cannot create repositories, push commits, create local or remote release tags, change remotes, register Packagist packages, or publish releases. Future repository creation, synchronization, tags, registration and releases require explicit publication authorization and independently reviewed evidence. The original 34 first-party packages are independently published as Beta distributions; real public Composer installation and representative application smoke were accepted separately from these read-only preparation tools.
 
 ## Release Validation
 
@@ -389,7 +389,7 @@ composer release:skeleton:validate
 
 `release:skeleton:validate` exercises the real Composer `create-project` command for `evolvephp/skeleton` using repository-injected local package evidence. It creates validator-owned temporary paths, disables Packagist, sets `COMPOSER_DISABLE_NETWORK=1`, installs into a previously absent generated-project directory, validates the generated Composer manifest, confirms first-party packages are copied rather than symlinked to the source monorepo, runs `php bin/evolve doctor`, verifies `php bin/evolve route:list` emits `No routes are configured.`, generates `module:new Billing` and `plugin:new Cache` in the development install, verifies the generated application tests pass, verifies repeat generation refuses overwrites, verifies invalid/path-traversal names create nothing outside the application, verifies a `composer install --no-dev` production install still supports `doctor` and `route:list`, verifies Core missing-command and unknown-command usage errors, and confirms source repository state is preserved.
 
-Public Packagist create-project availability is not yet claimed. Do not document `composer create-project evolvephp/skeleton ...` as generally available until publication is explicitly opened.
+The standalone `evolvephp/skeleton:2.0.0-beta.1` is publicly available through Packagist, and an actual external `composer create-project` installation has been verified. This is not by itself a coordinated framework-wide Beta release or production-readiness claim.
 
 For an EvolvePHP 2 alpha consumer, the recommended root consumer settings are:
 
@@ -404,7 +404,7 @@ These are root consumer settings. First-party package manifests must not add alp
 
 In prose: set `minimum-stability: alpha` and `prefer-stable: true` only in the root alpha consumer.
 
-No package is published by `release:validate`, `release:split:validate`, `release:consumer:validate` or `release:skeleton:validate`. Remote package repositories, remote synchronization, Packagist registration, tags and releases remain deferred.
+No package is published by `release:validate`, `release:split:validate`, `release:consumer:validate` or `release:skeleton:validate`. The local validators do not synchronize remote repositories, register Packagist packages, create tags or publish GitHub Releases. The original 34 package Betas and separate skeleton were published through independent gates; the coordinated framework Beta tag and GitHub Release remain deferred.
 
 `release:validate` remains metadata/package-boundary validation. `release:split:validate` validates generated split history/root content. `release:consumer:validate` validates package-resolution semantics. `release:skeleton:validate` validates local prerelease create-project behavior. `supply-chain` remains network-dependent security/licence validation. `quality` remains ordinary root quality.
 
@@ -870,7 +870,7 @@ This verifies the current workspace, tooling and package foundation only. The pr
 
 The following work remains deferred:
 
-- package publication, tags and GitHub releases
+- coordinated framework Beta tag and GitHub Release; source-only Audit Log publication requires a separate decision
 - Runtime framework implementation beyond the completed HTTP package foundation
 - full Module/Plugin runtime managers
 - broader developer tooling beyond `module:new` and `plugin:new`

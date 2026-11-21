@@ -4,7 +4,7 @@
 EvolvePHP 2 is pre-release.
 
 It requires PHP `^8.4`, EvolvePHP Core, lock contracts, queue contracts, PSR Clock, and `dragonmantank/cron-expression`.
-This package is not yet independently published.
+This package is independently published as a Beta package.
 The canonical source is the [EvolvePHP monorepo](https://github.com/josiahking/evolvephp).
 Runtime dependencies are `evolvephp/core`, `evolvephp/lock-contracts`, `evolvephp/queue-contracts`, `psr/clock` and `dragonmantank/cron-expression`.
 The package uses the BSD-3-Clause licence in `LICENSE.md`.

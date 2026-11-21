@@ -200,7 +200,7 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
             $readme,
         );
         $this->assertStringContainsString(
-            'only supported after a clean external create-project validation',
+            'external `create-project` installation have been validated',
             $readme,
         );
         $this->assertDoesNotMatchRegularExpression('/automatic (?:route|command) discovery|autoloaded routes/i', $readme);

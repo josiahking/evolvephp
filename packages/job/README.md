@@ -10,7 +10,7 @@ An application may supply a `JobExecutionContext` to `JobRunner`. The caller-own
 
 The application supplies `QueueReceiver`, `ExecutionOrchestrator`, a handler, and optional `ExecutionContextValues`. The package has no polling loop, daemon, broker adapter, retry, backoff, scheduler, hard timeout, or exactly-once guarantee. It does not change process-global locale or timezone defaults.
 
-This package requires PHP `^8.4`. The public API is experimental. EvolvePHP 2 is pre-release, and this package is not yet independently published. The canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+This package requires PHP `^8.4`. The public API is experimental. EvolvePHP 2 is pre-release, and this package is independently published as a Beta package. The canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 Dependencies: `evolvephp/core` and `evolvephp/queue-contracts`.
 

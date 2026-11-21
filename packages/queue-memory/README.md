@@ -4,7 +4,7 @@ Object-local in-memory queue adapter for EvolvePHP 2.
 
 Package: `evolvephp/queue-memory`.
 
-EvolvePHP 2 is pre-release. This experimental package requires PHP `^8.4` and `evolvephp/queue-contracts`. It is intended for tests and local development, is not yet independently published, and its canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+EvolvePHP 2 is pre-release. This experimental package requires PHP `^8.4` and `evolvephp/queue-contracts`. It is intended for tests and local development, is independently published as a Beta package, and its canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 ## Behavior
 

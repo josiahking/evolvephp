@@ -4,7 +4,7 @@ Runtime-neutral lock and lease contracts for EvolvePHP 2.
 
 Package: `evolvephp/lock-contracts`.
 
-EvolvePHP 2 is pre-release. This package requires PHP `^8.4`, depends only on `evolvephp/contracts`, and exposes public experimental API that may change before stable release. It is not yet independently published; the canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+EvolvePHP 2 is pre-release. This package requires PHP `^8.4`, depends only on `evolvephp/contracts`, and exposes public experimental API that may change before stable release. It is independently published as a Beta package; the canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 `LockProvider::tryAcquire()` makes one non-blocking acquisition attempt. It returns a `Lease` when acquired and `null` for ordinary contention. Provider and backend failures use the `LockException` catch boundary. The API has no wait policy.
 

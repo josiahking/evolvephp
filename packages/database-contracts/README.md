@@ -32,6 +32,6 @@ The example materializes an array, but array materialization is not required by 
 
 This package is not a PDO implementation, not an ORM, not a query builder, not a migration runner, not a schema builder, not SQL logging and not telemetry. Concrete database adapters remain outward packages; PDO adapter work is separate.
 
-Package publication has not started, and this package is not yet independently published. The canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+This package is independently published as a Beta package. The canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 This package is provided under the BSD-3-Clause licence. See `LICENSE.md`.

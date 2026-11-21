@@ -4,7 +4,7 @@ Vendor-neutral object storage contracts for EvolvePHP 2.
 
 Package: `evolvephp/storage-contracts`.
 
-EvolvePHP 2 is pre-release. This package requires PHP `^8.4`, depends only on `evolvephp/contracts`, and exposes experimental public API that may change before stable release. It is not yet independently published; the canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+EvolvePHP 2 is pre-release. This package requires PHP `^8.4`, depends only on `evolvephp/contracts`, and exposes experimental public API that may change before stable release. It is independently published as a Beta package; the canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 `ObjectStorage` is a narrow vendor-neutral boundary for writing, opening, and deleting opaque objects. A `StorageKey` preserves its exact non-empty value up to 1024 bytes; it does not interpret path components or assign business meaning. Object naming, directory-like layout, tenancy prefixes, business identifiers, and logical metadata policy belong to the application or module.
 
