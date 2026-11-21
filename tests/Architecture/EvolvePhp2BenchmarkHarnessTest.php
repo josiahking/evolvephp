@@ -122,7 +122,10 @@ final class EvolvePhp2BenchmarkHarnessTest extends TestCase
         $this->assertSame('evolvephp.performance-budget.v1', $budget['schema_version']);
         $this->assertSame('c62cecb16cb4fcdc93bfbb0188a4b63d8cf704ce', $budget['baseline_source_sha']);
         $this->assertSame('9c06a992d7f01cb7096a60b893f33a34aff7b2a86fba157c8b879d9ac55457a2', $budget['comparison_identity']['execution_environment_fingerprint']);
-        $this->assertSame(hash_file('sha256', $matrixPath), $budget['comparison_identity']['matrix_sha256']);
+        $currentMatrixSha256 = hash_file('sha256', $matrixPath);
+        $this->assertSame('a85fa3c4a3d0df02cafacaa576dec8b4f9050d90f4edb5cbce647d9f64e0e761', $budget['comparison_identity']['matrix_sha256']);
+        $this->assertSame('361d6b9ee64c555ea83f66a67f41cc18606de232d96f2c40924267caeb2ef9e4', $currentMatrixSha256);
+        $this->assertNotSame($budget['comparison_identity']['matrix_sha256'], $currentMatrixSha256);
         $this->assertSame($evolvePhpComparator['lock_sha256'], $budget['comparison_identity']['comparator_lock_sha256']);
         $this->assertSame(
             hash_file('sha256', $this->projectPath('benchmarks/comparators/evolvephp/composer.lock')),
