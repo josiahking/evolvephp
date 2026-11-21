@@ -173,13 +173,13 @@ Install comparator fixtures only when doing controlled comparator work:
 
 ```powershell
 composer install --working-dir=benchmarks/comparators/evolvephp --no-interaction
-composer install --working-dir=benchmarks/comparators/laravel --no-interaction --ignore-platform-req=ext-fileinfo
+composer install --working-dir=benchmarks/comparators/laravel --no-interaction
 composer install --working-dir=benchmarks/comparators/symfony --no-interaction
 composer install --working-dir=benchmarks/comparators/slim --no-interaction
 composer install --working-dir=benchmarks/comparators/phalcon --no-interaction
 ```
 
-The Laravel lockfile was created on this local PHP CLI with `--ignore-platform-req=ext-fileinfo` because `ext-fileinfo` is not enabled here. The comparator workload does not use file inspection.
+The Laravel lockfile passes Composer's PHP 8.4.25 platform check, including `ext-fileinfo`. The comparator workload does not use file inspection.
 
 ### Comparator Smoke
 
@@ -216,12 +216,14 @@ The comparator matrix records these selected versions and lockfile hashes:
 | Comparator | Package | Version | Constraint | Lockfile SHA-256 |
 | --- | --- | --- | --- | --- |
 | EvolvePHP | `evolvephp/http` | `2.0.x-dev` | `^2.0@dev` | `f792575ec5491c8d3aa171ba5f7de3b38558bfbd82b977beea45e603fd79e491` |
-| Laravel | `laravel/framework` | `13.30.0` | `13.30.0` | `b8881ac8e90b1667329ab712d2e0f3e29c2b76a2bee943d5bfa1d5dffa3898f9` |
+| Laravel | `laravel/framework` | `13.40.0` | `13.40.0` | `bd8c4f23d172ccc751834818bf7201d710726099c550bb9b3fd482472e741f3d` |
 | Symfony | `symfony/http-kernel` | `8.1.5` | `8.1.5` | `d93fdac19b2cdd5379e5700a8146bb705c9b516c9ec9a0709dcd785be9b1e1d6` |
 | Slim | `slim/slim` | `4.15.2` | `4.15.2` | `87370678970fe51c62c6a4cd4e4ca7b3600b22c84a2a5b920e2b8527a2e089a7` |
 | Phalcon | `ext-phalcon` | `5.20.3` expected | `suggest ext-phalcon 5.20.3` | `1e6b5f4b3d70a3e0d5a74eaa55dec95bde1e1d2b33e1c64dc4a737ad8cd01562` |
 
 The Symfony fixture represents the Symfony 8.1 framework line using `symfony/event-dispatcher 8.1.5`, `symfony/http-foundation 8.1.5`, `symfony/http-kernel 8.1.5`, and `symfony/routing 8.1.5`.
+
+The Laravel comparator lockfile now includes Laravel 13.40.0, patched Symfony HTTP Foundation and HTTP Kernel 8.1.11, MIME 8.1.10, and Routing 8.1.11. Earlier Laravel timing evidence was collected with a different dependency lockfile and is not directly comparable; collect a new controlled baseline before comparing timings.
 
 ### Common Scenarios
 
