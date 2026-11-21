@@ -2,7 +2,7 @@
 
 `evolvephp/bridge-laravel` is the public experimental Laravel host adapter for embedded EvolvePHP 2 delegation. Laravel host Bridge adapter for embedded EvolvePHP 2 delegation. It requires PHP `^8.4`, supports the Illuminate 13.x HTTP and authentication contracts used by Laravel 13.x hosts, and its canonical source is the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
-EvolvePHP 2 is pre-release, and this package is not yet independently published. The package is licensed under BSD-3-Clause; see `LICENSE.md`.
+EvolvePHP 2 is pre-release, and this package is independently published as a Beta package. The package is licensed under BSD-3-Clause; see `LICENSE.md`.
 
 Dependencies: `evolvephp/bridge-contracts`, `evolvephp/bridge-psr`, `illuminate/contracts`, `illuminate/http`, `psr/http-factory` and `psr/http-message`.
 

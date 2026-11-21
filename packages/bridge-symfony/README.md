@@ -2,7 +2,7 @@
 
 `evolvephp/bridge-symfony` is the Symfony host Bridge adapter for embedded EvolvePHP 2 delegation.
 
-This package is experimental and targets PHP `^8.4`. EvolvePHP 2 is pre-release, and this package is not yet independently published. The canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+This package is experimental and targets PHP `^8.4`. EvolvePHP 2 is pre-release, and this package is independently published as a Beta package. The canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 ## Responsibility
 

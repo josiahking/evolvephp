@@ -10,6 +10,6 @@ The package defines the request, context, response and error boundary used by Br
 
 This package does not provide a remote client, remote server, automatic compatibility certification, route delegation, authentication-token validation, retry handling, trace propagation or migration execution.
 
-Package publication has not started, and this package is not yet independently published. The canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+This package is independently published as a Beta package. The canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 This package is provided under the BSD-3-Clause licence. See `LICENSE.md`.

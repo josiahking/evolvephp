@@ -4,7 +4,7 @@ Runtime-neutral session contracts for EvolvePHP 2.
 
 Package: `evolvephp/session-contracts`.
 
-EvolvePHP 2 is pre-release. This package requires PHP `^8.4`, depends on `evolvephp/contracts`, and exposes public experimental API that may change before stable release. It is not yet independently published; the canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+EvolvePHP 2 is pre-release. This package requires PHP `^8.4`, depends on `evolvephp/contracts`, and exposes public experimental API that may change before stable release. It is independently published as a Beta package; the canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 `Session` represents mutable data owned by one active execution. `has()` distinguishes a stored `null` value from a missing key, and `get()` returns the supplied default only when the key is absent. The contract intentionally has no bulk `all()` or export method, no `ArrayAccess`, no magic property access, no serialization contract, no flash semantics, no authentication or principal semantics, no CSRF semantics and no cookie behavior. Values are adapter-owned PHP values, and the contract does not promise storage-backend portability for arbitrary PHP values. Session contents must not be exposed through diagnostics or exception messages.
 

@@ -2,7 +2,7 @@
 
 `evolvephp/migration`: Explicit one-shot migration runtime for EvolvePHP 2. EvolvePHP 2 is pre-release, and this experimental public API may change before Stable.
 
-The package requires PHP `^8.4`, `evolvephp/contracts`, `evolvephp/core`, `evolvephp/database-contracts` and `evolvephp/lock-contracts`. It is not yet independently published. The canonical source is the [EvolvePHP monorepo](https://github.com/josiahking/evolvephp). It uses the BSD-3-Clause licence in `LICENSE.md`.
+The package requires PHP `^8.4`, `evolvephp/contracts`, `evolvephp/core`, `evolvephp/database-contracts` and `evolvephp/lock-contracts`. It is independently published as a Beta package. The canonical source is the [EvolvePHP monorepo](https://github.com/josiahking/evolvephp). It uses the BSD-3-Clause licence in `LICENSE.md`.
 
 Applications supply `MigrationContributor` objects explicitly. Each definition carries an application or module owner, a local identifier, a non-negative order, an explicit lowercase SHA-256 checksum, an action, and a transaction mode. The registry sorts by order, owner and identifier. The same local identifier may belong to different owners. There is no filesystem or component discovery.
 

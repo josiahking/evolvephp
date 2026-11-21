@@ -2,7 +2,7 @@
 
 `evolvephp/bridge-psr` provides the experimental Same-process PSR HTTP Bridge adapter foundation for EvolvePHP 2.
 
-EvolvePHP 2 is pre-release, and this package is not yet independently published. The canonical source is the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+EvolvePHP 2 is pre-release, and this package is independently published as a Beta package. The canonical source is the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 The package requires PHP `^8.4` and depends on `evolvephp/bridge-contracts`, `evolvephp/core`, `evolvephp/http` and `psr/http-message`.
 

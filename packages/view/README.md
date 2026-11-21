@@ -2,7 +2,7 @@
 
 Experimental server-rendered view contracts and trusted native PHP renderer for EvolvePHP 2. `evolvephp/view` depends on only PHP `^8.4` and has no third-party runtime package. `ViewRenderer::render(string $view, array $data = []): string` is the engine-neutral boundary. Optional `evolvephp/view-twig` and `evolvephp/view-blade` adapters are available for explicit installation and selection; neither is a default skeleton dependency or an Insight prerequisite. Localization is deferred.
 
-EvolvePHP 2 is pre-release, and this package is not yet independently published. The canonical source is the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+EvolvePHP 2 is pre-release, and this package is independently published as a Beta package. The canonical source is the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 License: BSD-3-Clause. See [`LICENSE.md`](LICENSE.md).
 

@@ -2,7 +2,7 @@
 
 `evolvephp/database-pdo` provides the PDO database adapter for EvolvePHP 2 database contracts.
 
-EvolvePHP 2 is pre-release. This package is not yet independently published; the canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+EvolvePHP 2 is pre-release. This package is independently published as a Beta package; the canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 ## Requirements
 

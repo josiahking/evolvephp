@@ -117,13 +117,13 @@ External dependencies:
 
 ## Publication Status
 
-EvolvePHP 2 is pre-release. This package is not yet independently published, and the current canonical source is the EvolvePHP monorepo:
+EvolvePHP 2 is pre-release. This package is independently published as a Beta package, and the current canonical source is the EvolvePHP monorepo:
 
 https://github.com/josiahking/evolvephp
 
 ## Installation
 
-Independent Composer installation guidance will be added when package publication begins.
+Public Beta versions are available through Packagist. Consumer projects must permit Beta dependency stability; this is not a production-readiness claim.
 
 ## Licence
 

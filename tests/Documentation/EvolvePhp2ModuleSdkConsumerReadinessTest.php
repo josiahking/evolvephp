@@ -135,18 +135,24 @@ final class EvolvePhp2ModuleSdkConsumerReadinessTest extends TestCase
         }
     }
 
-    public function testPublicDocumentationKeepsUnpublishedLimitationsExplicit(): void
+    public function testPublicDocumentationStatesPublishedBetaAndRetainsLimitations(): void
     {
-        foreach ([
-            'packages/module/README.md',
-            'skeleton/README.md',
-            'website/docs/next/concepts/architecture.md',
-            'website/docs/next/getting-started/source-preview.md',
-        ] as $path) {
+        $publicationClaims = [
+            'packages/module/README.md' => 'This package is independently published as a Beta package, and',
+            'skeleton/README.md' => '`evolvephp/skeleton:2.0.0-beta.1` is publicly available through Composer.',
+            'website/docs/next/concepts/architecture.md' => 'The original 34 first-party Beta packages and separately published skeleton are publicly installable;',
+            'website/docs/next/getting-started/source-preview.md' => 'The original 34 first-party Beta packages and the separately published `evolvephp/skeleton:2.0.0-beta.1` are publicly available through Packagist.',
+        ];
+
+        foreach ($publicationClaims as $path => $expectedClaim) {
             $contents = file_get_contents($this->root . '/' . $path);
             self::assertIsString($contents);
             self::assertStringContainsString('module', strtolower($contents));
-            self::assertMatchesRegularExpression('/not (yet )?(publicly |independently )?(published|installable)|public .* not .* available|publication .* remain unclaimed|availability is not yet claimed/i', $contents);
+            self::assertStringContainsString($expectedClaim, $contents);
+            self::assertDoesNotMatchRegularExpression(
+                '/not yet independently published|not yet publicly installable|public .* not .* available|availability is not yet claimed/i',
+                $contents,
+            );
         }
     }
 }

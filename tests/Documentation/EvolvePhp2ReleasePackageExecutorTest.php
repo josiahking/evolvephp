@@ -295,7 +295,8 @@ final class EvolvePhp2ReleasePackageExecutorTest extends TestCase
         $manual = file_get_contents($root . '/website/docs/next/project/releases.md');
         $this->assertStringContainsString('Future execution requires a separately reviewed authorization artifact', $development);
         $this->assertStringContainsString('No publication path is implemented here', $development);
-        $this->assertStringContainsString('Public Beta and Packagist availability remain pending', $manual);
+        $this->assertStringContainsString('The original 34 first-party packages have public Beta distributions', $manual);
+        $this->assertStringContainsString('The coordinated framework release is a distinct decision tracked through GitHub Releases.', $manual);
     }
 
     /**

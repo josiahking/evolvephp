@@ -10,7 +10,7 @@ EvolvePHP 2 is a separate redesign, not an in-place refactor, replacement or rew
 
 EvolvePHP is a modernization-first PHP framework project for building modular applications and evolving existing PHP systems without a full rewrite.
 
-The current EvolvePHP 2 repository contains package boundaries, runtime-neutral foundations, HTTP foundations, Bridge foundations, developer tooling and root quality-tooling foundations. EvolvePHP 2 is under development and not production-ready. Runtime framework implementation is not yet complete, framework development is pre-release, and the packages are not yet published.
+The current EvolvePHP 2 repository contains package boundaries, runtime-neutral foundations, HTTP foundations, Bridge foundations, developer tooling and root quality-tooling foundations. EvolvePHP 2 is under development and not production-ready. Runtime framework implementation is not yet complete, framework development is pre-release, and the original 34 first-party packages have publicly available Beta distributions.
 
 The first-party `evolvephp/i18n` foundation provides explicit localization policy, PHP-array message catalogs and contextual translation. Applications register sources and select locales; optional Intl formatters require explicit selection. View composition is application-owned, and templates remain responsible for escaping translated text.
 
@@ -24,7 +24,7 @@ EvolvePHP 2 requires PHP 8.4. The current root quality pipeline is verified by G
 - Required `2.x` checks: `Policy (PHP 8.4)`, `Workspace quality (PHP 8.4)`, `Workspace quality (PHP 8.5)`, `Benchmark policy (PHP 8.4)`
 - Runtime implementation: not yet complete
 - Release status: pre-release, not production-ready
-- Package publication: packages are not yet independently published
+- Package publication: the original 34 first-party packages are publicly available as Beta distributions through Packagist; the coordinated framework release is separate
 - PHP baseline: PHP 8.4
 - CI verification: current root quality passes in GitHub Actions on PHP 8.4 and PHP 8.5
 
@@ -84,7 +84,7 @@ Use [DEVELOPMENT.md](DEVELOPMENT.md) for detailed Composer, PHPUnit, PHPStan, PH
 
 ## Current Developer Manual
 
-The current [Next developer manual](website/docs/next/index.md) documents the 2.x source and its limitations. Its intended GitHub Pages address is https://josiahking.github.io/evolvephp/next/; availability requires separate Pages publication. EvolvePHP 2 remains pre-release and not production-ready, and first-party packages are not yet independently published. See [documentation site instructions](website/README.md) for local build and validation.
+The current [Next developer manual](website/docs/next/index.md) documents the 2.x source and its limitations. Its intended GitHub Pages address is https://josiahking.github.io/evolvephp/next/; availability requires separate Pages publication. EvolvePHP 2 remains pre-release and not production-ready, and the original 34 first-party packages are available as public Beta distributions. See [documentation site instructions](website/README.md) for local build and validation.
 
 ## Alpha Documentation
 
@@ -96,7 +96,7 @@ The current [Next developer manual](website/docs/next/index.md) documents the 2.
 - [Status and limitations](docs/alpha/status-and-limitations.md)
 - [2.0.0-alpha.1 release notes](docs/releases/2.0.0-alpha.1.md)
 
-These guides describe the current source-preview state. Public application installation through published packages is not claimed yet.
+These guides describe the current source-preview state. Public Beta application installation is available through the separately published `evolvephp/skeleton:2.0.0-beta.1`; the framework remains experimental and not production-ready.
 
 ## Package Architecture
 

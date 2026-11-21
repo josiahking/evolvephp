@@ -1,6 +1,6 @@
 # EvolvePHP I18n
 
-Explicit internationalization and localization foundation for EvolvePHP 2. `evolvephp/i18n` requires PHP `^8.4` and `evolvephp/core` `^2.0`. EvolvePHP 2 is pre-release; this package is not yet independently published. Its canonical source is the [EvolvePHP monorepo](https://github.com/josiahking/evolvephp).
+Explicit internationalization and localization foundation for EvolvePHP 2. `evolvephp/i18n` requires PHP `^8.4` and `evolvephp/core` `^2.0`. EvolvePHP 2 is pre-release; this package is independently published as a Beta package. Its canonical source is the [EvolvePHP monorepo](https://github.com/josiahking/evolvephp).
 
 Create a `LocalizationPolicy` with supported locales, a default locale, ordered fallbacks and a default timezone. Locale identifiers accept hyphens or underscores and use bounded ASCII BCP-47-like casing; this is not full BCP 47 canonicalization. The policy chooses the exact supported locale, supported parents, configured fallbacks and default without duplicates. With no requested locale it chooses the default before configured fallbacks. Bind `ExecutionContext` values through `ExecutionLocalizationContextFactory`, or create a context directly from policy. Neither operation changes process-global locale or timezone, and there is no automatic HTTP locale negotiation.
 

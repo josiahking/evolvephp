@@ -40,7 +40,7 @@ TLS is required across untrusted or networked boundaries. Explicitly trusted loc
 
 This package requires PHP `^8.4`.
 
-EvolvePHP 2 is pre-release, and this package is not yet independently published. The canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+EvolvePHP 2 is pre-release, and this package is independently published as a Beta package. The canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 Dependencies: `evolvephp/bridge-contracts`, `evolvephp/bridge-psr`, `psr/http-client`, `psr/http-message`, `psr/http-factory` and `psr/http-server-handler`.
 
