@@ -54,6 +54,6 @@ The [repository package index](https://github.com/josiahking/evolvephp/blob/2.x/
 
 ## Current guides
 
-This v1 manual has focused [MCP](mcp.md) , [Audit Log](audit-log.md), and [Webhooks](webhooks.md) guides and guides for selected foundations and modernization features. The package list above remains a source map; it does not promise a full tutorial for every first-party package.
+This v1 manual has focused [MCP](mcp.md), [Audit Log](audit-log.md), [Redis PSR-16 compatibility](redis.md), and [Webhooks](webhooks.md) guides and guides for selected foundations and modernization features. Redis compatibility uses optional upstream packages and application-owned registration; it is not a first-party package. The package list above remains a source map; it does not promise a full tutorial for every first-party package.
 
 MCP operational events are disabled by default. Hosts may wire safe normalized events to Observe telemetry or Insight local diagnostics without adding package dependency cycles.

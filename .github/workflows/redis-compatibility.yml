@@ -1,0 +1,81 @@
+name: Redis PSR-16 compatibility
+
+on:
+  pull_request:
+    branches:
+      - 2.x
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  consumer:
+    name: Redis consumer (${{ matrix.client }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        client: [predis, extension]
+    services:
+      redis:
+        image: redis:7.2.17-bookworm
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 15
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.4'
+          extensions: ${{ matrix.client == 'extension' && 'redis' || '' }}
+          tools: composer:v2
+          coverage: none
+
+      - name: Install isolated consumer
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/redis-consumer"
+          cat > "$RUNNER_TEMP/redis-consumer/composer.json" <<JSON
+          {
+            "name": "evolvephp/redis-compatibility-consumer",
+            "type": "project",
+            "repositories": [
+              {"type":"path","url":"$GITHUB_WORKSPACE/packages/core","options":{"versions":{"evolvephp/core":"2.0.x-dev"},"symlink":false}},
+              {"type":"path","url":"$GITHUB_WORKSPACE/packages/contracts","options":{"versions":{"evolvephp/contracts":"2.0.x-dev"},"symlink":false}}
+            ],
+            "require": {
+              "php": "^8.4",
+              "evolvephp/core": "^2.0@dev",
+              "evolvephp/contracts": "^2.0@dev",
+              "symfony/cache": "^8.0",
+              "psr/simple-cache": "^3.0",
+              "predis/predis": "^3.0"
+            },
+            "minimum-stability": "dev",
+            "prefer-stable": true
+          }
+          JSON
+          composer update --working-dir="$RUNNER_TEMP/redis-consumer" --no-interaction --no-progress --prefer-dist --no-scripts --no-plugins
+          composer show --working-dir="$RUNNER_TEMP/redis-consumer" --locked symfony/cache
+          composer show --working-dir="$RUNNER_TEMP/redis-consumer" --locked predis/predis
+
+      - name: Validate isolated symbols and real Redis
+        env:
+          REDIS_DSN: redis://127.0.0.1:6379
+          EVOLVE_REDIS_CLIENT: ${{ matrix.client }}
+        shell: bash
+        run: |
+          export EVOLVE_REDIS_CONSUMER_AUTOLOAD="$RUNNER_TEMP/redis-consumer/vendor/autoload.php"
+          php tools/validate-redis-compatibility.php --symbols
+          php tools/validate-redis-compatibility.php --negative
+          php tools/validate-redis-compatibility.php --live
