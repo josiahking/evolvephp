@@ -33,7 +33,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
         $manual = $this->readProjectFile('website/docs/next/project/releases.md');
         $this->assertStringContainsString('composer release:plan', $manual);
         $this->assertStringContainsString('2.0.0-beta.1', $manual);
-        $this->assertStringContainsString('not yet independently published', $manual);
+        $this->assertStringContainsString('original 34 first-party packages', $manual);
         $this->assertFileDoesNotExist($this->projectPath('docs/releases/2.0.0-beta.1.md'));
     }
 
@@ -131,14 +131,17 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             $this->assertStringContainsString($package['responsibility'], $content);
             $this->assertStringContainsString('PHP `^8.4`', $content);
             $this->assertMatchesPattern('/EvolvePHP 2 is pre-release/i', $content);
-            if ($package['name'] === 'evolvephp/mcp') {
+            if (in_array($package['name'], ['evolvephp/audit-log', 'evolvephp/webhooks'], true)) {
+                $this->assertMatchesPattern('/not yet independently published/i', $content);
+            } elseif ($package['name'] === 'evolvephp/mcp') {
                 $this->assertStringContainsString(
                     'package-level Beta releases are already published on GitHub and Packagist; the coordinated framework Beta has not been issued.',
                     $content,
                 );
                 $this->assertDoesNotMatchRegularExpression('/not yet independently published/i', $content);
             } else {
-                $this->assertMatchesPattern('/not yet independently published/i', $content);
+                $this->assertMatchesPattern('/independently published as a Beta package/i', $content);
+                $this->assertDoesNotMatchRegularExpression('/not yet independently published/i', $content);
             }
             $this->assertMatchesPattern('/canonical source.*EvolvePHP monorepo/i', $content);
             $this->assertStringContainsString('https://github.com/josiahking/evolvephp', $content);
@@ -249,7 +252,10 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/distinct from `quality`/i',
             '/distinct from.*`supply-chain`/i',
             '/package splitting.*release:split:validate|release:split:validate.*package splitting/i',
-            '/remote synchronization.*Packagist.*deferred/i',
+            '/local validators do not synchronize remote repositories.*register Packagist packages.*create tags or publish GitHub Releases/i',
+            '/original 34 package Betas and separate skeleton were published through independent gates/i',
+            '/coordinated framework Beta tag and GitHub Release remain deferred/i',
+            '/source-only Audit Log and Webhooks publication requires separate decisions/i',
             '/prerelease consumer stability.*offline consumer matrix|offline consumer matrix.*prerelease consumer stability/i',
             '/RFC 0003 remains authoritative/i',
         ) as $pattern) {

@@ -10,7 +10,7 @@ No HTTP client implementation is bundled. The package supplies no retry, timeout
 
 This package requires PHP `^8.4`.
 
-The public API is experimental. EvolvePHP 2 is pre-release, and this package is not yet independently published; the canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+The public API is experimental. EvolvePHP 2 is pre-release, and this package is independently published as a Beta package; the canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 Dependencies: `psr/http-client` and `psr/http-message`.
 

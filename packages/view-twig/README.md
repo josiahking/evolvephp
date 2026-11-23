@@ -2,7 +2,7 @@
 
 Optional Twig view renderer adapter for EvolvePHP 2. `evolvephp/view-twig` requires PHP `^8.4` and depends on `evolvephp/view` and `twig/twig` 3. It is not installed by the application skeleton by default and is not required by Insight. The native PHP renderer remains the zero-third-party-dependency default.
 
-EvolvePHP 2 is pre-release, and this package is not yet independently published. The canonical source is the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+EvolvePHP 2 is pre-release, and this package is independently published as a Beta package. The canonical source is the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 License: BSD-3-Clause. See [`LICENSE.md`](LICENSE.md).
 

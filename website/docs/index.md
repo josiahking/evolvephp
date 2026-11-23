@@ -4,7 +4,7 @@ EvolvePHP 2 — Developer manual (Next)
 
 Start modular. Integrate incrementally. Extract selectively. Observe everything.
 
-EvolvePHP 2 is pre-release and not production-ready. Public APIs are experimental, and first-party packages are not yet independently published.
+EvolvePHP 2 is pre-release and not production-ready. Public APIs are experimental, and the original 34 first-party packages have public Beta distributions; the coordinated framework release remains separately gated.
 
 [Read the manual](next/index.md) · [View the repository](https://github.com/josiahking/evolvephp)
 

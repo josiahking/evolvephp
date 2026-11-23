@@ -12,7 +12,7 @@ EvolvePHP 2 is **pre-release and not production-ready**. Its public APIs are exp
 
 The source repository contains PHP 8.4 runtime-neutral Core foundations for configuration, service registration, execution scopes, cleanup, component lifecycle and CLI composition. It contains HTTP middleware, routing, dispatch and response boundaries, but leaves concrete web request creation and emission to future runtime work. It also contains module/plugin foundations; development-time Audit, Doctor and adoption declarations; Bridge contracts and adapters; optional Insight and Observe packages, and explicit MCP server/client foundations. The [package map](../packages/overview.md) links to each package's own documentation.
 
-The skeleton explicitly configures doctor and route:list and starts with an empty route collection. It is a template under source control, not a published application installer.
+The skeleton explicitly configures doctor and route:list and starts with an empty route collection. It is a template under source control; the separate `evolvephp/skeleton:2.0.0-beta.1` is a published public Beta application installer.
 
 ## Experimental
 
@@ -24,8 +24,8 @@ A complete concrete SAPI/web runtime, production bootstrap, deployment scaffoldi
 
 ## Unsupported or not claimed
 
-First-party packages are **not yet independently published**. Public Packagist installation and public composer create-project installation are not available. No production readiness, LTS policy, broad host compatibility certification, automatic retry/fallback, distributed transaction, or persistent-worker concurrency guarantee is claimed. The isolated PHP 7.4 legacy remote client does not lower the PHP 8.4 Core and embedded Bridge requirement.
+The original 34 first-party packages have public Beta distributions on Packagist, and the separate `evolvephp/skeleton:2.0.0-beta.1` supports public Composer `create-project` installation. This does not itself issue a coordinated framework-wide Beta release. No production readiness, LTS policy, broad host compatibility certification, automatic retry/fallback, distributed transaction, or persistent-worker concurrency guarantee is claimed. The isolated PHP 7.4 legacy remote client does not lower the PHP 8.4 Core and embedded Bridge requirement.
 
 See [source preview](source-preview.md) for what can be done from the repository today.
 
-The experimental MCP source includes opt-in bounded operational events and neutral Observe and Insight adapters. Independent installed-consumer acceptance and Linux PHP client STDIO interoperability are still pending validation.
+The experimental MCP source includes opt-in bounded operational events and neutral Observe and Insight adapters. The initial 34-package public Composer install/autoload and representative application checks have accepted consumer evidence. Linux PHP client STDIO interoperability is a distinct validation claim.

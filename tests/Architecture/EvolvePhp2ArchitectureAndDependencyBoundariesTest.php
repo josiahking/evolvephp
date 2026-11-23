@@ -234,7 +234,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
         $this->assertMatchesPattern('/PSR HTTP.*middleware|middleware.*PSR HTTP|PSR-15.*middleware/is', $packagesReadme);
         $this->assertMatchesPattern('/MiddlewarePipeline/i', $packagesReadme);
         $this->assertMatchesPattern('/route definitions.*matching|RouteCollection.*RouteMatcher/is', $packagesReadme);
-        $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/i', $packagesReadme);
+        $this->assertMatchesPattern('/original 34.*published Beta distributions|published Beta distributions.*original 34/i', $packagesReadme);
 
         $this->assertMatchesPattern('/PsrContainer/i', $developmentGuide);
         $this->assertMatchesPattern('/Contracts external standards.*PsrContainer|PsrContainer.*Contracts external standards/is', $developmentGuide);

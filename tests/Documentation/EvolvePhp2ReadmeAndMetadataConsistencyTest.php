@@ -100,7 +100,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
         $this->assertMatchesPattern('/not an in-place refactor/i', $content);
         $this->assertMatchesPattern('/package.*root.*quality|quality.*root.*package/is', $content);
         $this->assertMatchesPattern('/runtime framework implementation.*not yet complete|not yet complete.*runtime framework implementation/is', $content);
-        $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/is', $content);
+        $this->assertMatchesPattern('/original 34.*Beta distributions|Beta distributions.*original 34/is', $content);
     }
 
     public function testRootReadmeDocumentsPhp84BaselineAndPhp85CiEvidence(): void

@@ -260,7 +260,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
         $this->assertMatchesPattern('/# EvolvePHP 2 Packages/i', $content);
         $this->assertMatchesPattern('/skeleton|foundation|boundar/i', $content);
         $this->assertMatchesPattern('/runtime adapters remain deferred/i', $content);
-        $this->assertMatchesPattern('/packages.*not yet published|not yet published.*packages/i', $content);
+        $this->assertMatchesPattern('/original 34.*published Beta distributions|published Beta distributions.*original 34/i', $content);
         $this->assertMatchesPattern('/PHP `?\^8\.4`?/i', $content);
         $this->assertMatchesPattern('/arrows.*dependency direction.*not lifecycle invocation/i', $content);
         $this->assertMatchesPattern('/no production dependency on Testing/i', $content);

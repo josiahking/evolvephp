@@ -4,7 +4,7 @@ Vendor-neutral secret resolution contracts for EvolvePHP 2.
 
 Package: `evolvephp/secret-contracts`.
 
-EvolvePHP 2 is pre-release. This package requires PHP `^8.4`, depends only on `evolvephp/contracts`, and exposes experimental public API that may change before stable release. It is not yet independently published; the canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
+EvolvePHP 2 is pre-release. This package requires PHP `^8.4`, depends only on `evolvephp/contracts`, and exposes experimental public API that may change before stable release. It is independently published as a Beta package; the canonical source remains the EvolvePHP monorepo at https://github.com/josiahking/evolvephp.
 
 `SecretResolver::resolve()` asks an explicitly supplied provider adapter for its current or default value for an opaque `SecretName`. The name preserves exact non-empty bytes, up to 2048 bytes, except NUL. It has no path or environment-variable interpretation. A currently absent or unresolved secret returns `null`; provider and backend failures cross the `SecretException` boundary with a portable `SecretFailureCategory`.
 

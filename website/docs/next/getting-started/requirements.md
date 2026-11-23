@@ -12,4 +12,4 @@ A source-preview contributor also needs the extensions required by the chosen pa
 
 The documentation site has its own requirements: Node 20 or later and npm. CI uses Node 24. Node is needed to build this manual, not to run EvolvePHP packages.
 
-The [source-preview guide](source-preview.md) gives repository commands. It is separate from future published-package application installation.
+The [source-preview guide](source-preview.md) gives repository commands. It is separate from public Beta application installation using the independently published skeleton.

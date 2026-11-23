@@ -173,7 +173,7 @@ PHP `^8.4`
 
 ## Publication Status
 
-EvolvePHP 2 is pre-release. This package is not yet independently published, and the current canonical source is the EvolvePHP monorepo:
+EvolvePHP 2 is pre-release. This package is independently published as a Beta package, and the current canonical source is the EvolvePHP monorepo:
 
 https://github.com/josiahking/evolvephp
 

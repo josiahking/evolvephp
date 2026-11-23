@@ -1,6 +1,6 @@
 # EvolvePHP AI
 
-EvolvePHP 2 is pre-release; this package is not yet independently published. Its canonical source is the EvolvePHP monorepo at https://github.com/josiahking/evolvephp. License: BSD-3-Clause; see `LICENSE.md`. Runtime dependencies: PHP only.
+EvolvePHP 2 is pre-release; this package is independently published as a Beta package. Its canonical source is the EvolvePHP monorepo at https://github.com/josiahking/evolvephp. License: BSD-3-Clause; see `LICENSE.md`. Runtime dependencies: PHP only.
 
 `evolvephp/ai` is an optional, experimental pre-release package for PHP `^8.4`. It defines synchronous, provider-neutral model invocation data and contracts. Optional experimental provider-neutral synchronous model invocation contracts and caller-controlled tool handoff. It ships no provider adapter, vendor SDK, network client, retry loop, global provider discovery, or automatic tool execution. The package can be installed independently of EvolvePHP Core and MCP.
 

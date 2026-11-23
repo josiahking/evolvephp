@@ -77,20 +77,19 @@
       "id": "laravel",
       "name": "Laravel",
       "framework_package": "laravel/framework",
-      "framework_version": "13.30.0",
-      "composer_constraint": "13.30.0",
+      "framework_version": "13.40.0",
+      "composer_constraint": "13.40.0",
       "fixture_version": 1,
       "fixture_path": "laravel",
       "fixture_bootstrap": "laravel/bootstrap.php",
       "lock_path": "laravel/composer.lock",
-      "lock_sha256": "b8881ac8e90b1667329ab712d2e0f3e29c2b76a2bee943d5bfa1d5dffa3898f9",
+      "lock_sha256": "bd8c4f23d172ccc751834818bf7201d710726099c550bb9b3fd482472e741f3d",
       "implementation_model": "pure-php",
       "availability": "always",
       "configuration": {
         "model": "Illuminate routing dispatcher with framework router and middleware aliases",
         "debug": false,
-        "io": "none",
-        "composer_platform_override": "--ignore-platform-req=ext-fileinfo used only while creating this lockfile on the local PHP CLI"
+        "io": "none"
       },
       "scenarios": [
         "application_boot",
@@ -100,7 +99,7 @@
         "http_not_found",
         "http_repeated_warm"
       ],
-      "notes": "Laravel 13.30.0 is exactly pinned for the Phase 10.4.5B comparator security closure."
+      "notes": "Laravel 13.40.0 is exactly pinned. Its Laravel and Symfony dependencies include the comparator security repairs; earlier timing evidence uses a different dependency lockfile and is not directly comparable."
     },
     {
       "id": "symfony",
