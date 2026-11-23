@@ -1,0 +1,58 @@
+{
+    "name":  "evolvephp/webhooks-independent-consumer-fixture",
+    "description":  "Isolated offline path-repository consumer for the local Webhooks package.",
+    "type":  "project",
+    "require":  {
+                    "php":  "^8.4",
+                    "evolvephp/webhooks":  "2.0.x-dev"
+                },
+    "repositories":  [
+                         {
+                             "type":  "path",
+                             "url":  "../../../../*",
+                             "options":  {
+                                             "symlink":  false,
+                                             "versions":  {
+                                                              "evolvephp/contracts":  "2.0.x-dev",
+                                                              "evolvephp/database-contracts":  "2.0.x-dev",
+                                                              "evolvephp/database-pdo":  "2.0.x-dev",
+                                                              "evolvephp/cache-memory":  "2.0.x-dev",
+                                                              "evolvephp/session-contracts":  "2.0.x-dev",
+                                                              "evolvephp/lock-contracts":  "2.0.x-dev",
+                                                              "evolvephp/bridge-contracts":  "2.0.x-dev",
+                                                              "evolvephp/bridge-laravel":  "2.0.x-dev",
+                                                              "evolvephp/bridge-psr":  "2.0.x-dev",
+                                                              "evolvephp/bridge-remote":  "2.0.x-dev",
+                                                              "evolvephp/bridge-symfony":  "2.0.x-dev",
+                                                              "evolvephp/core":  "2.0.x-dev",
+                                                              "evolvephp/dev-tools":  "2.0.x-dev",
+                                                              "evolvephp/http":  "2.0.x-dev",
+                                                              "evolvephp/http-client":  "2.0.x-dev",
+                                                              "evolvephp/i18n":  "2.0.x-dev",
+                                                              "evolvephp/insight":  "2.0.x-dev",
+                                                              "evolvephp/job":  "2.0.x-dev",
+                                                              "evolvephp/scheduler":  "2.0.x-dev",
+                                                              "evolvephp/migration":  "2.0.x-dev",
+                                                              "evolvephp/view":  "2.0.x-dev",
+                                                              "evolvephp/view-twig":  "2.0.x-dev",
+                                                              "evolvephp/view-blade":  "2.0.x-dev",
+                                                              "evolvephp/module":  "2.0.x-dev",
+                                                              "evolvephp/audit-log":  "2.0.x-dev",
+                                                              "evolvephp/webhooks":  "2.0.x-dev",
+                                                              "evolvephp/observe":  "2.0.x-dev",
+                                                              "evolvephp/mcp":  "2.0.x-dev",
+                                                              "evolvephp/ai":  "2.0.x-dev",
+                                                              "evolvephp/plugin":  "2.0.x-dev",
+                                                              "evolvephp/queue-contracts":  "2.0.x-dev",
+                                                              "evolvephp/queue-memory":  "2.0.x-dev",
+                                                              "evolvephp/storage-contracts":  "2.0.x-dev",
+                                                              "evolvephp/storage-local":  "2.0.x-dev",
+                                                              "evolvephp/secret-contracts":  "2.0.x-dev",
+                                                              "evolvephp/testing":  "2.0.x-dev"
+                                                          }
+                                         }
+                         }
+                     ],
+    "minimum-stability":  "dev",
+    "prefer-stable":  true
+}

@@ -340,6 +340,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
                 'tests' => 'packages/audit-log/tests',
                 'smokeTest' => 'packages/audit-log/tests/Unit/PackageManifestTest.php',
             ),
+            'webhooks' => array(
+                'tests' => 'packages/webhooks/tests',
+                'smokeTest' => 'packages/webhooks/tests/Unit/PackageManifestTest.php',
+            ),
             'plugin' => array(
                 'tests' => 'packages/plugin/tests',
                 'smokeTest' => 'packages/plugin/tests/Unit/PackageManifestTest.php',
@@ -385,6 +389,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test:insight' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite insight',
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
             'test:audit-log' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite audit-log',
+            'test:webhooks' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite webhooks',
             'test:observe' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe',
             'test:mcp' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite mcp',
             'test:ai' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite ai',
@@ -426,6 +431,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'evolvephp/insight',
             'evolvephp/module',
             'evolvephp/audit-log',
+            'evolvephp/webhooks',
             'evolvephp/observe',
             'evolvephp/mcp',
             'evolvephp/ai',

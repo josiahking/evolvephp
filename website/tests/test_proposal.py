@@ -18,12 +18,14 @@ class MkDocsProposalTests(unittest.TestCase):
 
     def test_content_integrity(self):
         pages = list((DOCS / "next").rglob("*.md"))
-        self.assertEqual(21, len(pages))
+        self.assertEqual(22, len(pages))
         self.assertTrue((DOCS / "next/packages/redis.md").exists())
         self.assertIn("next/packages/redis.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
         self.assertTrue((DOCS / "next/packages/audit-log.md").exists())
         self.assertIn("next/packages/audit-log.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
+        self.assertIn("next/packages/webhooks.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
         self.assertTrue((DOCS / "next/index.md").exists())
+        self.assertTrue((DOCS / "next/packages/webhooks.md").exists())
         self.assertTrue((DOCS / "index.md").exists())
         self.assertTrue((DOCS / "versions/index.md").exists())
         self.assertTrue((DOCS / ".nojekyll").exists())

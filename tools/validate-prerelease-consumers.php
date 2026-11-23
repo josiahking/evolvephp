@@ -85,71 +85,9 @@ final class PrereleaseConsumerValidator
                 'evolvephp/ai' => '^2.0@alpha',
                 'evolvephp/testing' => '^2.0@alpha',
             ));
-            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case F', $alphaRepositories, $lockedRuntimePackages, array(
-                'evolvephp/audit-log' => '^2.0',
-                'evolvephp/bridge-contracts' => '^2.0',
-                'evolvephp/bridge-psr' => '^2.0',
-                'evolvephp/bridge-laravel' => '^2.0',
-                'evolvephp/bridge-symfony' => '^2.0',
-                'evolvephp/bridge-remote' => '^2.0',
-                'evolvephp/database-contracts' => '^2.0',
-                'evolvephp/database-pdo' => '^2.0',
-                'evolvephp/cache-memory' => '^2.0',
-                'evolvephp/session-contracts' => '^2.0',
-                'evolvephp/lock-contracts' => '^2.0',
-                'evolvephp/queue-contracts' => '^2.0',
-                'evolvephp/queue-memory' => '^2.0',
-                'evolvephp/storage-contracts' => '^2.0',
-                'evolvephp/storage-local' => '^2.0',
-                'evolvephp/secret-contracts' => '^2.0',
-                'evolvephp/dev-tools' => '^2.0',
-                'evolvephp/insight' => '^2.0',
-                'evolvephp/job' => '^2.0',
-                'evolvephp/scheduler' => '^2.0',
-                'evolvephp/migration' => '^2.0',
-                'evolvephp/view' => '^2.0',
-                'evolvephp/view-twig' => '^2.0',
-                'evolvephp/view-blade' => '^2.0',
-                'evolvephp/i18n' => '^2.0',
-                'evolvephp/http-client' => '^2.0',
-                'evolvephp/observe' => '^2.0',
-                'evolvephp/mcp' => '^2.0',
-                'evolvephp/ai' => '^2.0',
-                'evolvephp/testing' => '^2.0',
-            ), array('minimum-stability' => 'alpha', 'prefer-stable' => true), $this->expectedVersions($packages, self::ALPHA_VERSION));
+            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case F', $alphaRepositories, $lockedRuntimePackages, $this->fullGraphRootRequirements($packages), array('minimum-stability' => 'alpha', 'prefer-stable' => true), $this->expectedVersions($packages, self::ALPHA_VERSION));
             $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Full-graph case G', $alphaRepositories, $lockedRuntimePackages, $this->explicitAlphaRootRequirements($packages), array(), $this->expectedVersions($packages, self::ALPHA_VERSION));
-            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Stable case H', $stableRepositories, $lockedRuntimePackages, array(
-                'evolvephp/audit-log' => '^2.0',
-                'evolvephp/bridge-contracts' => '^2.0',
-                'evolvephp/bridge-psr' => '^2.0',
-                'evolvephp/bridge-laravel' => '^2.0',
-                'evolvephp/bridge-symfony' => '^2.0',
-                'evolvephp/bridge-remote' => '^2.0',
-                'evolvephp/database-contracts' => '^2.0',
-                'evolvephp/database-pdo' => '^2.0',
-                'evolvephp/cache-memory' => '^2.0',
-                'evolvephp/session-contracts' => '^2.0',
-                'evolvephp/lock-contracts' => '^2.0',
-                'evolvephp/queue-contracts' => '^2.0',
-                'evolvephp/queue-memory' => '^2.0',
-                'evolvephp/storage-contracts' => '^2.0',
-                'evolvephp/storage-local' => '^2.0',
-                'evolvephp/secret-contracts' => '^2.0',
-                'evolvephp/dev-tools' => '^2.0',
-                'evolvephp/insight' => '^2.0',
-                'evolvephp/job' => '^2.0',
-                'evolvephp/scheduler' => '^2.0',
-                'evolvephp/migration' => '^2.0',
-                'evolvephp/view' => '^2.0',
-                'evolvephp/view-twig' => '^2.0',
-                'evolvephp/view-blade' => '^2.0',
-                'evolvephp/i18n' => '^2.0',
-                'evolvephp/http-client' => '^2.0',
-                'evolvephp/observe' => '^2.0',
-                'evolvephp/mcp' => '^2.0',
-                'evolvephp/ai' => '^2.0',
-                'evolvephp/testing' => '^2.0',
-            ), array(), $this->expectedVersions($packages, self::STABLE_VERSION));
+            $results[] = $this->runExpectedSuccessCase($temp, $composer, 'Stable case H', $stableRepositories, $lockedRuntimePackages, $this->fullGraphRootRequirements($packages), array(), $this->expectedVersions($packages, self::STABLE_VERSION));
 
             $betaRepositories = $this->createTaggedRepositories($temp->child('beta-repositories'), $splitRoots, self::BETA_VERSION);
             array_push($results, ...$this->validateBetaConsumers($temp, $composer, $betaRepositories, $lockedRuntimePackages, $packages));
@@ -735,6 +673,21 @@ final class PrereleaseConsumerValidator
         ksort($versions);
 
         return $versions;
+    }
+
+    /**
+     * @param list<array{name: string, directory: string}> $packages
+     * @return array<string, string>
+     */
+    private function fullGraphRootRequirements(array $packages): array
+    {
+        $requirements = array();
+
+        foreach ($packages as $package) {
+            $requirements[$package['name']] = '^2.0';
+        }
+
+        return $requirements;
     }
 
     /**

@@ -91,6 +91,10 @@
             "repository": "josiahking/evolvephp-audit-log"
         },
         {
+            "name": "evolvephp/webhooks",
+            "repository": "josiahking/evolvephp-webhooks"
+        },
+        {
             "name": "evolvephp/plugin",
             "repository": "josiahking/evolvephp-plugin"
         },
