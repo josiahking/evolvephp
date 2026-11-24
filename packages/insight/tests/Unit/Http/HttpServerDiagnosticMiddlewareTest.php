@@ -266,6 +266,7 @@ final class HttpServerDiagnosticMiddlewareTest extends TestCase
     private function request(string $method): ServerRequestInterface&MockObject
     {
         $request = $this->createMock(ServerRequestInterface::class);
+        /** @var \ArrayObject<string, mixed> $attributes */
         $attributes = new \ArrayObject();
         $request->method('getAttribute')->willReturnCallback(static function (string $name, mixed $default = null) use ($attributes): mixed {
             return $attributes[$name] ?? $default;

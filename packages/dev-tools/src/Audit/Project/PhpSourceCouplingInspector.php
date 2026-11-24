@@ -78,11 +78,11 @@ final readonly class PhpSourceCouplingInspector implements AuditInspector
                 static fn(array $left, array $right): int => [
                     $left['path'],
                     $left['line'],
-                    $left['symbol'] ?? $left['kind'] ?? '',
+                    $left['symbol'] ?? $left['kind'],
                 ] <=> [
                     $right['path'],
                     $right['line'],
-                    $right['symbol'] ?? $right['kind'] ?? '',
+                    $right['symbol'] ?? $right['kind'],
                 ],
             );
             $occurrences[$category] = $categoryOccurrences;

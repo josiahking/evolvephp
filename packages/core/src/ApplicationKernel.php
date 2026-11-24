@@ -96,13 +96,7 @@ final class ApplicationKernel implements ApplicationLifecycle
             }
 
             if ($this->components !== null) {
-                $registry = $this->services;
-
-                if ($registry === null) {
-                    throw new InvalidLifecycleTransition('Component lifecycle registration requires a service registry.');
-                }
-
-                $this->components->register($registry);
+                $this->components->register($this->requireServiceRegistry($this->services));
             }
 
             $services = $this->services?->freeze();
@@ -135,5 +129,14 @@ final class ApplicationKernel implements ApplicationLifecycle
         }
 
         $this->state = ApplicationState::Stopped;
+    }
+
+    private function requireServiceRegistry(?ServiceRegistry $registry): ServiceRegistry
+    {
+        if ($registry === null) {
+            throw new InvalidLifecycleTransition('Component lifecycle registration requires a service registry.');
+        }
+
+        return $registry;
     }
 }
