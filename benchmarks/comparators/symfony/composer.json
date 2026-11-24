@@ -6,7 +6,7 @@
   "require": {
     "php": "^8.4",
     "symfony/event-dispatcher": "8.1.5",
-    "symfony/http-foundation": "8.1.5",
+    "symfony/http-foundation": "8.1.11",
     "symfony/http-kernel": "8.1.5",
     "symfony/routing": "8.1.5"
   },
