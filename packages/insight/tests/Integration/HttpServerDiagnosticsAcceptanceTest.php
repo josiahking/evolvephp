@@ -101,6 +101,7 @@ final class HttpServerDiagnosticsAcceptanceTest extends TestCase
         $uri->method('getPath')->willReturn($path);
         $request->method('getUri')->willReturn($uri);
         $request->method('getMethod')->willReturn($method);
+        /** @var \ArrayObject<string, mixed> $attributes */
         $attributes = new \ArrayObject();
         $request->method('getAttribute')->willReturnCallback(static function (string $name, mixed $default = null) use ($attributes): mixed {
             return $attributes[$name] ?? $default;
