@@ -24,10 +24,10 @@ final class EvolvePhp2WebhooksIntegrationTest extends TestCase
         $destinations = json_decode((string) file_get_contents($root . '/tools/release-package-destinations.json'), true, 512, JSON_THROW_ON_ERROR);
         self::assertSame('2.0.x-dev', $composer['repositories'][0]['options']['versions']['evolvephp/webhooks']);
         self::assertSame('^2.0@dev', $composer['require-dev']['evolvephp/webhooks']);
-        self::assertCount(36, $release['packages']);
+        self::assertCount(37, $release['packages']);
         self::assertContains(['name' => 'evolvephp/webhooks', 'directory' => 'packages/webhooks'], $release['packages']);
-        self::assertCount(36, $destinations['packages']);
+        self::assertCount(37, $destinations['packages']);
         self::assertStringContainsString('name="webhooks"', (string) file_get_contents($root . '/phpunit.xml.dist'));
-        self::assertStringContainsString('count($p["packages"]) === 36', (string) file_get_contents($root . '/.github/workflows/quality.yml'));
+        self::assertStringContainsString('count($p["packages"]) === 37', (string) file_get_contents($root . '/.github/workflows/quality.yml'));
     }
 }

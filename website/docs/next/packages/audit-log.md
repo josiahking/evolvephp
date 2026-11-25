@@ -7,7 +7,7 @@ description: Explicit first-party audit events, storage, access and retention fo
 
 The experimental `evolvephp/audit-log` package records application-emitted audit events. It is available as local source only; independent public package publication and Packagist registration have not been verified. Applications decide when to emit events and which Module SDK definitions to enable. No request, ORM, HTTP or authentication interception is installed.
 
-Use a Composer path repository pointing to this source package and its first-party dependencies for a local preview. The package requires PHP `^8.4`, Contracts, DatabaseContracts, I18n, Migration and Module. It also directly requires PSR Container for its Module SDK factory signatures. The 36-package source inventory includes Audit Log. Its proposed split repository remains unverified.
+Use a Composer path repository pointing to this source package and its first-party dependencies for a local preview. The package requires PHP `^8.4`, Contracts, DatabaseContracts, I18n, Migration and Module. It also directly requires PSR Container for its Module SDK factory signatures. The 37-package source inventory includes Audit Log. Its proposed split repository remains unverified.
 
 ## Compose and emit
 

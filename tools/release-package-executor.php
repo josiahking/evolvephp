@@ -49,7 +49,7 @@ final class ReleasePackageExecutor
         }
         $packages = $plan['packages'] ?? null;
         if (!is_array($packages) || !array_is_list($packages)
-            || count($packages) !== 36) {
+            || count($packages) !== 37) {
             $this->fail('invalid-package-inventory');
         }
         $pilot = $packages[0];
@@ -63,7 +63,7 @@ final class ReleasePackageExecutor
             $this->fail('pilot-identity-mismatch');
         }
         $names = array_column($packages, 'name');
-        if (count(array_unique($names)) !== 36) {
+        if (count(array_unique($names)) !== 37) {
             $this->fail('duplicate-package');
         }
         $resolved = realpath($root);

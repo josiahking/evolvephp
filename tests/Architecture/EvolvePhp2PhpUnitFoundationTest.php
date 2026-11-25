@@ -179,7 +179,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
         $this->assertMatchesPattern('/phpunit\.xml\.dist/i', $developmentGuide);
         $this->assertMatchesPattern('/PHPUnit 13.*root|root.*PHPUnit 13/i', $developmentGuide);
 
-        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:cache-memory', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:job', 'test:dev-tools', 'test:http', 'test:http-client', 'test:insight', 'test:module', 'test:audit-log', 'test:observe', 'test:mcp', 'test:ai', 'test:plugin', 'test:testing') as $script) {
+        foreach (array('test:contracts', 'test:database-contracts', 'test:database-pdo', 'test:cache-memory', 'test:session-contracts', 'test:lock-contracts', 'test:queue-contracts', 'test:queue-memory', 'test:storage-contracts', 'test:storage-local', 'test:secret-contracts', 'test:bridge-contracts', 'test:bridge-psr', 'test:bridge-laravel', 'test:bridge-symfony', 'test:bridge-remote', 'test:core', 'test:job', 'test:dev-tools', 'test:http', 'test:http-client', 'test:insight', 'test:module', 'test:audit-log', 'test:api-keys', 'test:observe', 'test:mcp', 'test:ai', 'test:plugin', 'test:testing') as $script) {
             $this->assertMatchesPattern('/' . preg_quote($script, '/') . '/i', $developmentGuide);
         }
 
@@ -344,6 +344,10 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
                 'tests' => 'packages/webhooks/tests',
                 'smokeTest' => 'packages/webhooks/tests/Unit/PackageManifestTest.php',
             ),
+            'api-keys' => array(
+                'tests' => 'packages/api-keys/tests',
+                'smokeTest' => 'packages/api-keys/tests/Unit/PackageManifestTest.php',
+            ),
             'plugin' => array(
                 'tests' => 'packages/plugin/tests',
                 'smokeTest' => 'packages/plugin/tests/Unit/PackageManifestTest.php',
@@ -390,6 +394,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'test:module' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite module',
             'test:audit-log' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite audit-log',
             'test:webhooks' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite webhooks',
+            'test:api-keys' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite api-keys',
             'test:observe' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite observe',
             'test:mcp' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite mcp',
             'test:ai' => '@php vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite ai',
@@ -432,6 +437,7 @@ final class EvolvePhp2PhpUnitFoundationTest extends TestCase
             'evolvephp/module',
             'evolvephp/audit-log',
             'evolvephp/webhooks',
+            'evolvephp/api-keys',
             'evolvephp/observe',
             'evolvephp/mcp',
             'evolvephp/ai',

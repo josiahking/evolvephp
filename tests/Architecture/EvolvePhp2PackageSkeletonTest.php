@@ -470,7 +470,7 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
 
             $manifest = $this->readJsonFile($package['manifest']);
 
-            if (in_array($package['name'], ['evolvephp/audit-log', 'evolvephp/webhooks'], true)) {
+            if (in_array($package['name'], ['evolvephp/audit-log', 'evolvephp/webhooks', 'evolvephp/api-keys'], true)) {
                 $this->assertSame('^1.1 || ^2.0', $manifest['require']['psr/container'] ?? null);
                 $this->assertArrayNotHasKey(
                     'provide',
@@ -1183,7 +1183,24 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                     'evolvephp/secret-contracts' => '^2.0',
                     'psr/container' => '^1.1 || ^2.0',
                 ],
-            ],            [
+            ],
+            [
+                'manifest' => 'packages/api-keys/composer.json',
+                'src' => 'packages/api-keys/src',
+                'name' => 'evolvephp/api-keys',
+                'description' => 'Explicit first-party API key module for EvolvePHP 2.',
+                'namespace' => 'Evolve\\ApiKeys\\',
+                'require' => [
+                    'php' => '^8.4',
+                    'evolvephp/contracts' => '^2.0',
+                    'evolvephp/database-contracts' => '^2.0',
+                    'evolvephp/i18n' => '^2.0',
+                    'evolvephp/migration' => '^2.0',
+                    'evolvephp/module' => '^2.0',
+                    'psr/container' => '^1.1 || ^2.0',
+                ],
+            ],
+            [
                 'manifest' => 'packages/plugin/composer.json',
                 'src' => 'packages/plugin/src',
                 'name' => 'evolvephp/plugin',
@@ -1751,6 +1768,22 @@ final class EvolvePhp2PackageSkeletonTest extends TestCase
                 'Webhooks.php',
                 'WebhooksMigrationContributor.php',
                 'WebhooksModule.php',
+            ],
+            'packages/api-keys/src' => [
+                'ApiKeyAccessPolicy.php',
+                'ApiKeyDiagnosticLabel.php',
+                'ApiKeyIssueRequest.php',
+                'ApiKeyRecord.php',
+                'ApiKeyStore.php',
+                'ApiKeyVerificationRequest.php',
+                'ApiKeyVerificationResult.php',
+                'ApiKeys.php',
+                'ApiKeysMigrationContributor.php',
+                'ApiKeysModule.php',
+                'Exception/InvalidApiKey.php',
+                'Exception/UnauthorizedApiKeyOperation.php',
+                'IssuedApiKey.php',
+                'SqlApiKeyStore.php',
             ],
             'packages/plugin/src' => [
                 'Discovery/ComposerPluginDiscovery.php',
