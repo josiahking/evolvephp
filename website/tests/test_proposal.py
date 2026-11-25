@@ -18,7 +18,7 @@ class MkDocsProposalTests(unittest.TestCase):
 
     def test_content_integrity(self):
         pages = list((DOCS / "next").rglob("*.md"))
-        self.assertEqual(23, len(pages))
+        self.assertEqual(24, len(pages))
         self.assertTrue((DOCS / "next/packages/redis.md").exists())
         self.assertIn("next/packages/redis.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
         self.assertTrue((DOCS / "next/packages/audit-log.md").exists())
@@ -28,6 +28,7 @@ class MkDocsProposalTests(unittest.TestCase):
         self.assertTrue((DOCS / "next/packages/webhooks.md").exists())
         self.assertTrue((DOCS / "next/packages/api-keys.md").exists())
         self.assertIn("next/packages/api-keys.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
+        self.assertTrue((DOCS / "next/packages/symfony-mailer.md").exists())
         self.assertTrue((DOCS / "index.md").exists())
         self.assertTrue((DOCS / "versions/index.md").exists())
         self.assertTrue((DOCS / ".nojekyll").exists())
@@ -38,6 +39,27 @@ class MkDocsProposalTests(unittest.TestCase):
             self.assertNotIn("docusaurus", text.lower())
         self.assertIn("McpComponentContribution", (DOCS / "next/packages/mcp.md").read_text(encoding="utf-8"))
         self.assertFalse((DOCS / "versions/2.0.0-alpha.1").exists())
+
+    def test_symfony_mailer_optional_guide(self):
+        config = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+        overview = (DOCS / "next/packages/overview.md").read_text(encoding="utf-8")
+        guide = (DOCS / "next/packages/symfony-mailer.md").read_text(encoding="utf-8")
+        fixture = ROOT.parent / "tools/fixtures/symfony-mailer-consumer.php"
+        validator = ROOT.parent / "tools/validate-symfony-mailer-compatibility.php"
+
+        self.assertEqual(1, config.count("next/packages/symfony-mailer.md"))
+        self.assertIn("[Symfony Mailer compatibility](symfony-mailer.md)", overview)
+        self.assertIn("optional upstream integration", overview)
+        self.assertNotIn("| [symfony-mailer]", overview)
+        self.assertIn("symfony/mailer:^7.4", guide)
+        self.assertIn("ServiceLifetime::Execution", guide)
+        self.assertIn("TwigViewRenderer", guide)
+        self.assertIn("null://null", guide)
+        self.assertIn("Mail delivery failed.", guide)
+        self.assertTrue(fixture.is_file())
+        self.assertTrue(validator.is_file())
+        self.assertIn("EVOLVE_MAILER_CONSUMER_AUTOLOAD", validator.read_text(encoding="utf-8"))
+        self.assertIn("sendNotice($firstMailer, $message)", validator.read_text(encoding="utf-8"))
 
     def test_relative_links(self):
         for page in DOCS.rglob("*.md"):
