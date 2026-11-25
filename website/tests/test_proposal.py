@@ -18,7 +18,7 @@ class MkDocsProposalTests(unittest.TestCase):
 
     def test_content_integrity(self):
         pages = list((DOCS / "next").rglob("*.md"))
-        self.assertEqual(24, len(pages))
+        self.assertEqual(25, len(pages))
         self.assertTrue((DOCS / "next/packages/redis.md").exists())
         self.assertIn("next/packages/redis.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
         self.assertTrue((DOCS / "next/packages/audit-log.md").exists())
@@ -60,6 +60,22 @@ class MkDocsProposalTests(unittest.TestCase):
         self.assertTrue(validator.is_file())
         self.assertIn("EVOLVE_MAILER_CONSUMER_AUTOLOAD", validator.read_text(encoding="utf-8"))
         self.assertIn("sendNotice($firstMailer, $message)", validator.read_text(encoding="utf-8"))
+
+    def test_monolog_optional_guide(self):
+        config = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+        overview = (DOCS / "next/packages/overview.md").read_text(encoding="utf-8")
+        guide = (DOCS / "next/packages/monolog.md").read_text(encoding="utf-8")
+        fixture = ROOT.parent / "tools/fixtures/monolog-psr3-consumer.php"
+        validator = ROOT.parent / "tools/validate-monolog-compatibility.php"
+        self.assertEqual(1, config.count("next/packages/monolog.md"))
+        self.assertIn("[Monolog PSR-3 compatibility](monolog.md)", overview)
+        self.assertIn("optional upstream integrations", overview)
+        self.assertNotIn("| [monolog]", overview)
+        for required in ("monolog/monolog:^3.0", "psr/log:^3.0", "LoggerInterface", "ServiceLifetime::Execution", "LogCorrelationProvider", "structuredFields()", "registerResetParticipant", "EVOLVE_MONOLOG_CONSUMER_AUTOLOAD", "tools/validate-monolog-compatibility.php"):
+            self.assertIn(required, guide)
+        self.assertTrue(fixture.is_file())
+        self.assertTrue(validator.is_file())
+        self.assertIn("EVOLVE_MONOLOG_CONSUMER_AUTOLOAD", validator.read_text(encoding="utf-8"))
 
     def test_relative_links(self):
         for page in DOCS.rglob("*.md"):

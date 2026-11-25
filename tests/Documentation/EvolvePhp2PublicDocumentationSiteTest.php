@@ -27,13 +27,14 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             'website/docs/next/packages/webhooks.md',
             'website/docs/next/packages/api-keys.md',
             'website/docs/next/packages/symfony-mailer.md',
+            'website/docs/next/packages/monolog.md',
             'website/docs/next/project/documentation-versioning.md',
             'website/docs/versions/index.md',
         ] as $path) {
             self::assertFileExists($this->root . '/' . $path, $path);
         }
 
-        self::assertCount(24, $this->nextPages());
+        self::assertCount(25, $this->nextPages());
         self::assertFileDoesNotExist($this->root . '/website/package.json');
         self::assertFileDoesNotExist($this->root . '/website/docusaurus.config.ts');
         self::assertFileDoesNotExist($this->root . '/website/docs/versions/2.0.0-alpha.1');
@@ -89,6 +90,8 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         self::assertStringContainsString('(api-keys.md)', $this->read('website/docs/next/packages/overview.md'));
         self::assertStringContainsString('next/packages/symfony-mailer.md', $config);
         self::assertStringContainsString('(symfony-mailer.md)', $this->read('website/docs/next/packages/overview.md'));
+        self::assertSame(1, substr_count($config, 'next/packages/monolog.md'));
+        self::assertStringContainsString('(monolog.md)', $this->read('website/docs/next/packages/overview.md'));
         self::assertStringNotContainsString('<<<<<<<', $config);
 
         foreach ($this->nextPages() as $path) {
@@ -149,6 +152,13 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             'Symfony\Component\Mime\Email',
         ];
         $seenOptionalMailerImports = [];
+        $optionalMonologImports = [
+            'Monolog\Handler\TestHandler',
+            'Monolog\Logger',
+            'Monolog\LogRecord',
+            'Psr\Log\LoggerInterface',
+        ];
+        $seenOptionalMonologImports = [];
         foreach ($this->nextPages() as $path) {
             $content = file_get_contents($path);
             self::assertIsString($content);
@@ -166,6 +176,11 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
                         $seenOptionalMailerImports[$symbol] = true;
                         continue;
                     }
+                    if (str_ends_with(str_replace(DIRECTORY_SEPARATOR, '/', $path), '/website/docs/next/packages/monolog.md')
+                        && in_array($symbol, $optionalMonologImports, true)) {
+                        $seenOptionalMonologImports[$symbol] = true;
+                        continue;
+                    }
                     self::assertTrue(
                         class_exists($symbol) || interface_exists($symbol)
                         || trait_exists($symbol) || enum_exists($symbol),
@@ -175,6 +190,7 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             }
         }
         self::assertEqualsCanonicalizing($optionalMailerImports, array_keys($seenOptionalMailerImports));
+        self::assertEqualsCanonicalizing($optionalMonologImports, array_keys($seenOptionalMonologImports));
         self::assertGreaterThanOrEqual(10, $checked);
     }
 
@@ -218,6 +234,30 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         $validator = $this->read('tools/validate-symfony-mailer-compatibility.php');
         self::assertStringContainsString('EVOLVE_MAILER_CONSUMER_AUTOLOAD', $validator);
         self::assertStringContainsString('sendNotice($firstMailer, $message)', $validator);
+    }
+
+    public function testMonologOptionalGuideHasIsolatedConsumerVerification(): void
+    {
+        $guide = $this->read('website/docs/next/packages/monolog.md');
+        $config = $this->read('website/mkdocs.yml');
+        self::assertSame(1, substr_count($config, 'next/packages/monolog.md'));
+        foreach (['monolog/monolog:^3.0', 'psr/log:^3.0', 'ServiceLifetime::Execution',
+            'LogCorrelationProvider', 'structuredFields()', 'registerResetParticipant',
+            'EVOLVE_MONOLOG_CONSUMER_AUTOLOAD', 'tools/validate-monolog-compatibility.php'] as $required) {
+            self::assertStringContainsString($required, $guide);
+        }
+        self::assertFileExists($this->root . '/tools/fixtures/monolog-psr3-consumer.php');
+        $validator = $this->read('tools/validate-monolog-compatibility.php');
+        self::assertStringContainsString('EVOLVE_MONOLOG_CONSUMER_AUTOLOAD', $validator);
+        self::assertStringContainsString('--base', $validator);
+        self::assertStringContainsString('--correlation', $validator);
+        $autoload = getenv('EVOLVE_MONOLOG_CONSUMER_AUTOLOAD');
+        if (is_string($autoload) && $autoload !== '') {
+            self::assertFileExists($autoload);
+            require_once $autoload;
+            self::assertTrue(class_exists(\Monolog\Logger::class));
+            self::assertTrue(interface_exists(\Psr\Log\LoggerInterface::class));
+        }
     }
 
     /** @return list<string> */
