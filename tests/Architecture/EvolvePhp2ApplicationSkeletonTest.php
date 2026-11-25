@@ -143,7 +143,7 @@ final class EvolvePhp2ApplicationSkeletonTest extends TestCase
         $coreManifest = $this->readJsonFile('packages/core/composer.json');
         $skeletonManifest = $this->readJsonFile('skeleton/composer.json');
 
-        $this->assertCount(36, $map['packages']);
+        $this->assertCount(37, $map['packages']);
         $this->assertNotContains('evolvephp/skeleton', $packageNames);
         $this->assertNotContains('skeleton', $packageDirectories);
         $this->assertStringNotContainsString('skeleton', $deptrac);

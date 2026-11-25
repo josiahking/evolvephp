@@ -38,6 +38,7 @@ The current 2.x source declares the following first-party packages in [release-p
 | [i18n](https://github.com/josiahking/evolvephp/blob/2.x/packages/i18n/README.md) | Explicit locale policy, catalogs and translation. |
 | [audit-log](https://github.com/josiahking/evolvephp/blob/2.x/packages/audit-log/README.md) | Explicit audit events, tenant-scoped SQL persistence, authorized reads and caller-triggered retention; local source only. |
 | [webhooks](webhooks.md) | Explicit tenant-scoped outbound webhook publication and signed delivery; requires a reviewed host transport. |
+| [api-keys](api-keys.md) | Explicit tenant-bound API key issuance, verification and revocation; local source only. |
 
 ## Integration and operations
 
@@ -54,6 +55,6 @@ The [repository package index](https://github.com/josiahking/evolvephp/blob/2.x/
 
 ## Current guides
 
-This v1 manual has focused [MCP](mcp.md), [Audit Log](audit-log.md), [Redis PSR-16 compatibility](redis.md), and [Webhooks](webhooks.md) guides and guides for selected foundations and modernization features. Redis compatibility uses optional upstream packages and application-owned registration; it is not a first-party package. The package list above remains a source map; it does not promise a full tutorial for every first-party package.
+This v1 manual has focused [MCP](mcp.md), [Audit Log](audit-log.md), [Redis PSR-16 compatibility](redis.md), [Webhooks](webhooks.md), and [API Keys](api-keys.md) guides and guides for selected foundations and modernization features. Redis compatibility uses optional upstream packages and application-owned registration; it is not a first-party package. The package list above remains a source map; it does not promise a full tutorial for every first-party package.
 
 MCP operational events are disabled by default. Hosts may wire safe normalized events to Observe telemetry or Insight local diagnostics without adding package dependency cycles.

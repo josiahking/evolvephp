@@ -145,7 +145,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $config->toArray()['skip_violations'] ?? array(),
         );
 
-        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/storage-contracts/tests', 'packages/storage-local/tests', 'packages/secret-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/job/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/mcp/tests', 'packages/ai/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/http-client/tests', 'packages/module/tests', 'packages/audit-log/tests', 'packages/webhooks/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
+        foreach (array('packages/contracts/tests', 'packages/database-contracts/tests', 'packages/database-pdo/tests', 'packages/session-contracts/tests', 'packages/lock-contracts/tests', 'packages/queue-contracts/tests', 'packages/queue-memory/tests', 'packages/storage-contracts/tests', 'packages/storage-local/tests', 'packages/secret-contracts/tests', 'packages/bridge-contracts/tests', 'packages/bridge-psr/tests', 'packages/bridge-laravel/tests', 'packages/bridge-symfony/tests', 'packages/bridge-remote/tests', 'packages/core/tests', 'packages/job/tests', 'packages/insight/tests', 'packages/observe/tests', 'packages/mcp/tests', 'packages/ai/tests', 'packages/dev-tools/tests', 'packages/http/tests', 'packages/http-client/tests', 'packages/module/tests', 'packages/audit-log/tests', 'packages/webhooks/tests', 'packages/api-keys/tests', 'packages/plugin/tests', 'packages/testing/tests') as $testPath) {
             $this->assertStringNotContainsString($testPath, $content);
         }
 
@@ -287,6 +287,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'Module' => 'packages/module/src/.*',
             'AuditLog' => 'packages/audit-log/src/.*',
             'Webhooks' => 'packages/webhooks/src/.*',
+            'ApiKeys' => 'packages/api-keys/src/.*',
             'Plugin' => 'packages/plugin/src/.*',
             'Testing' => 'packages/testing/src/.*',
         );
@@ -345,6 +346,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'Module' => array('Contracts'),
             'AuditLog' => array('Contracts', 'DatabaseContracts', 'I18n', 'Migration', 'Module', 'PsrContainer'),
             'Webhooks' => array('Contracts', 'DatabaseContracts', 'I18n', 'Migration', 'Module', 'SecretContracts', 'PsrContainer'),
+            'ApiKeys' => array('Contracts', 'DatabaseContracts', 'I18n', 'Migration', 'Module', 'PsrContainer'),
             'Plugin' => array('Contracts'),
             'Testing' => array('Contracts', 'Core', 'Http', 'Module', 'Plugin', 'View'),
         );
@@ -431,6 +433,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'module' => 'Module',
             'auditLog' => 'AuditLog',
             'webhooks' => 'Webhooks',
+            'apiKeys' => 'ApiKeys',
             'plugin' => 'Plugin',
             'testing' => 'Testing',
         );
@@ -452,7 +455,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $rulesets[$layerName] = $accesses;
         }
 
-        foreach (array('Contracts', 'DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'SecretContracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'PsrContainer', 'PsrSimpleCache', 'PsrClock', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'LaravelHost', 'SymfonyHost', 'Core', 'Insight', 'Observe', 'Mcp', 'Ai', 'DevTools', 'Http', 'Module', 'AuditLog', 'Webhooks', 'Plugin') as $productionLayer) {
+        foreach (array('Contracts', 'DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'LockContracts', 'StorageContracts', 'StorageLocal', 'SecretContracts', 'BridgeContracts', 'BridgePsr', 'BridgeLaravel', 'BridgeSymfony', 'BridgeRemote', 'PsrContainer', 'PsrSimpleCache', 'PsrClock', 'PsrHttpMessage', 'PsrHttpClient', 'PsrHttpServer', 'OpenTelemetryApi', 'OpenTelemetrySdk', 'OpenTelemetrySemConv', 'LaravelHost', 'SymfonyHost', 'Core', 'Insight', 'Observe', 'Mcp', 'Ai', 'DevTools', 'Http', 'Module', 'AuditLog', 'Webhooks', 'ApiKeys', 'Plugin') as $productionLayer) {
             $this->assertNotContains('Testing', $rulesets[$productionLayer], $productionLayer . ' must not access Testing.');
         }
 
@@ -460,7 +463,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             $this->assertNotContains('PsrContainer', $rulesets[$layerName], $layerName . ' must not access PsrContainer directly without an approved boundary.');
         }
 
-        foreach (array('Contracts', 'DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'BridgeContracts', 'Core', 'DevTools', 'Module', 'AuditLog', 'Webhooks', 'Plugin', 'Testing') as $layerName) {
+        foreach (array('Contracts', 'DatabaseContracts', 'DatabasePdo', 'CacheMemory', 'SessionContracts', 'BridgeContracts', 'Core', 'DevTools', 'Module', 'AuditLog', 'Webhooks', 'ApiKeys', 'Plugin', 'Testing') as $layerName) {
             $this->assertNotContains('PsrHttpMessage', $rulesets[$layerName], $layerName . ' must not access PSR-7 HTTP message interfaces directly.');
             $this->assertNotContains('PsrHttpClient', $rulesets[$layerName], $layerName . ' must not access PSR-18 HTTP client interfaces directly.');
             $this->assertNotContains('PsrHttpServer', $rulesets[$layerName], $layerName . ' must not access PSR-15 HTTP server interfaces directly.');
@@ -507,6 +510,7 @@ final class EvolvePhp2ArchitectureAndDependencyBoundariesTest extends TestCase
             'packages/module/src' => 'Evolve\\Module\\',
             'packages/audit-log/src' => 'Evolve\\AuditLog\\',
             'packages/webhooks/src' => 'Evolve\\Webhooks\\',
+            'packages/api-keys/src' => 'Evolve\\ApiKeys\\',
             'packages/plugin/src' => 'Evolve\\Plugin\\',
             'packages/testing/src' => 'Evolve\\Testing\\',
         );

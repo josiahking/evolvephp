@@ -45,6 +45,7 @@ return static function (DeptracConfig $config): void {
             'packages/module/src',
             'packages/audit-log/src',
             'packages/webhooks/src',
+            'packages/api-keys/src',
             'packages/plugin/src',
             'packages/testing/src',
         )
@@ -201,6 +202,9 @@ return static function (DeptracConfig $config): void {
             $webhooks = Layer::withName('Webhooks')->collectors(
                 DirectoryConfig::create('packages/webhooks/src/.*'),
             ),
+            $apiKeys = Layer::withName('ApiKeys')->collectors(
+                DirectoryConfig::create('packages/api-keys/src/.*'),
+            ),
             $plugin = Layer::withName('Plugin')->collectors(
                 DirectoryConfig::create('packages/plugin/src/.*'),
             ),
@@ -259,6 +263,7 @@ return static function (DeptracConfig $config): void {
             Ruleset::forLayer($module)->accesses($contracts),
             Ruleset::forLayer($auditLog)->accesses($contracts, $databaseContracts, $i18n, $migration, $module, $psrContainer),
             Ruleset::forLayer($webhooks)->accesses($contracts, $databaseContracts, $i18n, $migration, $module, $secretContracts, $psrContainer),
+            Ruleset::forLayer($apiKeys)->accesses($contracts, $databaseContracts, $i18n, $migration, $module, $psrContainer),
             Ruleset::forLayer($plugin)->accesses($contracts),
             Ruleset::forLayer($testing)->accesses(
                 $contracts,

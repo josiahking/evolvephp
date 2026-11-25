@@ -104,6 +104,7 @@ function expectedPackages(): array
         'evolvephp/module' => array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
         'evolvephp/audit-log' => array('name' => 'evolvephp/audit-log', 'directory' => 'packages/audit-log'),
         'evolvephp/webhooks' => array('name' => 'evolvephp/webhooks', 'directory' => 'packages/webhooks'),
+        'evolvephp/api-keys' => array('name' => 'evolvephp/api-keys', 'directory' => 'packages/api-keys'),
         'evolvephp/plugin' => array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
         'evolvephp/http' => array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
         'evolvephp/insight' => array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -158,6 +159,7 @@ function expectedNamespaces(): array
         'evolvephp/module' => 'Evolve\\Module\\',
         'evolvephp/audit-log' => 'Evolve\\AuditLog\\',
         'evolvephp/webhooks' => 'Evolve\\Webhooks\\',
+        'evolvephp/api-keys' => 'Evolve\\ApiKeys\\',
         'evolvephp/plugin' => 'Evolve\\Plugin\\',
         'evolvephp/http' => 'Evolve\\Http\\',
         'evolvephp/http-client' => 'Evolve\\Http\\Client\\',
@@ -202,6 +204,7 @@ function expectedGraph(): array
         'evolvephp/module' => array('evolvephp/contracts'),
         'evolvephp/audit-log' => array('evolvephp/contracts', 'evolvephp/database-contracts', 'evolvephp/i18n', 'evolvephp/migration', 'evolvephp/module'),
         'evolvephp/webhooks' => array('evolvephp/contracts', 'evolvephp/database-contracts', 'evolvephp/i18n', 'evolvephp/migration', 'evolvephp/module', 'evolvephp/secret-contracts'),
+        'evolvephp/api-keys' => array('evolvephp/contracts', 'evolvephp/database-contracts', 'evolvephp/i18n', 'evolvephp/migration', 'evolvephp/module'),
         'evolvephp/plugin' => array('evolvephp/contracts'),
         'evolvephp/http' => array('evolvephp/contracts', 'evolvephp/core'),
         'evolvephp/http-client' => array(),
@@ -230,8 +233,8 @@ function validateMap(string $root): array
         fail('release-packages.json version must be exactly 1.');
     }
 
-    if (!is_array($map['packages']) || count($map['packages']) !== 36) {
-        fail('release-packages.json must contain exactly thirty-six package entries.');
+    if (!is_array($map['packages']) || count($map['packages']) !== 37) {
+        fail('release-packages.json must contain exactly thirty-seven package entries.');
     }
 
     $expectedPackages = array_values(expectedPackages());
@@ -599,8 +602,13 @@ function validateReadme(array $package, string $readmePath): void
             || preg_match('/not yet independently published/i', $content) === 1) {
             fail('evolvephp/mcp README.md must distinguish published package Beta from unissued framework Beta.');
         }
-    } elseif (preg_match('/not yet independently published/i', $content) !== 1) {
-        fail($package['name'] . ' README.md must state that independent publication has not begun yet.');
+    } elseif (in_array($package['name'], array('evolvephp/audit-log', 'evolvephp/webhooks', 'evolvephp/api-keys'), true)) {
+        if (preg_match('/not yet independently published/i', $content) !== 1) {
+            fail($package['name'] . ' README.md must state that independent publication has not begun yet.');
+        }
+    } elseif (preg_match('/independently published as a Beta package/i', $content) !== 1
+        || preg_match('/not yet independently published/i', $content) === 1) {
+        fail($package['name'] . ' README.md must preserve its published package Beta status.');
     }
 
     if (preg_match('/github\.com\/josiahking\/evolvephp[-\/](?:bridge-contracts|bridge-psr|bridge-remote|contracts|core|dev-tools|http|lock-contracts|module|plugin|queue-contracts|queue-memory|secret-contracts|session-contracts|storage-contracts|storage-local|testing)/i', $content) === 1) {

@@ -1,0 +1,30 @@
+{
+    "name": "evolvephp/api-keys-independent-consumer-fixture",
+    "description": "Isolated offline path-repository consumer for the local API Keys package.",
+    "type": "project",
+    "require": {
+        "php": "^8.4",
+        "evolvephp/api-keys": "2.0.x-dev"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "__WORKTREE__/packages/*",
+            "options": {
+                "symlink": false,
+                "versions": {
+                    "evolvephp/api-keys": "2.0.x-dev",
+                    "evolvephp/contracts": "2.0.x-dev",
+                    "evolvephp/core": "2.0.x-dev",
+                    "evolvephp/database-contracts": "2.0.x-dev",
+                    "evolvephp/i18n": "2.0.x-dev",
+                    "evolvephp/lock-contracts": "2.0.x-dev",
+                    "evolvephp/migration": "2.0.x-dev",
+                    "evolvephp/module": "2.0.x-dev"
+                }
+            }
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

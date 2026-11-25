@@ -70,6 +70,8 @@ $finder = (new PhpCsFixer\Finder())
         'packages/module/tests',
         'packages/webhooks/src',
         'packages/webhooks/tests',
+        'packages/api-keys/src',
+        'packages/api-keys/tests',
         'packages/plugin/src',
         'packages/plugin/tests',
         'packages/testing/src',

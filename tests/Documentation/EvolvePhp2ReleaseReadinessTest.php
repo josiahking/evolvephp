@@ -13,9 +13,9 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
         $this->assertSame(array('version', 'status', 'packages'), array_keys($map));
         $this->assertSame(1, $map['version']);
         $this->assertSame('proposed-unverified', $map['status']);
-        $this->assertCount(36, $map['packages']);
+        $this->assertCount(37, $map['packages']);
         $this->assertSame(array_column($canonical['packages'], 'name'), array_column($map['packages'], 'name'));
-        $this->assertCount(36, array_unique(array_column($map['packages'], 'repository')));
+        $this->assertCount(37, array_unique(array_column($map['packages'], 'repository')));
         foreach ($map['packages'] as $package) {
             $this->assertSame(array('name', 'repository'), array_keys($package));
             $this->assertSame('josiahking/evolvephp-' . substr($package['name'], 10), $package['repository']);
@@ -25,7 +25,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
     public function testBetaPlanningDocumentationStatesLocalOnlyBoundaries(): void
     {
         $development = $this->readProjectFile('DEVELOPMENT.md');
-        foreach (array('composer release:plan', 'tools/release-package-destinations.json', '2.0.0-beta.1', 'minimum-stability: beta', 'proposed-unverified', '--source-commit', '--source-tree', 'Packagist registration', '36 independently tagged') as $needle) {
+        foreach (array('composer release:plan', 'tools/release-package-destinations.json', '2.0.0-beta.1', 'minimum-stability: beta', 'proposed-unverified', '--source-commit', '--source-tree', 'Packagist registration', '37 independently tagged') as $needle) {
             $this->assertStringContainsString($needle, $development);
         }
         $this->assertStringContainsString('local release-readiness', $this->readProjectFile('CHANGELOG.md'));
@@ -91,6 +91,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 array('name' => 'evolvephp/module', 'directory' => 'packages/module'),
                 array('name' => 'evolvephp/audit-log', 'directory' => 'packages/audit-log'),
                 array('name' => 'evolvephp/webhooks', 'directory' => 'packages/webhooks'),
+                array('name' => 'evolvephp/api-keys', 'directory' => 'packages/api-keys'),
                 array('name' => 'evolvephp/plugin', 'directory' => 'packages/plugin'),
                 array('name' => 'evolvephp/http', 'directory' => 'packages/http'),
                 array('name' => 'evolvephp/insight', 'directory' => 'packages/insight'),
@@ -131,7 +132,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             $this->assertStringContainsString($package['responsibility'], $content);
             $this->assertStringContainsString('PHP `^8.4`', $content);
             $this->assertMatchesPattern('/EvolvePHP 2 is pre-release/i', $content);
-            if (in_array($package['name'], ['evolvephp/audit-log', 'evolvephp/webhooks'], true)) {
+            if (in_array($package['name'], ['evolvephp/audit-log', 'evolvephp/webhooks', 'evolvephp/api-keys'], true)) {
                 $this->assertMatchesPattern('/not yet independently published/i', $content);
             } elseif ($package['name'] === 'evolvephp/mcp') {
                 $this->assertStringContainsString(
@@ -240,7 +241,7 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/## Release Validation/',
             '/composer release:validate/',
             '/deterministic\/offline|offline.*deterministic/i',
-            '/thirty-six packages.*mapped explicitly|mapped explicitly.*thirty-six packages|map contains thirty-six packages/i',
+            '/thirty-seven packages.*mapped explicitly|mapped explicitly.*thirty-seven packages|map contains thirty-seven packages/i',
             '/dependency-compatible/i',
             '/package-local README/i',
             '/package-local.*licen[cs]es/i',
@@ -254,8 +255,8 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
             '/package splitting.*release:split:validate|release:split:validate.*package splitting/i',
             '/local validators do not synchronize remote repositories.*register Packagist packages.*create tags or publish GitHub Releases/i',
             '/original 34 package Betas and separate skeleton were published through independent gates/i',
-            '/coordinated framework Beta tag and GitHub Release remain deferred/i',
-            '/source-only Audit Log and Webhooks publication requires separate decisions/i',
+            '/framework 2\.0\.0-beta\.1 public GitHub prerelease was published on November 23, 2026/i',
+            '/source-only Audit Log, Webhooks and API Keys publication requires separate decisions/i',
             '/prerelease consumer stability.*offline consumer matrix|offline consumer matrix.*prerelease consumer stability/i',
             '/RFC 0003 remains authoritative/i',
         ) as $pattern) {
@@ -451,6 +452,13 @@ final class EvolvePhp2ReleaseReadinessTest extends TestCase
                 'human' => 'EvolvePHP Webhooks',
                 'responsibility' => 'Explicit tenant-scoped outbound webhooks with signed delivery and host-controlled transport.',
                 'dependencies' => '`evolvephp/contracts`, `evolvephp/database-contracts`, `evolvephp/i18n`, `evolvephp/migration`, `evolvephp/module`, `evolvephp/secret-contracts`',
+            ),
+            array(
+                'name' => 'evolvephp/api-keys',
+                'directory' => 'packages/api-keys',
+                'human' => 'EvolvePHP API Keys',
+                'responsibility' => 'Explicit, tenant-bound API key issuance, verification and revocation.',
+                'dependencies' => '`evolvephp/contracts`, `evolvephp/database-contracts`, `evolvephp/i18n`, `evolvephp/migration`, `evolvephp/module`',
             ),
             array(
                 'name' => 'evolvephp/plugin',

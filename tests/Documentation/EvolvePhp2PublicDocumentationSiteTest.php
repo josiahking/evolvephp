@@ -25,13 +25,14 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             'website/docs/next/packages/redis.md',
             'website/docs/next/packages/audit-log.md',
             'website/docs/next/packages/webhooks.md',
+            'website/docs/next/packages/api-keys.md',
             'website/docs/next/project/documentation-versioning.md',
             'website/docs/versions/index.md',
         ] as $path) {
             self::assertFileExists($this->root . '/' . $path, $path);
         }
 
-        self::assertCount(22, $this->nextPages());
+        self::assertCount(23, $this->nextPages());
         self::assertFileDoesNotExist($this->root . '/website/package.json');
         self::assertFileDoesNotExist($this->root . '/website/docusaurus.config.ts');
         self::assertFileDoesNotExist($this->root . '/website/docs/versions/2.0.0-alpha.1');
@@ -82,7 +83,9 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         self::assertStringContainsString('next/packages/audit-log.md', $config);
         self::assertStringContainsString('(audit-log.md)', $this->read('website/docs/next/packages/overview.md'));
         self::assertStringContainsString('next/packages/webhooks.md', $config);
+        self::assertStringContainsString('next/packages/api-keys.md', $config);
         self::assertStringContainsString('(webhooks.md)', $this->read('website/docs/next/packages/overview.md'));
+        self::assertStringContainsString('(api-keys.md)', $this->read('website/docs/next/packages/overview.md'));
         self::assertStringNotContainsString('<<<<<<<', $config);
 
         foreach ($this->nextPages() as $path) {

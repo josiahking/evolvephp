@@ -36,6 +36,7 @@ nav:
       - Redis PSR-16: next/packages/redis.md
       - Audit Log: next/packages/audit-log.md
       - Webhooks: next/packages/webhooks.md
+      - API Keys: next/packages/api-keys.md
       - Releases: next/project/releases.md
       - RFCs: next/project/rfcs.md
       - Documentation Versioning: next/project/documentation-versioning.md
