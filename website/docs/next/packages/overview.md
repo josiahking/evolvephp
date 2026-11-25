@@ -55,6 +55,6 @@ The [repository package index](https://github.com/josiahking/evolvephp/blob/2.x/
 
 ## Current guides
 
-This v1 manual has focused [MCP](mcp.md), [Audit Log](audit-log.md), [Redis PSR-16 compatibility](redis.md), [Symfony Mailer compatibility](symfony-mailer.md), [Webhooks](webhooks.md), and [API Keys](api-keys.md) guides and guides for selected foundations and modernization features. Redis and Symfony Mailer are optional upstream integrations with application-owned registration; neither is a first-party EvolvePHP package. The package list above remains a source map; it does not promise a full tutorial for every first-party package.
+This v1 manual has focused [MCP](mcp.md), [Audit Log](audit-log.md), [Redis PSR-16 compatibility](redis.md), [Symfony Mailer compatibility](symfony-mailer.md), [Monolog PSR-3 compatibility](monolog.md), [Webhooks](webhooks.md), and [API Keys](api-keys.md) guides and guides for selected foundations and modernization features. Redis, Symfony Mailer and Monolog are optional upstream integrations with application-owned registration; none is a first-party EvolvePHP package. The package list above remains a source map; it does not promise a full tutorial for every first-party package.
 
 MCP operational events are disabled by default. Hosts may wire safe normalized events to Observe telemetry or Insight local diagnostics without adding package dependency cycles.
