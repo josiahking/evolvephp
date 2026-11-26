@@ -28,13 +28,14 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             'website/docs/next/packages/api-keys.md',
             'website/docs/next/packages/symfony-mailer.md',
             'website/docs/next/packages/monolog.md',
+            'website/docs/next/packages/symfony-validator.md',
             'website/docs/next/project/documentation-versioning.md',
             'website/docs/versions/index.md',
         ] as $path) {
             self::assertFileExists($this->root . '/' . $path, $path);
         }
 
-        self::assertCount(25, $this->nextPages());
+        self::assertCount(26, $this->nextPages());
         self::assertFileDoesNotExist($this->root . '/website/package.json');
         self::assertFileDoesNotExist($this->root . '/website/docusaurus.config.ts');
         self::assertFileDoesNotExist($this->root . '/website/docs/versions/2.0.0-alpha.1');
@@ -92,6 +93,8 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         self::assertStringContainsString('(symfony-mailer.md)', $this->read('website/docs/next/packages/overview.md'));
         self::assertSame(1, substr_count($config, 'next/packages/monolog.md'));
         self::assertStringContainsString('(monolog.md)', $this->read('website/docs/next/packages/overview.md'));
+        self::assertSame(1, substr_count($config, 'next/packages/symfony-validator.md'));
+        self::assertStringContainsString('(symfony-validator.md)', $this->read('website/docs/next/packages/overview.md'));
         self::assertStringNotContainsString('<<<<<<<', $config);
 
         foreach ($this->nextPages() as $path) {
@@ -159,6 +162,11 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             'Psr\Log\LoggerInterface',
         ];
         $seenOptionalMonologImports = [];
+        $optionalValidatorImports = [
+            'Symfony\Component\Validator\Validation',
+            'Symfony\Component\Validator\Validator\ValidatorInterface',
+        ];
+        $seenOptionalValidatorImports = [];
         foreach ($this->nextPages() as $path) {
             $content = file_get_contents($path);
             self::assertIsString($content);
@@ -181,6 +189,11 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
                         $seenOptionalMonologImports[$symbol] = true;
                         continue;
                     }
+                    if (str_ends_with(str_replace(DIRECTORY_SEPARATOR, '/', $path), '/website/docs/next/packages/symfony-validator.md')
+                        && in_array($symbol, $optionalValidatorImports, true)) {
+                        $seenOptionalValidatorImports[$symbol] = true;
+                        continue;
+                    }
                     self::assertTrue(
                         class_exists($symbol) || interface_exists($symbol)
                         || trait_exists($symbol) || enum_exists($symbol),
@@ -191,6 +204,7 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         }
         self::assertEqualsCanonicalizing($optionalMailerImports, array_keys($seenOptionalMailerImports));
         self::assertEqualsCanonicalizing($optionalMonologImports, array_keys($seenOptionalMonologImports));
+        self::assertEqualsCanonicalizing($optionalValidatorImports, array_keys($seenOptionalValidatorImports));
         self::assertGreaterThanOrEqual(10, $checked);
     }
 
@@ -234,6 +248,34 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         $validator = $this->read('tools/validate-symfony-mailer-compatibility.php');
         self::assertStringContainsString('EVOLVE_MAILER_CONSUMER_AUTOLOAD', $validator);
         self::assertStringContainsString('sendNotice($firstMailer, $message)', $validator);
+    }
+
+    public function testSymfonyValidatorOptionalGuideHasIsolatedConsumerVerification(): void
+    {
+        $guide = $this->read('website/docs/next/packages/symfony-validator.md');
+        $overview = $this->read('website/docs/next/packages/overview.md');
+        $config = $this->read('website/mkdocs.yml');
+        self::assertSame(1, substr_count($config, 'next/packages/symfony-validator.md'));
+        self::assertStringContainsString('[Symfony Validator compatibility](symfony-validator.md)', $overview);
+        self::assertStringContainsString('optional upstream integrations', $overview);
+        self::assertStringNotContainsString('| [symfony-validator]', $overview);
+        foreach (['symfony/validator:^7.4.23', 'ServiceLifetime::Execution', '#[Valid]',
+            'create', 'update', 'AllowedRegion', 'HTTP 422', 'EVOLVE_VALIDATOR_CONSUMER_AUTOLOAD'] as $required) {
+            self::assertStringContainsString($required, $guide);
+        }
+        self::assertFileExists($this->root . '/tools/fixtures/symfony-validator-consumer.php');
+        $validator = $this->read('tools/validate-symfony-validator-compatibility.php');
+        foreach (['EVOLVE_VALIDATOR_CONSUMER_AUTOLOAD', 'ExecutionScopeUnavailable',
+            'ConstraintViolationListInterface', 'sensitive', 'finally', 'tags[1]', "['create']", "['update']"] as $required) {
+            self::assertStringContainsString($required, $validator);
+        }
+        $autoload = getenv('EVOLVE_VALIDATOR_CONSUMER_AUTOLOAD');
+        if (is_string($autoload) && $autoload !== '') {
+            self::assertFileExists($autoload);
+            require_once $autoload;
+            self::assertTrue(interface_exists(\Symfony\Component\Validator\Validator\ValidatorInterface::class));
+            self::assertTrue(class_exists(\Symfony\Component\Validator\Validation::class));
+        }
     }
 
     public function testMonologOptionalGuideHasIsolatedConsumerVerification(): void
