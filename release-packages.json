@@ -94,6 +94,10 @@
             "directory": "packages/webhooks"
         },
         {
+            "name": "evolvephp/api-keys",
+            "directory": "packages/api-keys"
+        },
+        {
             "name": "evolvephp/plugin",
             "directory": "packages/plugin"
         },

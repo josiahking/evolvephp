@@ -18,7 +18,7 @@ class MkDocsProposalTests(unittest.TestCase):
 
     def test_content_integrity(self):
         pages = list((DOCS / "next").rglob("*.md"))
-        self.assertEqual(22, len(pages))
+        self.assertEqual(26, len(pages))
         self.assertTrue((DOCS / "next/packages/redis.md").exists())
         self.assertIn("next/packages/redis.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
         self.assertTrue((DOCS / "next/packages/audit-log.md").exists())
@@ -26,6 +26,9 @@ class MkDocsProposalTests(unittest.TestCase):
         self.assertIn("next/packages/webhooks.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
         self.assertTrue((DOCS / "next/index.md").exists())
         self.assertTrue((DOCS / "next/packages/webhooks.md").exists())
+        self.assertTrue((DOCS / "next/packages/api-keys.md").exists())
+        self.assertIn("next/packages/api-keys.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
+        self.assertTrue((DOCS / "next/packages/symfony-mailer.md").exists())
         self.assertTrue((DOCS / "index.md").exists())
         self.assertTrue((DOCS / "versions/index.md").exists())
         self.assertTrue((DOCS / ".nojekyll").exists())
@@ -36,6 +39,63 @@ class MkDocsProposalTests(unittest.TestCase):
             self.assertNotIn("docusaurus", text.lower())
         self.assertIn("McpComponentContribution", (DOCS / "next/packages/mcp.md").read_text(encoding="utf-8"))
         self.assertFalse((DOCS / "versions/2.0.0-alpha.1").exists())
+
+    def test_symfony_mailer_optional_guide(self):
+        config = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+        overview = (DOCS / "next/packages/overview.md").read_text(encoding="utf-8")
+        guide = (DOCS / "next/packages/symfony-mailer.md").read_text(encoding="utf-8")
+        fixture = ROOT.parent / "tools/fixtures/symfony-mailer-consumer.php"
+        validator = ROOT.parent / "tools/validate-symfony-mailer-compatibility.php"
+
+        self.assertEqual(1, config.count("next/packages/symfony-mailer.md"))
+        self.assertIn("[Symfony Mailer compatibility](symfony-mailer.md)", overview)
+        self.assertIn("optional upstream integration", overview)
+        self.assertNotIn("| [symfony-mailer]", overview)
+        self.assertIn("symfony/mailer:^7.4", guide)
+        self.assertIn("ServiceLifetime::Execution", guide)
+        self.assertIn("TwigViewRenderer", guide)
+        self.assertIn("null://null", guide)
+        self.assertIn("Mail delivery failed.", guide)
+        self.assertTrue(fixture.is_file())
+        self.assertTrue(validator.is_file())
+        self.assertIn("EVOLVE_MAILER_CONSUMER_AUTOLOAD", validator.read_text(encoding="utf-8"))
+        self.assertIn("sendNotice($firstMailer, $message)", validator.read_text(encoding="utf-8"))
+
+    def test_symfony_validator_optional_guide(self):
+        config = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+        overview = (DOCS / "next/packages/overview.md").read_text(encoding="utf-8")
+        guide_path = DOCS / "next/packages/symfony-validator.md"
+        fixture = ROOT.parent / "tools/fixtures/symfony-validator-consumer.php"
+        validator = ROOT.parent / "tools/validate-symfony-validator-compatibility.php"
+        self.assertTrue(guide_path.is_file())
+        self.assertEqual(1, config.count("next/packages/symfony-validator.md"))
+        self.assertIn("[Symfony Validator compatibility](symfony-validator.md)", overview)
+        self.assertIn("optional upstream integrations", overview)
+        self.assertNotIn("| [symfony-validator]", overview)
+        guide = guide_path.read_text(encoding="utf-8")
+        for required in ("symfony/validator:^7.4.23", "ServiceLifetime::Execution", "#[Valid]", "validation groups", "custom constraint", "HTTP 422", "EVOLVE_VALIDATOR_CONSUMER_AUTOLOAD"):
+            self.assertIn(required, guide)
+        self.assertTrue(fixture.is_file())
+        self.assertTrue(validator.is_file())
+        script = validator.read_text(encoding="utf-8")
+        for required in ("EVOLVE_VALIDATOR_CONSUMER_AUTOLOAD", "ExecutionScopeUnavailable", "ConstraintViolationListInterface", "sensitive", "finally"):
+            self.assertIn(required, script)
+
+    def test_monolog_optional_guide(self):
+        config = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+        overview = (DOCS / "next/packages/overview.md").read_text(encoding="utf-8")
+        guide = (DOCS / "next/packages/monolog.md").read_text(encoding="utf-8")
+        fixture = ROOT.parent / "tools/fixtures/monolog-psr3-consumer.php"
+        validator = ROOT.parent / "tools/validate-monolog-compatibility.php"
+        self.assertEqual(1, config.count("next/packages/monolog.md"))
+        self.assertIn("[Monolog PSR-3 compatibility](monolog.md)", overview)
+        self.assertIn("optional upstream integrations", overview)
+        self.assertNotIn("| [monolog]", overview)
+        for required in ("monolog/monolog:^3.0", "psr/log:^3.0", "LoggerInterface", "ServiceLifetime::Execution", "LogCorrelationProvider", "structuredFields()", "registerResetParticipant", "EVOLVE_MONOLOG_CONSUMER_AUTOLOAD", "tools/validate-monolog-compatibility.php"):
+            self.assertIn(required, guide)
+        self.assertTrue(fixture.is_file())
+        self.assertTrue(validator.is_file())
+        self.assertIn("EVOLVE_MONOLOG_CONSUMER_AUTOLOAD", validator.read_text(encoding="utf-8"))
 
     def test_relative_links(self):
         for page in DOCS.rglob("*.md"):

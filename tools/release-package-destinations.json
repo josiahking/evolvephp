@@ -95,6 +95,10 @@
             "repository": "josiahking/evolvephp-webhooks"
         },
         {
+            "name": "evolvephp/api-keys",
+            "repository": "josiahking/evolvephp-api-keys"
+        },
+        {
             "name": "evolvephp/plugin",
             "repository": "josiahking/evolvephp-plugin"
         },

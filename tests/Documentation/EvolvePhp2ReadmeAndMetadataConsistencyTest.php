@@ -37,6 +37,7 @@ final class EvolvePhp2ReadmeAndMetadataConsistencyTest extends TestCase
                 'docs/rfcs/README.md',
                 'packages/README.md',
             'packages/ai/README.md',
+                'packages/api-keys/README.md',
                 'packages/audit-log/README.md',
                 'packages/bridge-contracts/README.md',
                 'packages/bridge-laravel/README.md',

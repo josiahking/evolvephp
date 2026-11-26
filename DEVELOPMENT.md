@@ -97,6 +97,7 @@ The root maps each initial package explicitly to `2.0.x-dev` inside the path rep
 - `evolvephp/module`
 - `evolvephp/audit-log`
 - `evolvephp/webhooks`
+- `evolvephp/api-keys`
 - `evolvephp/plugin`
 - `evolvephp/testing`
 
@@ -177,6 +178,7 @@ composer test:http-client
 composer test:module
 composer test:audit-log
 composer test:webhooks
+composer test:api-keys
 composer test:plugin
 composer test:testing
 ```
@@ -276,7 +278,7 @@ polyglot-persistence planning; they are not merged into a composite score.
 
 ## Beta Publisher Preparation
 
-`release:publisher:prepare` is a separate publisher-preparation operator. It defaults to dry-run, no-network and no-write behavior, including no temporary output files. Its only output is JSON on stdout or a bounded failure message on stderr. The existing `release:plan`, split validator and Alpha/Stable/Beta consumer validators retain their roles. There are 36 proposed independent source repositories. The original 34 package Betas are published; the coordinated framework Beta tag and GitHub Release have not been issued.
+`release:publisher:prepare` is a separate publisher-preparation operator. It defaults to dry-run, no-network and no-write behavior, including no temporary output files. Its only output is JSON on stdout or a bounded failure message on stderr. The existing `release:plan`, split validator and Alpha/Stable/Beta consumer validators retain their roles. There are 37 proposed independent source repositories. The original 34 package Betas are published; framework 2.0.0-beta.1 was published as a public GitHub prerelease on November 23, 2026; Audit Log, Webhooks and API Keys remain source-only.
 
 Use an absolute PHP 8.4 executable appropriate to the host. Supply an independently reviewed full source commit, tree and branch with `--source-commit`, `--source-tree` and `--source-branch`; optionally select a checkout with `--root`. The equivalent Composer entry point is `composer release:publisher:prepare` with those same options. Missing pins fail closed; reading HEAD yourself does not constitute release approval. A clean committed checkout is required, so an uncommitted implementation candidate is deliberately rejected. Store redirected evidence outside the checkout.
 
@@ -295,7 +297,7 @@ The default result is deterministic JSON with `publication_enabled: false`, owne
 Future execution requires a separately reviewed authorization artifact naming the immutable source, plan digest, pilot package tree, verified destination owner, deterministic split commit, remote commit, exact tag ref, tag object and peeled commit. It also requires independent remote absence/ownership proof, a write mechanism with safe partial-publication recovery, and explicit maintainer approval. Credentials, flags, environment variables and CI state are never authorization. No publication path is implemented here.
 ### Offline observations and recovery
 
-Optional `--observations=<external-json-file>` accepts an untrusted offline snapshot for comparison only. It never contacts a destination, verifies ownership or promotes any package to published. The exact version-1 schema uses these keys in order: `version`, `source` (the plan's branch/commit/tree object), `packages` (all 36 entries in canonical order). Each entry has `name`, `destination`, `split_commit`, `split_tree`, `remote_commit`, `tag_ref`, `tag_object`, `tag_commit`. The tag ref must be `refs/tags/2.0.0-beta.1`. All five object IDs must be null for a reported absence, or nonzero full SHA-1 strings for a complete report. Complete reports must bind the split tree to the package tree and both remote/tag commits to the reported split commit. Annotated tag objects may differ from their peeled commits; lightweight tag objects equal the commit. These are reported identities, never verified attestations.
+Optional `--observations=<external-json-file>` accepts an untrusted offline snapshot for comparison only. It never contacts a destination, verifies ownership or promotes any package to published. The exact version-1 schema uses these keys in order: `version`, `source` (the plan's branch/commit/tree object), `packages` (all 37 entries in canonical order). Each entry has `name`, `destination`, `split_commit`, `split_tree`, `remote_commit`, `tag_ref`, `tag_object`, `tag_commit`. The tag ref must be `refs/tags/2.0.0-beta.1`. All five object IDs must be null for a reported absence, or nonzero full SHA-1 strings for a complete report. Complete reports must bind the split tree to the package tree and both remote/tag commits to the reported split commit. Annotated tag objects may differ from their peeled commits; lightweight tag objects equal the commit. These are reported identities, never verified attestations.
 
 Malformed, reordered, duplicate, mismatched or partial reports fail closed. Even a consistent all-package report remains unverified and blocked. Mixed absent/complete packages are partial state, including a reported pilot-only publication: stop, preserve the external evidence, independently inspect every destination and tag, and obtain a separately reviewed recovery decision. Do not delete/recreate tags, force-push, overwrite metadata or automatically retry writes. The operator has no checkpoint, remote mutation or resume mechanism. Repeating identical source/options/observation bytes produces identical output; the observations byte digest makes snapshot changes inspectable. Correcting an invalid report permits a fresh dry-run but never authorizes publication.
 
@@ -303,9 +305,9 @@ Local validation uses isolated fixture repositories and external evidence. The r
 
 ## Local Beta Distribution Planning
 
-The current source model proposes 36 independently tagged GitHub split repositories, including source-only Audit Log and Webhooks. This monorepo remains authoritative; the published original Beta set covers only the initial 34 first-party package distributions. Publishing either source-only package needs separate approval. The intended sequence is monorepo source, deterministic package splits, independent repositories, independently verified package tags, Packagist registration, then consumer installation. None of those public publication steps is performed by local readiness tooling.
+The current source model proposes 37 independently tagged GitHub split repositories, including source-only Audit Log, Webhooks and API Keys. This monorepo remains authoritative; the published original Beta set covers only the initial 34 first-party package distributions. Publishing any of the three source-only packages needs separate approval. The intended sequence is monorepo source, deterministic package splits, independent repositories, independently verified package tags, Packagist registration, then consumer installation. None of those public publication steps is performed by local readiness tooling.
 
-The version-1 inventory in `release-packages.json` remains canonical. `tools/release-package-destinations.json` separately maps all 36 packages, in that same order, to proposed `evolvephp-<slug>` repositories under the owner recorded in that mapping. Its `proposed-unverified` status means that repository existence and ownership have not been checked. `2.0.0-beta.1` is used for simulation by these local tools; the original 34 package Beta distributions are published, while a coordinated framework Beta tag and GitHub Release remain separate.
+The version-1 inventory in `release-packages.json` remains canonical. `tools/release-package-destinations.json` separately maps all 37 packages, in that same order, to proposed `evolvephp-<slug>` repositories under the owner recorded in that mapping. Its `proposed-unverified` status means that repository existence and ownership have not been checked. `2.0.0-beta.1` is used for simulation by these local tools; the original 34 package Beta distributions are published, and the framework 2.0.0-beta.1 public GitHub prerelease was published on November 23, 2026.
 
 From a clean committed source checkout, generate the offline JSON plan:
 
@@ -315,7 +317,7 @@ composer release:plan
 
 For an independently reviewed source identity, supply the full accepted commit and tree IDs with `--source-commit=<40-character-sha>` and `--source-tree=<40-character-sha>`, and the accepted branch with `--source-branch=<branch>`, after Composer's `--` separator. `--root=<checkout>` selects another local source checkout. The defaults bind to the current HEAD commit, tree and branch. Detached CI checkouts use the branch label `HEAD`; this is not proof of protected-branch membership. Planning accepts `2.x`, task branches under `feature/`, or detached HEAD; it rejects `master`, dirty state, hidden index entries, replacement refs, mismatched identities and unsupported arguments.
 
-Review the source commit/tree against the accepted immutable source, the exact 36 names and ordering, every proposed destination, and each `package_tree` and `composer_blob`. Compare two outputs byte for byte for the same source. Save evidence outside the checkout: an untracked output file inside it makes subsequent planning fail. The planner uses read-only Git object inspection and preserves the index, worktree and refs. It neither computes split-history commits nor verifies tags: `composer release:split:validate` remains the separate disposable-clone split/history check. A later publication review must prove each split tree equals the planned package tree and independently verify every package tag against the approved source.
+Review the source commit/tree against the accepted immutable source, the exact 37 names and ordering, every proposed destination, and each `package_tree` and `composer_blob`. Compare two outputs byte for byte for the same source. Save evidence outside the checkout: an untracked output file inside it makes subsequent planning fail. The planner uses read-only Git object inspection and preserves the index, worktree and refs. It neither computes split-history commits nor verifies tags: `composer release:split:validate` remains the separate disposable-clone split/history check. A later publication review must prove each split tree equals the planned package tree and independently verify every package tag against the approved source.
 
 An uncommitted implementation checkout is deliberately rejected. During implementation, PHPUnit uses disposable committed fixtures to exercise successful plans, and the live checkout exercises dirty-source rejection. Do not stage or commit solely to bypass this guard.
 
@@ -328,8 +330,8 @@ An uncommitted implementation checkout is deliberately rejected. During implemen
 | K | HTTP `^2.0@beta` only, default stable | Transitive stability rejection |
 | L | HTTP `^2.0`, minimum-stability: beta and prefer-stable: true | HTTP, Core and Contracts select Beta |
 | M | Explicit root `^2.0@beta` for HTTP, Core and Contracts | All three select Beta |
-| N | All 36 root requirements `^2.0`, minimum-stability: beta and prefer-stable: true | Complete Beta graph |
-| O | All 36 root requirements exactly `2.0.0-beta.1` | Complete Beta graph |
+| N | All 37 root requirements `^2.0`, minimum-stability: beta and prefer-stable: true | Complete Beta graph |
+| O | All 37 root requirements exactly `2.0.0-beta.1` | Complete Beta graph |
 
 Root stability flags do not automatically propagate to dependencies. Package-local first-party constraints remain `^2.0`; PHP remains `^8.4` and licensing remains BSD-3-Clause. No first-party package gains a version field or a root stability policy. The validator sets `COMPOSER_DISABLE_NETWORK=1`, disables Packagist in synthetic consumers, and creates synthetic version tags only in disposable local repositories. Lock-only Beta resolution is not a public installation or production-readiness claim. The existing independently installed MCP consumer case remains separate.
 
@@ -343,7 +345,7 @@ Run deterministic/offline package release-readiness validation:
 composer release:validate
 ```
 
-The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains thirty-six packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, migration, view, view-twig, view-blade, i18n, module, audit-log, webhooks, plugin, http, insight, http-client, observe, mcp, ai, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
+The release packages are mapped explicitly in `release-packages.json`. The dependency-compatible map contains thirty-seven packages in this order: contracts, database-contracts, database-pdo, cache-memory, session-contracts, lock-contracts, queue-contracts, queue-memory, storage-contracts, storage-local, secret-contracts, bridge-contracts, core, job, scheduler, migration, view, view-twig, view-blade, i18n, module, audit-log, webhooks, api-keys, plugin, http, insight, http-client, observe, mcp, ai, bridge-psr, bridge-laravel, bridge-symfony, bridge-remote, testing and dev-tools. Package-local README and licence files exist so future split roots carry consumer documentation and legal text naturally. Package-local licences must remain identical to root `LICENSE.md`.
 
 No package is being published by this command. No remote repositories are contacted, no tags/releases are created, and no split repositories are synchronized. Package Composer manifests remain authoritative for package metadata.
 
@@ -391,7 +393,7 @@ composer release:skeleton:validate
 
 `release:skeleton:validate` exercises the real Composer `create-project` command for `evolvephp/skeleton` using repository-injected local package evidence. It creates validator-owned temporary paths, disables Packagist, sets `COMPOSER_DISABLE_NETWORK=1`, installs into a previously absent generated-project directory, validates the generated Composer manifest, confirms first-party packages are copied rather than symlinked to the source monorepo, runs `php bin/evolve doctor`, verifies `php bin/evolve route:list` emits `No routes are configured.`, generates `module:new Billing` and `plugin:new Cache` in the development install, verifies the generated application tests pass, verifies repeat generation refuses overwrites, verifies invalid/path-traversal names create nothing outside the application, verifies a `composer install --no-dev` production install still supports `doctor` and `route:list`, verifies Core missing-command and unknown-command usage errors, and confirms source repository state is preserved.
 
-The standalone `evolvephp/skeleton:2.0.0-beta.1` is publicly available through Packagist, and an actual external `composer create-project` installation has been verified. This is not by itself a coordinated framework-wide Beta release or production-readiness claim.
+The standalone `evolvephp/skeleton:2.0.0-beta.1` is publicly available through Packagist, and an actual external `composer create-project` installation has been verified. Framework 2.0.0-beta.1 was published as a public GitHub prerelease on November 23, 2026; neither publication is a production-readiness claim.
 
 For an EvolvePHP 2 alpha consumer, the recommended root consumer settings are:
 
@@ -406,7 +408,7 @@ These are root consumer settings. First-party package manifests must not add alp
 
 In prose: set `minimum-stability: alpha` and `prefer-stable: true` only in the root alpha consumer.
 
-No package is published by `release:validate`, `release:split:validate`, `release:consumer:validate` or `release:skeleton:validate`. The local validators do not synchronize remote repositories, register Packagist packages, create tags or publish GitHub Releases. The original 34 package Betas and separate skeleton were published through independent gates; the coordinated framework Beta tag and GitHub Release remain deferred.
+No package is published by `release:validate`, `release:split:validate`, `release:consumer:validate` or `release:skeleton:validate`. The local validators do not synchronize remote repositories, register Packagist packages, create tags or publish GitHub Releases. The original 34 package Betas and separate skeleton were published through independent gates; the framework 2.0.0-beta.1 public GitHub prerelease was published on November 23, 2026.
 
 `release:validate` remains metadata/package-boundary validation. `release:split:validate` validates generated split history/root content. `release:consumer:validate` validates package-resolution semantics. `release:skeleton:validate` validates local prerelease create-project behavior. `supply-chain` remains network-dependent security/licence validation. `quality` remains ordinary root quality.
 
@@ -526,6 +528,7 @@ It bootstraps through `vendor/autoload.php` and defines one named suite for each
 | `module` | `packages/module/tests` |
 | `audit-log` | `packages/audit-log/tests` |
 | `webhooks` | `packages/webhooks/tests` |
+| `api-keys` | `packages/api-keys/tests` |
 | `plugin` | `packages/plugin/tests` |
 | `testing` | `packages/testing/tests` |
 
@@ -601,6 +604,8 @@ packages/module/tests
 packages/audit-log/tests
 packages/webhooks/src
 packages/webhooks/tests
+packages/api-keys/src
+packages/api-keys/tests
 packages/plugin/src
 packages/plugin/tests
 packages/testing/src
@@ -875,7 +880,7 @@ This verifies the current workspace, tooling and package foundation only. The pr
 
 The following work remains deferred:
 
-- coordinated framework Beta tag and GitHub Release; source-only Audit Log and Webhooks publication requires separate decisions
+- source-only Audit Log, Webhooks and API Keys publication requires separate decisions
 - Runtime framework implementation beyond the completed HTTP package foundation
 - full Module/Plugin runtime managers
 - broader developer tooling beyond `module:new` and `plugin:new`
