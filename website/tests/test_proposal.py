@@ -18,7 +18,7 @@ class MkDocsProposalTests(unittest.TestCase):
 
     def test_content_integrity(self):
         pages = list((DOCS / "next").rglob("*.md"))
-        self.assertEqual(25, len(pages))
+        self.assertEqual(26, len(pages))
         self.assertTrue((DOCS / "next/packages/redis.md").exists())
         self.assertIn("next/packages/redis.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
         self.assertTrue((DOCS / "next/packages/audit-log.md").exists())
@@ -60,6 +60,26 @@ class MkDocsProposalTests(unittest.TestCase):
         self.assertTrue(validator.is_file())
         self.assertIn("EVOLVE_MAILER_CONSUMER_AUTOLOAD", validator.read_text(encoding="utf-8"))
         self.assertIn("sendNotice($firstMailer, $message)", validator.read_text(encoding="utf-8"))
+
+    def test_symfony_validator_optional_guide(self):
+        config = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+        overview = (DOCS / "next/packages/overview.md").read_text(encoding="utf-8")
+        guide_path = DOCS / "next/packages/symfony-validator.md"
+        fixture = ROOT.parent / "tools/fixtures/symfony-validator-consumer.php"
+        validator = ROOT.parent / "tools/validate-symfony-validator-compatibility.php"
+        self.assertTrue(guide_path.is_file())
+        self.assertEqual(1, config.count("next/packages/symfony-validator.md"))
+        self.assertIn("[Symfony Validator compatibility](symfony-validator.md)", overview)
+        self.assertIn("optional upstream integrations", overview)
+        self.assertNotIn("| [symfony-validator]", overview)
+        guide = guide_path.read_text(encoding="utf-8")
+        for required in ("symfony/validator:^7.4.23", "ServiceLifetime::Execution", "#[Valid]", "validation groups", "custom constraint", "HTTP 422", "EVOLVE_VALIDATOR_CONSUMER_AUTOLOAD"):
+            self.assertIn(required, guide)
+        self.assertTrue(fixture.is_file())
+        self.assertTrue(validator.is_file())
+        script = validator.read_text(encoding="utf-8")
+        for required in ("EVOLVE_VALIDATOR_CONSUMER_AUTOLOAD", "ExecutionScopeUnavailable", "ConstraintViolationListInterface", "sensitive", "finally"):
+            self.assertIn(required, script)
 
     def test_monolog_optional_guide(self):
         config = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
