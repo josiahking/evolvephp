@@ -36,6 +36,7 @@ nav:
       - Redis PSR-16: next/packages/redis.md
       - Symfony Mailer: next/packages/symfony-mailer.md
       - Monolog PSR-3: next/packages/monolog.md
+      - Symfony Validator: next/packages/symfony-validator.md
       - Audit Log: next/packages/audit-log.md
       - Webhooks: next/packages/webhooks.md
       - API Keys: next/packages/api-keys.md
