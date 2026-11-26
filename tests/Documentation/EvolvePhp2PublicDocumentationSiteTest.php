@@ -29,13 +29,14 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             'website/docs/next/packages/symfony-mailer.md',
             'website/docs/next/packages/monolog.md',
             'website/docs/next/packages/symfony-validator.md',
+            'website/docs/next/packages/symfony-rate-limiter.md',
             'website/docs/next/project/documentation-versioning.md',
             'website/docs/versions/index.md',
         ] as $path) {
             self::assertFileExists($this->root . '/' . $path, $path);
         }
 
-        self::assertCount(26, $this->nextPages());
+        self::assertCount(27, $this->nextPages());
         self::assertFileDoesNotExist($this->root . '/website/package.json');
         self::assertFileDoesNotExist($this->root . '/website/docusaurus.config.ts');
         self::assertFileDoesNotExist($this->root . '/website/docs/versions/2.0.0-alpha.1');
@@ -167,6 +168,12 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             'Symfony\Component\Validator\Validator\ValidatorInterface',
         ];
         $seenOptionalValidatorImports = [];
+        $optionalRateLimiterImports = [
+            'Symfony\Component\RateLimiter\RateLimiterFactory',
+            'Symfony\Component\RateLimiter\Storage\InMemoryStorage',
+            'Symfony\Component\RateLimiter\Storage\StorageInterface',
+        ];
+        $seenOptionalRateLimiterImports = [];
         foreach ($this->nextPages() as $path) {
             $content = file_get_contents($path);
             self::assertIsString($content);
@@ -194,6 +201,11 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
                         $seenOptionalValidatorImports[$symbol] = true;
                         continue;
                     }
+                    if (str_ends_with(str_replace(DIRECTORY_SEPARATOR, '/', $path), '/website/docs/next/packages/symfony-rate-limiter.md')
+                        && in_array($symbol, $optionalRateLimiterImports, true)) {
+                        $seenOptionalRateLimiterImports[$symbol] = true;
+                        continue;
+                    }
                     self::assertTrue(
                         class_exists($symbol) || interface_exists($symbol)
                         || trait_exists($symbol) || enum_exists($symbol),
@@ -205,6 +217,7 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
         self::assertEqualsCanonicalizing($optionalMailerImports, array_keys($seenOptionalMailerImports));
         self::assertEqualsCanonicalizing($optionalMonologImports, array_keys($seenOptionalMonologImports));
         self::assertEqualsCanonicalizing($optionalValidatorImports, array_keys($seenOptionalValidatorImports));
+        self::assertEqualsCanonicalizing($optionalRateLimiterImports, array_keys($seenOptionalRateLimiterImports));
         self::assertGreaterThanOrEqual(10, $checked);
     }
 
@@ -299,6 +312,34 @@ final class EvolvePhp2PublicDocumentationSiteTest extends TestCase
             require_once $autoload;
             self::assertTrue(class_exists(\Monolog\Logger::class));
             self::assertTrue(interface_exists(\Psr\Log\LoggerInterface::class));
+        }
+    }
+
+    public function testSymfonyRateLimiterOptionalGuideHasIsolatedConsumerVerification(): void
+    {
+        $guide = $this->read('website/docs/next/packages/symfony-rate-limiter.md');
+        $config = $this->read('website/mkdocs.yml');
+        $overview = $this->read('website/docs/next/packages/overview.md');
+        self::assertSame(1, substr_count($config, 'next/packages/symfony-rate-limiter.md'));
+        self::assertStringContainsString('[Symfony Rate Limiter compatibility](symfony-rate-limiter.md)', $overview);
+        foreach (['symfony/rate-limiter:^7.4', 'ServiceLifetime::Application', 'MiddlewarePipeline',
+            'HttpKernel', 'HTTP 429', 'Retry-After', 'EVOLVE_RATE_LIMITER_CONSUMER_AUTOLOAD', 'sequential'] as $required) {
+            self::assertStringContainsString($required, $guide);
+        }
+        $fixture = $this->read('tools/fixtures/symfony-rate-limiter-consumer.php');
+        foreach (['consume(1)', 'trusted_tenant_id', 'trusted_principal_id', 'createResponse(429)', 'createResponse(503)'] as $required) {
+            self::assertStringContainsString($required, $fixture);
+        }
+        $validator = $this->read('tools/validate-symfony-rate-limiter-compatibility.php');
+        foreach (['EVOLVE_RATE_LIMITER_CONSUMER_AUTOLOAD', 'StorageInterface', 'ExecutionScopeClosed', 'Retry-After'] as $required) {
+            self::assertStringContainsString($required, $validator);
+        }
+        $autoload = getenv('EVOLVE_RATE_LIMITER_CONSUMER_AUTOLOAD');
+        if (is_string($autoload) && $autoload !== '') {
+            self::assertFileExists($autoload);
+            require_once $autoload;
+            self::assertTrue(class_exists(\Symfony\Component\RateLimiter\RateLimiterFactory::class));
+            self::assertTrue(class_exists(\Symfony\Component\RateLimiter\Storage\InMemoryStorage::class));
         }
     }
 

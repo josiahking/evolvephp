@@ -37,6 +37,7 @@ nav:
       - Symfony Mailer: next/packages/symfony-mailer.md
       - Monolog PSR-3: next/packages/monolog.md
       - Symfony Validator: next/packages/symfony-validator.md
+      - Symfony Rate Limiter: next/packages/symfony-rate-limiter.md
       - Audit Log: next/packages/audit-log.md
       - Webhooks: next/packages/webhooks.md
       - API Keys: next/packages/api-keys.md
