@@ -18,7 +18,9 @@ class MkDocsProposalTests(unittest.TestCase):
 
     def test_content_integrity(self):
         pages = list((DOCS / "next").rglob("*.md"))
-        self.assertEqual(26, len(pages))
+        self.assertEqual(27, len(pages))
+        self.assertTrue((DOCS / "next/packages/symfony-rate-limiter.md").exists())
+        self.assertEqual(1, (ROOT / "mkdocs.yml").read_text(encoding="utf-8").count("next/packages/symfony-rate-limiter.md"))
         self.assertTrue((DOCS / "next/packages/redis.md").exists())
         self.assertIn("next/packages/redis.md", (ROOT / "mkdocs.yml").read_text(encoding="utf-8"))
         self.assertTrue((DOCS / "next/packages/audit-log.md").exists())
@@ -80,6 +82,22 @@ class MkDocsProposalTests(unittest.TestCase):
         script = validator.read_text(encoding="utf-8")
         for required in ("EVOLVE_VALIDATOR_CONSUMER_AUTOLOAD", "ExecutionScopeUnavailable", "ConstraintViolationListInterface", "sensitive", "finally"):
             self.assertIn(required, script)
+
+    def test_symfony_rate_limiter_optional_guide(self):
+        config = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
+        overview = (DOCS / "next/packages/overview.md").read_text(encoding="utf-8")
+        guide = (DOCS / "next/packages/symfony-rate-limiter.md").read_text(encoding="utf-8")
+        fixture = (ROOT.parent / "tools/fixtures/symfony-rate-limiter-consumer.php").read_text(encoding="utf-8")
+        validator = (ROOT.parent / "tools/validate-symfony-rate-limiter-compatibility.php").read_text(encoding="utf-8")
+        self.assertEqual(1, config.count("next/packages/symfony-rate-limiter.md"))
+        self.assertIn("[Symfony Rate Limiter compatibility](symfony-rate-limiter.md)", overview)
+        self.assertNotIn("| [symfony-rate-limiter]", overview)
+        for required in ("symfony/rate-limiter:^7.4", "ServiceLifetime::Application", "MiddlewarePipeline", "HttpKernel", "HTTP 429", "Retry-After", "EVOLVE_RATE_LIMITER_CONSUMER_AUTOLOAD", "sequential"):
+            self.assertIn(required, guide)
+        for required in ("consume(1)", "trusted_tenant_id", "trusted_principal_id", "createResponse(429)", "createResponse(503)"):
+            self.assertIn(required, fixture)
+        for required in ("EVOLVE_RATE_LIMITER_CONSUMER_AUTOLOAD", "StorageInterface", "ExecutionScopeClosed", "Retry-After"):
+            self.assertIn(required, validator)
 
     def test_monolog_optional_guide(self):
         config = (ROOT / "mkdocs.yml").read_text(encoding="utf-8")
