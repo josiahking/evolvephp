@@ -91,6 +91,9 @@ final class SkeletonProjectValidator
         $this->validateInstalledPackages($root, $application, array('contracts', 'core', 'dev-tools', 'http', 'i18n', 'module', 'plugin', 'testing', 'view'));
         $this->assertPackageNotInstalled($application, 'view-twig');
         $this->assertPackageNotInstalled($application, 'view-blade');
+        foreach (array('audit-log', 'webhooks', 'api-keys') as $module) {
+            $this->assertPackageNotInstalled($application, $module);
+        }
 
         $this->stage('[5/13] Running generated Doctor');
         $this->assertCommand('[5/13] Running generated Doctor', $application, array('doctor'), 0, null, '');
@@ -127,6 +130,8 @@ final class SkeletonProjectValidator
 
         $this->stage('[9/13] Validating independent module SDK consumer');
         $this->validateModuleSdkConsumer($root, $application, $temp, $composer, $offlineVendorRepository, $lockedVendorPackages);
+        $this->stage('[9/13] Validating explicit first-party module installation');
+        $this->validateFirstPartyModules($root, $application, $temp, $composer);
         $this->stage('[10/13] Running collision and traversal checks');
         $this->assertCommand('[10/13] Running collision and traversal checks', $application, array('module:new', 'Billing'), 1, '', 'Refusing to overwrite existing file: src/Modules/Billing/BillingModule.php' . PHP_EOL);
         $this->assertCommand('[10/13] Running collision and traversal checks', $application, array('plugin:new', 'Cache'), 1, '', 'Refusing to overwrite existing file: src/Plugins/Cache/CachePlugin.php' . PHP_EOL);
@@ -168,6 +173,7 @@ final class SkeletonProjectValidator
             array('type' => 'path', 'url' => normalizePath($package), 'options' => array('symlink' => false)),
             $this->frameworkRepository($root),
             $this->vendorRepository($offlineVendorRepository, $lockedVendorPackages),
+            array('packagist.org' => false),
         );
         if (file_put_contents($manifestPath, json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL) === false) {
             releaseValidationFail('Unable to register offline module repository.');
@@ -193,6 +199,133 @@ final class SkeletonProjectValidator
             $root,
             array(),
             'Verifying independent module SDK consumer',
+        );
+    }
+
+    private function validateFirstPartyModules(string $root, string $application, ReleaseValidationTemporaryDirectory $temp, ?string $composer): void
+    {
+        $names = array('evolvephp/audit-log', 'evolvephp/webhooks', 'evolvephp/api-keys');
+        $manifest = readJsonFile(joinPaths($application, 'composer.json'), 'skeleton module opt-in manifest');
+        foreach ($names as $name) {
+            if (isset($manifest['require'][$name]) || isset($manifest['require-dev'][$name])) {
+                releaseValidationFail('First-party module was not absent before explicit application opt-in: ' . $name);
+            }
+        }
+        $moduleRepository = $this->prepareSkeletonModuleSplitRepository($root, $temp);
+        array_unshift($manifest['repositories'], $moduleRepository);
+        if (file_put_contents(joinPaths($application, 'composer.json'), json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL) === false) {
+            releaseValidationFail('Unable to register isolated skeleton module split repository.');
+        }
+        $this->runner->mustRun(
+            withComposerCommand(array(
+                '--working-dir=' . $application, 'require',
+                'evolvephp/audit-log:' . self::BETA_VERSION,
+                'evolvephp/webhooks:' . self::BETA_VERSION,
+                'evolvephp/api-keys:' . self::BETA_VERSION,
+                '--no-interaction', '--no-progress', '--no-ansi', '--no-scripts', '--no-plugins', '--no-audit',
+            ), $composer),
+            null, $this->composerEnvironment($temp), 'Installing explicit first-party skeleton modules',
+        );
+        $manifest = readJsonFile(joinPaths($application, 'composer.json'), 'skeleton module opt-in manifest');
+        foreach ($names as $name) {
+            if (($manifest['require'][$name] ?? null) !== self::BETA_VERSION) {
+                releaseValidationFail('Skeleton module opt-in did not remain application-owned: ' . $name);
+            }
+        }
+        $this->validateInstalledPackages($root, $application, array('audit-log', 'webhooks', 'api-keys'));
+        $this->verifyFirstPartyModules($root, $application, $temp->child('offline-skeleton-modules'));
+    }
+
+    /** @return array<string, mixed> */
+    private function prepareSkeletonModuleSplitRepository(string $root, ReleaseValidationTemporaryDirectory $temp): array
+    {
+        $sourceSha = trim($this->runner->mustRun(array('git', '-C', $root, 'rev-parse', 'HEAD'))->stdout);
+        $clone = $temp->child('module-monorepo');
+        $this->runner->mustRun(array('git', 'clone', '--no-hardlinks', $root, $clone));
+        $this->runner->mustRun(array('git', '-C', $clone, 'checkout', '--detach', $sourceSha));
+        $snapshotRoot = $temp->child('offline-skeleton-modules');
+        if (!mkdir($snapshotRoot, 0777, true) && !is_dir($snapshotRoot)) {
+            releaseValidationFail('Unable to create skeleton module split snapshots.');
+        }
+        $versions = array();
+        foreach (array('audit-log', 'webhooks', 'api-keys') as $slug) {
+            $prefix = 'packages/' . $slug;
+            $split = trim($this->runner->mustRun(array('git', '-C', $clone, 'subtree', 'split', '--prefix=' . $prefix, $sourceSha))->stdout);
+            $splitRoot = $temp->child('module-splits/' . $slug);
+            $this->runner->mustRun(array('git', 'clone', '--no-hardlinks', $clone, $splitRoot));
+            $this->runner->mustRun(array('git', '-C', $splitRoot, 'checkout', '--detach', $split));
+            $expectedTree = trim($this->runner->mustRun(array('git', '-C', $clone, 'rev-parse', $sourceSha . ':' . $prefix))->stdout);
+            $actualTree = trim($this->runner->mustRun(array('git', '-C', $splitRoot, 'rev-parse', 'HEAD^{tree}'))->stdout);
+            if ($actualTree !== $expectedTree) {
+                releaseValidationFail('Skeleton module split tree differs from committed package tree: ' . $slug);
+            }
+            $target = joinPaths($snapshotRoot, $slug);
+            if (!mkdir($target, 0777, true) && !is_dir($target)) {
+                releaseValidationFail('Unable to create skeleton module package snapshot: ' . $slug);
+            }
+            $listing = $this->runner->mustRun(array('git', '-C', $splitRoot, 'ls-files', '--stage', '-z'))->stdout;
+            foreach (explode("\0", rtrim($listing, "\0")) as $entry) {
+                if (!preg_match('/^(100644|100755) [0-9a-f]{40,64} 0\t(.+)$/s', $entry, $match)) {
+                    releaseValidationFail('Skeleton module split contains a symlink or unsupported entry: ' . $slug);
+                }
+                $relative = $match[2];
+                $segments = explode('/', $relative);
+                if (str_contains($relative, '\\') || str_contains($relative, ':')
+                    || array_intersect($segments, array('', '.', '..', '.git')) !== array()
+                ) {
+                    releaseValidationFail('Unsafe skeleton module split file path: ' . $relative);
+                }
+                $source = joinPaths($splitRoot, $relative);
+                $resolved = realpath($source);
+                $splitResolved = realpath($splitRoot);
+                if ($resolved === false || $splitResolved === false || is_link($source)
+                    || !str_starts_with(normalizePath($resolved), rtrim(normalizePath($splitResolved), '/') . '/')
+                ) {
+                    releaseValidationFail('Unsafe skeleton module split source file: ' . $relative);
+                }
+                $destination = joinPaths($target, $relative);
+                if (!is_dir(dirname($destination)) && !mkdir(dirname($destination), 0777, true)) {
+                    releaseValidationFail('Unable to create skeleton module snapshot directory.');
+                }
+                if (!copy($source, $destination)) {
+                    releaseValidationFail('Unable to copy skeleton module split file: ' . $relative);
+                }
+            }
+            if ((readJsonFile(joinPaths($target, 'composer.json'), $slug . ' skeleton split')['name'] ?? null) !== 'evolvephp/' . $slug) {
+                releaseValidationFail('Skeleton module split manifest identity changed: ' . $slug);
+            }
+            $versions['evolvephp/' . $slug] = self::BETA_VERSION;
+        }
+        return array(
+            'type' => 'path', 'url' => normalizePath(joinPaths($snapshotRoot, '*')),
+            'only' => array_keys($versions), 'canonical' => true,
+            'options' => array('symlink' => false, 'versions' => $versions),
+        );
+    }
+
+    private function verifyFirstPartyModules(string $root, string $application, string $snapshotRoot): void
+    {
+        $fixture = joinPaths($root, 'tools/fixtures/first-party-module-consumer.php');
+        foreach (array('audit-log', 'webhooks', 'api-keys') as $slug) {
+            $this->runner->mustRun(
+                array(PHP_BINARY, $fixture, 'verify-skeleton', $application, $slug, $snapshotRoot),
+                $application, array('COMPOSER_DISABLE_NETWORK' => '1'),
+                'Verifying installed skeleton module ' . $slug,
+            );
+            $smoke = joinPaths($root, 'packages/' . $slug . '/tests/Fixtures/independent-composer-consumer/smoke.php');
+            $copy = joinPaths($application, 'smoke-' . $slug . '.php');
+            if (!copy($smoke, $copy)) {
+                releaseValidationFail('Unable to copy installed skeleton smoke fixture: ' . $slug);
+            }
+            $this->runner->mustRun(
+                array(PHP_BINARY, $copy), $application, array('COMPOSER_DISABLE_NETWORK' => '1'),
+                'Running installed skeleton module smoke ' . $slug,
+            );
+        }
+        $this->runner->mustRun(
+            array(PHP_BINARY, $fixture, 'compose', $application, 'all', $snapshotRoot),
+            $application, array('COMPOSER_DISABLE_NETWORK' => '1'),
+            'Verifying explicit skeleton module composition',
         );
     }
     private function restoreDistributedManifest(string $root, string $application): void
@@ -410,6 +543,12 @@ final class SkeletonProjectValidator
             }
         }
 
+        foreach (array('evolvephp/audit-log', 'evolvephp/webhooks', 'evolvephp/api-keys') as $module) {
+            if (isset($manifest['require'][$module]) || isset($manifest['require-dev'][$module])) {
+                releaseValidationFail('Generated skeleton manifest must not install optional module ' . $module . '.');
+            }
+        }
+
         if (($manifest['require-dev']['evolvephp/dev-tools'] ?? null) !== '^2.0') {
             releaseValidationFail('Generated skeleton manifest DevTools development dependency changed.');
         }
@@ -555,10 +694,12 @@ final class SkeletonProjectValidator
         );
 
         $this->validateInstalledPackages($root, $application, array('contracts', 'core', 'http', 'i18n', 'module', 'plugin', 'view'));
+        $this->validateInstalledPackages($root, $application, array('audit-log', 'webhooks', 'api-keys'));
         $this->assertPackageNotInstalled($application, 'dev-tools');
         $this->assertPackageNotInstalled($application, 'testing');
         $this->assertPackageNotInstalled($application, 'view-twig');
         $this->assertPackageNotInstalled($application, 'view-blade');
+        $this->verifyFirstPartyModules($root, $application, $temp->child('offline-skeleton-modules'));
 
         $this->stage('[12/13] Running no-dev Doctor and route:list');
         $this->assertCommand('[12/13] Running no-dev Doctor and route:list', $application, array('doctor'), 0, null, '');
@@ -634,6 +775,7 @@ try {
     echo 'Generated command module:new Billing: pass' . PHP_EOL;
     echo 'Generated command plugin:new Cache: pass' . PHP_EOL;
     echo 'Generated application PHPUnit suite: pass' . PHP_EOL;
+    echo 'Explicit Audit Log, Webhooks and API Keys install, composition and no-dev retention: pass' . PHP_EOL;
     echo 'Generated repeat scaffolds refuse overwrites: pass' . PHP_EOL;
     echo 'Generated invalid/path traversal names create nothing outside the application: pass' . PHP_EOL;
     echo 'Generated composer install --no-dev: pass' . PHP_EOL;

@@ -437,6 +437,200 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         }
     }
 
+    public function testIndependentModuleFixtureRejectsMissingInstalledConsumer(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $temporary = createTemporaryDirectory('evolvephp-module-consumer-test-');
+        try {
+            $result = (new ReleaseValidationProcessRunner())->run(array(
+                PHP_BINARY,
+                $this->path('tools/fixtures/first-party-module-consumer.php'),
+                'verify',
+                $temporary->path,
+                'audit-log',
+            ));
+            $this->assertSame(1, $result->exitCode);
+            $this->assertStringContainsString('vendor/autoload.php is required', $result->stderr);
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testIndependentModuleFixtureRejectsClosureIdentityAndSnapshotDrift(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $temporary = createTemporaryDirectory('evolvephp-module-fixture-test-');
+        $runner = new ReleaseValidationProcessRunner();
+        try {
+            $names = array('evolvephp/audit-log', 'evolvephp/contracts', 'evolvephp/core',
+                'evolvephp/database-contracts', 'evolvephp/i18n', 'evolvephp/lock-contracts',
+                'evolvephp/migration', 'evolvephp/module', 'psr/container');
+            $locked = array();
+            $installed = array();
+            foreach ($names as $name) {
+                $version = str_starts_with($name, 'evolvephp/') ? '2.0.0-beta.1' : '2.0.2';
+                $snapshot = str_starts_with($name, 'evolvephp/') ? 'offline-audit-log-first-party' : 'offline-audit-log-vendor';
+                $locked[] = array('name' => $name, 'version' => $version,
+                    'dist' => array('type' => 'path', 'url' => $temporary->child($snapshot . '/' . (str_starts_with($name, 'evolvephp/') ? str_replace('/', '-', $name) : $name))));
+                $installed[] = array('name' => $name, 'version' => $version);
+                $source = $locked[count($locked) - 1]['dist']['url'];
+                mkdir($source, 0777, true);
+                file_put_contents($source . '/composer.json', json_encode(array('name' => $name), JSON_THROW_ON_ERROR));
+                file_put_contents($source . '/source.php', '<?php // expected source');
+                $package = $temporary->child('vendor/' . $name);
+                mkdir($package, 0777, true);
+                file_put_contents($package . '/composer.json', json_encode(array('name' => $name), JSON_THROW_ON_ERROR));
+                file_put_contents($package . '/source.php', '<?php // expected source');
+            }
+            mkdir($temporary->child('vendor/composer'), 0777, true);
+            file_put_contents($temporary->child('vendor/autoload.php'), "<?php\n");
+            $write = static function () use ($temporary, &$locked, &$installed): void {
+                file_put_contents($temporary->child('composer.lock'), json_encode(array('packages' => $locked, 'packages-dev' => array()), JSON_THROW_ON_ERROR));
+                file_put_contents($temporary->child('vendor/composer/installed.json'), json_encode(array('packages' => $installed), JSON_THROW_ON_ERROR));
+            };
+            $run = fn (): ReleaseValidationProcessResult => $runner->run(array(
+                PHP_BINARY, $this->path('tools/fixtures/first-party-module-consumer.php'),
+                'verify', $temporary->path, 'audit-log',
+                $temporary->child('offline-audit-log-first-party'), $temporary->child('offline-audit-log-vendor'),
+            ));
+
+            $missing = array_pop($locked);
+            $write();
+            $this->assertStringContainsString('dependency closure changed', $run()->stderr);
+            $locked[] = $missing;
+
+            $sibling = array('name' => 'evolvephp/webhooks', 'version' => '2.0.0-beta.1');
+            $locked[] = $sibling;
+            $installed[] = $sibling;
+            $write();
+            $this->assertStringContainsString('dependency closure changed', $run()->stderr);
+            array_pop($locked);
+            array_pop($installed);
+
+            $impostor = $temporary->child('wrong-source/offline-audit-log-first-party/evolvephp-audit-log');
+            mkdir($impostor, 0777, true);
+            copy($temporary->child('offline-audit-log-first-party/evolvephp-audit-log/composer.json'), $impostor . '/composer.json');
+            copy($temporary->child('offline-audit-log-first-party/evolvephp-audit-log/source.php'), $impostor . '/source.php');
+            $locked[0]['dist']['url'] = $impostor;
+            $write();
+            $this->assertStringContainsString('snapshot origin', $run()->stderr);
+            $locked[0]['dist']['url'] = $temporary->child('offline-audit-log-first-party/evolvephp-audit-log');
+
+            $locked[0]['dist']['url'] = $temporary->child('offline-audit-log-first-party/../offline-audit-log-first-party/evolvephp-audit-log');
+            $write();
+            $this->assertStringContainsString('Unsafe locked package snapshot origin', $run()->stderr);
+            $locked[0]['dist']['url'] = $temporary->child('offline-audit-log-first-party/evolvephp-audit-log');
+
+            $locked[0]['version'] = '2.0.0-beta.2';
+            $write();
+            $this->assertStringContainsString('Wrong locked version', $run()->stderr);
+            $locked[0]['version'] = '2.0.0-beta.1';
+            $installed[0]['version'] = '2.0.0-beta.2';
+            $write();
+            $this->assertStringContainsString('Wrong installed version', $run()->stderr);
+            $installed[0]['version'] = '2.0.0-beta.1';
+
+            $locked[] = $locked[0];
+            $write();
+            $this->assertStringContainsString('Duplicate Composer package record', $run()->stderr);
+            array_pop($locked);
+            $installed[] = $installed[0];
+            $write();
+            $this->assertStringContainsString('Duplicate Composer package record', $run()->stderr);
+            array_pop($installed);
+
+            $linked = $temporary->child('linked-audit-source');
+            if (@symlink($temporary->child('offline-audit-log-first-party/evolvephp-audit-log'), $linked)) {
+                $locked[0]['dist']['url'] = $linked;
+                $write();
+                $this->assertStringContainsString('snapshot origin', $run()->stderr);
+                $locked[0]['dist']['url'] = $temporary->child('offline-audit-log-first-party/evolvephp-audit-log');
+            }
+
+            file_put_contents($temporary->child('vendor/evolvephp/audit-log/source.php'), '<?php // wrong source');
+            $write();
+            $this->assertStringContainsString('content differs from snapshot', $run()->stderr);
+            file_put_contents($temporary->child('vendor/evolvephp/audit-log/source.php'), '<?php // expected source');
+
+            file_put_contents($temporary->child('vendor/evolvephp/audit-log/composer.json'), '{"name":"evolvephp/wrong"}');
+            $write();
+            $this->assertStringContainsString('package identity', $run()->stderr);
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testIndependentModuleSplitClosureUsesTaggedPackageManifests(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $this->loadPrereleaseConsumerValidatorClass();
+        $temporary = createTemporaryDirectory('evolvephp-module-splits-test-');
+        $runner = new ReleaseValidationProcessRunner();
+        try {
+            $names = array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/database-contracts',
+                'evolvephp/i18n', 'evolvephp/lock-contracts', 'evolvephp/migration', 'evolvephp/module',
+                'evolvephp/audit-log', 'evolvephp/secret-contracts', 'evolvephp/webhooks', 'evolvephp/api-keys');
+            $splitRoots = array();
+            foreach ($names as $name) {
+                $directory = $temporary->child('packages/' . packageSlug($name));
+                mkdir($directory, 0777, true);
+                copy($this->path('packages/' . packageSlug($name) . '/composer.json'), $directory . '/composer.json');
+                $this->initializeGitFixture($runner, $directory);
+                $runner->mustRun(array('git', 'add', 'composer.json'), $directory);
+                $runner->mustRun(array('git', 'commit', '-m', 'Synthetic module manifest'), $directory);
+                $splitRoots[$name] = $directory;
+            }
+            $validator = new PrereleaseConsumerValidator();
+            $repositories = (new ReflectionMethod($validator, 'createTaggedRepositories'))->invoke(
+                $validator, $temporary->child('beta-repositories'), $splitRoots, '2.0.0-beta.1',
+            );
+            $prepare = new ReflectionMethod($validator, 'prepareModuleFirstPartyRepository');
+            foreach (array('audit-log' => 8, 'webhooks' => 9, 'api-keys' => 8) as $slug => $count) {
+                $snapshot = $prepare->invoke($validator, $temporary, $repositories, $slug);
+                $this->assertCount($count, $snapshot['versions']);
+                $this->assertSame(array_fill_keys(array_keys($snapshot['versions']), '2.0.0-beta.1'), $snapshot['versions']);
+                foreach ($snapshot['versions'] as $name => $version) {
+                    $copy = $snapshot['root'] . '/' . str_replace('/', '-', $name);
+                    $this->assertSame($name, readJsonFile($copy . '/composer.json', 'module snapshot')['name']);
+                    $this->assertFalse(is_link($copy));
+                }
+            }
+            $missing = $repositories;
+            unset($missing['evolvephp/core']);
+            $this->expectException(ReleaseValidationFailure::class);
+            $this->expectExceptionMessage('Missing or unsafe first-party module dependency');
+            $prepare->invoke($validator, $temporary, $missing, 'audit-log');
+        } finally {
+            $temporary->cleanup();
+        }
+    }
+
+    public function testDefaultSkeletonManifestRejectsImplicitFirstPartyModules(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        if (!class_exists(SkeletonProjectValidator::class, false)) {
+            $source = (string) file_get_contents($this->path('tools/validate-skeleton-project.php'));
+            $start = strpos($source, 'final class SkeletonProjectValidator');
+            $end = strpos($source, "\ntry {\n    \$options = parseReleaseValidationArguments", $start);
+            $this->assertNotFalse($start);
+            $this->assertNotFalse($end);
+            eval(substr($source, $start, $end - $start));
+        }
+        $temporary = createTemporaryDirectory('evolvephp-skeleton-module-test-');
+        try {
+            copy($this->path('skeleton/composer.json'), $temporary->child('composer.json'));
+            $validate = new ReflectionMethod(new SkeletonProjectValidator(), 'validateGeneratedManifest');
+            $validate->invoke(new SkeletonProjectValidator(), $temporary->path);
+            $manifest = readJsonFile($temporary->child('composer.json'), 'skeleton manifest');
+            $manifest['require']['evolvephp/audit-log'] = '2.0.0-beta.1';
+            file_put_contents($temporary->child('composer.json'), json_encode($manifest, JSON_THROW_ON_ERROR));
+            $this->expectException(ReleaseValidationFailure::class);
+            $this->expectExceptionMessage('must not install optional module');
+            $validate->invoke(new SkeletonProjectValidator(), $temporary->path);
+        } finally {
+            $temporary->cleanup();
+        }
+    }
     private function createPlannerFixture(?string $changedPath = null, ?string $contents = null): ReleaseValidationTemporaryDirectory
     {
         $this->assertFileExists($this->path('tools/publish-package-splits.php'));

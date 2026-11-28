@@ -92,6 +92,10 @@ final class PrereleaseConsumerValidator
             $betaRepositories = $this->createTaggedRepositories($temp->child('beta-repositories'), $splitRoots, self::BETA_VERSION);
             array_push($results, ...$this->validateBetaConsumers($temp, $composer, $betaRepositories, $lockedRuntimePackages, $packages));
 
+            foreach (array('audit-log', 'webhooks', 'api-keys') as $module) {
+                $results[] = $this->runIndependentModuleConsumer($temp, $composer, $betaRepositories, $lockedRuntimePackages, $root, $module);
+            }
+
             $results[] = $this->runMcpIndependentConsumer($temp, $composer, $alphaRepositories, $lockedRuntimePackages, $root);
 
             assertSourceStatePreserved($this->runner, $root, $sourceState);
@@ -196,6 +200,164 @@ final class PrereleaseConsumerValidator
         }
 
         return array('name' => $caseName, 'outcome' => 'success', 'detail' => $this->formatVersions($actualVersions));
+    }
+
+    /**
+     * @param array<string, string> $repositories
+     * @param list<array<string, mixed>> $lockedRuntimePackages
+     * @return array{name: string, outcome: string, detail: string}
+     */
+    private function runIndependentModuleConsumer(ReleaseValidationTemporaryDirectory $temp, ?string $composer, array $repositories, array $lockedRuntimePackages, string $root, string $slug): array
+    {
+        $name = 'evolvephp/' . $slug;
+        $case = $slug . ' independent case';
+        $firstParty = $this->prepareModuleFirstPartyRepository($temp, $repositories, $slug);
+        $thirdParty = $this->prepareModuleThirdPartyRepository($root, $temp, $lockedRuntimePackages, $slug);
+        $consumer = $this->createConsumer(
+            $temp, $case, $repositories, $lockedRuntimePackages,
+            array($name => self::BETA_VERSION),
+            array('minimum-stability' => 'beta', 'prefer-stable' => true),
+            $thirdParty, $firstParty,
+        );
+        $scope = '-' . $slug . '-independent';
+        $update = $this->runComposerUpdate($consumer, $temp, $composer, $scope);
+        if ($update->exitCode !== 0) {
+            releaseValidationFail($case . ' lock failed: ' . $update->output());
+        }
+        $environment = array(
+            'COMPOSER_DISABLE_NETWORK' => '1',
+            'COMPOSER_HOME' => $temp->child('composer-home' . $scope),
+            'COMPOSER_CACHE_DIR' => $temp->child('composer-cache' . $scope),
+        );
+        $install = $this->runner->run(withComposerCommand(array(
+            '--working-dir=' . $consumer, 'install', '--no-interaction', '--no-plugins',
+            '--no-scripts', '--no-ansi',
+        ), $composer), null, $environment);
+        if ($install->exitCode !== 0) {
+            releaseValidationFail($case . ' install failed: ' . $install->output());
+        }
+        $fixture = $this->runner->run(array(
+            PHP_BINARY, joinPaths($root, 'tools/fixtures/first-party-module-consumer.php'),
+            'verify', $consumer, $slug, $firstParty['root'], $thirdParty['root'],
+        ), $consumer, array('COMPOSER_DISABLE_NETWORK' => '1'));
+        if ($fixture->exitCode !== 0) {
+            releaseValidationFail($case . ' provenance fixture failed: ' . $fixture->output());
+        }
+        $smoke = joinPaths($root, 'packages/' . $slug . '/tests/Fixtures/independent-composer-consumer/smoke.php');
+        if (!copy($smoke, joinPaths($consumer, 'smoke.php'))) {
+            releaseValidationFail($case . ' smoke fixture could not be copied.');
+        }
+        $smokeResult = $this->runner->run(array(PHP_BINARY, 'smoke.php'), $consumer, array('COMPOSER_DISABLE_NETWORK' => '1'));
+        if ($smokeResult->exitCode !== 0) {
+            releaseValidationFail($case . ' installed smoke failed: ' . $smokeResult->output());
+        }
+        return array('name' => $case, 'outcome' => 'success', 'detail' => trim($fixture->stdout . ' ' . $smokeResult->stdout));
+    }
+
+    /**
+     * @param array<string, string> $repositories
+     * @return array{root: string, versions: array<string, string>}
+     */
+    private function prepareModuleFirstPartyRepository(ReleaseValidationTemporaryDirectory $temp, array $repositories, string $slug): array
+    {
+        $root = realpath($temp->child('beta-repositories'));
+        $tempRoot = realpath($temp->path);
+        if ($root === false || $tempRoot === false || is_link($temp->child('beta-repositories'))
+            || !str_starts_with(normalizePath($root), rtrim(normalizePath($tempRoot), '/') . '/')
+        ) {
+            releaseValidationFail('Unsafe Beta split repository root.');
+        }
+        $queue = array('evolvephp/' . $slug);
+        $versions = array();
+        $sources = array();
+        while ($queue !== array()) {
+            $name = array_shift($queue);
+            if (isset($versions[$name])) {
+                continue;
+            }
+            if (!is_string($name) || !preg_match('~^evolvephp/[a-z0-9][a-z0-9._-]*$~', $name) || !isset($repositories[$name])) {
+                releaseValidationFail('Missing or unsafe first-party module dependency: ' . (string) $name);
+            }
+            $source = $repositories[$name];
+            $resolved = realpath($source);
+            if ($resolved === false || is_link($source) || !str_starts_with(normalizePath($resolved), rtrim(normalizePath($root), '/') . '/')) {
+                releaseValidationFail('Unsafe first-party Beta split repository: ' . $name);
+            }
+            $head = trim($this->runner->mustRun(array('git', '-C', $source, 'rev-parse', 'HEAD'))->stdout);
+            $tag = $this->runner->run(array('git', '-C', $source, 'rev-parse', '--verify', 'refs/tags/' . self::BETA_VERSION . '^{commit}'));
+            if ($tag->exitCode !== 0 || trim($tag->stdout) !== $head
+                || trim($this->runner->mustRun(array('git', '-C', $source, 'status', '--porcelain=v1', '--untracked-files=all'))->stdout) !== ''
+            ) {
+                releaseValidationFail('First-party Beta split is not clean at its tagged commit: ' . $name);
+            }
+            $manifest = readJsonFile(joinPaths($source, 'composer.json'), $name . ' Beta composer.json');
+            if (($manifest['name'] ?? null) !== $name || !is_array($manifest['require'] ?? null)) {
+                releaseValidationFail('First-party Beta package identity or requirements changed: ' . $name);
+            }
+            foreach (array_keys($manifest['require']) as $dependency) {
+                if (is_string($dependency) && str_starts_with($dependency, 'evolvephp/')) {
+                    $queue[] = $dependency;
+                }
+            }
+            $versions[$name] = self::BETA_VERSION;
+            $sources[$name] = $source;
+        }
+        ksort($versions);
+        $shared = array('evolvephp/contracts', 'evolvephp/core', 'evolvephp/database-contracts', 'evolvephp/i18n', 'evolvephp/lock-contracts', 'evolvephp/migration', 'evolvephp/module');
+        $extra = match ($slug) {
+            'audit-log' => array('evolvephp/audit-log'),
+            'webhooks' => array('evolvephp/secret-contracts', 'evolvephp/webhooks'),
+            'api-keys' => array('evolvephp/api-keys'),
+            default => throw new ReleaseValidationFailure('Unknown independent module: ' . $slug),
+        };
+        $expected = array_merge($shared, $extra);
+        sort($expected);
+        if (array_keys($versions) !== $expected) {
+            releaseValidationFail('First-party Beta dependency closure changed for ' . $slug . '.');
+        }
+        $snapshotRoot = $temp->child('offline-' . $slug . '-first-party');
+        if (!mkdir($snapshotRoot, 0777, true) && !is_dir($snapshotRoot)) {
+            releaseValidationFail('Unable to create first-party module snapshot root.');
+        }
+        foreach ($versions as $name => $version) {
+            $target = joinPaths($snapshotRoot, str_replace('/', '-', $name));
+            $this->copyTaggedMcpPackageSnapshot($sources[$name], $target);
+            if ((readJsonFile(joinPaths($target, 'composer.json'), $name . ' snapshot')['name'] ?? null) !== $name) {
+                releaseValidationFail('Copied first-party package identity changed: ' . $name);
+            }
+        }
+        return array('root' => $snapshotRoot, 'versions' => $versions);
+    }
+
+    /**
+     * @param list<array<string, mixed>> $lockedRuntimePackages
+     * @return array{root: string, versions: array<string, string>}
+     */
+    private function prepareModuleThirdPartyRepository(string $root, ReleaseValidationTemporaryDirectory $temp, array $lockedRuntimePackages, string $slug): array
+    {
+        $locked = array_column($lockedRuntimePackages, null, 'name');
+        $name = 'psr/container';
+        if (($locked[$name]['version'] ?? null) !== '2.0.2') {
+            releaseValidationFail('Locked module runtime dependency changed: ' . $name);
+        }
+        $vendor = realpath(joinPaths($root, 'vendor'));
+        $source = joinPaths($root, 'vendor/' . $name);
+        $resolved = realpath($source);
+        if ($vendor === false || $resolved === false || is_link($source) || is_link(dirname($source))
+            || !str_starts_with(normalizePath($resolved), rtrim(normalizePath($vendor), '/') . '/')
+        ) {
+            releaseValidationFail('Locked module runtime package is not safely installed: ' . $name);
+        }
+        $installed = readJsonFile(joinPaths($vendor, 'composer/installed.json'), 'installed Composer packages');
+        $records = array_column($installed['packages'] ?? array(), null, 'name');
+        if (($records[$name]['version'] ?? null) !== '2.0.2'
+            || (readJsonFile(joinPaths($source, 'composer.json'), $name . ' installed manifest')['name'] ?? null) !== $name
+        ) {
+            releaseValidationFail('Locked module runtime package identity is invalid: ' . $name);
+        }
+        $repository = $temp->child('offline-' . $slug . '-vendor');
+        $this->copyMcpPackageDirectory($source, joinPaths($repository, $name));
+        return array('root' => $repository, 'versions' => array($name => '2.0.2'));
     }
 
     /**
@@ -572,7 +734,7 @@ final class PrereleaseConsumerValidator
         return $directory;
     }
 
-    private function runComposerUpdate(string $consumer, ReleaseValidationTemporaryDirectory $temp, ?string $composer): ReleaseValidationProcessResult
+    private function runComposerUpdate(string $consumer, ReleaseValidationTemporaryDirectory $temp, ?string $composer, string $scope = ''): ReleaseValidationProcessResult
     {
         return $this->runner->run(
             withComposerCommand(array(
@@ -588,8 +750,8 @@ final class PrereleaseConsumerValidator
             null,
             array(
                 'COMPOSER_DISABLE_NETWORK' => '1',
-                'COMPOSER_HOME' => $temp->child('composer-home'),
-                'COMPOSER_CACHE_DIR' => $temp->child('composer-cache'),
+                'COMPOSER_HOME' => $temp->child('composer-home' . $scope),
+                'COMPOSER_CACHE_DIR' => $temp->child('composer-cache' . $scope),
             )
         );
     }

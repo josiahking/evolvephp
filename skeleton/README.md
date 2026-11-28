@@ -41,7 +41,9 @@ Local prerelease create-project validation is repository-owned and available fro
 composer release:skeleton:validate
 ```
 
-That validation exercises Composer create-project using isolated local Beta-labelled package fixtures with Packagist and Composer network access disabled. It preserves the verified CLI, generator, independent module and production `--no-dev` checks. This offline test does **not** prove that the separately published skeleton is available from Packagist.
+That validation exercises Composer create-project using isolated local Beta-labelled package fixtures with Packagist and Composer network access disabled. It preserves the verified CLI, generator, independent module and production `--no-dev` checks. It also confirms that Audit Log, Webhooks and API Keys are absent from the default application, installs them only after an explicit application-owned Composer opt-in, runs their installed smoke fixtures, and checks explicit module enablement and no-dev retention. Registration and boot leave migrations and network delivery under application control. This offline test does **not** prove that the separately published skeleton is available from Packagist.
+
+Audit Log, Webhooks and API Keys are source-only modules in the current 37-package source inventory. They were not among the 34 originally published framework Beta packages. The local synthetic Beta tags used by validation are not public releases; do not treat them as public Composer installation targets.
 
 ## Public Beta installation
 
