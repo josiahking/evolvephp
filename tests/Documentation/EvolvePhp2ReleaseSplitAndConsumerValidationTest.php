@@ -456,6 +456,74 @@ final class EvolvePhp2ReleaseSplitAndConsumerValidationTest extends TestCase
         }
     }
 
+    public function testTemporaryCleanupPreservesDirectorySymlinkTarget(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $owned = createTemporaryDirectory('evolvephp-cleanup-owned-');
+        $external = createTemporaryDirectory('evolvephp-cleanup-external-');
+        $target = $external->child('target-directory');
+        $link = $owned->child('linked-directory');
+        try {
+            mkdir($target);
+            file_put_contents($target . '/source.php', '<?php // keep');
+            chmod($target, 0755);
+            clearstatcache(true, $target);
+            $permissions = fileperms($target) & 0777;
+            if (!@symlink($target, $link)) {
+                $this->markTestSkipped('This host cannot create a directory symbolic link.');
+            }
+
+            $owned->cleanup();
+
+            $this->assertDirectoryDoesNotExist($owned->path);
+            $this->assertSame('<?php // keep', file_get_contents($target . '/source.php'));
+            clearstatcache(true, $target);
+            $this->assertSame($permissions, fileperms($target) & 0777);
+        } finally {
+            chmod($target, 0777);
+            if (is_link($link)) {
+                PHP_OS_FAMILY === 'Windows' ? rmdir($link) : unlink($link);
+            }
+            if (is_dir($owned->path)) {
+                $owned->cleanup();
+            }
+            $external->cleanup();
+        }
+    }
+
+    public function testTemporaryCleanupPreservesFileSymlinkTarget(): void
+    {
+        require_once $this->root . '/tools/release-validation-common.php';
+        $owned = createTemporaryDirectory('evolvephp-cleanup-owned-');
+        $external = createTemporaryDirectory('evolvephp-cleanup-external-');
+        $target = $external->child('target.php');
+        $link = $owned->child('linked-file.php');
+        try {
+            file_put_contents($target, '<?php // keep');
+            chmod($target, 0444);
+            clearstatcache(true, $target);
+            $permissions = fileperms($target) & 0777;
+            if (!@symlink($target, $link)) {
+                $this->markTestSkipped('This host cannot create a file symbolic link.');
+            }
+
+            $owned->cleanup();
+
+            $this->assertDirectoryDoesNotExist($owned->path);
+            $this->assertSame('<?php // keep', file_get_contents($target));
+            clearstatcache(true, $target);
+            $this->assertSame($permissions, fileperms($target) & 0777);
+        } finally {
+            chmod($target, 0666);
+            if (is_link($link)) {
+                unlink($link);
+            }
+            if (is_dir($owned->path)) {
+                $owned->cleanup();
+            }
+            $external->cleanup();
+        }
+    }
     public function testIndependentModuleFixtureRejectsClosureIdentityAndSnapshotDrift(): void
     {
         require_once $this->root . '/tools/release-validation-common.php';

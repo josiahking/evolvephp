@@ -879,7 +879,19 @@ function removeDirectory(string $path, string $ownedRoot): void
     foreach ($iterator as $entry) {
         $entryPath = $entry->getPathname();
 
-        if ($entry->isDir() && !$entry->isLink()) {
+        if ($entry->isLink()) {
+            if (PHP_OS_FAMILY === 'Windows' && $entry->isDir()) {
+                if (!rmdir($entryPath)) {
+                    releaseValidationFail('Unable to remove temporary directory: ' . $entryPath);
+                }
+            } elseif (!unlink($entryPath)) {
+                releaseValidationFail('Unable to remove temporary file: ' . $entryPath);
+            }
+
+            continue;
+        }
+
+        if ($entry->isDir()) {
             @chmod($entryPath, 0777);
 
             if (!rmdir($entryPath)) {
